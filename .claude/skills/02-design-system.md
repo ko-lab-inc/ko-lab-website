@@ -1,0 +1,159 @@
+# Skill 02 — Design System KO-LAB
+
+## Palette de couleurs — STRICTE
+```css
+/* globals.css */
+:root {
+  --ko-black:    #111210;   /* fond sombre dominant */
+  --ko-ink:      #2a2b28;   /* texte principal sur fond clair */
+  --ko-white:    #f8f6f1;   /* fond clair principal */
+  --ko-cream:    #f0ede6;   /* fond clair secondaire */
+  --ko-cream-2:  #e8e4db;   /* fond clair tertiaire */
+  --ko-blue:     #2f7fc9;   /* accent UNIQUE */
+  --ko-blue-2:   #5aa3e4;   /* hover bleu */
+  --ko-blue-bg:  #e8f2fb;   /* fond bleu très léger */
+  --ko-muted:    #7a7b76;   /* texte secondaire */
+  --ko-line:     #e0ddd6;   /* bordures sur fond clair */
+  --ko-line-d:   rgba(255,255,255,0.12); /* bordures sur fond sombre */
+}
+```
+
+## Typographie
+```css
+/* Polices à importer depuis Google Fonts */
+/* Fraunces: opsz 9..144, italic, weight 300+400 */
+/* Instrument Sans: weight 400+500+600 */
+/* JetBrains Mono: weight 400+500 */
+
+/* Tokens */
+--font-serif: 'Fraunces', Georgia, serif;
+--font-sans:  'Instrument Sans', system-ui, sans-serif;
+--font-mono:  'JetBrains Mono', 'Courier New', monospace;
+
+/* Hiérarchie des titres */
+/* ⚠️ Le préfixe `ko-` est obligatoire et ne doit jamais être retiré.
+   Les noms courts (.h-1, .h-2, .h-3) entrent en collision avec les utilitaires
+   de hauteur Tailwind homonymes : dès qu'on écrit className="h-2", le JIT émet
+   aussi `.h-2 { height: 0.5rem }` et le titre est écrasé à 8px, sans erreur
+   de build. */
+.ko-display { font-family: var(--font-serif); font-weight: 300; font-size: clamp(38px, 5.5vw, 80px); line-height: 1.04; letter-spacing: -0.025em; }
+.ko-h1      { font-family: var(--font-serif); font-weight: 300; font-size: clamp(30px, 4vw, 58px);   line-height: 1.06; letter-spacing: -0.02em; }
+.ko-h2      { font-family: var(--font-serif); font-weight: 400; font-size: clamp(22px, 2.8vw, 38px); line-height: 1.12; letter-spacing: -0.015em; }
+.ko-h3      { font-family: var(--font-serif); font-weight: 400; font-size: clamp(18px, 2vw, 26px);   line-height: 1.2; }
+
+/* Italiques en accent — toujours en bleu KO-LAB */
+em { font-style: italic; color: var(--ko-blue); }
+
+/* Labels mono */
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ko-blue);
+}
+```
+
+## Composants UI — tokens Tailwind
+```javascript
+// tailwind.config.ts
+colors: {
+  'ko-black':  '#111210',
+  'ko-ink':    '#2a2b28',
+  'ko-white':  '#f8f6f1',
+  'ko-cream':  '#f0ede6',
+  'ko-cream2': '#e8e4db',
+  'ko-blue':   '#2f7fc9',
+  'ko-blue2':  '#5aa3e4',
+  'ko-muted':  '#7a7b76',
+  'ko-line':   '#e0ddd6',
+},
+fontFamily: {
+  serif: ['Fraunces', 'Georgia', 'serif'],
+  sans:  ['Instrument Sans', 'system-ui', 'sans-serif'],
+  mono:  ['JetBrains Mono', 'Courier New', 'monospace'],
+},
+```
+
+## Boutons
+```tsx
+/* Primaire — fond bleu KO-LAB */
+<button className="bg-ko-blue text-white font-medium text-sm px-7 py-4 rounded-sm
+  hover:bg-ko-blue2 transition-colors duration-200 inline-flex items-center gap-2.5">
+  Discuter d'un mandat →
+</button>
+
+/* Ghost — bordure fine */
+<button className="border border-ko-line text-ko-ink text-sm px-7 py-4 rounded-sm
+  hover:border-ko-ink transition-colors duration-200">
+  Voir nos capacités
+</button>
+
+/* Texte — souligné */
+<a className="text-sm text-ko-muted border-b border-ko-line pb-0.5
+  hover:text-ko-ink hover:border-ko-ink transition-colors duration-200 inline-flex gap-2">
+  En savoir plus →
+</a>
+```
+
+## Sections — alternance fond
+```
+Section clair principal  → bg-ko-white    (hero, besoins, réalisations, CTA)
+Section clair secondaire → bg-ko-cream    (capacités, offres)
+Section sombre           → bg-ko-black    (stats bar, écosystème, footer)
+```
+
+## Espacement standard
+```
+Section padding vertical : py-28 (112px) desktop, py-16 (64px) mobile
+Conteneur max-width      : max-w-[1280px] mx-auto px-12 (desktop) px-6 (mobile)
+Gap grille               : gap-5 ou gap-6
+```
+
+## Filigrane numérique (style Davici)
+```tsx
+/* Numéro géant en fond de section */
+<span className="absolute right-[-2%] bottom-[-8%] font-serif font-light
+  text-[clamp(200px,30vw,520px)] text-ko-cream2 leading-none
+  pointer-events-none select-none tracking-[-0.04em] z-0">
+  01
+</span>
+```
+
+## Carte flottante glassmorphism (hero)
+```tsx
+<div className="absolute top-6 left-[-28px] bg-white border border-ko-line rounded
+  p-4 min-w-[170px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] z-10">
+  <p className="text-[9px] font-mono uppercase tracking-widest text-ko-muted mb-1.5">
+    Heures terrain
+  </p>
+  <p className="font-serif text-[22px] text-ko-ink leading-none">20 000+</p>
+  <p className="text-[10px] font-mono uppercase tracking-wider text-ko-blue mt-1">
+    Mandats réalisés
+  </p>
+</div>
+```
+
+## Animations au scroll
+```typescript
+// useReveal hook — src/hooks/useReveal.ts
+'use client'
+import { useEffect, useRef } from 'react'
+
+export function useReveal() {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const io = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { entry.target.classList.add('in'); io.unobserve(entry.target) }},
+      { threshold: 0.12 }
+    )
+    if (ref.current) io.observe(ref.current)
+    return () => io.disconnect()
+  }, [])
+  return ref
+}
+
+/* CSS globals.css */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity .65s ease, transform .65s ease; }
+.reveal.in { opacity: 1; transform: none; }
+```

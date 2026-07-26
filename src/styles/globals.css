@@ -1,0 +1,209 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =============================================================================
+   Design system KO-LAB — skill 02
+   ============================================================================= */
+
+@layer base {
+  /* ---------------------------------------------------------------------------
+     Tokens de couleur — source unique de vérité.
+     tailwind.config.ts ne fait que pointer vers ces variables : c'est le seul
+     endroit du projet où une valeur hexadécimale a le droit d'exister.
+     --------------------------------------------------------------------------- */
+  :root {
+    --ko-black: #111210; /* fond sombre dominant */
+    --ko-black-2: #0e1116; /* second noir, plus froid — sépare deux sections sombres adjacentes */
+    --ko-ink: #2a2b28; /* texte principal sur fond clair */
+    --ko-white: #f8f6f1; /* fond clair principal */
+    --ko-cream: #f0ede6; /* fond clair secondaire */
+    --ko-cream-2: #e8e4db; /* fond clair tertiaire, filigranes, placeholders */
+    --ko-blue: #2f7fc9; /* accent UNIQUE */
+    --ko-blue-2: #5aa3e4; /* hover bleu, et accent sur fond sombre */
+    --ko-blue-bg: #e8f2fb; /* fond bleu très léger */
+    --ko-muted: #7a7b76; /* texte secondaire sur fond clair */
+    --ko-muted-d: #b3b2ae; /* texte secondaire sur fond sombre — 8.85:1 sur --ko-black */
+    --ko-line: #e0ddd6; /* bordures sur fond clair */
+    --ko-line-d: rgba(255, 255, 255, 0.12); /* bordures sur fond sombre */
+
+    /* Canaux RVB des deux couleurs de base — UNIQUEMENT pour les voiles
+       translucides posés sur photo (dégradés de lisibilité, glassmorphism).
+       Tailwind ne sait appliquer un modificateur d'opacité que sur une couleur
+       dont il connaît les canaux ; `var(--ko-black)` étant opaque, `/88` y est
+       sans effet. Ces deux variables alimentent les tokens ko-scrim et
+       ko-frost, ce qui évite de retomber sur `black/88` codé en dur. */
+    --ko-black-rgb: 17 18 16;
+    --ko-white-rgb: 248 246 241;
+    --ko-blue-rgb: 47 127 201;
+  }
+
+  /* Les familles --font-serif / --font-sans / --font-mono ne sont PAS définies
+     ici : next/font/google les génère au build et les injecte sur <html>
+     (skill 12). Les redéfinir écraserait les polices auto-hébergées. */
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: var(--ko-white);
+    color: var(--ko-ink);
+    font-family: var(--font-sans), system-ui, sans-serif;
+  }
+
+  /* Italiques en accent — toujours en bleu KO-LAB (skill 02).
+     Sur fond sombre, préférer <em class="text-ko-blue2"> pour le contraste. */
+  em {
+    font-style: italic;
+    color: var(--ko-blue);
+  }
+
+  /* Focus clavier visible sur toutes les surfaces. Le bleu accent est le seul
+     signal d'interaction du système, il joue aussi ce rôle. */
+  :focus-visible {
+    outline: 2px solid var(--ko-blue);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--ko-blue);
+    color: var(--ko-white);
+  }
+}
+
+@layer components {
+  /* ---------------------------------------------------------------------------
+     Hiérarchie typographique — skill 02.
+
+     Préfixe `ko-` OBLIGATOIRE. Les noms d'origine du skill (.h-1, .h-2, .h-3)
+     entrent en collision avec les utilitaires de hauteur Tailwind du même nom :
+     dès qu'on écrit className="h-2", le JIT émet aussi `.h-2 { height: 0.5rem }`
+     et le titre est écrasé à 8px de haut, sans erreur de build.
+
+     Placées en @layer components pour qu'un utilitaire Tailwind puisse toujours
+     les surcharger ponctuellement (ex. `text-ko-white` sur une section sombre).
+     --------------------------------------------------------------------------- */
+  .ko-display {
+    font-family: var(--font-serif), Georgia, serif;
+    font-weight: 300;
+    font-size: clamp(38px, 5.5vw, 80px);
+    line-height: 1.04;
+    letter-spacing: -0.025em;
+  }
+
+  .ko-h1 {
+    font-family: var(--font-serif), Georgia, serif;
+    font-weight: 300;
+    font-size: clamp(30px, 4vw, 58px);
+    line-height: 1.06;
+    letter-spacing: -0.02em;
+  }
+
+  .ko-h2 {
+    font-family: var(--font-serif), Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(22px, 2.8vw, 38px);
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+  }
+
+  .ko-h3 {
+    font-family: var(--font-serif), Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(18px, 2vw, 26px);
+    line-height: 1.2;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Labels mono — skill 02
+     --------------------------------------------------------------------------- */
+  .label-mono {
+    font-family: var(--font-mono), 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ko-blue);
+  }
+
+  /* Variante fond sombre. À 11px, --ko-blue sur --ko-black plafonne à 4.47:1,
+     sous le seuil AA de 4.5:1 pour le petit texte ; --ko-blue-2 atteint 6.97:1.
+     Même logique de nommage que --ko-line-d. */
+  .label-mono-d {
+    color: var(--ko-blue-2);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Reveal au scroll — skills 02 et 20.
+     La classe .in est posée par le hook useReveal (src/hooks/useReveal.ts).
+
+     ⚠️ L'état masqué est conditionné à `.js` sur <html>, posée par un script
+     inline dans le root layout. Sans JavaScript — désactivé, bloqué, ou script
+     en échec — la classe est absente et le contenu reste VISIBLE.
+
+     Sans ce conditionnement, `.reveal { opacity: 0 }` s'appliquerait toujours
+     et une page sans JS s'afficherait entièrement vide : contenu invisible pour
+     les lecteurs d'écran comme pour les moteurs de recherche.
+     --------------------------------------------------------------------------- */
+  .reveal {
+    transition:
+      opacity 0.65s ease,
+      transform 0.65s ease;
+  }
+
+  .js .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .js .reveal.in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Cascade pour les éléments d'une même grille — skill 20 */
+  .js .reveal:nth-child(2) {
+    transition-delay: 80ms;
+  }
+
+  .js .reveal:nth-child(3) {
+    transition-delay: 160ms;
+  }
+
+  .js .reveal:nth-child(4) {
+    transition-delay: 240ms;
+  }
+}
+
+/* =============================================================================
+   Mouvement réduit — skill 20 : « pas d'animation si prefers-reduced-motion ».
+
+   Hors @layer volontairement : le CSS non calqué l'emporte sur toutes les
+   couches, y compris les utilitaires Tailwind. Aucune transition posée ailleurs
+   ne peut donc réintroduire du mouvement.
+
+   Le contenu .reveal est forcé visible plutôt que simplement figé : sans ça,
+   un élément dont la classe .in n'arrive jamais resterait invisible.
+   ============================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .reveal,
+  .reveal.in,
+  .js .reveal,
+  .js .reveal.in {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    transition-delay: 0ms;
+  }
+}

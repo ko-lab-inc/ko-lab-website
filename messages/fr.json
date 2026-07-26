@@ -1,0 +1,374 @@
+{
+  "Metadata": {
+    "home": {
+      "title": "KO-LAB Inc. — De l'idée au terrain",
+      "description": "KO-LAB réunit les équipes, l'expertise, les équipements et les partenaires nécessaires pour transformer une idée en opération concrète. Outaouais, Québec."
+    },
+    "operations": {
+      "title": "Opérations terrain — KO-LAB",
+      "description": "Main-d'œuvre, coordination, logistique, transport, montage et opérations multisites pour événements majeurs et mandats gouvernementaux."
+    },
+    "installations": {
+      "title": "Installations saisonnières et commerciales — KO-LAB",
+      "description": "Décors de Noël, installations commerciales, signalisation et éclairage décoratif. Préparation, transport, installation, suivi et retrait."
+    },
+    "lab": {
+      "title": "Le LAB — KO-LAB",
+      "description": "Conception 3D, impression 3D, laser, CNC, prototypage et reproduction de pièces. Du développement de produit à la chaîne de production."
+    },
+    "equipements": {
+      "title": "Équipements et déploiement — KO-LAB",
+      "description": "Camions, remorques, nacelles, équipements de manutention et outils d'installation. Les moyens de livrer le projet."
+    },
+    "realisations": {
+      "title": "Réalisations — KO-LAB",
+      "description": "Opérations terrain, installations, fabrications et déploiements réalisés par les équipes KO-LAB."
+    },
+    "location": {
+      "title": "Location d'équipement — KO-LAB",
+      "description": "Remorques, nacelles, outils et matériel d'installation. Consultez l'inventaire et faites votre demande."
+    },
+    "boutique": {
+      "title": "Boutique — KO-LAB",
+      "description": "Machines, outils et technologies sélectionnés : Bambu Lab, xTool et autres marques. Commandes accompagnées."
+    },
+    "apropos": {
+      "title": "À propos — KO-LAB",
+      "description": "Vision, culture terrain, manière de travailler et écosystème KO-LAB."
+    },
+    "carrieres": {
+      "title": "Carrières — KO-LAB",
+      "description": "Rejoindre les équipes terrain KO-LAB en Outaouais."
+    },
+    "contact": {
+      "title": "Contact — KO-LAB",
+      "description": "Démarrer un projet, demander une soumission ou poser une question à l'équipe KO-LAB."
+    }
+  },
+
+  "Nav": {
+    "accueil": "Accueil",
+    "capacites": "Nos capacités",
+    "operations": "Opérations terrain",
+    "installations": "Installations saisonnières",
+    "lab": "Le LAB",
+    "equipements": "Équipements et déploiement",
+    "realisations": "Réalisations",
+    "location": "Location",
+    "boutique": "Boutique",
+    "apropos": "À propos",
+    "carrieres": "Carrières",
+    "contact": "Contact",
+    "cta": "Démarrer un projet",
+    "ouvrirMenu": "Ouvrir le menu",
+    "fermerMenu": "Fermer le menu",
+    "menuPrincipal": "Navigation principale",
+    "changerLangue": "English"
+  },
+
+  "Home": {
+    "hero": {
+      "tag": "De l'idée au terrain",
+      "title": "Qu'est-ce qu'on met sur le <em>terrain</em> aujourd'hui?",
+      "subtitle": "KO-LAB réunit les équipes, l'expertise, les équipements et les partenaires nécessaires pour transformer une idée en opération concrète.",
+      "cta_primary": "Discuter d'un mandat",
+      "cta_secondary": "Voir nos capacités",
+      "carte_label": "Heures terrain",
+      "carte_valeur": "20 000+",
+      "carte_detail": "Mandats réalisés"
+    },
+    "stats": {
+      "label": "Preuve terrain",
+      "heures_valeur": "20 000+",
+      "heures_label": "Heures de travail terrain",
+      "sites_valeur": "Multi",
+      "sites_label": "Sites et horaires coordonnés simultanément",
+      "disciplines_valeur": "6",
+      "disciplines_label": "Disciplines opérationnelles",
+      "mandats_valeur": "Gouv.",
+      "mandats_label": "Mandats gouvernementaux et festivals majeurs"
+    },
+    "besoins": {
+      "label": "Par où on commence",
+      "title": "Quatre besoins, une seule équipe",
+      "note": "Un seul interlocuteur, du premier plan jusqu'au démontage.",
+      "en_savoir_plus": "En savoir plus",
+      "deployer_titre": "Déployer une équipe",
+      "deployer_texte": "Main-d'œuvre terrain, chefs d'équipe, planification des effectifs et des horaires.",
+      "installer_titre": "Installer un projet",
+      "installer_texte": "Préparation, transport, installation, suivi et retrait — jusqu'à l'entreposage.",
+      "fabriquer_titre": "Fabriquer une solution",
+      "fabriquer_texte": "Conception, prototypage, impression 3D, laser et CNC au LAB.",
+      "louer_titre": "Louer de l'équipement",
+      "louer_texte": "Remorques, nacelles, outils et matériel d'installation."
+    },
+    "credibilite": {
+      "label": "Crédibilité terrain",
+      "phrase": "Du gouvernement du Canada aux plus grands festivals de la région, nos équipes sont sur le terrain.",
+      "detail": "Plus de 20 000 heures de travail terrain, plusieurs sites coordonnés simultanément, et une capacité complète : main-d'œuvre, coordination, transport, montage, démontage, logistique et soutien opérationnel."
+    },
+    "capacites": {
+      "label": "Nos capacités",
+      "title": "Planifier, fabriquer, installer, équiper, déployer",
+      "texte": "KO-LAB ne se présente pas uniquement comme une entreprise événementielle ou une agence de main-d'œuvre. Nous prenons en charge des projets complexes, du premier plan jusqu'au démontage.",
+      "lien": "Voir toutes les capacités"
+    },
+    "operations": {
+      "label": "01 — Opérations terrain",
+      "title": "Des équipes fiables, coordonnées, sur plusieurs sites",
+      "texte": "Main-d'œuvre, chefs d'équipe, montage et démontage, logistique et transport. Nos équipes s'intègrent aux vôtres pour la durée du mandat.",
+      "lien": "Voir les opérations terrain"
+    },
+    "installations": {
+      "label": "02 — Installations",
+      "title": "Décors saisonniers et installations commerciales",
+      "texte": "Noël et hiver, centres commerciaux, tours à bureaux, commerces et espaces publics. Travail de nuit ou hors des heures d'ouverture quand il le faut.",
+      "lien": "Voir les installations"
+    },
+    "lab": {
+      "label": "03 — Le LAB",
+      "title": "Le LAB ne se limite pas à fabriquer ce que vous <em>imaginez</em>",
+      "texte": "De la première idée jusqu'à la chaîne de production, Le LAB développe les produits, les pièces et les solutions dont votre projet a réellement besoin.",
+      "lien": "Découvrir Le LAB",
+      "etape1_titre": "Conception",
+      "etape1_detail": "Modélisation 3D",
+      "etape2_titre": "Prototypage",
+      "etape2_detail": "Essais et améliorations",
+      "etape3_titre": "Fabrication",
+      "etape3_detail": "Laser, CNC, impression 3D",
+      "etape4_titre": "Déploiement",
+      "etape4_detail": "Livraison et installation"
+    },
+    "equipements": {
+      "label": "04 — Équipements et déploiement",
+      "title": "Les bons moyens permettent de livrer",
+      "texte": "Camions, remorques ouvertes et fermées, nacelles, équipements de manutention, éclairage temporaire et distribution électrique.",
+      "lien": "Voir les équipements"
+    },
+    "gmLocations": {
+      "label": "Partenariat",
+      "title": "GM Locations",
+      "texte": "Accès à des outils, équipements et machineries additionnels grâce à notre partenaire stratégique."
+    },
+    "realisations": {
+      "label": "Réalisations",
+      "title": "Ce qu'on a mis sur le terrain",
+      "lien": "Voir toutes les réalisations",
+      "a_venir": "Réalisation à venir",
+      "titre_terrain": "Déploiement événementiel",
+      "titre_installation": "Installation saisonnière",
+      "titre_lab": "Fabrication sur mesure"
+    },
+    "ecosysteme": {
+      "label": "Écosystème KO-LAB",
+      "title": "Vous parlez à une équipe. Nous mobilisons le réseau nécessaire.",
+      "turbo_tag": "Impression",
+      "spartan_tag": "Vêtement",
+      "emu_tag": "Expérience",
+      "vip_tag": "Mécanique",
+      "turbo_nom": "Impression Turbo",
+      "turbo_role": "Impression grand format, signalisation, production visuelle et habillage d'espaces.",
+      "spartan_nom": "Vêtement Spartan",
+      "spartan_role": "Vêtements personnalisés, uniformes, merch et produits promotionnels.",
+      "emu_nom": "Expérience Mobile Ultime",
+      "emu_role": "Arcade mobile, stations de jeux, Battlezone Nerf, photobooth 360 et expériences interactives.",
+      "vip_nom": "Centre de l'auto VIP",
+      "vip_role": "Entretien mécanique, soutien aux véhicules et besoins liés à la flotte."
+    },
+    "offres": {
+      "label": "Aussi disponible",
+      "location_tag": "Rentman",
+      "boutique_tag": "Sur commande",
+      "location_titre": "Location",
+      "location_texte": "Remorques, nacelles, outils et matériel d'installation. Inventaire complet et demande en ligne.",
+      "location_lien": "Voir l'inventaire",
+      "boutique_titre": "Boutique",
+      "boutique_texte": "Des équipements sélectionnés, accompagnés par une équipe qui les utilise réellement.",
+      "boutique_lien": "Voir le catalogue"
+    },
+    "cta": {
+      "label": "Prochaine étape",
+      "title": "Alors, qu'est-ce qu'on met sur le terrain?",
+      "texte": "Décrivez-nous le projet. On revient vers vous avec les équipes, les moyens et l'échéancier.",
+      "bouton": "Démarrer un projet"
+    }
+  },
+
+  "Capacites": {
+    "operations": {
+      "label": "Opérations terrain",
+      "title": "Votre organisation conserve la vision",
+      "phrase": "Votre organisation conserve la vision. Nous ajoutons les ressources nécessaires pour la mettre sur le terrain.",
+      "intro": "Fournir et coordonner des équipes fiables pour des événements majeurs, des opérations gouvernementales et des projets multisites.",
+      "item_1": "Main-d'œuvre terrain",
+      "item_2": "Chefs d'équipe",
+      "item_3": "Planification des effectifs et horaires",
+      "item_4": "Montage et démontage",
+      "item_5": "Logistique et transport",
+      "item_6": "Déplacement d'équipements",
+      "item_7": "Soutien pendant l'événement",
+      "item_8": "Intégration aux équipes internes du client"
+    },
+    "installations": {
+      "label": "Installations saisonnières et commerciales",
+      "title": "Au bon endroit, au bon moment",
+      "phrase": "Nous ne faisons pas qu'installer des éléments. Nous organisons tout ce qu'il faut pour qu'ils se retrouvent au bon endroit, au bon moment.",
+      "intro": "Le bras opérationnel qui prend en charge la préparation, le transport, l'installation, le suivi et le retrait.",
+      "item_1": "Décors de Noël et d'hiver",
+      "item_2": "Centres commerciaux et tours à bureaux",
+      "item_3": "Commerces, municipalités et espaces publics",
+      "item_4": "Signalisation et éclairage décoratif",
+      "item_5": "Structures, présentoirs et aménagements temporaires",
+      "item_6": "Travail de nuit ou en dehors des heures d'ouverture",
+      "item_7": "Emballage et préparation pour l'entreposage"
+    },
+    "lab": {
+      "label": "Le LAB",
+      "title": "Développer ce dont votre projet a réellement besoin",
+      "phrase": "Le LAB ne se limite pas à fabriquer ce que vous imaginez. Il nous permet de développer ce dont votre projet a réellement besoin.",
+      "intro": "De la première idée jusqu'à la chaîne de production, Le LAB développe les produits, les pièces et les solutions dont votre projet a réellement besoin.",
+      "item_1": "Conception et modélisation 3D",
+      "item_2": "Impression 3D",
+      "item_3": "Prototypage, essais et améliorations",
+      "item_4": "Laser et CNC",
+      "item_5": "Décors, signalisation et présentoirs",
+      "item_6": "Reproduction de pièces difficiles à obtenir",
+      "item_7": "Petites séries, gabarits et outils d'assemblage",
+      "item_8": "Livraison, installation et déploiement par KO-LAB"
+    },
+    "equipements": {
+      "label": "Équipements et déploiement",
+      "title": "Les bonnes équipes font avancer le projet",
+      "phrase": "Les bonnes équipes font avancer le projet. Les bons moyens permettent de le livrer.",
+      "intro": "KO-LAB ne fournit pas seulement des personnes, mais aussi les moyens de livrer le projet.",
+      "item_1": "Camions et véhicules de travail",
+      "item_2": "Remorques ouvertes, fermées et spécialisées",
+      "item_3": "Nacelles et équipements d'élévation",
+      "item_4": "Équipements de manutention",
+      "item_5": "Outils d'installation et matériel de chargement",
+      "item_6": "Éclairage temporaire et distribution électrique",
+      "item_7": "Mobilier et infrastructures événementielles",
+      "item_8": "Accès à davantage de machinerie grâce à GM Locations"
+    }
+  },
+
+  "Realisations": {
+    "title": "Réalisations",
+    "intro": "Opérations terrain, installations, fabrications et déploiements.",
+    "filtre_tout": "Tout voir",
+    "filtre_terrain": "Opérations",
+    "filtre_installation": "Installations",
+    "filtre_lab": "Le LAB",
+    "filtre_equipement": "Équipements",
+    "aucun_resultat": "Aucune réalisation dans cette catégorie pour le moment.",
+    "filtres_label": "Filtrer les réalisations"
+  },
+
+  "Boutique": {
+    "title": "Boutique",
+    "positionnement": "Des équipements sélectionnés, accompagnés par une équipe qui les utilise réellement.",
+    "intro": "Catalogue multimarques avec commandes accompagnées, demandes de prix et services complémentaires.",
+    "prix_sur_demande": "Prix sur demande",
+    "voir_produit": "Voir le produit",
+    "demander_prix": "Demander un prix",
+    "site_fabricant": "Site du fabricant",
+    "specs_titre": "Caractéristiques",
+    "services_titre": "Services complémentaires",
+    "services_texte": "Conseil, livraison, installation, configuration et formation.",
+    "filtre_marque": "Marque",
+    "filtre_categorie": "Catégorie",
+    "aucun_resultat": "Aucun produit ne correspond à cette sélection.",
+    "demande": {
+      "titre": "Demande de commande",
+      "quantite": "Quantité",
+      "envoyer": "Envoyer la demande"
+    }
+  },
+
+  "Location": {
+    "title": "Location d'équipement",
+    "intro": "Remorques, nacelles, outils et matériel d'installation. L'inventaire complet et les disponibilités sont sur notre plateforme de location.",
+    "cta_rentman": "Voir l'inventaire",
+    "cta_demande": "Faire une demande",
+    "note": "Vous ne trouvez pas ce que vous cherchez? Écrivez-nous, on a souvent accès à plus."
+  },
+
+  "Contact": {
+    "title": "Démarrer un projet",
+    "intro": "Décrivez-nous le projet. On revient vers vous dans les 48 heures.",
+    "form": {
+      "type": "Type de demande",
+      "type_mandat": "Démarrer un mandat",
+      "type_location": "Location d'équipement",
+      "type_boutique": "Boutique",
+      "type_carriere": "Carrière",
+      "type_autre": "Autre",
+      "nom": "Nom",
+      "nom_placeholder": "Prénom et nom",
+      "email": "Courriel",
+      "email_placeholder": "vous@organisation.ca",
+      "telephone": "Téléphone",
+      "telephone_optionnel": "optionnel",
+      "organisation": "Organisation",
+      "organisation_optionnel": "optionnel",
+      "message": "Message",
+      "message_placeholder": "Le projet, les dates, le lieu, ce dont vous avez besoin.",
+      "envoyer": "Envoyer la demande",
+      "envoi_en_cours": "Envoi en cours…"
+    },
+    "erreurs": {
+      "nom_court": "Le nom doit contenir au moins 2 caractères.",
+      "email_invalide": "Courriel invalide.",
+      "message_court": "Le message doit contenir au moins 10 caractères.",
+      "message_long": "Le message ne peut pas dépasser 2000 caractères.",
+      "type_invalide": "Choisissez un type de demande.",
+      "serveur": "L'envoi a échoué. Réessayez dans un instant ou écrivez-nous directement.",
+      "trop_de_requetes": "Trop de demandes envoyées. Patientez une minute avant de réessayer."
+    },
+    "succes": {
+      "titre": "Message envoyé",
+      "texte": "On revient vers vous dans les 48 heures."
+    }
+  },
+
+  "Carrieres": {
+    "title": "Carrières",
+    "intro": "Les équipes KO-LAB travaillent sur le terrain, en Outaouais et ailleurs au Québec.",
+    "aucun_poste": "Aucun poste ouvert en ce moment. Écrivez-nous quand même — on garde les bonnes candidatures.",
+    "type_temps_plein": "Temps plein",
+    "type_temps_partiel": "Temps partiel",
+    "type_contrat": "Contrat",
+    "exigences_titre": "Exigences",
+    "postuler": "Postuler"
+  },
+
+  "APropos": {
+    "title": "À propos",
+    "signature": "De l'idée au terrain.",
+    "intro": "KO-LAB ne se présente pas uniquement comme une entreprise événementielle ou une agence de main-d'œuvre. Nous planifions, fabriquons, installons, équipons et déployons des projets complexes.",
+    "ecosysteme_titre": "L'écosystème",
+    "ecosysteme_texte": "Vous parlez à une équipe. Nous mobilisons le réseau nécessaire."
+  },
+
+  "Footer": {
+    "signature": "De l'idée au terrain.",
+    "capacites_titre": "Capacités",
+    "entreprise_titre": "Entreprise",
+    "contact_titre": "Contact",
+    "region": "Outaouais, Québec",
+    "courriel": "info@ko-lab.ca",
+    "droits": "KO-LAB Inc. Tous droits réservés.",
+    "confidentialite": "Politique de confidentialité"
+  },
+
+  "Commun": {
+    "chargement": "Chargement…",
+    "erreur_titre": "Une erreur est survenue",
+    "erreur_texte": "Réessayez, ou écrivez-nous si le problème persiste.",
+    "retour_accueil": "Retour à l'accueil",
+    "page_introuvable_titre": "Page introuvable",
+    "page_introuvable_texte": "Cette page n'existe pas ou a été déplacée.",
+    "photo_placeholder": "Photo terrain KO-LAB",
+    "aller_au_contenu": "Aller au contenu"
+  }
+}

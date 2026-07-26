@@ -1,0 +1,374 @@
+{
+  "Metadata": {
+    "home": {
+      "title": "KO-LAB Inc. — From idea to the field",
+      "description": "KO-LAB brings together the crews, expertise, equipment and partners needed to turn an idea into a working operation. Outaouais, Quebec."
+    },
+    "operations": {
+      "title": "Field Operations — KO-LAB",
+      "description": "Labour, coordination, logistics, transport, setup and multi-site operations for major events and government contracts."
+    },
+    "installations": {
+      "title": "Seasonal and Commercial Installations — KO-LAB",
+      "description": "Holiday displays, commercial installations, signage and decorative lighting. Preparation, transport, installation, monitoring and removal."
+    },
+    "lab": {
+      "title": "The LAB — KO-LAB",
+      "description": "3D design, 3D printing, laser, CNC, prototyping and part reproduction. From product development to production runs."
+    },
+    "equipements": {
+      "title": "Equipment and Deployment — KO-LAB",
+      "description": "Trucks, trailers, lifts, material handling equipment and installation tools. The means to deliver the project."
+    },
+    "realisations": {
+      "title": "Our Work — KO-LAB",
+      "description": "Field operations, installations, fabrication and deployments delivered by KO-LAB crews."
+    },
+    "location": {
+      "title": "Equipment Rental — KO-LAB",
+      "description": "Trailers, lifts, tools and installation gear. Browse the inventory and send your request."
+    },
+    "boutique": {
+      "title": "Shop — KO-LAB",
+      "description": "Selected machines, tools and technology: Bambu Lab, xTool and other brands. Guided ordering."
+    },
+    "apropos": {
+      "title": "About — KO-LAB",
+      "description": "Vision, field culture, how we work and the KO-LAB ecosystem."
+    },
+    "carrieres": {
+      "title": "Careers — KO-LAB",
+      "description": "Join the KO-LAB field crews in the Outaouais region."
+    },
+    "contact": {
+      "title": "Contact — KO-LAB",
+      "description": "Start a project, request a quote or ask the KO-LAB team a question."
+    }
+  },
+
+  "Nav": {
+    "accueil": "Home",
+    "capacites": "Capabilities",
+    "operations": "Field Operations",
+    "installations": "Seasonal Installations",
+    "lab": "The LAB",
+    "equipements": "Equipment and Deployment",
+    "realisations": "Our Work",
+    "location": "Rental",
+    "boutique": "Shop",
+    "apropos": "About",
+    "carrieres": "Careers",
+    "contact": "Contact",
+    "cta": "Start a project",
+    "ouvrirMenu": "Open menu",
+    "fermerMenu": "Close menu",
+    "menuPrincipal": "Main navigation",
+    "changerLangue": "Français"
+  },
+
+  "Home": {
+    "hero": {
+      "tag": "From idea to the field",
+      "title": "What are we putting on the <em>ground</em> today?",
+      "subtitle": "KO-LAB brings together the crews, expertise, equipment and partners needed to turn an idea into a working operation.",
+      "cta_primary": "Discuss a project",
+      "cta_secondary": "See our capabilities",
+      "carte_label": "Field hours",
+      "carte_valeur": "20,000+",
+      "carte_detail": "Projects delivered"
+    },
+    "stats": {
+      "label": "Proven in the field",
+      "heures_valeur": "20,000+",
+      "heures_label": "Hours of field work",
+      "sites_valeur": "Multi",
+      "sites_label": "Sites and schedules coordinated simultaneously",
+      "disciplines_valeur": "6",
+      "disciplines_label": "Operational disciplines",
+      "mandats_valeur": "Gov.",
+      "mandats_label": "Government contracts and major festivals"
+    },
+    "besoins": {
+      "label": "Where we start",
+      "title": "Four needs, one team",
+      "note": "One point of contact, from the first plan through to teardown.",
+      "en_savoir_plus": "Learn more",
+      "deployer_titre": "Deploy a crew",
+      "deployer_texte": "Field labour, team leads, staffing and schedule planning.",
+      "installer_titre": "Install a project",
+      "installer_texte": "Preparation, transport, installation, monitoring and removal — through to storage.",
+      "fabriquer_titre": "Build a solution",
+      "fabriquer_texte": "Design, prototyping, 3D printing, laser and CNC at the LAB.",
+      "louer_titre": "Rent equipment",
+      "louer_texte": "Trailers, lifts, tools and installation gear."
+    },
+    "credibilite": {
+      "label": "Proven in the field",
+      "phrase": "From the Government of Canada to the region's largest festivals, our crews are on the ground.",
+      "detail": "Over 20,000 hours of field work, multiple sites coordinated simultaneously, and full capability: labour, coordination, transport, setup, teardown, logistics and operational support."
+    },
+    "capacites": {
+      "label": "Our capabilities",
+      "title": "Plan, build, install, equip, deploy",
+      "texte": "KO-LAB is not just an events company or a labour agency. We take on complex projects, from the first plan through to teardown.",
+      "lien": "See all capabilities"
+    },
+    "operations": {
+      "label": "01 — Field Operations",
+      "title": "Reliable crews, coordinated across multiple sites",
+      "texte": "Labour, team leads, setup and teardown, logistics and transport. Our crews integrate with yours for the length of the project.",
+      "lien": "See field operations"
+    },
+    "installations": {
+      "label": "02 — Installations",
+      "title": "Seasonal displays and commercial installations",
+      "texte": "Christmas and winter, shopping centres, office towers, retail and public spaces. Overnight or outside business hours when needed.",
+      "lien": "See installations"
+    },
+    "lab": {
+      "label": "03 — The LAB",
+      "title": "The LAB does more than build what you <em>imagine</em>",
+      "texte": "From the first idea through to the production run, the LAB develops the products, parts and solutions your project actually needs.",
+      "lien": "Discover the LAB",
+      "etape1_titre": "Design",
+      "etape1_detail": "3D modelling",
+      "etape2_titre": "Prototyping",
+      "etape2_detail": "Testing and refinement",
+      "etape3_titre": "Fabrication",
+      "etape3_detail": "Laser, CNC, 3D printing",
+      "etape4_titre": "Deployment",
+      "etape4_detail": "Delivery and installation"
+    },
+    "equipements": {
+      "label": "04 — Equipment and Deployment",
+      "title": "The right means get it delivered",
+      "texte": "Trucks, open and enclosed trailers, lifts, material handling equipment, temporary lighting and power distribution.",
+      "lien": "See equipment"
+    },
+    "gmLocations": {
+      "label": "Partnership",
+      "title": "GM Locations",
+      "texte": "Access to additional tools, equipment and machinery through our strategic partner."
+    },
+    "realisations": {
+      "label": "Our work",
+      "title": "What we've put on the ground",
+      "lien": "See all our work",
+      "a_venir": "Project coming soon",
+      "titre_terrain": "Event deployment",
+      "titre_installation": "Seasonal installation",
+      "titre_lab": "Custom fabrication"
+    },
+    "ecosysteme": {
+      "label": "KO-LAB Ecosystem",
+      "title": "You talk to one team. We mobilize the network.",
+      "turbo_tag": "Printing",
+      "spartan_tag": "Apparel",
+      "emu_tag": "Experience",
+      "vip_tag": "Mechanical",
+      "turbo_nom": "Impression Turbo",
+      "turbo_role": "Large-format printing, signage, visual production and space branding.",
+      "spartan_nom": "Vêtement Spartan",
+      "spartan_role": "Custom apparel, uniforms, merch and promotional products.",
+      "emu_nom": "Expérience Mobile Ultime",
+      "emu_role": "Mobile arcade, gaming stations, Nerf Battlezone, 360 photobooth and interactive experiences.",
+      "vip_nom": "Centre de l'auto VIP",
+      "vip_role": "Mechanical servicing, vehicle support and fleet needs."
+    },
+    "offres": {
+      "label": "Also available",
+      "location_tag": "Rentman",
+      "boutique_tag": "Made to order",
+      "location_titre": "Rental",
+      "location_texte": "Trailers, lifts, tools and installation gear. Full inventory and online requests.",
+      "location_lien": "Browse inventory",
+      "boutique_titre": "Shop",
+      "boutique_texte": "Selected equipment, backed by a team that actually uses it.",
+      "boutique_lien": "Browse catalogue"
+    },
+    "cta": {
+      "label": "Next step",
+      "title": "So — what are we putting on the ground?",
+      "texte": "Tell us about the project. We'll come back with the crews, the means and the timeline.",
+      "bouton": "Start a project"
+    }
+  },
+
+  "Capacites": {
+    "operations": {
+      "label": "Field Operations",
+      "title": "Your organization keeps the vision",
+      "phrase": "Your organization keeps the vision. We add the resources to put it on the ground.",
+      "intro": "Supplying and coordinating reliable crews for major events, government operations and multi-site projects.",
+      "item_1": "Field labour",
+      "item_2": "Team leads",
+      "item_3": "Staffing and schedule planning",
+      "item_4": "Setup and teardown",
+      "item_5": "Logistics and transport",
+      "item_6": "Equipment movement",
+      "item_7": "On-site support during the event",
+      "item_8": "Integration with the client's internal teams"
+    },
+    "installations": {
+      "label": "Seasonal and Commercial Installations",
+      "title": "The right place, at the right time",
+      "phrase": "We don't just install things. We organize everything needed for them to end up in the right place, at the right time.",
+      "intro": "The operational arm that handles preparation, transport, installation, monitoring and removal.",
+      "item_1": "Christmas and winter displays",
+      "item_2": "Shopping centres and office towers",
+      "item_3": "Retail, municipalities and public spaces",
+      "item_4": "Signage and decorative lighting",
+      "item_5": "Structures, displays and temporary layouts",
+      "item_6": "Overnight work or outside business hours",
+      "item_7": "Packing and preparation for storage"
+    },
+    "lab": {
+      "label": "The LAB",
+      "title": "Developing what your project actually needs",
+      "phrase": "The LAB does more than build what you imagine. It lets us develop what your project actually needs.",
+      "intro": "From the first idea through to the production run, the LAB develops the products, parts and solutions your project actually needs.",
+      "item_1": "3D design and modelling",
+      "item_2": "3D printing",
+      "item_3": "Prototyping, testing and refinement",
+      "item_4": "Laser and CNC",
+      "item_5": "Sets, signage and displays",
+      "item_6": "Reproduction of hard-to-source parts",
+      "item_7": "Short runs, jigs and assembly tooling",
+      "item_8": "Delivery, installation and deployment by KO-LAB"
+    },
+    "equipements": {
+      "label": "Equipment and Deployment",
+      "title": "The right crews move the project forward",
+      "phrase": "The right crews move the project forward. The right means get it delivered.",
+      "intro": "KO-LAB supplies more than people — it supplies the means to deliver the project.",
+      "item_1": "Trucks and work vehicles",
+      "item_2": "Open, enclosed and specialized trailers",
+      "item_3": "Lifts and elevated work platforms",
+      "item_4": "Material handling equipment",
+      "item_5": "Installation tools and loading gear",
+      "item_6": "Temporary lighting and power distribution",
+      "item_7": "Event furniture and infrastructure",
+      "item_8": "Access to more machinery through GM Locations"
+    }
+  },
+
+  "Realisations": {
+    "title": "Our Work",
+    "intro": "Field operations, installations, fabrication and deployments.",
+    "filtre_tout": "All",
+    "filtre_terrain": "Operations",
+    "filtre_installation": "Installations",
+    "filtre_lab": "The LAB",
+    "filtre_equipement": "Equipment",
+    "aucun_resultat": "Nothing in this category yet.",
+    "filtres_label": "Filter our work"
+  },
+
+  "Boutique": {
+    "title": "Shop",
+    "positionnement": "Selected equipment, backed by a team that actually uses it.",
+    "intro": "A multi-brand catalogue with guided ordering, quote requests and support services.",
+    "prix_sur_demande": "Price on request",
+    "voir_produit": "View product",
+    "demander_prix": "Request a price",
+    "site_fabricant": "Manufacturer site",
+    "specs_titre": "Specifications",
+    "services_titre": "Support services",
+    "services_texte": "Advice, delivery, installation, setup and training.",
+    "filtre_marque": "Brand",
+    "filtre_categorie": "Category",
+    "aucun_resultat": "No products match this selection.",
+    "demande": {
+      "titre": "Order request",
+      "quantite": "Quantity",
+      "envoyer": "Send request"
+    }
+  },
+
+  "Location": {
+    "title": "Equipment Rental",
+    "intro": "Trailers, lifts, tools and installation gear. Full inventory and availability are on our rental platform.",
+    "cta_rentman": "Browse inventory",
+    "cta_demande": "Send a request",
+    "note": "Can't find what you're looking for? Write to us — we often have access to more."
+  },
+
+  "Contact": {
+    "title": "Start a project",
+    "intro": "Tell us about the project. We'll get back to you within 48 hours.",
+    "form": {
+      "type": "Request type",
+      "type_mandat": "Start a project",
+      "type_location": "Equipment rental",
+      "type_boutique": "Shop",
+      "type_carriere": "Careers",
+      "type_autre": "Other",
+      "nom": "Name",
+      "nom_placeholder": "First and last name",
+      "email": "Email",
+      "email_placeholder": "you@organization.ca",
+      "telephone": "Phone",
+      "telephone_optionnel": "optional",
+      "organisation": "Organization",
+      "organisation_optionnel": "optional",
+      "message": "Message",
+      "message_placeholder": "The project, the dates, the location, what you need.",
+      "envoyer": "Send request",
+      "envoi_en_cours": "Sending…"
+    },
+    "erreurs": {
+      "nom_court": "Name must be at least 2 characters.",
+      "email_invalide": "Invalid email address.",
+      "message_court": "Message must be at least 10 characters.",
+      "message_long": "Message cannot exceed 2000 characters.",
+      "type_invalide": "Choose a request type.",
+      "serveur": "Sending failed. Try again in a moment, or write to us directly.",
+      "trop_de_requetes": "Too many requests sent. Wait a minute before trying again."
+    },
+    "succes": {
+      "titre": "Message sent",
+      "texte": "We'll get back to you within 48 hours."
+    }
+  },
+
+  "Carrieres": {
+    "title": "Careers",
+    "intro": "KO-LAB crews work in the field, across the Outaouais region and elsewhere in Quebec.",
+    "aucun_poste": "No open positions right now. Write to us anyway — we keep good applications on file.",
+    "type_temps_plein": "Full-time",
+    "type_temps_partiel": "Part-time",
+    "type_contrat": "Contract",
+    "exigences_titre": "Requirements",
+    "postuler": "Apply"
+  },
+
+  "APropos": {
+    "title": "About",
+    "signature": "From idea to the field.",
+    "intro": "KO-LAB is not just an events company or a labour agency. We plan, build, install, equip and deploy complex projects.",
+    "ecosysteme_titre": "The ecosystem",
+    "ecosysteme_texte": "You talk to one team. We mobilize the network."
+  },
+
+  "Footer": {
+    "signature": "From idea to the field.",
+    "capacites_titre": "Capabilities",
+    "entreprise_titre": "Company",
+    "contact_titre": "Contact",
+    "region": "Outaouais, Quebec",
+    "courriel": "info@ko-lab.ca",
+    "droits": "KO-LAB Inc. All rights reserved.",
+    "confidentialite": "Privacy policy"
+  },
+
+  "Commun": {
+    "chargement": "Loading…",
+    "erreur_titre": "Something went wrong",
+    "erreur_texte": "Try again, or write to us if the problem persists.",
+    "retour_accueil": "Back to home",
+    "page_introuvable_titre": "Page not found",
+    "page_introuvable_texte": "This page doesn't exist or has been moved.",
+    "photo_placeholder": "KO-LAB field photo",
+    "aller_au_contenu": "Skip to content"
+  }
+}
