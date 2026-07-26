@@ -4,6 +4,10 @@
       "title": "KO-LAB Inc. — From idea to the field",
       "description": "KO-LAB brings together the crews, expertise, equipment and partners needed to turn an idea into a working operation. Outaouais, Quebec."
     },
+    "capacites": {
+      "title": "Capabilities — KO-LAB",
+      "description": "Field operations, seasonal installations, fabrication at the LAB and deployment equipment. Four capabilities, one team."
+    },
     "operations": {
       "title": "Field Operations — KO-LAB",
       "description": "Labour, coordination, logistics, transport, setup and multi-site operations for major events and government contracts."
@@ -195,6 +199,21 @@
   },
 
   "Capacites": {
+    "hub": {
+      "label": "Capabilities",
+      "title": "Plan, build, install, equip, deploy",
+      "phrase": "Your organization keeps the vision. We add the resources to put it on the ground.",
+      "texte": "KO-LAB is not just an events company or a labour agency. We plan, build, install, equip and deploy complex projects — from the first plan through to teardown.",
+      "lien_page": "View the page",
+      "ce_que_ca_couvre": "What it covers"
+    },
+    "cta": {
+      "label": "Next step",
+      "title": "Got a project in mind?",
+      "texte": "Tell us about it — the dates, the location, what needs to go on the ground. We'll get back to you within 48 hours.",
+      "bouton": "Start a project",
+      "retour": "All our capabilities"
+    },
     "operations": {
       "label": "Field Operations",
       "title": "Your organization keeps the vision",

@@ -4,6 +4,10 @@
       "title": "KO-LAB Inc. — De l'idée au terrain",
       "description": "KO-LAB réunit les équipes, l'expertise, les équipements et les partenaires nécessaires pour transformer une idée en opération concrète. Outaouais, Québec."
     },
+    "capacites": {
+      "title": "Nos capacités — KO-LAB",
+      "description": "Opérations terrain, installations saisonnières, fabrication au LAB et équipements de déploiement. Quatre capacités, une seule équipe."
+    },
     "operations": {
       "title": "Opérations terrain — KO-LAB",
       "description": "Main-d'œuvre, coordination, logistique, transport, montage et opérations multisites pour événements majeurs et mandats gouvernementaux."
@@ -195,6 +199,21 @@
   },
 
   "Capacites": {
+    "hub": {
+      "label": "Nos capacités",
+      "title": "Planifier, fabriquer, installer, équiper, déployer",
+      "phrase": "Votre organisation conserve la vision. Nous ajoutons les ressources nécessaires pour la mettre sur le terrain.",
+      "texte": "KO-LAB ne se présente pas uniquement comme une entreprise événementielle ou une agence de main-d'œuvre. Nous planifions, fabriquons, installons, équipons et déployons des projets complexes — du premier plan jusqu'au démontage.",
+      "lien_page": "Voir la page",
+      "ce_que_ca_couvre": "Ce que ça couvre"
+    },
+    "cta": {
+      "label": "Prochaine étape",
+      "title": "Un mandat en tête?",
+      "texte": "Décrivez-nous le projet — les dates, le lieu, ce qu'il faut mettre sur le terrain. On revient vers vous dans les 48 heures.",
+      "bouton": "Démarrer un projet",
+      "retour": "Toutes nos capacités"
+    },
     "operations": {
       "label": "Opérations terrain",
       "title": "Votre organisation conserve la vision",
