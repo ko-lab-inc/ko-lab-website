@@ -1,6 +1,12 @@
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
+import {
+  IconeCamion,
+  IconeEquipe,
+  IconeGrue,
+  IconePuce,
+} from '@/components/ui/Icones'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { CADRAGES, IMAGES } from '@/lib/images'
@@ -36,6 +42,7 @@ export async function Besoins() {
       cle: 'deployer',
       numero: '01',
       href: ROUTES.operations,
+      Icone: IconeEquipe,
       src: IMAGES.besoinDeployer,
       cadrage: CADRAGES.besoinDeployer,
       style: FILTRE_AMBRE,
@@ -44,6 +51,7 @@ export async function Besoins() {
       cle: 'installer',
       numero: '02',
       href: ROUTES.installations,
+      Icone: IconeGrue,
       src: IMAGES.besoinInstaller,
       cadrage: CADRAGES.besoinInstaller,
       style: FILTRE_AMBRE,
@@ -52,7 +60,12 @@ export async function Besoins() {
       cle: 'fabriquer',
       numero: '03',
       href: ROUTES.lab,
-      src: IMAGES.besoinFabriquer,
+      Icone: IconePuce,
+      // Imprimante 3D plutôt que les étincelles de meuleuse : « Fabriquer une
+      // solution » renvoie au LAB, dont l'impression 3D est l'activité phare.
+      // Les étincelles restent dans images.ts sous besoinFabriquer, le soudeur
+      // sous soudeur — tous deux disponibles pour d'autres pages.
+      src: IMAGES.labImpression3d,
       cadrage: 'object-center',
       style: undefined,
     },
@@ -60,6 +73,7 @@ export async function Besoins() {
       cle: 'louer',
       numero: '04',
       href: ROUTES.location,
+      Icone: IconeCamion,
       src: IMAGES.besoinLouer,
       cadrage: 'object-center',
       style: undefined,
@@ -83,9 +97,17 @@ export async function Besoins() {
         </Reveal>
 
         <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2">
-          {besoins.map(({ cle, numero, href, src, cadrage, style }) => (
+          {besoins.map(({ cle, numero, href, Icone, src, cadrage, style }, i) => (
             <Reveal key={cle}>
-              <Link href={href} className="group block">
+              {/* `-m-3 p-3` : marge négative compensée par un padding égal —
+                  la mise en page ne bouge pas d'un pixel, mais le fond au
+                  survol dispose de 12px de respiration autour de la carte.
+                  Sans ça, un changement de fond sur un bloc sans padding se
+                  résume à un rectangle collé au texte. */}
+              <Link
+                href={href}
+                className="group -m-3 block rounded-2xl p-3 transition-colors duration-250 hover:bg-ko-cream"
+              >
                 {/* overflow-hidden sur le parent : c'est lui qui contient le
                     zoom de l'image, sinon le débordement casserait la grille. */}
                 <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-ko-cream2">
@@ -97,11 +119,16 @@ export async function Besoins() {
                     src={src}
                     alt=""
                     fill
+                    // À 375px, la grille passe en une colonne : cette première
+                    // carte remonte juste sous le hero et Next la détecte comme
+                    // élément LCP. Sans priorité elle est chargée en différé,
+                    // ce qui retarde directement la mesure sur mobile.
+                    priority={i === 0}
                     quality={80}
                     sizes="(max-width: 768px) 100vw, 50vw"
                     style={style}
                     className={cn(
-                      'object-cover transition-transform duration-[400ms] group-hover:scale-[1.03]',
+                      'object-cover transition-transform duration-[400ms] group-hover:scale-[1.05]',
                       // Deux des photos sont verticales : sans recentrage, le
                       // recadrage 16/9 couperait les silhouettes.
                       cadrage,
@@ -109,7 +136,18 @@ export async function Besoins() {
                   />
                 </div>
 
-                <p className="label-mono mt-5 text-xs">{numero}</p>
+                {/* L'icône accompagne le titre, elle ne le remplace pas —
+                    d'où aria-hidden dans le composant. `rotate` au survol :
+                    animation E. */}
+                <Icone
+                  taille={24}
+                  className="mt-5 text-ko-blue transition-transform duration-300 group-hover:rotate-[5deg]"
+                />
+
+                {/* -4px au survol : animation E, sur transform uniquement. */}
+                <p className="label-mono mt-4 text-xs transition-transform duration-200 group-hover:-translate-y-1">
+                  {numero}
+                </p>
 
                 <h3 className="mt-2 font-serif text-[22px] leading-tight text-ko-ink">
                   {t(`${cle}_titre`)}

@@ -26,10 +26,34 @@ type ParallaxProps = {
   children: ReactNode
   /** Amplitude du déplacement vers le haut, en pixels, sur une traversée d'écran. */
   distance?: number
+  /**
+   * Zoom appliqué sur la même progression : 0.1 mène de scale(1) à scale(1.1).
+   * Cumulable avec `distance` — les deux composent un seul `transform`, donc
+   * une seule propriété composée par le GPU.
+   */
+  zoom?: number
+  /**
+   * Comment la progression 0 → 1 est calculée.
+   *
+   * `sortie` — 0 quand l'élément est en haut de l'écran, 1 quand il en est
+   * entièrement sorti. Convient à un hero, qui est déjà visible au chargement.
+   *
+   * `traversee` — 0 quand l'élément apparaît par le bas, 1 quand il disparaît
+   * par le haut. Indispensable pour une section en milieu de page : avec
+   * `sortie`, l'effet reste bloqué à 0 pendant tout le temps où la section est
+   * confortablement visible, et ne se déclenche qu'au moment où elle s'en va.
+   */
+  mode?: 'sortie' | 'traversee'
   className?: string
 }
 
-export function Parallax({ children, distance = 60, className }: ParallaxProps) {
+export function Parallax({
+  children,
+  distance = 60,
+  zoom = 0,
+  mode = 'sortie',
+  className,
+}: ParallaxProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -47,11 +71,24 @@ export function Parallax({ children, distance = 60, className }: ParallaxProps) 
       framePrevue = false
       const rect = el.getBoundingClientRect()
 
-      // Progression de 0 (section en bas de l'écran) à 1 (entièrement remontée).
-      // Bornée : au-delà, l'élément est hors champ, inutile de continuer à bouger.
-      const progression = Math.min(Math.max(-rect.top / window.innerHeight, 0), 1)
+      const ecran = window.innerHeight
 
-      el.style.transform = `translate3d(0, ${-(progression * distance).toFixed(2)}px, 0)`
+      const brute =
+        mode === 'traversee'
+          ? // L'élément parcourt une distance de (écran + sa hauteur) entre le
+            // moment où son sommet touche le bas de l'écran et celui où sa base
+            // en franchit le haut.
+            (ecran - rect.top) / (ecran + rect.height)
+          : -rect.top / ecran
+
+      // Bornée : hors de cette plage l'élément est hors champ, inutile de
+      // continuer à calculer un déplacement que personne ne voit.
+      const progression = Math.min(Math.max(brute, 0), 1)
+
+      const y = -(progression * distance).toFixed(2)
+      const echelle = (1 + progression * zoom).toFixed(4)
+
+      el.style.transform = `translate3d(0, ${y}px, 0) scale(${echelle})`
     }
 
     const surScroll = () => {
@@ -68,7 +105,7 @@ export function Parallax({ children, distance = 60, className }: ParallaxProps) 
       window.removeEventListener('scroll', surScroll)
       window.removeEventListener('resize', surScroll)
     }
-  }, [distance])
+  }, [distance, zoom, mode])
 
   return (
     <div ref={ref} className={cn('will-change-transform', className)}>

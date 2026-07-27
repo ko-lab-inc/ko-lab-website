@@ -280,7 +280,22 @@
     "filtre_lab": "Le LAB",
     "filtre_equipement": "Équipements",
     "aucun_resultat": "Aucune réalisation dans cette catégorie pour le moment.",
-    "filtres_label": "Filtrer les réalisations"
+    "filtres_label": "Filtrer les réalisations",
+    "compte": "{n, plural, =0 {Aucune réalisation} one {# réalisation} other {# réalisations}}",
+    "items": {
+      "terrain": {
+        "titre": "Déploiement événementiel",
+        "description": "Coordination d'équipes sur plusieurs zones, montage, soutien pendant l'événement et démontage."
+      },
+      "installation": {
+        "titre": "Installation saisonnière",
+        "description": "Préparation, transport, installation en hauteur, suivi et retrait — jusqu'à l'entreposage."
+      },
+      "lab": {
+        "titre": "Fabrication sur mesure",
+        "description": "Conception, prototypage et production de pièces développées pour les besoins réels du projet."
+      }
+    }
   },
 
   "Boutique": {

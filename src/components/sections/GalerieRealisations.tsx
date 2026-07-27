@@ -1,0 +1,191 @@
+'use client'
+
+import Image from 'next/image'
+import { useTranslations } from 'next-intl'
+import { useMemo, useState } from 'react'
+
+import { cn } from '@/lib/utils/cn'
+
+import type { CategorieRealisation } from '@/types'
+
+/**
+ * Galerie filtrable — skill 21.
+ *
+ * Le filtrage est purement client : aucun rechargement, aucune requête. Les
+ * réalisations arrivent DÉJÀ TRADUITES depuis le composant serveur. C'est ce
+ * qui permet de garder next-intl côté serveur : passer les clés brutes aurait
+ * obligé à embarquer le catalogue de traductions dans le bundle client.
+ *
+ * ⚠️ CONTENU PROVISOIRE — trois entrées codées en dur en attendant Supabase.
+ * Le jour du branchement, seule la page serveur change ; ce composant reçoit
+ * la même forme de données :
+ *
+ *     const supabase = createStaticClient()   // JAMAIS createClient()
+ *     const { data } = await supabase.from('realisations')
+ *       .select('slug, titre_fr, titre_en, categorie, images')
+ *       .eq('publie', true).order('ordre')
+ */
+
+export type RealisationCarte = {
+  cle: string
+  categorie: CategorieRealisation
+  titre: string
+  description: string
+  tag: string
+  src: string
+  cadrage: string
+  desature: boolean
+}
+
+type Filtre = {
+  valeur: CategorieRealisation | 'all'
+  label: string
+}
+
+type GalerieProps = {
+  realisations: readonly RealisationCarte[]
+  filtres: readonly Filtre[]
+  labelFiltres: string
+  aucunResultat: string
+}
+
+const FILTRE_AMBRE = { filter: 'saturate(0.5) contrast(1.1) brightness(0.9)' }
+
+export function GalerieRealisations({
+  realisations,
+  filtres,
+  labelFiltres,
+  aucunResultat,
+}: GalerieProps) {
+  // Seule chaîne résolue côté client : le compteur est un pluriel ICU dont la
+  // valeur change à chaque filtre, il ne peut pas être pré-calculé au serveur.
+  // Le coût est nul — NextIntlClientProvider expose déjà le catalogue.
+  const t = useTranslations('Realisations')
+
+  const [categorie, setCategorie] = useState<CategorieRealisation | 'all'>('all')
+
+  const visibles = useMemo(
+    () => realisations.filter((r) => categorie === 'all' || r.categorie === categorie),
+    [realisations, categorie],
+  )
+
+  return (
+    <>
+      {/* ------------------------------ Filtres ------------------------------ */}
+      {/* `role="group"` plutôt qu'une liste de liens : le filtrage ne change pas
+          l'URL, ces boutons ne sont donc pas des destinations navigables. */}
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+      <div role="group" aria-label={labelFiltres} className="flex flex-wrap gap-2">
+        {filtres.map(({ valeur, label }) => {
+          const actif = valeur === categorie
+
+          return (
+            <button
+              key={valeur}
+              type="button"
+              onClick={() => setCategorie(valeur)}
+              aria-pressed={actif}
+              className={cn(
+                'min-h-[44px] rounded-sm border px-5 text-sm transition-colors duration-250',
+                actif
+                  ? 'border-ko-blue bg-ko-blue text-ko-white'
+                  : 'border-ko-line text-ko-ink hover:border-ko-ink',
+              )}
+            >
+              {label}
+            </button>
+          )
+        })}
+      </div>
+
+        {/* Compteur en direct. `aria-live="polite"` : le filtre ne change pas
+            l'URL et ne déplace pas le focus — sans annonce, un utilisateur de
+            lecteur d'écran n'aurait aucun retour sur l'effet de son clic. */}
+        <p aria-live="polite" className="label-mono text-ko-muted">
+          {t('compte', { n: visibles.length })}
+        </p>
+      </div>
+
+      {/* ------------------------------ Grille ------------------------------ */}
+      {visibles.length === 0 ? (
+        <p className="mt-14 text-base text-ko-muted">{aucunResultat}</p>
+      ) : (
+        // Grille asymétrique : la première carte occupe deux colonnes et deux
+        // rangées. Quand un filtre ne laisse qu'un seul résultat, elle s'étend
+        // simplement — la mise en page ne se casse pas.
+        <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3 lg:grid-rows-2">
+          {visibles.map((r, i) => (
+            <article
+              key={r.cle}
+              className={cn(
+                'group relative overflow-hidden rounded-xl bg-ko-cream2',
+                i === 0 ? 'lg:col-span-2 lg:row-span-2' : 'lg:col-span-1',
+              )}
+            >
+              {/* La grande carte occupe deux rangées : sur desktop elle doit
+                  remplir la hauteur imposée par la colonne de droite, sinon un
+                  ratio fixe laisse une bande de fond apparente sous l'image.
+                  Le ratio reste en vigueur sous lg, où la grille est linéaire. */}
+              <div
+                className={cn(
+                  'relative',
+                  i === 0 ? 'aspect-[3/2] lg:aspect-auto lg:h-full' : 'aspect-[4/3]',
+                )}
+              >
+                {/*
+                  ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
+                  Voir skill 22 pour les critères de remplacement.
+                */}
+                <Image
+                  src={r.src}
+                  alt=""
+                  fill
+                  // La grande carte est au-dessus de la ligne de flottaison et
+                  // Next la détecte comme élément LCP. Sans `priority`, elle est
+                  // chargée en différé et retarde directement la mesure.
+                  priority={i === 0}
+                  quality={80}
+                  sizes={i === 0 ? '(max-width: 1024px) 100vw, 66vw' : '(max-width: 1024px) 100vw, 33vw'}
+                  style={r.desature ? FILTRE_AMBRE : undefined}
+                  className={cn(
+                    'object-cover transition-transform duration-[400ms] group-hover:scale-[1.02]',
+                    r.cadrage,
+                  )}
+                />
+
+                {/* Voile de lisibilité, renforcé au survol pour laisser
+                    apparaître la description. */}
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-gradient-to-t from-ko-scrim/85 via-ko-scrim/25 to-transparent transition-opacity duration-[400ms] group-hover:from-ko-scrim/95 group-hover:via-ko-scrim/60"
+                />
+
+                <span className="label-mono absolute left-4 top-4 rounded bg-ko-scrim/60 px-3 py-1.5 text-ko-frost/90 backdrop-blur-sm">
+                  {r.tag}
+                </span>
+
+                <div className="absolute inset-x-4 bottom-4">
+                  <h3
+                    className={cn(
+                      'font-serif leading-tight text-ko-white',
+                      i === 0 ? 'text-[26px]' : 'text-[20px]',
+                    )}
+                  >
+                    {r.titre}
+                  </h3>
+
+                  {/* Description révélée au survol. `max-h` plutôt que `hidden` :
+                      le texte reste dans le DOM, donc accessible aux lecteurs
+                      d'écran et aux moteurs de recherche. */}
+                  <p className="max-h-0 overflow-hidden text-sm leading-relaxed text-ko-frost/75 opacity-0 transition-[max-height,opacity,margin] duration-[400ms] group-hover:mt-2 group-hover:max-h-32 group-hover:opacity-100">
+                    {r.description}
+                  </p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </>
+  )
+}

@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
 import { buttonVariants } from '@/components/ui/Button'
+import { HeroScrollEffets } from '@/components/ui/HeroScrollEffets'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { IMAGES } from '@/lib/images'
@@ -30,6 +31,7 @@ export async function Hero() {
 
   return (
     <section className="mx-3 mt-3 lg:mx-4 lg:mt-4">
+      <HeroScrollEffets>
       <div className="relative min-h-[90vh] overflow-hidden rounded-3xl bg-ko-black shadow-[0_8px_40px_rgba(0,0,0,0.15)]">
         {/*
           ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
@@ -44,6 +46,8 @@ export async function Hero() {
           priority
           quality={85}
           sizes="100vw"
+          // data-hero-photo : cible du zoom de scroll (voir HeroScrollEffets).
+          data-hero-photo
           className="object-cover object-center [filter:grayscale(0.1)_contrast(1.05)_brightness(0.85)]"
         />
 
@@ -77,7 +81,13 @@ export async function Hero() {
             <span className="label-mono label-mono-d">{t('tag')}</span>
           </p>
 
-          <h1 className="mt-5 font-serif text-[clamp(40px,5.5vw,76px)] font-light leading-[1.04] tracking-[-0.025em] text-ko-white">
+          {/* data-hero-titre : rétrécit et s'efface au scroll. Rendu à
+              opacité 1 sans transformation dans le HTML initial — le LCP
+              n'est jamais retardé. */}
+          <h1
+            data-hero-titre
+            className="mt-5 font-serif text-[clamp(40px,5.5vw,76px)] font-light leading-[1.04] tracking-[-0.025em] text-ko-white"
+          >
             {t.rich('title', { em: (chunks) => <em className="italic text-ko-blue">{chunks}</em> })}
           </h1>
 
@@ -106,7 +116,11 @@ export async function Hero() {
         {/* --------------------------- Carte stats --------------------------- */}
         {/* Masquée sous md : elle chevaucherait le titre sur un écran étroit. */}
         <Reveal className="absolute bottom-8 right-8 z-10 hidden md:block">
-          <div className="grid grid-cols-2 gap-4 rounded-2xl border border-ko-frost/15 bg-ko-frost/10 p-6 backdrop-blur-md">
+          {/* data-hero-carte : remonte de 30px à contre-sens du défilement. */}
+          <div
+            data-hero-carte
+            className="grid grid-cols-2 gap-4 rounded-2xl border border-ko-frost/15 bg-ko-frost/10 p-6 backdrop-blur-md"
+          >
             {stats.map((stat) => (
               <div key={stat.label}>
                 <p className="font-serif text-[32px] font-light leading-none text-ko-white">
@@ -120,6 +134,7 @@ export async function Hero() {
           </div>
         </Reveal>
       </div>
+      </HeroScrollEffets>
     </section>
   )
 }

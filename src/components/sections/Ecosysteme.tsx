@@ -1,5 +1,11 @@
 import { getTranslations } from 'next-intl/server'
 
+import {
+  IconeCiseaux,
+  IconeCle,
+  IconeImprimante,
+  IconeManette,
+} from '@/components/ui/Icones'
 import { Reveal } from '@/components/ui/Reveal'
 
 /**
@@ -15,7 +21,14 @@ import { Reveal } from '@/components/ui/Reveal'
 export async function Ecosysteme() {
   const t = await getTranslations('Home.ecosysteme')
 
-  const partenaires = ['turbo', 'spartan', 'emu', 'vip'] as const
+  // GM Locations n'a pas de cellule ici : le document de cadrage en fait un
+  // partenaire stratégique EXTERNE, présenté dans la section Équipements.
+  const partenaires = [
+    { cle: 'turbo', Icone: IconeImprimante },
+    { cle: 'spartan', Icone: IconeCiseaux },
+    { cle: 'emu', Icone: IconeManette },
+    { cle: 'vip', Icone: IconeCle },
+  ] as const
 
   return (
     <section className="bg-ko-black py-16 lg:py-28">
@@ -28,7 +41,7 @@ export async function Ecosysteme() {
         </Reveal>
 
         <div className="mt-14 grid grid-cols-1 gap-px bg-ko-line-d sm:grid-cols-2 lg:grid-cols-4">
-          {partenaires.map((cle) => (
+          {partenaires.map(({ cle, Icone }) => (
             <Reveal key={cle} className="bg-ko-black">
               {/* min-h + flex-col : les noms s'alignent en bas quelle que soit
                   la longueur de la description au-dessus. */}
@@ -37,6 +50,9 @@ export async function Ecosysteme() {
                     sur les quatre cellules n'apportait aucune information et
                     faisait de la ligne un simple motif décoratif — ce que le
                     skill 08 proscrit. Le métier, lui, situe le partenaire. */}
+                {/* ko-blue2 sur fond sombre — voir la note de StatsBar. */}
+                <Icone taille={24} className="mb-5 text-ko-blue2" />
+
                 <p className="label-mono label-mono-d">{t(`${cle}_tag`)}</p>
 
                 <h3 className="mt-auto pt-8 font-serif text-[20px] leading-tight text-ko-white">

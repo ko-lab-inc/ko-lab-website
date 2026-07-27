@@ -146,15 +146,20 @@
      et une page sans JS s'afficherait entièrement vide : contenu invisible pour
      les lecteurs d'écran comme pour les moteurs de recherche.
      --------------------------------------------------------------------------- */
+  /* Courbe d'entrée : démarre vite puis se pose, sans rebond. C'est ce
+     « settle » final qui distingue une entrée travaillée d'un simple ease-out.
+     Le scale compense l'absence de flou : animer `filter: blur()` imposerait un
+     repaint pleine surface à chaque frame, alors que transform et opacity sont
+     composités par le GPU. */
   .reveal {
     transition:
-      opacity 0.65s ease,
-      transform 0.65s ease;
+      opacity 800ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .js .reveal {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(60px) scale(0.94);
   }
 
   .js .reveal.in {
@@ -208,6 +213,26 @@
   }
 
   .js .reveal-hote.in .cascade-item {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* C — stats, entrée par le bas en cascade.
+     Slide-up et non compteur animé : le skill 08 interdit le décompte au
+     chargement. Même impact perçu, sans l'effet « widget de tableau de bord ». */
+  .cascade-stat {
+    transition:
+      opacity 600ms ease-out,
+      transform 600ms ease-out;
+    transition-delay: var(--delai, 0ms);
+  }
+
+  .js .reveal-hote .cascade-stat {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  .js .reveal-hote.in .cascade-stat {
     opacity: 1;
     transform: none;
   }
@@ -273,9 +298,11 @@
      réduit, puisque leur état masqué est posé par .reveal-hote et non .reveal. */
   .mot-anime,
   .cascade-item,
+  .cascade-stat,
   .numero-slide,
   .js .reveal-hote .mot-anime,
   .js .reveal-hote .cascade-item,
+  .js .reveal-hote .cascade-stat,
   .js .reveal-hote .numero-slide {
     opacity: 1;
     transform: none;

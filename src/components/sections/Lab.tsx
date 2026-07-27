@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
+import { Parallax } from '@/components/ui/Parallax'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { IMAGES } from '@/lib/images'
@@ -28,15 +29,23 @@ export async function Lab() {
             ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
             Voir skill 22 pour les critères de remplacement.
           */}
-          <Image
-            src={IMAGES.lab}
-            alt=""
-            fill
-            quality={80}
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            className="object-cover object-center"
-          />
-          {/* Voile bas discret — assied la photo, ne décore pas. */}
+          {/* D — zoom lié au scroll, scale 1 → 1.1 sur la traversée.
+              `mode="traversee"` et non le mode par défaut : celui-ci mesure la
+              sortie par le haut, donc l'effet resterait à zéro pendant tout le
+              temps où la section est confortablement visible. */}
+          <Parallax distance={0} zoom={0.1} mode="traversee" className="absolute inset-0">
+            <Image
+              src={IMAGES.lab}
+              alt=""
+              fill
+              quality={80}
+              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover object-center"
+            />
+          </Parallax>
+
+          {/* Voile bas discret — assied la photo, ne décore pas.
+              HORS du Parallax : il ne doit pas se dilater avec la photo. */}
           <div
             aria-hidden="true"
             className="absolute inset-0 bg-gradient-to-t from-ko-scrim/20 to-transparent"

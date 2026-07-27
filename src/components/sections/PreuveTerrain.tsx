@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
+import { Parallax } from '@/components/ui/Parallax'
 import { Reveal } from '@/components/ui/Reveal'
 import { IMAGES } from '@/lib/images'
 
@@ -35,17 +36,22 @@ export async function PreuveTerrain() {
         Reprend l'image du hero. Assumé et visible : mieux vaut un doublon
         identifiable qu'une photo de stock hors sujet (skill 22).
       */}
-      <Image
-        src={IMAGES.preuveTerrain}
-        alt=""
-        fill
-        quality={80}
-        sizes="100vw"
-        className="object-cover object-center"
-      />
+      {/* D — zoom lié au scroll, scale 1 → 1.1 sur la traversée. Aucune
+          translation : la photo occupe déjà tout le cadre. */}
+      <Parallax distance={0} zoom={0.1} mode="traversee" className="absolute inset-0">
+        <Image
+          src={IMAGES.preuveTerrain}
+          alt=""
+          fill
+          quality={80}
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+      </Parallax>
 
       {/* Voile uniforme — le texte occupe toute la largeur, il faut donc
-          assombrir uniformément plutôt qu'en dégradé directionnel. */}
+          assombrir uniformément plutôt qu'en dégradé directionnel.
+          HORS du Parallax : sinon il se dilaterait avec la photo. */}
       <div aria-hidden="true" className="absolute inset-0 bg-ko-scrim/70" />
 
       <div className="relative z-10 mx-auto max-w-container px-6 py-20 text-center lg:px-12 lg:py-32">

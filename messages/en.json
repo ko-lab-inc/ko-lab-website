@@ -280,7 +280,22 @@
     "filtre_lab": "The LAB",
     "filtre_equipement": "Equipment",
     "aucun_resultat": "Nothing in this category yet.",
-    "filtres_label": "Filter our work"
+    "filtres_label": "Filter our work",
+    "compte": "{n, plural, =0 {No projects} one {# project} other {# projects}}",
+    "items": {
+      "terrain": {
+        "titre": "Event deployment",
+        "description": "Crew coordination across multiple zones, setup, on-site support during the event and teardown."
+      },
+      "installation": {
+        "titre": "Seasonal installation",
+        "description": "Preparation, transport, work at height, monitoring and removal — through to storage."
+      },
+      "lab": {
+        "titre": "Custom fabrication",
+        "description": "Design, prototyping and production of parts developed for the project's real needs."
+      }
+    }
   },
 
   "Boutique": {
