@@ -1,5 +1,5 @@
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
-import { getTranslations, setRequestLocale } from 'next-intl/server'
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { Fraunces, Instrument_Sans, JetBrains_Mono } from 'next/font/google'
 import { notFound } from 'next/navigation'
 
@@ -67,22 +67,6 @@ const jetbrainsMono = JetBrains_Mono({
 // sur toutes les pages, y compris en production si la variable est oubliée
 // sur Vercel.
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab.ca'
-
-/**
- * Pose `js` sur <html> avant le premier rendu.
- *
- * globals.css conditionne l'état masqué de `.reveal` à cette classe. Sans JS,
- * elle n'est jamais posée et le contenu reste visible au lieu de disparaître.
- *
- * Le script doit s'exécuter AVANT la peinture, sinon les sections apparaîtraient
- * puis se masqueraient — d'où l'inline plutôt qu'un fichier externe.
- *
- * Chaîne littérale constante, sans aucune donnée utilisateur : le
- * dangerouslySetInnerHTML ne présente pas de risque d'injection ici (skill 15).
- * ⚠️ La CSP autorise 'unsafe-inline' pour script-src. Si on passe un jour à une
- * CSP à nonce, ce script devra en recevoir un.
- */
-const SCRIPT_CLASSE_JS = "document.documentElement.classList.add('js')"
 
 type Props = {
   children: ReactNode
@@ -155,22 +139,44 @@ export default async function MarketingLayout({ children, params }: Props) {
 
   const t = await getTranslations('Commun')
 
+  /**
+   * Messages envoyés au navigateur — LISTE BLANCHE explicite.
+   *
+   * Sans le prop `messages`, NextIntlClientProvider sérialise le catalogue
+   * ENTIER dans le HTML de chaque page. Deux conséquences :
+   *
+   * 1. Fuite de contenu non publié. Les noms des produits « Solutions
+   *    modulaires » apparaissaient dans le code source de la boutique alors
+   *    que le drapeau NEXT_PUBLIC_SOLUTIONS_MODULAIRES les masque — le
+   *    document de cadrage interdit toute publication avant signature.
+   * 2. Poids inutile : plus de 360 clés transmises pour en utiliser une trentaine.
+   *
+   * ⚠️ À TENIR À JOUR. Tout composant client appelant useTranslations() doit
+   * voir son espace de noms ajouté ici, sinon il lève à l'exécution. Les seuls
+   * concernés aujourd'hui :
+   *
+   *   Nav.tsx                  → Nav
+   *   FormulaireContact.tsx    → Contact
+   *   GalerieRealisations.tsx  → Realisations
+   *
+   * CatalogueBoutique reçoit ses chaînes en props, résolues côté serveur —
+   * c'est le modèle à privilégier pour tout nouveau composant.
+   */
+  const tousLesMessages = await getMessages()
+
+  const messagesClient = {
+    Nav: tousLesMessages.Nav,
+    Contact: tousLesMessages.Contact,
+    Realisations: tousLesMessages.Realisations,
+  }
+
   return (
     <html
       lang={locale}
       className={`${fraunces.variable} ${instrumentSans.variable} ${jetbrainsMono.variable}`}
-      // Le script ci-dessous ajoute `js` à <html> AVANT l'hydratation React :
-      // le className du DOM diffère donc de celui rendu par le serveur, et
-      // React signale une désynchronisation d'hydratation en console.
-      // L'écart est voulu et sans conséquence — il ne porte que sur cet attribut.
-      suppressHydrationWarning
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: SCRIPT_CLASSE_JS }} />
-      </head>
-
       <body className="font-sans antialiased">
-        <NextIntlClientProvider>
+        <NextIntlClientProvider messages={messagesClient}>
           {/* Lien d'évitement — première cible de tabulation, invisible tant
               qu'il n'a pas le focus (accessibilité clavier). */}
           <a

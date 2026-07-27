@@ -177,7 +177,6 @@ test.describe('Accueil', () => {
     // Garde-fou anti-régression du LCP : le titre ne doit jamais démarrer à
     // opacity 0, sinon il n'apparaît qu'après hydratation.
     await expect(page.locator('.reveal h1')).toHaveCount(0)
-    await expect(page.locator('html')).toHaveClass(/\bjs\b/)
 
     await deroulerPuisRemonter(page)
 

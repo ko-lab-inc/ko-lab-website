@@ -138,13 +138,16 @@
      Reveal au scroll — skills 02 et 20.
      La classe .in est posée par le hook useReveal (src/hooks/useReveal.ts).
 
-     ⚠️ L'état masqué est conditionné à `.js` sur <html>, posée par un script
-     inline dans le root layout. Sans JavaScript — désactivé, bloqué, ou script
-     en échec — la classe est absente et le contenu reste VISIBLE.
-
-     Sans ce conditionnement, `.reveal { opacity: 0 }` s'appliquerait toujours
-     et une page sans JS s'afficherait entièrement vide : contenu invisible pour
+     ⚠️ GARDE-FOU SANS JAVASCRIPT — voir le bloc @media (scripting: none) en bas
+     de fichier. `.reveal` démarre à opacity 0 : sans JS, la classe `.in`
+     n'arrive jamais et la page s'afficherait entièrement vide, invisible pour
      les lecteurs d'écran comme pour les moteurs de recherche.
+
+     Ce garde-fou reposait auparavant sur une classe `js` posée sur <html> par
+     un script inline. Abandonné : React contrôle le className de <html> et le
+     RÉÉCRIT à chaque navigation côté client, effaçant la classe — après une
+     bascule de langue, plus aucune animation ne se déclenchait. La requête
+     média n'a ni ce défaut, ni le script, ni la dépendance à 'unsafe-inline'.
      --------------------------------------------------------------------------- */
   /* Courbe d'entrée : démarre vite puis se pose, sans rebond. C'est ce
      « settle » final qui distingue une entrée travaillée d'un simple ease-out.
@@ -157,12 +160,12 @@
       transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .js .reveal {
+  .reveal {
     opacity: 0;
     transform: translateY(60px) scale(0.94);
   }
 
-  .js .reveal.in {
+  .reveal.in {
     opacity: 1;
     transform: none;
   }
@@ -189,12 +192,12 @@
     transition-delay: var(--delai, 0ms);
   }
 
-  .js .reveal-hote .mot-anime {
+  .reveal-hote .mot-anime {
     opacity: 0;
     transform: translateY(8px);
   }
 
-  .js .reveal-hote.in .mot-anime {
+  .reveal-hote.in .mot-anime {
     opacity: 1;
     transform: none;
   }
@@ -207,12 +210,12 @@
     transition-delay: var(--delai, 0ms);
   }
 
-  .js .reveal-hote .cascade-item {
+  .reveal-hote .cascade-item {
     opacity: 0;
     transform: translateY(10px);
   }
 
-  .js .reveal-hote.in .cascade-item {
+  .reveal-hote.in .cascade-item {
     opacity: 1;
     transform: none;
   }
@@ -227,12 +230,12 @@
     transition-delay: var(--delai, 0ms);
   }
 
-  .js .reveal-hote .cascade-stat {
+  .reveal-hote .cascade-stat {
     opacity: 0;
     transform: translateY(20px);
   }
 
-  .js .reveal-hote.in .cascade-stat {
+  .reveal-hote.in .cascade-stat {
     opacity: 1;
     transform: none;
   }
@@ -244,26 +247,26 @@
       transform 600ms ease-out;
   }
 
-  .js .reveal-hote .numero-slide {
+  .reveal-hote .numero-slide {
     opacity: 0;
     transform: translateY(40px);
   }
 
-  .js .reveal-hote.in .numero-slide {
+  .reveal-hote.in .numero-slide {
     opacity: 1;
     transform: none;
   }
 
   /* Cascade pour les éléments d'une même grille — skill 20 */
-  .js .reveal:nth-child(2) {
+  .reveal:nth-child(2) {
     transition-delay: 80ms;
   }
 
-  .js .reveal:nth-child(3) {
+  .reveal:nth-child(3) {
     transition-delay: 160ms;
   }
 
-  .js .reveal:nth-child(4) {
+  .reveal:nth-child(4) {
     transition-delay: 240ms;
   }
 }
@@ -279,6 +282,30 @@
    un élément dont la classe .in n'arrive jamais resterait invisible.
    ============================================================================= */
 
+/* =============================================================================
+   JavaScript indisponible — désactivé, bloqué par une extension, ou en échec.
+
+   `scripting: none` est évalué par le navigateur lui-même, sans exécuter la
+   moindre ligne de script : le contenu reste visible dans tous les cas où la
+   classe `.in` ne pourrait jamais être posée.
+
+   Hors calque, comme le bloc de mouvement réduit : le CSS non calqué l'emporte
+   sur les utilitaires Tailwind, aucune règle ne peut donc remasquer ce contenu.
+   ============================================================================= */
+
+@media (scripting: none) {
+  .reveal,
+  .mot-anime,
+  .cascade-item,
+  .cascade-stat,
+  .numero-slide {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    transition-delay: 0ms;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -291,8 +318,8 @@
 
   .reveal,
   .reveal.in,
-  .js .reveal,
-  .js .reveal.in,
+  .reveal,
+  .reveal.in,
   /* Les révélations échelonnées passent par le même garde-fou : sans ces
      sélecteurs, mots, items et numéros resteraient à opacity 0 en mouvement
      réduit, puisque leur état masqué est posé par .reveal-hote et non .reveal. */
@@ -300,10 +327,10 @@
   .cascade-item,
   .cascade-stat,
   .numero-slide,
-  .js .reveal-hote .mot-anime,
-  .js .reveal-hote .cascade-item,
-  .js .reveal-hote .cascade-stat,
-  .js .reveal-hote .numero-slide {
+  .reveal-hote .mot-anime,
+  .reveal-hote .cascade-item,
+  .reveal-hote .cascade-stat,
+  .reveal-hote .numero-slide {
     opacity: 1;
     transform: none;
     transition: none;
