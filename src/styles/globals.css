@@ -162,6 +162,73 @@
     transform: none;
   }
 
+  /* ---------------------------------------------------------------------------
+     Révélations échelonnées — un SEUL IntersectionObserver par groupe.
+
+     `.reveal-hote` déclenche sans s'animer lui-même : il ne fait que recevoir
+     la classe `.in`, ses enfants s'en servent comme signal. Poser `.reveal` sur
+     le conteneur aurait fait disparaître le bloc entier puis réapparaître ses
+     enfants — double animation.
+
+     L'échelonnement passe par --delai, posé en style inline sur chaque enfant.
+     Aucun JavaScript par mot ni par item : quinze mots animés, c'est quinze
+     observateurs si on les enveloppe individuellement, contre un seul ici.
+     --------------------------------------------------------------------------- */
+
+  /* B — phrase de marque, mot par mot */
+  .mot-anime {
+    display: inline-block;
+    transition:
+      opacity 400ms ease-out,
+      transform 400ms ease-out;
+    transition-delay: var(--delai, 0ms);
+  }
+
+  .js .reveal-hote .mot-anime {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  .js .reveal-hote.in .mot-anime {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* C — items de liste en cascade */
+  .cascade-item {
+    transition:
+      opacity 450ms ease-out,
+      transform 450ms ease-out;
+    transition-delay: var(--delai, 0ms);
+  }
+
+  .js .reveal-hote .cascade-item {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  .js .reveal-hote.in .cascade-item {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* D — numéro géant, entrée par le bas */
+  .numero-slide {
+    transition:
+      opacity 600ms ease-out,
+      transform 600ms ease-out;
+  }
+
+  .js .reveal-hote .numero-slide {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  .js .reveal-hote.in .numero-slide {
+    opacity: 1;
+    transform: none;
+  }
+
   /* Cascade pour les éléments d'une même grille — skill 20 */
   .js .reveal:nth-child(2) {
     transition-delay: 80ms;
@@ -200,7 +267,16 @@
   .reveal,
   .reveal.in,
   .js .reveal,
-  .js .reveal.in {
+  .js .reveal.in,
+  /* Les révélations échelonnées passent par le même garde-fou : sans ces
+     sélecteurs, mots, items et numéros resteraient à opacity 0 en mouvement
+     réduit, puisque leur état masqué est posé par .reveal-hote et non .reveal. */
+  .mot-anime,
+  .cascade-item,
+  .numero-slide,
+  .js .reveal-hote .mot-anime,
+  .js .reveal-hote .cascade-item,
+  .js .reveal-hote .numero-slide {
     opacity: 1;
     transform: none;
     transition: none;

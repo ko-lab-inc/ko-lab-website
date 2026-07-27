@@ -20,11 +20,26 @@ import type { ReactNode } from 'react'
  * La cascade de délais (80 / 160 / 240 ms) vient du CSS via :nth-child dans
  * globals.css — plusieurs Reveal frères s'échelonnent donc automatiquement.
  */
-export function Reveal({ children, className }: { children: ReactNode; className?: string }) {
+type RevealProps = {
+  children: ReactNode
+  className?: string
+  /**
+   * Mode « hôte » : le conteneur ne s'anime pas, il ne fait que recevoir `.in`.
+   * Ses enfants portant `.mot-anime`, `.cascade-item` ou `.numero-slide` s'en
+   * servent comme signal de départ (voir globals.css).
+   *
+   * Sans ce mode, animer des enfants échelonnés imposerait soit un observateur
+   * par enfant — quinze pour une phrase de quinze mots — soit une double
+   * animation, le bloc entier disparaissant avant que ses enfants n'entrent.
+   */
+  groupe?: boolean
+}
+
+export function Reveal({ children, className, groupe = false }: RevealProps) {
   const ref = useReveal<HTMLDivElement>()
 
   return (
-    <div ref={ref} className={cn('reveal', className)}>
+    <div ref={ref} className={cn(groupe ? 'reveal-hote' : 'reveal', className)}>
       {children}
     </div>
   )

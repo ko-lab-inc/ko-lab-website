@@ -42,8 +42,31 @@ export const IMAGES = {
   /** Semi-remorque de nuit, feux de gabarit ambrés devant un dépôt. */
   besoinLouer: unsplash('photo-1714009889233-6699f04623ff'),
 
-  /** Soudeur au masque, arc blanc-bleu, atelier noyé dans le noir. */
-  lab: unsplash('photo-1745448797900-35d08e85e9db'),
+  /**
+   * Découpe laser CNC en action, deux gerbes d'étincelles, fond noir.
+   * Section LAB de l'accueil — correspond à l'item « Laser et CNC ».
+   *
+   * ⚠️ watermark visible — à remplacer en priorité
+   * Signature de photographe incrustée en bas à droite, en rouge. Discrète sur
+   * fond sombre mais présente : c'est la première image à remplacer quand les
+   * photos KO-LAB arriveront.
+   */
+  lab: unsplash('photo-1711418235334-8895331a6cf9'),
+
+  /**
+   * Imprimante FDM en cours d'impression, halo bleu du panneau de commande.
+   * Page Le LAB — correspond à l'item « Impression 3D ».
+   */
+  labImpression3d: unsplash('photo-1642969164999-979483e21601'),
+
+  /**
+   * Ouvrier sur nacelle élévatrice contre une façade de pierre, lumière rasante.
+   * Page Installations — « Centres commerciaux et tours à bureaux ».
+   */
+  installationNacelle: unsplash('photo-1641384390864-dbfa6e39fd28'),
+
+  /** Soudeur au masque, arc blanc-bleu, atelier noyé dans le noir. Disponible. */
+  soudeur: unsplash('photo-1745448797900-35d08e85e9db'),
 
   // ⚠️ TEMPORAIRE — duplication en attente de la vraie photo KO-LAB 2025-2026.
   // Ces trois emplacements réutilisent des images déjà présentes plus haut sur
@@ -52,6 +75,8 @@ export const IMAGES = {
   realisationTerrain: unsplash('photo-1579847188804-ecba0e2ea330'),
   realisationInstallation: unsplash('photo-1670846112333-ca9115b38b18'),
   realisationLab: unsplash('photo-1745448797900-35d08e85e9db'),
+  /** Réutilisée par les Réalisations : la CNC porte déjà la section LAB. */
+
 } as const
 
 /**
@@ -63,4 +88,6 @@ export const CADRAGES = {
   besoinDeployer: 'object-[30%_25%]',
   /** Ouvriers sur le tiers gauche. */
   besoinInstaller: 'object-[22%_40%]',
+  /** Nacelle et ouvrier au centre, légèrement sous le milieu du cadre vertical. */
+  installationNacelle: 'object-[50%_58%]',
 } as const

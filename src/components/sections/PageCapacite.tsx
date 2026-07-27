@@ -2,10 +2,13 @@ import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
 import { buttonVariants } from '@/components/ui/Button'
+import { Parallax } from '@/components/ui/Parallax'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
+
+import type { CSSProperties } from 'react'
 
 /**
  * Gabarit commun aux quatre pages de capacités.
@@ -55,19 +58,27 @@ export async function PageCapacite({
           page intérieure du hero encarté de l'accueil. */}
       <section className="relative overflow-hidden bg-ko-black">
         {/*
-          ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
-          Voir skill 22 pour les critères de remplacement.
+          A — parallaxe. Le conteneur déborde de 80px en hauteur : sans cette
+          marge, remonter l'image de 60px découvrirait une bande vide en bas.
+          L'<Image> reste rendue côté serveur et passée en `children`, donc
+          présente dans le HTML initial — la parallaxe ne retarde pas le LCP.
         */}
-        <Image
-          src={src}
-          alt=""
-          fill
-          priority
-          quality={85}
-          sizes="100vw"
-          style={desature ? FILTRE_AMBRE : undefined}
-          className={cn('object-cover [filter:contrast(1.05)_brightness(0.65)]', cadrage)}
-        />
+        <Parallax distance={60} className="absolute inset-x-0 top-0 h-[calc(100%+80px)]">
+          {/*
+            ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
+            Voir skill 22 pour les critères de remplacement.
+          */}
+          <Image
+            src={src}
+            alt=""
+            fill
+            priority
+            quality={85}
+            sizes="100vw"
+            style={desature ? FILTRE_AMBRE : undefined}
+            className={cn('object-cover [filter:contrast(1.05)_brightness(0.65)]', cadrage)}
+          />
+        </Parallax>
 
         {/* Voile de lisibilité uniquement — jamais décoratif (skill 08). */}
         <div
@@ -85,21 +96,45 @@ export async function PageCapacite({
             {titre}
           </h1>
 
-          {/* Filigrane du numéro de capacité, pendant de celui de l'accueil. */}
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute bottom-[-6%] right-[2%] select-none font-serif text-[clamp(140px,20vw,340px)] font-light leading-none tracking-[-0.04em] text-ko-frost/[0.04]"
-          >
-            {numero}
-          </span>
+          {/* D — filigrane du numéro, entrée par le bas (40px, 600ms).
+              Pas de compteur animé : le skill 08 l'interdit, et « 01 » à « 04 »
+              portent un zéro devant qu'un décompte ferait disparaître. */}
+          {/* Le positionnement absolu est porté par le CONTENEUR, pas par le
+              span : un wrapper en `display: contents` n'aurait aucune boîte,
+              donc l'IntersectionObserver ne l'aurait jamais vu entrer. */}
+          <Reveal groupe className="pointer-events-none absolute bottom-[-6%] right-[2%]">
+            <span
+              aria-hidden="true"
+              className="numero-slide block select-none font-serif text-[clamp(140px,20vw,340px)] font-light leading-none tracking-[-0.04em] text-ko-frost/[0.04]"
+            >
+              {numero}
+            </span>
+          </Reveal>
         </div>
       </section>
 
       {/* --------------------------- Phrase de marque --------------------------- */}
       <section className="border-b border-ko-line bg-ko-cream py-14 lg:py-20">
         <div className="mx-auto max-w-container px-6 lg:px-12">
-          <Reveal>
-            <p className="ko-h3 max-w-[40ch] text-ko-ink">{phrase}</p>
+          {/* B — apparition mot par mot, 80ms d'écart, 400ms par mot.
+              Le découpage se fait au rendu serveur ; seul le conteneur est
+              client. Envelopper chaque mot dans un composant client aurait
+              multiplié les observateurs par le nombre de mots. */}
+          <Reveal groupe>
+            <p className="ko-h3 max-w-[40ch] text-ko-ink">
+              {phrase.split(' ').map((mot, i) => (
+                <span
+                  key={`${i}-${mot}`}
+                  className="mot-anime"
+                  style={{ '--delai': `${i * 80}ms` } as CSSProperties}
+                >
+                  {/* Espace insécable de fin : sans lui, `inline-block` colle
+                      les mots les uns aux autres. */}
+                  {mot}
+                  {' '}
+                </span>
+              ))}
+            </p>
           </Reveal>
         </div>
       </section>
@@ -122,16 +157,25 @@ export async function PageCapacite({
                 {/* Liste à tiret horizontal — forme validée par le skill 08.
                     Le tiret est décoratif : aria-hidden, sinon un lecteur
                     d'écran l'annonce avant chacun des huit éléments. */}
-                <ul className="mt-6 divide-y divide-ko-line border-y border-ko-line">
-                  {items.map((item) => (
-                    <li key={item} className="flex gap-4 py-4 text-base leading-relaxed text-ko-ink">
+                {/* C — cascade, 60ms d'écart entre items.
+                    Reveal `groupe` propre à la liste : le bloc parent garde son
+                    fondu d'ensemble, la liste s'échelonne à l'intérieur. */}
+                <Reveal groupe>
+                  <ul className="mt-6 divide-y divide-ko-line border-y border-ko-line">
+                  {items.map((item, i) => (
+                    <li
+                      key={item}
+                      className="cascade-item flex gap-4 py-4 text-base leading-relaxed text-ko-ink"
+                      style={{ '--delai': `${i * 60}ms` } as CSSProperties}
+                    >
                       <span aria-hidden="true" className="text-ko-blue">
                         —
                       </span>
                       <span>{item}</span>
                     </li>
                   ))}
-                </ul>
+                  </ul>
+                </Reveal>
               </div>
             </div>
           </Reveal>

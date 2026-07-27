@@ -57,7 +57,10 @@ export default async function LeLabPage({ params }: Props) {
         t('item_7'),
         t('item_8'),
       ]}
-      src={IMAGES.lab}
+      // Imprimante 3D en cours d'impression — item « Impression 3D ».
+      // La découpe laser sert la section LAB de l'accueil : deux visuels
+      // distincts plutôt que la même image deux fois dans le parcours.
+      src={IMAGES.labImpression3d}
       cadrage="object-center"
     />
   )

@@ -58,9 +58,10 @@ export default async function InstallationsPage({ params }: Props) {
         t('item_6'),
         t('item_7'),
       ]}
-      src={IMAGES.besoinInstaller}
-      cadrage={CADRAGES.besoinInstaller}
-      desature
+      // Nacelle élévatrice sur façade — « Centres commerciaux et tours à
+      // bureaux ». L'échafaudage précédent ne montrait aucune installation.
+      src={IMAGES.installationNacelle}
+      cadrage={CADRAGES.installationNacelle}
     />
   )
 }
