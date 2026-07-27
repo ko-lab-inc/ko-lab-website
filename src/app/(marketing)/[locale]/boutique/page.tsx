@@ -2,10 +2,11 @@ import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
-import { buttonVariants } from '@/components/ui/Button'
+import { CatalogueBoutique, type ProduitCarte } from '@/components/sections/CatalogueBoutique'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
+import { IMAGES } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -13,6 +14,17 @@ import type { Metadata } from 'next'
 type Props = { params: Promise<{ locale: string }> }
 
 export const revalidate = 3600
+
+/**
+ * Les conteneurs relèvent des « Solutions modulaires », que le document de
+ * cadrage classe explicitement en « préparées mais cachées » : rien ne doit
+ * être publié avant la confirmation de l'entente commerciale (skill 21).
+ *
+ * La catégorie existe donc entièrement dans le code — traductions, produits,
+ * filtre — mais reste invisible tant que la variable ne vaut pas exactement
+ * 'true'. Comparaison stricte : une variable absente ou vide n'active rien.
+ */
+const CONTENEURS_ACTIFS = process.env.NEXT_PUBLIC_SOLUTIONS_MODULAIRES === 'true'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
@@ -34,46 +46,133 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-/**
- * Boutique — catalogue sur commande.
- *
- * Phase 1 du skill 21 : aucun panier, aucun paiement. Chaque produit mène au
- * formulaire de contact avec `?type=boutique` présélectionné.
- *
- * ⚠️ CONTENU PROVISOIRE — six produits en dur, deux marques. À l'arrivée de la
- * table `produits_boutique` (skill 03) :
- *
- *     const supabase = createStaticClient()   // JAMAIS createClient()
- *     const { data } = await supabase.from('produits_boutique')
- *       .select('*').eq('publie', true).order('ordre')
- *
- * `prix` reste `null` en base pour l'instant : le skill 03 prévoit
- * explicitement « null = sur demande », ce que la page affiche déjà.
- */
 export default async function BoutiquePage({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
   const t = await getTranslations('Boutique')
+  const tCommun = await getTranslations('Commun')
 
-  const marques = [
+  /**
+   * ⚠️ CONTENU PROVISOIRE — produits en dur en attendant Supabase.
+   *
+   * Les images de Bambu Lab et xTool doivent venir des visuels presse
+   * officiels : une photo générique sous le nom d'un modèle précis désigne une
+   * autre machine. `src: null` affiche donc un emplacement réservé.
+   *
+   * À l'arrivée de `produits_boutique` :
+   *     const supabase = createStaticClient()   // JAMAIS createClient()
+   *     const { data } = await supabase.from('produits_boutique')
+   *       .select('*').eq('publie', true).order('ordre')
+   */
+  const produits: ProduitCarte[] = [
+    // ---- Impression 3D
     {
-      nom: 'Bambu Lab',
-      produits: [
-        { cle: 'bambu_x1c', nom: t('produits.bambu_x1c_nom'), texte: t('produits.bambu_x1c_texte') },
-        { cle: 'bambu_p1s', nom: t('produits.bambu_p1s_nom'), texte: t('produits.bambu_p1s_texte') },
-        { cle: 'bambu_ams', nom: t('produits.bambu_ams_nom'), texte: t('produits.bambu_ams_texte') },
-      ],
+      slug: 'bambu-lab-x1-carbon',
+      categorie: 'impression',
+      nom: t('produits.bambu_x1c_nom'),
+      texte: t('produits.bambu_x1c_texte'),
+      src: IMAGES.boutiqueImpression3d,
     },
     {
-      nom: 'xTool',
-      produits: [
-        { cle: 'xtool_p2', nom: t('produits.xtool_p2_nom'), texte: t('produits.xtool_p2_texte') },
-        { cle: 'xtool_s1', nom: t('produits.xtool_s1_nom'), texte: t('produits.xtool_s1_texte') },
-        { cle: 'xtool_f1', nom: t('produits.xtool_f1_nom'), texte: t('produits.xtool_f1_texte') },
-      ],
+      slug: 'bambu-lab-p1s',
+      categorie: 'impression',
+      nom: t('produits.bambu_p1s_nom'),
+      texte: t('produits.bambu_p1s_texte'),
+      src: null,
     },
+    {
+      slug: 'bambu-lab-ams',
+      categorie: 'impression',
+      nom: t('produits.bambu_ams_nom'),
+      texte: t('produits.bambu_ams_texte'),
+      src: null,
+    },
+
+    // ---- Découpe laser
+    {
+      slug: 'xtool-p2',
+      categorie: 'laser',
+      nom: t('produits.xtool_p2_nom'),
+      texte: t('produits.xtool_p2_texte'),
+      src: null,
+    },
+    {
+      slug: 'xtool-s1',
+      categorie: 'laser',
+      nom: t('produits.xtool_s1_nom'),
+      texte: t('produits.xtool_s1_texte'),
+      src: null,
+    },
+    {
+      slug: 'xtool-f1',
+      categorie: 'laser',
+      nom: t('produits.xtool_f1_nom'),
+      texte: t('produits.xtool_f1_texte'),
+      src: null,
+    },
+
+    // ---- Équipements
+    {
+      slug: 'eclairage-temporaire',
+      categorie: 'equipements',
+      nom: t('produits.equip_eclairage_nom'),
+      texte: t('produits.equip_eclairage_texte'),
+      src: null,
+    },
+    {
+      slug: 'equipement-manutention',
+      categorie: 'equipements',
+      nom: t('produits.equip_manutention_nom'),
+      texte: t('produits.equip_manutention_texte'),
+      src: null,
+    },
+    {
+      slug: 'outillage-installation',
+      categorie: 'equipements',
+      nom: t('produits.equip_outillage_nom'),
+      texte: t('produits.equip_outillage_texte'),
+      src: null,
+    },
+
+    // ---- Conteneurs — filtrés plus bas tant que le drapeau est inactif
+    {
+      slug: 'conteneur-20-pieds',
+      categorie: 'conteneurs',
+      nom: t('produits.cont_20_nom'),
+      texte: t('produits.cont_20_texte'),
+      src: null,
+    },
+    {
+      slug: 'conteneur-40-pieds-high-cube',
+      categorie: 'conteneurs',
+      nom: t('produits.cont_40_nom'),
+      texte: t('produits.cont_40_texte'),
+      src: null,
+    },
+    {
+      slug: 'conteneur-bureau-amenage',
+      categorie: 'conteneurs',
+      nom: t('produits.cont_bureau_nom'),
+      texte: t('produits.cont_bureau_texte'),
+      src: null,
+    },
+  ]
+
+  // Le retrait se fait CÔTÉ SERVEUR : masquer en CSS aurait laissé les trois
+  // conteneurs dans le HTML, donc lisibles par n'importe qui — ce qui revient
+  // à les publier.
+  const produitsVisibles = CONTENEURS_ACTIFS
+    ? produits
+    : produits.filter((p) => p.categorie !== 'conteneurs')
+
+  const filtres = [
+    { valeur: 'all', label: t('cat_tout') },
+    { valeur: 'impression', label: t('cat_impression') },
+    { valeur: 'laser', label: t('cat_laser') },
+    ...(CONTENEURS_ACTIFS ? [{ valeur: 'conteneurs', label: t('cat_conteneurs') }] : []),
+    { valeur: 'equipements', label: t('cat_equipements') },
   ]
 
   return (
@@ -83,57 +182,28 @@ export default async function BoutiquePage({ params }: Props) {
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
           <h1 className="ko-display mt-6 max-w-[14ch] text-ko-ink">{t('title')}</h1>
 
-          {/* Le positionnement du document de cadrage, mot pour mot. */}
+          {/* Positionnement du document de cadrage, mot pour mot. */}
           <p className="ko-h3 mt-7 max-w-[30ch] text-ko-ink">{t('positionnement')}</p>
 
           <p className="mt-6 max-w-[54ch] text-base leading-relaxed text-ko-muted">{t('intro')}</p>
         </div>
       </section>
 
-      {/* ------------------------------ Catalogue ------------------------------ */}
-      {marques.map((marque, iMarque) => (
-        <section
-          key={marque.nom}
-          className={iMarque % 2 === 0 ? 'bg-ko-white py-16 lg:py-24' : 'bg-ko-cream py-16 lg:py-24'}
-        >
-          <div className="mx-auto max-w-container px-6 lg:px-12">
-            <Reveal>
-              <header className="flex items-baseline gap-4 border-b border-ko-line pb-6">
-                <span className="label-mono">{t('filtre_marque')}</span>
-                <h2 className="ko-h2 text-ko-ink">{marque.nom}</h2>
-              </header>
-            </Reveal>
-
-            <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
-              {marque.produits.map((produit) => (
-                <Reveal key={produit.cle}>
-                  {/* Bordure au bleu au survol — interaction `.offre` du
-                      skill 20. Aucun soulèvement, aucune ombre. */}
-                  <article className="flex h-full flex-col border border-ko-line bg-ko-white p-7 transition-colors duration-250 hover:border-ko-blue">
-                    <h3 className="font-serif text-[20px] leading-tight text-ko-ink">
-                      {produit.nom}
-                    </h3>
-
-                    <p className="mt-3 text-sm leading-relaxed text-ko-muted">{produit.texte}</p>
-
-                    {/* mt-auto : les prix et boutons s'alignent sur une même
-                        ligne quelle que soit la longueur des descriptions. */}
-                    <p className="label-mono mt-auto pt-8">{t('prix_sur_demande')}</p>
-
-                    <Link
-                      href={`${ROUTES.contact}?type=boutique`}
-                      className={`mt-4 ${buttonVariants({ variant: 'ghost', size: 'sm' })}`}
-                    >
-                      {t('demander_prix')}
-                      <span aria-hidden="true">→</span>
-                    </Link>
-                  </article>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-      ))}
+      <section className="bg-ko-white py-16 lg:py-24">
+        <div className="mx-auto max-w-container px-6 lg:px-12">
+          <Reveal>
+            <CatalogueBoutique
+              produits={produitsVisibles}
+              filtres={filtres}
+              labelFiltres={t('filtre_categorie')}
+              prixSurDemande={t('prix_sur_demande')}
+              demanderPrix={t('demander_prix')}
+              aucunResultat={t('aucun_resultat')}
+              photoPlaceholder={tCommun('photo_placeholder')}
+            />
+          </Reveal>
+        </div>
+      </section>
 
       {/* ---------------------------- Services ---------------------------- */}
       <section className="bg-ko-black py-16 lg:py-24">

@@ -65,6 +65,21 @@ export const IMAGES = {
    */
   installationNacelle: unsplash('photo-1641384390864-dbfa6e39fd28'),
 
+  /**
+   * Tête d'impression FDM en cours de dépôt, fond très clair, éclairage studio.
+   *
+   * Boutique — catégorie Impression 3D. Traitement volontairement DIFFÉRENT des
+   * photos de capacités : il faut ici une image produit lisible sur carte
+   * blanche, pas une ambiance sombre.
+   *
+   * ⚠️ GÉNÉRIQUE — ne montre aucun modèle précis. À remplacer par les visuels
+   * presse officiels de Bambu Lab. Sur une fiche produit, l'image affirme
+   * « voici ce que vous achetez » : une machine générique y est une inexactitude,
+   * pas une approximation. C'est pourquoi les autres produits utilisent
+   * PhotoPlaceholder plutôt qu'une photo de stock approchante.
+   */
+  boutiqueImpression3d: unsplash('photo-1597765654525-5cb60d312ef6'),
+
   /** Soudeur au masque, arc blanc-bleu, atelier noyé dans le noir. Disponible. */
   soudeur: unsplash('photo-1745448797900-35d08e85e9db'),
 
