@@ -316,6 +316,20 @@
       "titre": "Order request",
       "quantite": "Quantity",
       "envoyer": "Send request"
+    },
+    "produits": {
+      "bambu_x1c_nom": "Bambu Lab X1-Carbon",
+      "bambu_x1c_texte": "Enclosed high-speed 3D printer with heated chamber and filament runout detection. For technical parts and short runs.",
+      "bambu_p1s_nom": "Bambu Lab P1S",
+      "bambu_p1s_texte": "Same footprint as the X1-Carbon with simplified electronics. The right trade-off for a first printing setup.",
+      "bambu_ams_nom": "Bambu Lab AMS",
+      "bambu_ams_texte": "Four-spool multi-material system with automatic humidity management.",
+      "xtool_p2_nom": "xTool P2",
+      "xtool_p2_texte": "Large-format 55 W CO2 laser cutter and engraver. For signage, jigs and sets.",
+      "xtool_s1_nom": "xTool S1",
+      "xtool_s1_texte": "Enclosed diode laser, precision cutting on wood, acrylic and leather.",
+      "xtool_f1_nom": "xTool F1",
+      "xtool_f1_texte": "Portable fibre and diode engraver, for marking metal parts."
     }
   },
 
@@ -324,7 +338,18 @@
     "intro": "Trailers, lifts, tools and installation gear. Full inventory and availability are on our rental platform.",
     "cta_rentman": "Browse inventory",
     "cta_demande": "Send a request",
-    "note": "Can't find what you're looking for? Write to us — we often have access to more."
+    "note": "Can't find what you're looking for? Write to us — we often have access to more.",
+    "inventaire_titre": "Our full inventory is available on Rentman",
+    "inventaire_texte": "Real-time availability, spec sheets and booking. For a specific need or a turnkey project, write to us directly.",
+    "categories_label": "Equipment categories",
+    "cat_remorques_titre": "Trailers",
+    "cat_remorques_texte": "Open, enclosed and specialized, for transporting gear and structures.",
+    "cat_nacelles_titre": "Lifts",
+    "cat_nacelles_texte": "Elevated work platforms for installation at height and signage.",
+    "cat_outils_titre": "Tools",
+    "cat_outils_texte": "Installation tooling, material handling and loading equipment.",
+    "cat_mobilier_titre": "Event furniture",
+    "cat_mobilier_texte": "Infrastructure, temporary lighting and power distribution."
   },
 
   "Contact": {

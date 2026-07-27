@@ -316,6 +316,20 @@
       "titre": "Demande de commande",
       "quantite": "Quantité",
       "envoyer": "Envoyer la demande"
+    },
+    "produits": {
+      "bambu_x1c_nom": "Bambu Lab X1-Carbon",
+      "bambu_x1c_texte": "Imprimante 3D fermée à haute vitesse, chambre chauffée et détection de fin de filament. Pour les pièces techniques et les petites séries.",
+      "bambu_p1s_nom": "Bambu Lab P1S",
+      "bambu_p1s_texte": "Format identique au X1-Carbon, électronique simplifiée. Le bon compromis pour un premier atelier d'impression.",
+      "bambu_ams_nom": "Bambu Lab AMS",
+      "bambu_ams_texte": "Système multi-matériaux quatre bobines, avec gestion automatique de l'humidité.",
+      "xtool_p2_nom": "xTool P2",
+      "xtool_p2_texte": "Découpe et gravure laser CO2 55 W, grand format. Pour la signalétique, les gabarits et les décors.",
+      "xtool_s1_nom": "xTool S1",
+      "xtool_s1_texte": "Laser diode fermé, découpe de précision sur bois, acrylique et cuir.",
+      "xtool_f1_nom": "xTool F1",
+      "xtool_f1_texte": "Graveur portatif fibre et diode, pour le marquage de pièces métalliques."
     }
   },
 
@@ -324,7 +338,18 @@
     "intro": "Remorques, nacelles, outils et matériel d'installation. L'inventaire complet et les disponibilités sont sur notre plateforme de location.",
     "cta_rentman": "Voir l'inventaire",
     "cta_demande": "Faire une demande",
-    "note": "Vous ne trouvez pas ce que vous cherchez? Écrivez-nous, on a souvent accès à plus."
+    "note": "Vous ne trouvez pas ce que vous cherchez? Écrivez-nous, on a souvent accès à plus.",
+    "inventaire_titre": "Notre inventaire complet est disponible sur Rentman",
+    "inventaire_texte": "Disponibilités en temps réel, fiches techniques et réservation. Pour un besoin particulier ou un mandat clé en main, écrivez-nous directement.",
+    "categories_label": "Catégories d'équipement",
+    "cat_remorques_titre": "Remorques",
+    "cat_remorques_texte": "Ouvertes, fermées et spécialisées, pour le transport de matériel et de structures.",
+    "cat_nacelles_titre": "Nacelles",
+    "cat_nacelles_texte": "Équipements d'élévation pour l'installation en hauteur et la signalisation.",
+    "cat_outils_titre": "Outils",
+    "cat_outils_texte": "Outillage d'installation, manutention et matériel de chargement.",
+    "cat_mobilier_titre": "Mobilier événementiel",
+    "cat_mobilier_texte": "Infrastructures, éclairage temporaire et distribution électrique."
   },
 
   "Contact": {
