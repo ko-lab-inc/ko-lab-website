@@ -373,7 +373,36 @@
     "type_temps_partiel": "Part-time",
     "type_contrat": "Contract",
     "exigences_titre": "Requirements",
-    "postuler": "Apply"
+    "postuler": "Apply",
+    "postes": {
+      "operateur": {
+        "titre": "Equipment Operator",
+        "departement": "Operations",
+        "description": "Operating lifting and material handling equipment on deployment sites. Loading, transport and positioning of gear.",
+        "exigence_1": "Valid licences and competency cards",
+        "exigence_2": "Experience with lifts, forklifts or trailers",
+        "exigence_3": "Available for night and weekend work",
+        "exigence_4": "Careful with safety and with entrusted equipment"
+      },
+      "superviseur": {
+        "titre": "Project Supervisor",
+        "departement": "Administration",
+        "description": "Staffing plans, schedule coordination and follow-up on multi-site projects. The point of contact between the client and the field crews.",
+        "exigence_1": "Experience coordinating crews or job sites",
+        "exigence_2": "Comfortable with tight deadlines and the unexpected",
+        "exigence_3": "Working French and English",
+        "exigence_4": "Valid driver's licence"
+      },
+      "chef_equipe": {
+        "titre": "Field Team Lead",
+        "departement": "Operations",
+        "description": "Leading a crew in the field, from setup to teardown. Task assignment, quality control and liaison with the supervisor.",
+        "exigence_1": "Experience in setup, installation or events",
+        "exigence_2": "Able to lead a crew under pressure",
+        "exigence_3": "Available for variable schedules",
+        "exigence_4": "Good physical condition"
+      }
+    }
   },
 
   "APropos": {
@@ -381,7 +410,21 @@
     "signature": "From idea to the field.",
     "intro": "KO-LAB is not just an events company or a labour agency. We plan, build, install, equip and deploy complex projects.",
     "ecosysteme_titre": "The ecosystem",
-    "ecosysteme_texte": "You talk to one team. We mobilize the network."
+    "ecosysteme_texte": "You talk to one team. We mobilize the network.",
+    "positionnement_label": "Positioning",
+    "positionnement_titre": "A partner, not a supplier",
+    "positionnement_texte": "Plan, build, install, equip, deploy. KO-LAB takes on complex projects from the first plan through to teardown, without multiplying the number of parties involved.",
+    "culture_label": "Field culture",
+    "culture_titre": "What gets decided in the office plays out in the field",
+    "culture_texte": "Our crews work overnight, outside business hours, across several sites at once. Coordination isn't an add-on service — it's the job.",
+    "methode_label": "How we work",
+    "methode_1_titre": "We start from the need",
+    "methode_1_texte": "Not from a catalogue. What has to end up on the ground determines the crews, the means and the timeline.",
+    "methode_2_titre": "We mobilize what it takes",
+    "methode_2_texte": "Labour, equipment, fabrication at the LAB, network partners — assembled for the project, not imposed in advance.",
+    "methode_3_titre": "We stay to the end",
+    "methode_3_texte": "Setup, support during the operation, teardown, removal and storage. The job ends when the site is handed back.",
+    "chiffres_label": "In brief"
   },
 
   "Footer": {

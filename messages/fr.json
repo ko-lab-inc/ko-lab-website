@@ -373,7 +373,36 @@
     "type_temps_partiel": "Temps partiel",
     "type_contrat": "Contrat",
     "exigences_titre": "Exigences",
-    "postuler": "Postuler"
+    "postuler": "Postuler",
+    "postes": {
+      "operateur": {
+        "titre": "Opérateur d'équipement",
+        "departement": "Opérations",
+        "description": "Conduite et manœuvre des équipements de levage et de manutention sur les sites de déploiement. Chargement, transport et positionnement du matériel.",
+        "exigence_1": "Permis et cartes de compétence à jour",
+        "exigence_2": "Expérience de nacelle, chariot élévateur ou remorque",
+        "exigence_3": "Disponibilité pour le travail de nuit et de fin de semaine",
+        "exigence_4": "Souci de la sécurité et du matériel confié"
+      },
+      "superviseur": {
+        "titre": "Superviseur de projet",
+        "departement": "Administration",
+        "description": "Planification des effectifs, coordination des horaires et suivi des mandats multisites. Point de contact entre le client et les équipes terrain.",
+        "exigence_1": "Expérience en coordination d'équipes ou de chantiers",
+        "exigence_2": "Aisance avec les échéanciers serrés et les imprévus",
+        "exigence_3": "Français et anglais fonctionnels",
+        "exigence_4": "Permis de conduire valide"
+      },
+      "chef_equipe": {
+        "titre": "Chef d'équipe terrain",
+        "departement": "Opérations",
+        "description": "Encadrement d'une équipe sur le terrain, du montage au démontage. Répartition des tâches, contrôle de la qualité et liaison avec le superviseur.",
+        "exigence_1": "Expérience de montage, installation ou événementiel",
+        "exigence_2": "Capacité à diriger une équipe sous pression",
+        "exigence_3": "Disponibilité pour des horaires variables",
+        "exigence_4": "Bonne condition physique"
+      }
+    }
   },
 
   "APropos": {
@@ -381,7 +410,21 @@
     "signature": "De l'idée au terrain.",
     "intro": "KO-LAB ne se présente pas uniquement comme une entreprise événementielle ou une agence de main-d'œuvre. Nous planifions, fabriquons, installons, équipons et déployons des projets complexes.",
     "ecosysteme_titre": "L'écosystème",
-    "ecosysteme_texte": "Vous parlez à une équipe. Nous mobilisons le réseau nécessaire."
+    "ecosysteme_texte": "Vous parlez à une équipe. Nous mobilisons le réseau nécessaire.",
+    "positionnement_label": "Positionnement",
+    "positionnement_titre": "Un partenaire, pas un fournisseur",
+    "positionnement_texte": "Planifier, fabriquer, installer, équiper, déployer. KO-LAB prend en charge des projets complexes du premier plan jusqu'au démontage, sans multiplier les intervenants.",
+    "culture_label": "Culture terrain",
+    "culture_titre": "Ce qui se décide au bureau se joue sur le terrain",
+    "culture_texte": "Nos équipes travaillent de nuit, hors des heures d'ouverture, sur plusieurs sites à la fois. La coordination n'est pas un service en plus — c'est le métier.",
+    "methode_label": "Notre manière de travailler",
+    "methode_1_titre": "On part du besoin",
+    "methode_1_texte": "Pas d'un catalogue. Ce qui doit se retrouver sur le terrain détermine les équipes, les moyens et l'échéancier.",
+    "methode_2_titre": "On mobilise ce qu'il faut",
+    "methode_2_texte": "Main-d'œuvre, équipements, fabrication au LAB, partenaires du réseau — assemblés pour le mandat, pas imposés d'avance.",
+    "methode_3_titre": "On reste jusqu'au bout",
+    "methode_3_texte": "Montage, soutien pendant l'opération, démontage, retrait et entreposage. Le mandat se termine quand le site est rendu.",
+    "chiffres_label": "En bref"
   },
 
   "Footer": {

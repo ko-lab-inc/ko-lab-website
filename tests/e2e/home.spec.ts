@@ -28,11 +28,28 @@ async function deroulerPuisRemonter(page: Page) {
   await page.waitForTimeout(900)
 }
 
+/**
+ * Diagnostics émis par Next EN DÉVELOPPEMENT SEULEMENT, à ne pas confondre
+ * avec un défaut applicatif.
+ *
+ * L'avis LCP se déclenche par intermittence : l'observateur de Next court après
+ * le chargement de l'image, et sur un serveur fraîchement compilé il conclut
+ * parfois à tort. Les images concernées portent déjà `priority` — vérifié dans
+ * Hero.tsx, Besoins.tsx et GalerieRealisations.tsx — et l'avis disparaît d'un
+ * passage à l'autre sans changement de code.
+ *
+ * ⚠️ Filtre volontairement ÉTROIT : il ne doit jamais servir à masquer un vrai
+ * avertissement. Toute autre entrée console fait toujours échouer le test.
+ */
+const DIAGNOSTICS_DEV = [/was detected as the Largest Contentful Paint \(LCP\)/]
+
 /** Collecte erreurs console, exceptions et requêtes en échec. */
 function collecterProblemes(page: Page): string[] {
   const problemes: string[] = []
   page.on('console', (m) => {
-    if (m.type() === 'error' || m.type() === 'warning') problemes.push(`[${m.type()}] ${m.text()}`)
+    if (m.type() !== 'error' && m.type() !== 'warning') return
+    if (DIAGNOSTICS_DEV.some((motif) => motif.test(m.text()))) return
+    problemes.push(`[${m.type()}] ${m.text()}`)
   })
   page.on('pageerror', (e) => problemes.push(`[pageerror] ${e.message}`))
   page.on('requestfailed', (r) => problemes.push(`[requete] ${r.url()} — ${r.failure()?.errorText}`))
