@@ -13,13 +13,10 @@
 /**
  * Panier de demande de prix groupée.
  *
- * ⚠️ DÉSACTIVÉ — décision de Christian. Le code, le Context, le localStorage
- * et les tests E2E restent en place : le système de gestion (admin, vendeur,
- * livreur) et la tarification réelle par produit viendront dans un chantier
- * séparé, pas encore démarré. Réactiver ce drapeau doit suffire à tout
- * remontrer sans reconstruction.
- *
- * Pour réactiver en local : NEXT_PUBLIC_FEATURE_PANIER=true dans .env.local,
- * puis redémarrer `npm run dev` (Next ne recharge pas l'environnement à chaud).
+ * RÉACTIVÉ — décision de Christian, la boutique passe en prix visible +
+ * ajout au panier (plus de « Demander un prix » isolé sur les cartes).
+ * Le drapeau reste en place : NEXT_PUBLIC_FEATURE_PANIER=false le retire à
+ * nouveau sans toucher au code si le système de gestion et la tarification
+ * fournisseur ne sont finalement pas prêts.
  */
 export const PANIER_ACTIF = process.env.NEXT_PUBLIC_FEATURE_PANIER === 'true'

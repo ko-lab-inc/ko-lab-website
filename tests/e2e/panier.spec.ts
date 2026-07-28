@@ -17,22 +17,18 @@ const CLE = 'kolab_panier'
  * devenait intermittent en émulation mobile.
  */
 async function ajouterProduit(page: Page, index: number, attendu: number) {
-  await page.getByRole('button', { name: /Ajouter à la demande/ }).nth(index).click()
+  await page.getByRole('button', { name: /Ajouter au panier/ }).nth(index).click()
   await expect(page.getByRole('link', { name: /Voir ma demande/ }).first()).toContainText(
     String(attendu),
   )
 }
 
 /**
- * ⚠️ SUITE DÉSACTIVÉE — panier retiré de l'interface (PANIER_ACTIF = false,
- * voir src/lib/config/features.ts). Le système de gestion et la tarification
- * réelle par produit viendront dans un chantier séparé.
- *
- * Réactiver avec NEXT_PUBLIC_FEATURE_PANIER=true quand le chantier
- * admin/vendeur démarre — ces tests documentent le comportement attendu et
- * n'ont pas été supprimés.
+ * Réactivée avec PANIER_ACTIF (Christian, refonte boutique style Bambu Store) —
+ * voir src/lib/config/features.ts. Si le drapeau repasse à false, re-skip
+ * cette suite plutôt que la laisser échouer silencieusement.
  */
-test.describe.skip('Panier de demande de prix', () => {
+test.describe('Panier de demande de prix', () => {
   test.beforeEach(async ({ page }) => {
     // Repart d'un panier vide : localStorage persiste entre les tests d'un
     // même contexte, ce qui rendrait les comptages dépendants de l'ordre.
