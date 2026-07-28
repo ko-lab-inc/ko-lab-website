@@ -25,10 +25,15 @@ export function LienPanier({ className }: { className?: string }) {
   if (!pret || nombre === 0) return null
 
   return (
+    // aria-label reprend l'intitulé retiré visuellement (« Voir ma demande »
+    // — sur demande de Christian, seul le badge de comptage reste visible) :
+    // un lecteur d'écran a toujours besoin de savoir où mène le lien, une
+    // icône + un chiffre nu ne le disent pas.
     <Link
       href={ROUTES.boutiqueDemande}
+      aria-label={`${t('ouvrir')} (${nombre})`}
       className={cn(
-        'inline-flex min-h-[44px] items-center gap-2.5 text-sm text-ko-ink transition-colors duration-200 hover:text-ko-blue',
+        'inline-flex min-h-[44px] items-center gap-2 text-sm text-ko-ink transition-colors duration-200 hover:text-ko-blue',
         className,
       )}
     >
@@ -48,11 +53,9 @@ export function LienPanier({ className }: { className?: string }) {
         <circle cx="17" cy="20" r="1.2" />
       </svg>
 
-      <span>{t('ouvrir')}</span>
-
       {/* Compteur : chiffre nu sur pastille bleue — le bleu est le seul accent
           du système, et c'est ici une information, pas une décoration. */}
-      <span className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-ko-blue px-1.5 font-mono text-[10px] text-ko-white">
+      <span aria-hidden="true" className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-ko-blue px-1.5 font-mono text-[10px] text-ko-white">
         {nombre}
       </span>
     </Link>

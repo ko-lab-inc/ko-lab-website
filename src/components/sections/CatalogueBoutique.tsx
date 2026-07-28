@@ -98,14 +98,7 @@ function BoutonAjouter({
 
   return (
     <div className="mt-auto">
-      {/*
-        Empilé sous sm, en ligne au-delà : la grille passe à 2 colonnes dès
-        375px (tâche 3, pleine largeur), et le contrôle −[n]+ (~122px à lui
-        seul) ne tient plus à côté du bouton dans l'intérieur de carte
-        disponible (~120px) une fois le padding retiré. Mesuré : sans cet
-        empilement, le bouton débordait du viewport de plus de 50px.
-      */}
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+      <div className="flex items-center gap-3">
         {/* Contrôle − [n] + — filets 1px, aucun fond coloré (skill 08). */}
         <div className="flex items-center border border-ko-line">
           <button
@@ -240,127 +233,118 @@ export function CatalogueBoutique({
 
       {/* ------------------------------ Grille ------------------------------ */}
       {/*
-        Pleine largeur (Bambu Store en référence) — SEULE la grille en sort,
-        header et filtres restent dans le conteneur normal de la page.
-        `mx-[calc(50%-50vw)]` : technique de « bleed » qui s'auto-corrige quel
-        que soit le niveau d'imbrication ou le padding du parent (le `50%`
-        annule le centrage du conteneur courant, le `50vw` recentre sur le
-        viewport) — contrairement à un `left:50%`/`left:50vw` fixe, qui ne
-        fonctionne que si le parent fait exactement la largeur du viewport.
-        Vérifié à 375px et 1280px : aucun débordement horizontal résiduel.
+        Revenue au conteneur normal de la page (max-w-container, gap-5) sur
+        retour de Christian : la version pleine largeur (mx-[calc(50%-50vw)])
+        se lisait trop dense/trop large. Centrée et aérée à nouveau.
       */}
       {visibles.length === 0 ? (
         <p className="mt-14 text-base text-ko-muted">{messageVide}</p>
       ) : (
-        <div className="mx-[calc(50%-50vw)] mt-12 w-screen px-4 lg:px-6">
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-3 lg:grid-cols-4 lg:gap-3">
-            {visibles.map((produit) => (
-              <article
-                key={produit.slug}
-                className="group flex flex-col border border-ko-line bg-ko-white transition-colors duration-250 hover:border-ko-blue"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden bg-ko-cream2">
-                  {/* Ruban — vide tant que Christian n'a pas confirmé un texte
-                      vrai par produit (voir le commentaire sur ProduitCarte). */}
-                  {produit.badgeRibbon && (
-                    <span
-                      className="absolute left-0 top-4 z-10 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-white [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]"
-                    >
-                      {produit.badgeRibbon}
-                    </span>
-                  )}
-                  {produit.badgeSecondaire && (
-                    <span className="absolute right-3 top-3 z-10 rounded-sm bg-ko-black px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-ko-white">
-                      {produit.badgeSecondaire}
-                    </span>
-                  )}
+        <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {visibles.map((produit) => (
+            <article
+              key={produit.slug}
+              className="group flex flex-col border border-ko-line bg-ko-white transition-colors duration-250 hover:border-ko-blue"
+            >
+              <div className="relative aspect-[4/3] overflow-hidden bg-ko-cream2">
+                {/* Ruban — vide tant que Christian n'a pas confirmé un texte
+                    vrai par produit (voir le commentaire sur ProduitCarte). */}
+                {produit.badgeRibbon && (
+                  <span className="absolute left-0 top-4 z-10 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-white [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]">
+                    {produit.badgeRibbon}
+                  </span>
+                )}
+                {produit.badgeSecondaire && (
+                  <span className="absolute right-3 top-3 z-10 rounded-sm bg-ko-black px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-ko-white">
+                    {produit.badgeSecondaire}
+                  </span>
+                )}
 
-                  {produit.src ? (
-                    <Image
-                      src={produit.src}
-                      alt=""
-                      fill
-                      quality={80}
-                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      className="object-cover transition-transform duration-[400ms] group-hover:scale-[1.03]"
-                    />
-                  ) : (
-                    // Emplacement réservé plutôt qu'une photo de stock approchante :
-                    // sur une fiche produit, une image générique désigne un autre
-                    // objet que celui nommé (skill 22).
-                    <PhotoPlaceholder ratio="aspect-[4/3]" label={photoPlaceholder} />
-                  )}
-                </div>
+                {produit.src ? (
+                  <Image
+                    src={produit.src}
+                    alt=""
+                    fill
+                    quality={80}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="object-cover transition-transform duration-[400ms] group-hover:scale-[1.03]"
+                  />
+                ) : (
+                  // Emplacement réservé plutôt qu'une photo de stock approchante :
+                  // sur une fiche produit, une image générique désigne un autre
+                  // objet que celui nommé (skill 22).
+                  <PhotoPlaceholder ratio="aspect-[4/3]" label={photoPlaceholder} />
+                )}
+              </div>
 
-                <div className="flex flex-1 flex-col p-6">
-                  {/* Catégorie en mono nu — pas de pastille colorée (skill 08). */}
-                  <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
-                    {filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie}
+              <div className="flex flex-1 flex-col p-6">
+                {/* Catégorie en mono nu — pas de pastille colorée (skill 08). */}
+                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
+                  {filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie}
+                </p>
+
+                <h3 className="mt-3 font-serif text-[20px] leading-tight text-ko-ink">
+                  {produit.nom}
+                </h3>
+
+                {/* line-clamp-2 : deux lignes maximum, pour que toutes les
+                    cartes d'une rangée gardent la même hauteur de texte. */}
+                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ko-muted">
+                  {produit.texte}
+                </p>
+
+                {/*
+                  Prix indicatif visible — changement de direction assumé
+                  (Bambu Store en référence). `prixIndicatif` reste un champ
+                  numérique structuré : un vrai prix Supabase le remplacera
+                  sans toucher au format d'affichage. `null` retombe sur
+                  l'ancien "Prix sur demande", pour le cas où le panier est
+                  désactivé (PANIER_ACTIF) et où aucun CTA de rechange
+                  n'existe encore sur cette carte précise.
+                */}
+                {produit.prixIndicatif !== null ? (
+                  <p className="mt-6 font-mono text-sm text-ko-ink">
+                    {t('a_partir_de', {
+                      prix: format.number(produit.prixIndicatif, {
+                        style: 'currency',
+                        currency: 'CAD',
+                        maximumFractionDigits: 0,
+                      }),
+                    })}
                   </p>
+                ) : (
+                  <p className="label-mono mt-6">{prixSurDemande}</p>
+                )}
 
-                  <h3 className="mt-3 font-serif text-[20px] leading-tight text-ko-ink">
-                    {produit.nom}
-                  </h3>
-
-                  {/* line-clamp-2 : deux lignes maximum, pour que toutes les
-                      cartes d'une rangée gardent la même hauteur de texte. */}
-                  <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ko-muted">
-                    {produit.texte}
-                  </p>
-
-                  {/*
-                    Prix indicatif visible — changement de direction assumé
-                    (Bambu Store en référence). `prixIndicatif` reste un champ
-                    numérique structuré : un vrai prix Supabase le remplacera
-                    sans toucher au format d'affichage. `null` retombe sur
-                    l'ancien "Prix sur demande", pour le cas où le panier est
-                    désactivé (PANIER_ACTIF) et où aucun CTA de rechange
-                    n'existe encore sur cette carte précise.
-                  */}
-                  {produit.prixIndicatif !== null ? (
-                    <p className="mt-6 font-mono text-sm text-ko-ink">
-                      {t('a_partir_de', {
-                        prix: format.number(produit.prixIndicatif, {
-                          style: 'currency',
-                          currency: 'CAD',
-                          maximumFractionDigits: 0,
-                        }),
-                      })}
-                    </p>
-                  ) : (
-                    <p className="label-mono mt-6">{prixSurDemande}</p>
-                  )}
-
-                  {/*
-                    Panier actif : l'action principale devient l'ajout au
-                    panier, prix déjà visible plus haut — plus de « Demander
-                    un prix » isolé sur la carte (décision de Christian).
-                    Panier désactivé (PANIER_ACTIF=false, voir
-                    src/lib/config/features.ts) : on retombe sur l'ancien CTA
-                    de contact, pour qu'un simple retour en arrière du drapeau
-                    ne laisse jamais une carte sans action.
-                  */}
-                  {PANIER_ACTIF ? (
-                    <BoutonAjouter
-                      slug={produit.slug}
-                      nom={produit.nom}
-                      categorie={
-                        filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie
-                      }
-                    />
-                  ) : (
-                    <Link
-                      href={`${ROUTES.contact}?type=boutique&produit=${produit.slug}`}
-                      className={cn('mt-auto', buttonVariants({ variant: 'primary', size: 'sm' }))}
-                    >
-                      {demanderPrix}
-                      <span aria-hidden="true">→</span>
-                    </Link>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
+                {/*
+                  Panier actif : l'action principale devient l'ajout au
+                  panier, prix déjà visible plus haut — plus de « Demander
+                  un prix » isolé sur la carte (décision de Christian).
+                  Panier désactivé (PANIER_ACTIF=false, voir
+                  src/lib/config/features.ts) : on retombe sur l'ancien CTA
+                  de contact, pour qu'un simple retour en arrière du drapeau
+                  ne laisse jamais une carte sans action.
+                */}
+                {PANIER_ACTIF ? (
+                  <BoutonAjouter
+                    slug={produit.slug}
+                    nom={produit.nom}
+                    categorie={
+                      filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie
+                    }
+                  />
+                ) : (
+                  <Link
+                    href={`${ROUTES.contact}?type=boutique&produit=${produit.slug}`}
+                    className={cn('mt-auto', buttonVariants({ variant: 'primary', size: 'sm' }))}
+                  >
+                    {demanderPrix}
+                    <span aria-hidden="true">→</span>
+                  </Link>
+                )}
+              </div>
+            </article>
+          ))}
         </div>
       )}
     </>
