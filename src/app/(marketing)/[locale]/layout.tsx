@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 
 import { Footer } from '@/components/layout/Footer'
 import { Nav } from '@/components/layout/Nav'
+import { ChatCrisp } from '@/components/ui/ChatCrisp'
 import { routing } from '@/i18n/routing'
 
 import type { Metadata } from 'next'
@@ -191,6 +192,10 @@ export default async function MarketingLayout({ children, params }: Props) {
           <main id="contenu">{children}</main>
 
           <Footer />
+
+          {/* Bulle de chat — hors du <main>, présente sur toutes les pages
+              publiques. Ne rend rien si NEXT_PUBLIC_CRISP_WEBSITE_ID est vide. */}
+          <ChatCrisp />
         </NextIntlClientProvider>
       </body>
     </html>

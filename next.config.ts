@@ -42,16 +42,34 @@ const supabaseConnectSrc = supabaseHost
  * - pas de fonts.googleapis.com / fonts.gstatic.com : next/font/google (skill 12)
  *   télécharge les polices au build et les sert depuis notre propre origine.
  */
+/**
+ * Domaines Crisp — widget de chat.
+ *
+ * Ajoutés inconditionnellement : la CSP est construite au build, alors que
+ * l'activation du widget dépend d'une variable d'exécution. Les autoriser en
+ * permanence évite qu'activer la clé sur Vercel ne produise un widget
+ * silencieusement bloqué par la CSP, symptôme difficile à relier à sa cause.
+ *
+ * Répartition par directive :
+ *   l.js et son runtime          → script-src
+ *   API et WebSocket temps réel  → connect-src
+ *   avatars et pièces jointes    → img-src
+ *   styles et polices de l'iframe → style-src / font-src
+ */
+const CRISP_SCRIPT = 'https://client.crisp.chat'
+const CRISP_CONNECT = 'https://client.crisp.chat wss://client.relay.crisp.chat'
+const CRISP_IMG = 'https://client.crisp.chat https://image.crisp.chat https://storage.crisp.chat'
+
 const contentSecurityPolicy = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
-  "style-src 'self' 'unsafe-inline'",
-  "font-src 'self' data:",
+  `script-src 'self' 'unsafe-inline' ${CRISP_SCRIPT}${isDev ? " 'unsafe-eval'" : ''}`,
+  `style-src 'self' 'unsafe-inline' ${CRISP_SCRIPT}`,
+  `font-src 'self' data: ${CRISP_SCRIPT}`,
   // ⚠️ TEMPORAIRE — images.unsplash.com sert les photos de développement.
   // À RETIRER quand les vraies photos KO-LAB seront dans Supabase Storage
   // (voir skill 22, section « Images temporaires à remplacer »).
-  `img-src 'self' data: blob: ${supabaseImgSrc} https://images.unsplash.com`,
-  `connect-src 'self' ${supabaseConnectSrc}${isDev ? ' ws://localhost:* http://localhost:*' : ''}`,
+  `img-src 'self' data: blob: ${supabaseImgSrc} https://images.unsplash.com ${CRISP_IMG}`,
+  `connect-src 'self' ${supabaseConnectSrc} ${CRISP_CONNECT}${isDev ? ' ws://localhost:* http://localhost:*' : ''}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
