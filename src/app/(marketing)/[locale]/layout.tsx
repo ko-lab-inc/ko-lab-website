@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { Footer } from '@/components/layout/Footer'
 import { Nav } from '@/components/layout/Nav'
 import { ChatCrisp } from '@/components/ui/ChatCrisp'
+import { PanierProvider } from '@/lib/panier/PanierContext'
 import { routing } from '@/i18n/routing'
 
 import type { Metadata } from 'next'
@@ -156,9 +157,11 @@ export default async function MarketingLayout({ children, params }: Props) {
    * voir son espace de noms ajouté ici, sinon il lève à l'exécution. Les seuls
    * concernés aujourd'hui :
    *
-   *   Nav.tsx                  → Nav
-   *   FormulaireContact.tsx    → Contact
+   *   Nav.tsx                  → Nav, Panier
+   *   FormulaireContact.tsx    → Contact, Panier
    *   GalerieRealisations.tsx  → Realisations
+   *   CatalogueBoutique.tsx    → Panier
+   *   PagePanier.tsx           → Panier
    *
    * CatalogueBoutique reçoit ses chaînes en props, résolues côté serveur —
    * c'est le modèle à privilégier pour tout nouveau composant.
@@ -169,6 +172,9 @@ export default async function MarketingLayout({ children, params }: Props) {
     Nav: tousLesMessages.Nav,
     Contact: tousLesMessages.Contact,
     Realisations: tousLesMessages.Realisations,
+    // Ajouté explicitement, PAS en élargissant au catalogue entier : le panier
+    // vit côté client, ses libellés doivent y être — mais rien d'autre.
+    Panier: tousLesMessages.Panier,
   }
 
   return (
@@ -178,6 +184,7 @@ export default async function MarketingLayout({ children, params }: Props) {
     >
       <body className="font-sans antialiased">
         <NextIntlClientProvider messages={messagesClient}>
+          <PanierProvider>
           {/* Lien d'évitement — première cible de tabulation, invisible tant
               qu'il n'a pas le focus (accessibilité clavier). */}
           <a
@@ -196,6 +203,7 @@ export default async function MarketingLayout({ children, params }: Props) {
           {/* Bulle de chat — hors du <main>, présente sur toutes les pages
               publiques. Ne rend rien si NEXT_PUBLIC_CRISP_WEBSITE_ID est vide. */}
           <ChatCrisp />
+          </PanierProvider>
         </NextIntlClientProvider>
       </body>
     </html>

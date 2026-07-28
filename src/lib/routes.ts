@@ -21,6 +21,8 @@ export const ROUTES = {
   realisations: '/realisations',
   location: '/location',
   boutique: '/boutique',
+  /** Demande de prix groupée — récapitulatif du panier. */
+  boutiqueDemande: '/boutique/demande',
   apropos: '/a-propos',
   carrieres: '/carrieres',
   contact: '/contact',

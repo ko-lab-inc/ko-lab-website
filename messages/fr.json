@@ -480,6 +480,23 @@
     "confidentialite": "Politique de confidentialité"
   },
 
+  "Panier": {
+    "titre": "Ma demande de prix",
+    "intro": "Les produits que vous avez retenus. Envoyez-les en une seule demande — on revient vers vous avec les prix et les disponibilités.",
+    "ouvrir": "Voir ma demande",
+    "articles": "{n, plural, =0 {Aucun produit} one {# produit} other {# produits}}",
+    "ajouter": "Ajouter à la demande",
+    "ajoute": "Ajouté",
+    "retirer": "Retirer",
+    "quantite": "Quantité",
+    "vide_titre": "Votre demande est vide",
+    "vide_texte": "Parcourez le catalogue et ajoutez les produits qui vous intéressent.",
+    "vide_lien": "Voir le catalogue",
+    "envoyer": "Envoyer ma demande de prix",
+    "entete_message": "Produits pour lesquels je souhaite un prix :",
+    "continuer": "Continuer le catalogue"
+  },
+
   "Commun": {
     "chargement": "Chargement…",
     "erreur_titre": "Une erreur est survenue",

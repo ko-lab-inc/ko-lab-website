@@ -3,8 +3,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
+
+import { formaterDemande, usePanier } from '@/lib/panier/PanierContext'
 
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils/cn'
@@ -26,6 +28,9 @@ type Etat = 'repos' | 'envoi' | 'succes' | 'erreur' | 'limite'
 
 export function FormulaireContact() {
   const t = useTranslations('Contact')
+  // Espace de noms distinct : l'en-tête de la demande groupée appartient au
+  // panier, pas au formulaire. Le typage des messages refuse le mélange.
+  const tPanier = useTranslations('Panier')
   const parametres = useSearchParams()
   const [etat, setEtat] = useState<Etat>('repos')
 
@@ -38,6 +43,21 @@ export function FormulaireContact() {
       ? (demande as TypeDemande)
       : 'mandat'
 
+  const { articles, pret, vider } = usePanier()
+
+  /**
+   * Message pré-rempli avec la demande groupée.
+   *
+   * Conditionné à `?type=boutique` : sans ce garde, un visiteur ayant un
+   * panier en cours verrait sa liste de produits injectée dans une demande
+   * de mandat ou de carrière, ce qui n'a aucun sens.
+   *
+   * La liste transite par le contexte, jamais par l'URL — une URL portant
+   * douze produits serait illisible et falsifiable.
+   */
+  const messageInitial =
+    pret && demande === 'boutique' ? formaterDemande(articles, tPanier('entete_message')) : ''
+
   const {
     register,
     handleSubmit,
@@ -45,8 +65,15 @@ export function FormulaireContact() {
     formState: { errors },
   } = useForm<DonneesContact>({
     resolver: zodResolver(schemaContact),
-    defaultValues: { type: typeInitial, _hp: '' },
+    defaultValues: { type: typeInitial, message: messageInitial, _hp: '' },
   })
+
+  // `pret` bascule après la lecture de localStorage, donc APRÈS le premier
+  // rendu du formulaire : sans cette resynchronisation, le champ message
+  // resterait vide alors que le panier contient des produits.
+  useEffect(() => {
+    if (messageInitial) reset({ type: typeInitial, message: messageInitial, _hp: '' })
+  }, [messageInitial, reset, typeInitial])
 
   const envoyer = handleSubmit(async (donnees) => {
     setEtat('envoi')
@@ -59,7 +86,10 @@ export function FormulaireContact() {
 
       if (rep.ok) {
         setEtat('succes')
-        reset({ type: typeInitial, _hp: '' })
+        reset({ type: typeInitial, message: '', _hp: '' })
+        // Vidé UNIQUEMENT après un 200 : sur erreur réseau ou 500, la
+        // sélection doit survivre pour que le visiteur puisse réessayer.
+        if (articles.length > 0) vider()
         return
       }
 

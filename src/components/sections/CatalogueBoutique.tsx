@@ -1,10 +1,12 @@
 'use client'
 
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 
 import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { buttonVariants } from '@/components/ui/Button'
+import { usePanier } from '@/lib/panier/PanierContext'
 import { Link } from '@/i18n/navigation'
 import { ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
@@ -40,6 +42,45 @@ type Props = {
   demanderPrix: string
   aucunResultat: string
   photoPlaceholder: string
+}
+
+/**
+ * Ajout à la demande groupée.
+ *
+ * Une fois le produit retenu, le bouton passe en état « Ajouté » et se
+ * désactive : ré-appuyer incrémenterait la quantité sans retour visible, ce qui
+ * se lit comme un bug. La quantité se règle sur la page de demande, où elle est
+ * visible.
+ */
+function BoutonAjouter({
+  slug,
+  nom,
+  categorie,
+}: {
+  slug: string
+  nom: string
+  categorie: string
+}) {
+  const t = useTranslations('Panier')
+  const { ajouter, contient, pret } = usePanier()
+
+  const dejaDedans = pret && contient(slug)
+
+  return (
+    <button
+      type="button"
+      onClick={() => ajouter({ slug, nom, categorie })}
+      disabled={dejaDedans}
+      className={cn(
+        buttonVariants({ variant: 'primary', size: 'sm' }),
+        'mt-auto w-full',
+        dejaDedans && 'pointer-events-none',
+      )}
+    >
+      {dejaDedans ? t('ajoute') : t('ajouter')}
+      {!dejaDedans && <span aria-hidden="true">+</span>}
+    </button>
+  )
 }
 
 export function CatalogueBoutique({
@@ -133,11 +174,24 @@ export function CatalogueBoutique({
 
                 {/* mt-auto : prix et bouton alignés d'une carte à l'autre,
                     quelle que soit la longueur du nom. */}
-                <p className="label-mono mt-auto pt-6">{prixSurDemande}</p>
+                {/* Prix sur demande — jamais de montant, jamais de total.
+                    Le mt-auto est porté par le bouton d'ajout juste en dessous. */}
+                <p className="label-mono mt-6 pb-4">{prixSurDemande}</p>
+
+                {/* Deux chemins distincts, pas un doublon :
+                    « Ajouter » constitue une demande groupée, « Demander un
+                    prix » part immédiatement pour ce seul produit. */}
+                <BoutonAjouter
+                  slug={produit.slug}
+                  nom={produit.nom}
+                  categorie={
+                    filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie
+                  }
+                />
 
                 <Link
                   href={`${ROUTES.contact}?type=boutique&produit=${produit.slug}`}
-                  className={`mt-4 ${buttonVariants({ variant: 'primary', size: 'sm' })}`}
+                  className={`mt-3 ${buttonVariants({ variant: 'ghost', size: 'sm' })}`}
                 >
                   {demanderPrix}
                   <span aria-hidden="true">→</span>

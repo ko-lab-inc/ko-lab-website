@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { Link, usePathname } from '@/i18n/navigation'
 import { useScrolled } from '@/hooks/useScrolled'
 import { buttonVariants } from '@/components/ui/Button'
+import { LienPanier } from '@/components/ui/LienPanier'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
 
@@ -143,19 +144,28 @@ export function Nav() {
             {t('changerLangue')}
           </Link>
 
+          {/* N'apparaît que si une demande de prix est en cours. */}
+          <LienPanier />
+
           <Link href={ROUTES.contact} className={buttonVariants({ variant: 'primary', size: 'sm' })}>
             {t('cta')}
           </Link>
         </nav>
 
-        {/* --------------------------- Bouton mobile --------------------------- */}
-        <button
+        {/* ---------------------- Panier + hamburger (mobile) ---------------------- */}
+        {/* Le panier est DANS la barre, pas dans le menu déroulant : enfermé
+            derrière le hamburger, il serait invisible tant qu'on n'ouvre pas le
+            menu — or c'est un état en cours, il doit rester sous les yeux. */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <LienPanier />
+
+          <button
           type="button"
           onClick={() => setMenuOuvert((v) => !v)}
           aria-expanded={menuOuvert}
           aria-controls="menu-mobile"
           aria-label={menuOuvert ? t('fermerMenu') : t('ouvrirMenu')}
-          className="-mr-2 flex h-11 w-11 flex-col items-center justify-center gap-1.5 lg:hidden"
+          className="-mr-2 flex h-11 w-11 flex-col items-center justify-center gap-1.5"
         >
           {/* Trois filets de 1px, largeurs inégales — cohérent avec le
               vocabulaire de lignes fines du design system. */}
@@ -177,7 +187,8 @@ export function Nav() {
               menuOuvert && 'w-6 -translate-y-[7px] -rotate-45',
             )}
           />
-        </button>
+          </button>
+        </div>
       </div>
 
       {/* ------------------------------- Mobile ------------------------------- */}
