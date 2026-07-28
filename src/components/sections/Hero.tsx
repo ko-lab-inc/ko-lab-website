@@ -114,35 +114,20 @@ export async function Hero() {
           </div>
         </div>
 
-        {/* --------------------------- Bloc stats --------------------------- */}
-        {/*
-          Chiffres à même la photo, sans carte fermée (rentman.io en référence) :
-          la petite carte glassmorphique précédente diluait des chiffres qui
-          doivent dominer. L'ombre portée assure la lisibilité sur la photo,
-          quel que soit le point où elle tombe — pas un fond opaque global qui
-          reconstituerait la carte qu'on retire.
-          En haut à droite plutôt qu'en bas : le contenu principal (tag, h1,
-          sous-titre, boutons) occupe déjà tout le bas-gauche sous lg, où les
-          deux blocs se chevaucheraient en une seule colonne empilée.
-        */}
-        <Reveal className="absolute right-5 top-6 z-10 sm:right-8 sm:top-8 lg:right-10 lg:top-10">
-          {/*
-            data-hero-carte : remonte de 30px à contre-sens du défilement —
-            nom conservé, HeroScrollEffets cible cet attribut, pas son style.
-
-            Grille 2×2 à TOUS les breakpoints, pas d'empilement en une seule
-            colonne sur mobile : mesuré à 375px, quatre lignes de chiffres à
-            40px+ poussaient le bloc jusque dans le h1 et le tag (chevauchement
-            visible, capture à l'appui). Deux rangées compactes tiennent sous
-            le tag sans jamais atteindre le texte, ancré en bas.
-          */}
-          <div data-hero-carte className="grid grid-cols-2 gap-x-5 gap-y-5">
+        {/* --------------------------- Carte stats --------------------------- */}
+        {/* Masquée sous md : elle chevaucherait le titre sur un écran étroit. */}
+        <Reveal className="absolute bottom-8 right-8 z-10 hidden md:block">
+          {/* data-hero-carte : remonte de 30px à contre-sens du défilement. */}
+          <div
+            data-hero-carte
+            className="grid grid-cols-2 gap-4 rounded-2xl border border-ko-frost/15 bg-ko-frost/10 p-6 backdrop-blur-md"
+          >
             {stats.map((stat) => (
-              <div key={stat.label} className="text-right">
-                <p className="font-serif text-[clamp(32px,7vw,80px)] font-light leading-none text-ko-white [text-shadow:0_4px_24px_rgba(0,0,0,0.65)]">
+              <div key={stat.label}>
+                <p className="font-serif text-[32px] font-light leading-none text-ko-white">
                   {stat.valeur}
                 </p>
-                <p className="mt-2 max-w-[15ch] font-mono text-[9px] uppercase leading-relaxed tracking-[0.12em] text-ko-frost/70 [text-shadow:0_2px_10px_rgba(0,0,0,0.7)] sm:max-w-[18ch] sm:text-[10px] sm:tracking-[0.14em]">
+                <p className="mt-2 max-w-[16ch] font-mono text-[10px] uppercase leading-relaxed tracking-[0.14em] text-ko-frost/55">
                   {stat.label}
                 </p>
               </div>
