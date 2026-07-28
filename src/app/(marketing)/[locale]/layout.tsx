@@ -160,13 +160,16 @@ export default async function MarketingLayout({ children, params }: Props) {
    *   Nav.tsx                  → Nav, Panier
    *   FormulaireContact.tsx    → Contact, Panier
    *   GalerieRealisations.tsx  → Realisations
-   *   CatalogueBoutique.tsx    → Panier
+   *   CatalogueBoutique.tsx    → Panier, Boutique
    *   PagePanier.tsx           → Panier
    *
    * CatalogueBoutique reçoit ses chaînes en props, résolues côté serveur —
    * c'est le modèle à privilégier pour tout nouveau composant.
    */
   const tousLesMessages = await getMessages()
+
+  const boutique = tousLesMessages.Boutique
+
 
   const messagesClient = {
     Nav: tousLesMessages.Nav,
@@ -175,6 +178,16 @@ export default async function MarketingLayout({ children, params }: Props) {
     // Ajouté explicitement, PAS en élargissant au catalogue entier : le panier
     // vit côté client, ses libellés doivent y être — mais rien d'autre.
     Panier: tousLesMessages.Panier,
+    // ⚠️ SOUS-ENSEMBLE, pas l'espace de noms entier. `Boutique` contient les
+    // noms des produits « Solutions modulaires », que le drapeau masque et que
+    // le document de cadrage interdit de publier. Transmettre le namespace
+    // complet rouvrirait exactement la fuite fermée précédemment.
+    // Seules les trois clés lues par CatalogueBoutique passent.
+    Boutique: {
+      recherche_placeholder: boutique.recherche_placeholder,
+      recherche_label: boutique.recherche_label,
+      aucun_resultat_recherche: boutique.aucun_resultat_recherche,
+    },
   }
 
   return (

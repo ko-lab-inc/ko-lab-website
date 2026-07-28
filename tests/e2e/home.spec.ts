@@ -107,7 +107,12 @@ test.describe('Accueil', () => {
     expect(problemes, problemes.join('\n')).toEqual([])
   })
 
-  test('4 · survol d’une carte Besoins agrandit l’image en 400 ms', async ({ page }) => {
+  // Les deux tests de survol ne concernent QUE le pointeur. Sur un appareil
+  // tactile il n'existe pas d'état :hover — Playwright l'émule de façon
+  // instable, d'où des échecs intermittents sur un comportement que l'utilisateur
+  // mobile ne rencontre jamais.
+  test('4 · survol d’une carte Besoins agrandit l’image en 400 ms', async ({ page }, infos) => {
+    test.skip(infos.project.name === 'mobile', 'Pas de survol sur appareil tactile')
     await page.goto('/fr')
     const carte = page.locator('a', { hasText: 'Déployer une équipe' }).first()
     const image = carte.locator('img')
@@ -123,7 +128,10 @@ test.describe('Accueil', () => {
     await expect(image).toHaveCSS('transition-duration', '0.4s')
   })
 
-  test('5 · survol d’une ligne Capacités décale le texte et remplit la flèche', async ({ page }) => {
+  test('5 · survol d’une ligne Capacités décale le texte et remplit la flèche', async ({
+    page,
+  }, infos) => {
+    test.skip(infos.project.name === 'mobile', 'Pas de survol sur appareil tactile')
     await page.goto('/fr')
     const ligne = page.locator('li a', { hasText: 'Opérations terrain' }).first()
 

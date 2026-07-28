@@ -317,6 +317,9 @@
       "quantite": "Quantity",
       "envoyer": "Send request"
     },
+    "recherche_placeholder": "Search a product…",
+    "recherche_label": "Search the catalogue",
+    "aucun_resultat_recherche": "No products match your search.",
     "cat_tout": "All",
     "cat_impression": "3D Printing",
     "cat_laser": "Laser Cutting",

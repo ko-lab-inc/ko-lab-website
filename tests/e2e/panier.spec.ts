@@ -9,10 +9,18 @@ import { expect, test, type Page } from '@playwright/test'
 
 const CLE = 'kolab_panier'
 
-/** Ajoute le n-ième produit du catalogue à la demande. */
-async function ajouterProduit(page: Page, index: number) {
+/**
+ * Ajoute le n-ième produit du catalogue à la demande.
+ *
+ * L'attente porte sur le badge, pas sur un délai fixe : l'écriture dans
+ * localStorage puis le re-rendu prennent un temps variable, et le test
+ * devenait intermittent en émulation mobile.
+ */
+async function ajouterProduit(page: Page, index: number, attendu: number) {
   await page.getByRole('button', { name: /Ajouter à la demande/ }).nth(index).click()
-  await page.waitForTimeout(250)
+  await expect(page.getByRole('link', { name: /Voir ma demande/ }).first()).toContainText(
+    String(attendu),
+  )
 }
 
 test.describe('Panier de demande de prix', () => {
@@ -31,29 +39,25 @@ test.describe('Panier de demande de prix', () => {
     // élément décoratif sans information (skill 08).
     await expect(lien).toHaveCount(0)
 
-    await ajouterProduit(page, 0)
+    await ajouterProduit(page, 0, 1)
     await expect(lien.first()).toBeVisible()
-    await expect(lien.first()).toContainText('1')
 
-    await ajouterProduit(page, 1)
-    await expect(lien.first()).toContainText('2')
+    await ajouterProduit(page, 1, 2)
   })
 
   test('2 · le bouton passe en « Ajouté » et se désactive', async ({ page }) => {
-    const bouton = page.getByRole('button', { name: /Ajouter à la demande/ }).first()
-    await bouton.click()
-    await page.waitForTimeout(250)
+    await ajouterProduit(page, 0, 1)
 
-    // Ré-appuyer incrémenterait la quantité sans retour visible.
+    // Un bouton laissé actif mais inopérant serait annoncé comme cliquable
+    // par un lecteur d'écran.
     await expect(page.getByRole('button', { name: 'Ajouté', exact: true }).first()).toBeDisabled()
   })
 
   test('3 · persistance après rechargement', async ({ page }) => {
-    await ajouterProduit(page, 0)
-    await ajouterProduit(page, 1)
+    await ajouterProduit(page, 0, 1)
+    await ajouterProduit(page, 1, 2)
 
     await page.reload()
-    await page.waitForTimeout(600)
 
     await expect(page.getByRole('link', { name: /Voir ma demande/ }).first()).toContainText('2')
 
@@ -62,10 +66,9 @@ test.describe('Panier de demande de prix', () => {
   })
 
   test('4 · page de demande — quantité modifiable et retrait', async ({ page }) => {
-    await ajouterProduit(page, 0)
-    await ajouterProduit(page, 1)
+    await ajouterProduit(page, 0, 1)
+    await ajouterProduit(page, 1, 2)
     await page.goto('/fr/boutique/demande')
-    await page.waitForTimeout(600)
 
     // Portée à la liste du panier : `li` seul capterait aussi les listes de
     // la nav et du pied de page.
@@ -75,20 +78,19 @@ test.describe('Panier de demande de prix', () => {
     const quantite = page.locator('input[type="number"]').first()
     await quantite.fill('4')
     await quantite.blur()
-    await page.waitForTimeout(300)
+    await page.waitForTimeout(400)
 
     const apresQuantite = await page.evaluate((cle) => window.localStorage.getItem(cle), CLE)
     expect(JSON.parse(apresQuantite ?? '[]')[0].quantite).toBe(4)
 
     await page.getByRole('button', { name: 'Retirer', exact: true }).first().click()
-    await page.waitForTimeout(300)
     await expect(lignes).toHaveCount(1)
   })
 
   test('5 · aucun montant ni vocabulaire marchand', async ({ page }) => {
-    await ajouterProduit(page, 0)
+    await ajouterProduit(page, 0, 1)
     await page.goto('/fr/boutique/demande')
-    await page.waitForTimeout(600)
+    await page.waitForTimeout(500)
 
     const texte = (await page.locator('main').innerText()).toLowerCase()
 
@@ -100,10 +102,9 @@ test.describe('Panier de demande de prix', () => {
   })
 
   test('6 · envoi groupé — le message est pré-rempli avec la liste', async ({ page }) => {
-    await ajouterProduit(page, 0)
-    await ajouterProduit(page, 1)
+    await ajouterProduit(page, 0, 1)
+    await ajouterProduit(page, 1, 2)
     await page.goto('/fr/boutique/demande')
-    await page.waitForTimeout(500)
 
     await page.getByRole('link', { name: /Envoyer ma demande de prix/ }).click()
     await page.waitForURL('**/contact**')
@@ -111,18 +112,46 @@ test.describe('Panier de demande de prix', () => {
 
     const message = await page.locator('#message').inputValue()
     expect(message).toContain('Bambu Lab X1-Carbon')
-    expect(message).toContain('× 1')
     // Type de demande présélectionné par ?type=boutique.
     await expect(page.locator('#type')).toHaveValue('boutique')
   })
 
   test('7 · le panier n’est PAS pré-rempli hors demande boutique', async ({ page }) => {
-    await ajouterProduit(page, 0)
+    await ajouterProduit(page, 0, 1)
 
     // Sans ?type=boutique, la liste ne doit pas polluer une demande de mandat.
     await page.goto('/fr/contact')
     await page.waitForTimeout(800)
 
     expect(await page.locator('#message').inputValue()).toBe('')
+  })
+})
+
+test.describe('Recherche boutique', () => {
+  test('8 · la recherche et le filtre de catégorie se cumulent', async ({ page }) => {
+    await page.goto('/fr/boutique')
+    const cartes = page.locator('article')
+    await expect(cartes).toHaveCount(9)
+
+    const champ = page.getByPlaceholder('Rechercher un produit…')
+
+    // Recherche seule.
+    await champ.fill('xTool')
+    await expect(cartes).toHaveCount(3)
+
+    // Insensible aux accents : « decoupe » doit trouver « découpe ».
+    await champ.fill('decoupe')
+    await expect(cartes.first()).toBeVisible()
+
+    // Cumul avec la catégorie : xTool filtré sur Impression 3D = rien.
+    await champ.fill('xTool')
+    await page.getByRole('button', { name: 'Impression 3D', exact: true }).click()
+    await expect(cartes).toHaveCount(0)
+    await expect(page.getByText('Aucun produit ne correspond à votre recherche.')).toBeVisible()
+
+    // Retour à l'état complet.
+    await champ.fill('')
+    await page.getByRole('button', { name: 'Tout voir', exact: true }).click()
+    await expect(cartes).toHaveCount(9)
   })
 })

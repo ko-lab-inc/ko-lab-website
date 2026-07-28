@@ -62,24 +62,72 @@ function BoutonAjouter({
   categorie: string
 }) {
   const t = useTranslations('Panier')
-  const { ajouter, contient, pret } = usePanier()
+  const { ajouter, changerQuantite, articles, pret } = usePanier()
 
-  const dejaDedans = pret && contient(slug)
+  const dansPanier = pret ? articles.find((a) => a.slug === slug) : undefined
+
+  // Quantité locale tant que le produit n'est pas retenu ; une fois dedans,
+  // le contrôle reflète et pilote la quantité du panier. Pas de maximum
+  // arbitraire — ce sont des demandes de prix, pas des stocks.
+  const [quantiteLocale, setQuantiteLocale] = useState(1)
+  const quantite = dansPanier?.quantite ?? quantiteLocale
+
+  const regler = (valeur: number) => {
+    const bornee = Math.max(1, valeur)
+    if (dansPanier) changerQuantite(slug, bornee)
+    else setQuantiteLocale(bornee)
+  }
 
   return (
-    <button
-      type="button"
-      onClick={() => ajouter({ slug, nom, categorie })}
-      disabled={dejaDedans}
-      className={cn(
-        buttonVariants({ variant: 'primary', size: 'sm' }),
-        'mt-auto w-full',
-        dejaDedans && 'pointer-events-none',
-      )}
-    >
-      {dejaDedans ? t('ajoute') : t('ajouter')}
-      {!dejaDedans && <span aria-hidden="true">+</span>}
-    </button>
+    <div className="mt-auto">
+      <div className="flex items-center gap-3">
+        {/* Contrôle − [n] + — filets 1px, aucun fond coloré (skill 08). */}
+        <div className="flex items-center border border-ko-line">
+          <button
+            type="button"
+            onClick={() => regler(quantite - 1)}
+            disabled={quantite <= 1}
+            aria-label={`${t('quantite')} −`}
+            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
+          >
+            −
+          </button>
+
+          <span
+            aria-live="polite"
+            className="min-w-[2.5rem] text-center font-mono text-sm text-ko-ink"
+          >
+            {quantite}
+          </span>
+
+          <button
+            type="button"
+            onClick={() => regler(quantite + 1)}
+            aria-label={`${t('quantite')} +`}
+            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+          >
+            +
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (dansPanier) return
+            ajouter({ slug, nom, categorie })
+            // La quantité choisie avant l'ajout est reportée dans le panier.
+            if (quantiteLocale > 1) changerQuantite(slug, quantiteLocale)
+          }}
+          // `disabled` et non `pointer-events-none` : ce dernier laisse le
+          // bouton focusable et activable au clavier, donc annonçable comme
+          // cliquable par un lecteur d'écran alors qu'il ne fait rien.
+          disabled={!!dansPanier}
+          className={cn(buttonVariants({ variant: 'primary', size: 'sm' }), 'flex-1')}
+        >
+          {dansPanier ? t('ajoute') : t('ajouter')}
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -92,12 +140,34 @@ export function CatalogueBoutique({
   aucunResultat,
   photoPlaceholder,
 }: Props) {
+  const t = useTranslations('Boutique')
   const [categorie, setCategorie] = useState('all')
+  const [recherche, setRecherche] = useState('')
 
-  const visibles = useMemo(
-    () => produits.filter((p) => categorie === 'all' || p.categorie === categorie),
-    [produits, categorie],
-  )
+  const visibles = useMemo(() => {
+    // Normalisation sans accents : « decoupe » doit trouver « découpe », et
+    // l'inverse. Sans ça, la recherche échoue sur la moitié du catalogue
+    // français dès qu'un accent est omis.
+    const normaliser = (s: string) =>
+      s
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+
+    const terme = normaliser(recherche.trim())
+
+    return produits.filter((p) => {
+      // Les deux filtres se CUMULENT — catégorie active et terme de recherche.
+      const parCategorie = categorie === 'all' || p.categorie === categorie
+      if (!parCategorie) return false
+      if (terme === '') return true
+      return normaliser(`${p.nom} ${p.texte}`).includes(terme)
+    })
+  }, [produits, categorie, recherche])
+
+  // Distingue « rien dans cette catégorie » de « rien pour cette recherche » :
+  // deux impasses différentes, deux messages différents.
+  const messageVide = recherche.trim() !== '' ? t('aucun_resultat_recherche') : aucunResultat
 
   return (
     <>
@@ -105,6 +175,20 @@ export function CatalogueBoutique({
       {/* Au-dessus de la grille et non en colonne latérale : une barre de
           filtres à gauche est la signature visuelle d'une boutique en ligne,
           registre que le skill 08 écarte. Même traitement que Réalisations. */}
+      {/* Recherche au-dessus des filtres : c'est l'entrée la plus directe,
+          et elle reste utilisable au clavier sans passer par les catégories. */}
+      <label htmlFor="recherche-boutique" className="sr-only">
+        {t('recherche_label')}
+      </label>
+      <input
+        id="recherche-boutique"
+        type="search"
+        value={recherche}
+        onChange={(e) => setRecherche(e.target.value)}
+        placeholder={t('recherche_placeholder')}
+        className="mb-6 w-full min-h-[44px] max-w-md border border-ko-line bg-ko-white px-4 py-3 text-base text-ko-ink transition-colors duration-200 placeholder:text-ko-muted focus:border-ko-blue focus:outline-none"
+      />
+
       <div role="group" aria-label={labelFiltres} className="flex flex-wrap gap-2">
         {filtres.map(({ valeur, label }) => {
           const actif = valeur === categorie
@@ -130,7 +214,7 @@ export function CatalogueBoutique({
 
       {/* ------------------------------ Grille ------------------------------ */}
       {visibles.length === 0 ? (
-        <p className="mt-14 text-base text-ko-muted">{aucunResultat}</p>
+        <p className="mt-14 text-base text-ko-muted">{messageVide}</p>
       ) : (
         <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {visibles.map((produit) => (
