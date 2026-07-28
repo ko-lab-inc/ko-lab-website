@@ -23,7 +23,16 @@ async function ajouterProduit(page: Page, index: number, attendu: number) {
   )
 }
 
-test.describe('Panier de demande de prix', () => {
+/**
+ * ⚠️ SUITE DÉSACTIVÉE — panier retiré de l'interface (PANIER_ACTIF = false,
+ * voir src/lib/config/features.ts). Le système de gestion et la tarification
+ * réelle par produit viendront dans un chantier séparé.
+ *
+ * Réactiver avec NEXT_PUBLIC_FEATURE_PANIER=true quand le chantier
+ * admin/vendeur démarre — ces tests documentent le comportement attendu et
+ * n'ont pas été supprimés.
+ */
+test.describe.skip('Panier de demande de prix', () => {
   test.beforeEach(async ({ page }) => {
     // Repart d'un panier vide : localStorage persiste entre les tests d'un
     // même contexte, ce qui rendrait les comptages dépendants de l'ordre.

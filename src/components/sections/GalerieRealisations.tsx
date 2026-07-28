@@ -110,10 +110,18 @@ export function GalerieRealisations({
       {visibles.length === 0 ? (
         <p className="mt-14 text-base text-ko-muted">{aucunResultat}</p>
       ) : (
-        // Grille asymétrique : la première carte occupe deux colonnes et deux
-        // rangées. Quand un filtre ne laisse qu'un seul résultat, elle s'étend
-        // simplement — la mise en page ne se casse pas.
-        <div className="mt-14 grid grid-cols-1 gap-5 lg:grid-cols-3 lg:grid-rows-2">
+        /* Grille asymétrique : la première carte occupe deux colonnes et deux
+           rangées. Quand un filtre ne laisse qu'un seul résultat, elle s'étend
+           simplement — la mise en page ne se casse pas.
+
+           PAS de `lg:grid-rows-2` : deux rangées explicites combinées à un
+           enfant en `h-full` créaient une dépendance circulaire — la rangée
+           se dimensionnait sur son contenu, qui se dimensionnait sur la
+           rangée. Avec plusieurs cartes les petites rompaient le cycle ; avec
+           une seule, la hauteur s'effondrait à zéro.
+           Les rangées sont désormais implicites et chaque carte porte son
+           propre ratio, donc une hauteur intrinsèque. */
+        <div className="mt-14 grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
           {visibles.map((r, i) => (
             <article
               key={r.cle}
@@ -129,7 +137,10 @@ export function GalerieRealisations({
               <div
                 className={cn(
                   'relative',
-                  i === 0 ? 'aspect-[3/2] lg:aspect-auto lg:h-full' : 'aspect-[4/3]',
+                  // Ratio TOUJOURS actif, quel que soit le nombre de cartes.
+                  // C'est lui qui donne sa hauteur à la carte : sans lui, un
+                  // parent sans hauteur explicite plus un `fill` s'effondrent.
+                  i === 0 ? 'aspect-[3/2]' : 'aspect-[4/3]',
                 )}
               >
                 {/*

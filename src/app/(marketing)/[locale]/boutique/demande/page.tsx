@@ -1,9 +1,10 @@
 import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
 import { PagePanier } from '@/components/sections/PagePanier'
 import { routing } from '@/i18n/routing'
+import { PANIER_ACTIF } from '@/lib/config/features'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -35,10 +36,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+/**
+ * ⚠️ Panier désactivé — voir src/lib/config/features.ts.
+ *
+ * PagePanier, son Context et ses traductions restent intacts ; seule cette
+ * route redirige. Un visiteur ayant gardé /boutique/demande en favori doit
+ * atterrir sur le catalogue, pas sur une 404 qui donnerait l'impression d'un
+ * site cassé.
+ */
 export default async function DemandePrixPage({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
+
+  if (!PANIER_ACTIF) {
+    redirect(`/${locale}${ROUTES.boutique}`)
+  }
 
   const t = await getTranslations('Panier')
 

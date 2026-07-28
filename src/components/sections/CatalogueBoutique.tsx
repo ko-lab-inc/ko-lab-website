@@ -8,6 +8,7 @@ import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { buttonVariants } from '@/components/ui/Button'
 import { usePanier } from '@/lib/panier/PanierContext'
 import { Link } from '@/i18n/navigation'
+import { PANIER_ACTIF } from '@/lib/config/features'
 import { ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
@@ -262,20 +263,27 @@ export function CatalogueBoutique({
                     Le mt-auto est porté par le bouton d'ajout juste en dessous. */}
                 <p className="label-mono mt-6 pb-4">{prixSurDemande}</p>
 
-                {/* Deux chemins distincts, pas un doublon :
-                    « Ajouter » constitue une demande groupée, « Demander un
-                    prix » part immédiatement pour ce seul produit. */}
-                <BoutonAjouter
-                  slug={produit.slug}
-                  nom={produit.nom}
-                  categorie={
-                    filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie
-                  }
-                />
+                {/* Panier désactivé (PANIER_ACTIF) : le sélecteur de quantité
+                    et l'ajout groupé n'ont de sens qu'avec lui — voir
+                    src/lib/config/features.ts. « Demander un prix » reste seul,
+                    et remonte en bouton principal puisqu'il devient l'unique
+                    action de la carte. */}
+                {PANIER_ACTIF && (
+                  <BoutonAjouter
+                    slug={produit.slug}
+                    nom={produit.nom}
+                    categorie={
+                      filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie
+                    }
+                  />
+                )}
 
                 <Link
                   href={`${ROUTES.contact}?type=boutique&produit=${produit.slug}`}
-                  className={`mt-3 ${buttonVariants({ variant: 'ghost', size: 'sm' })}`}
+                  className={cn(
+                    PANIER_ACTIF ? 'mt-3' : 'mt-auto',
+                    buttonVariants({ variant: PANIER_ACTIF ? 'ghost' : 'primary', size: 'sm' }),
+                  )}
                 >
                   {demanderPrix}
                   <span aria-hidden="true">→</span>

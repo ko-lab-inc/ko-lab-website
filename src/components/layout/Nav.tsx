@@ -7,6 +7,7 @@ import { Link, usePathname } from '@/i18n/navigation'
 import { useScrolled } from '@/hooks/useScrolled'
 import { buttonVariants } from '@/components/ui/Button'
 import { LienPanier } from '@/components/ui/LienPanier'
+import { PANIER_ACTIF } from '@/lib/config/features'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
 
@@ -144,8 +145,10 @@ export function Nav() {
             {t('changerLangue')}
           </Link>
 
-          {/* N'apparaît que si une demande de prix est en cours. */}
-          <LienPanier />
+          {/* Panier désactivé (PANIER_ACTIF) : le système de gestion et la
+              tarification réelle viendront dans un chantier séparé — voir
+              src/lib/config/features.ts. */}
+          {PANIER_ACTIF && <LienPanier />}
 
           <Link href={ROUTES.contact} className={buttonVariants({ variant: 'primary', size: 'sm' })}>
             {t('cta')}
@@ -155,9 +158,10 @@ export function Nav() {
         {/* ---------------------- Panier + hamburger (mobile) ---------------------- */}
         {/* Le panier est DANS la barre, pas dans le menu déroulant : enfermé
             derrière le hamburger, il serait invisible tant qu'on n'ouvre pas le
-            menu — or c'est un état en cours, il doit rester sous les yeux. */}
+            menu — or c'est un état en cours, il doit rester sous les yeux.
+            (Désactivé pour l'instant — voir PANIER_ACTIF plus haut.) */}
         <div className="flex items-center gap-2 lg:hidden">
-          <LienPanier />
+          {PANIER_ACTIF && <LienPanier />}
 
           <button
           type="button"
