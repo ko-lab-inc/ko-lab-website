@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/Icones'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
-import { CADRAGES, IMAGES } from '@/lib/images'
+import { CADRAGES, FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD, IMAGES } from '@/lib/images'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/routes'
 
@@ -29,14 +29,16 @@ export async function Besoins() {
   /**
    * Les photos 01 et 02 sont des contre-jours de fin de journée : leur ciel
    * ambré très saturé entrait en concurrence avec le bleu accent du site.
-   * La désaturation conserve les silhouettes et la profondeur, mais ramène la
-   * dominante orange au niveau des autres visuels.
+   * FILTRE_TERRAIN_CHAUD (images.ts) conserve les silhouettes et la
+   * profondeur, mais ramène la dominante orange au niveau des autres visuels —
+   * tout en partageant grayscale et brightness avec FILTRE_TERRAIN, pour que
+   * les quatre photos restent reconnaissables comme une même famille.
    *
-   * 03 et 04 n'en ont pas besoin : leur ambre vient d'une source ponctuelle
-   * (étincelles, feux de camion) sur fond noir, sans aplat coloré.
+   * 03 et 04 n'ont pas besoin de correction supplémentaire : leur ambre vient
+   * d'une source ponctuelle (impression 3D, feux de camion) sur fond noir,
+   * sans aplat coloré. Elles reçoivent tout de même FILTRE_TERRAIN — jamais
+   * `undefined` — pour partager le même socle que le reste du site.
    */
-  const FILTRE_AMBRE = { filter: 'saturate(0.5) contrast(1.1) brightness(0.9)' }
-
   const besoins = [
     {
       cle: 'deployer',
@@ -45,7 +47,7 @@ export async function Besoins() {
       Icone: IconeEquipe,
       src: IMAGES.besoinDeployer,
       cadrage: CADRAGES.besoinDeployer,
-      style: FILTRE_AMBRE,
+      style: FILTRE_TERRAIN_CHAUD,
     },
     {
       cle: 'installer',
@@ -54,7 +56,7 @@ export async function Besoins() {
       Icone: IconeGrue,
       src: IMAGES.besoinInstaller,
       cadrage: CADRAGES.besoinInstaller,
-      style: FILTRE_AMBRE,
+      style: FILTRE_TERRAIN_CHAUD,
     },
     {
       cle: 'fabriquer',
@@ -67,7 +69,7 @@ export async function Besoins() {
       // sous soudeur — tous deux disponibles pour d'autres pages.
       src: IMAGES.labImpression3d,
       cadrage: 'object-center',
-      style: undefined,
+      style: FILTRE_TERRAIN,
     },
     {
       cle: 'louer',
@@ -76,7 +78,7 @@ export async function Besoins() {
       Icone: IconeCamion,
       src: IMAGES.besoinLouer,
       cadrage: 'object-center',
-      style: undefined,
+      style: FILTRE_TERRAIN,
     },
   ] as const
 
@@ -144,12 +146,21 @@ export async function Besoins() {
                   className="mt-5 text-ko-blue transition-transform duration-300 group-hover:rotate-[5deg]"
                 />
 
-                {/* -4px au survol : animation E, sur transform uniquement. */}
-                <p className="label-mono mt-4 text-xs transition-transform duration-200 group-hover:-translate-y-1">
+                {/*
+                  Numéro agrandi — direction « écritures plus grosses » : un
+                  filigrane serif pâle, même vocabulaire que le « 01 » du hero
+                  et les numero-slide des pages de capacités, pas un décompte
+                  à annoncer : le lien et le titre suffisent à décrire la
+                  destination. -4px au survol conservé (animation E).
+                */}
+                <p
+                  aria-hidden="true"
+                  className="mt-3 select-none font-serif text-[56px] font-light leading-none text-ko-cream2 transition-transform duration-200 group-hover:-translate-y-1"
+                >
                   {numero}
                 </p>
 
-                <h3 className="mt-2 font-serif text-[22px] leading-tight text-ko-ink">
+                <h3 className="mt-3 font-serif text-[22px] leading-tight text-ko-ink">
                   {t(`${cle}_titre`)}
                 </h3>
 

@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server'
 import { buttonVariants } from '@/components/ui/Button'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
-import { CADRAGES, IMAGES } from '@/lib/images'
+import { CADRAGES, FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD, IMAGES } from '@/lib/images'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/routes'
 
@@ -30,12 +30,17 @@ export async function Realisations() {
   // La pastille porte la catégorie filtrable (skill 21), le titre décrit le
   // TYPE de projet attendu. Les trois titres différaient auparavant zéro : ils
   // affichaient tous « Réalisation à venir ».
+  // realisationTerrain et realisationInstallation reprennent les deux
+  // contre-jours ambrés de Besoins (grue, échafaudage) : même FILTRE_TERRAIN_CHAUD,
+  // sinon la même photo afficherait deux températures différentes sur la même
+  // page selon la section où elle apparaît.
   const grande = {
     cle: 'terrain',
     tag: tFiltres('filtre_terrain'),
     titre: t('titre_terrain'),
     src: IMAGES.realisationTerrain,
     cadrage: CADRAGES.besoinDeployer,
+    style: FILTRE_TERRAIN_CHAUD,
   }
 
   const petites = [
@@ -45,6 +50,7 @@ export async function Realisations() {
       titre: t('titre_installation'),
       src: IMAGES.realisationInstallation,
       cadrage: CADRAGES.besoinInstaller,
+      style: FILTRE_TERRAIN_CHAUD,
     },
     {
       cle: 'lab',
@@ -52,6 +58,7 @@ export async function Realisations() {
       titre: t('titre_lab'),
       src: IMAGES.realisationLab,
       cadrage: 'object-center',
+      style: FILTRE_TERRAIN,
     },
   ] as const
 
@@ -83,19 +90,21 @@ export async function Realisations() {
               titre={grande.titre}
               src={grande.src}
               cadrage={grande.cadrage}
+              style={grande.style}
               ratio="aspect-[3/2]"
             />
           </Reveal>
 
           {/* Deux petites empilées */}
           <div className="grid grid-cols-1 gap-5">
-            {petites.map(({ cle, tag, titre, src, cadrage }) => (
+            {petites.map(({ cle, tag, titre, src, cadrage, style }) => (
               <Reveal key={cle}>
                 <Carte
                   tag={tag}
                   titre={titre}
                   src={src}
                   cadrage={cadrage}
+                  style={style}
                   ratio="aspect-[4/3]"
                 />
               </Reveal>
@@ -116,6 +125,7 @@ function Carte({
   titre,
   src,
   cadrage,
+  style,
   ratio,
 }: {
   /** Catégorie filtrable (skill 21) — affichée en pastille haut-gauche. */
@@ -125,6 +135,7 @@ function Carte({
   titre: string
   src: string
   cadrage: string
+  style: { filter: string }
   ratio: string
 }) {
   return (
@@ -139,6 +150,7 @@ function Carte({
         fill
         quality={80}
         sizes="(max-width: 1024px) 100vw, 66vw"
+        style={style}
         className={cn(
           'object-cover transition-transform duration-[400ms] group-hover:scale-[1.01]',
           cadrage,

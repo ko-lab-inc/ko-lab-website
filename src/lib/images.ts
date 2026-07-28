@@ -19,6 +19,32 @@
  * ---------------------------------------------------------------------------
  */
 
+/**
+ * Traitement colorimétrique partagé — TOUTES les photos terrain du site.
+ *
+ * Avant unification : quatre copies indépendantes de la correction « ambre »
+ * (Besoins.tsx, GalerieRealisations.tsx, PageCapacite.tsx, nos-capacites/page.tsx),
+ * plus quatre bases différentes pour les photos plein cadre — le hero utilisait
+ * grayscale(0.1)/contrast(1.05)/brightness(0.85), PageCapacite un tout autre
+ * contrast(1.05)/brightness(0.65) sans grayscale, le hub capacités un troisième
+ * réglage encore. Deux sections (Lab, PreuveTerrain) n'avaient AUCUN filtre.
+ * Résultat : chaque section imposait sa propre température, sans qu'on
+ * reconnaisse « une photo KO-LAB » d'une page à l'autre.
+ *
+ * FILTRE_TERRAIN reprend tel quel le réglage du hero — c'est la première
+ * section vue, donc la référence. FILTRE_TERRAIN_CHAUD y ajoute uniquement la
+ * correction nécessaire aux deux contre-jours de fin de journée (grue,
+ * échafaudage), dont le ciel doré entrait en concurrence avec le bleu accent :
+ * mêmes grayscale et brightness que la base (c'est ce qui fait « famille »),
+ * plus une désaturation et un contraste légèrement accrus pour ramener l'ambre
+ * au même niveau que les autres photos (déjà noir + ambre par la source, pas
+ * par un aplat de ciel).
+ */
+export const FILTRE_TERRAIN = { filter: 'grayscale(0.1) contrast(1.05) brightness(0.85)' }
+export const FILTRE_TERRAIN_CHAUD = {
+  filter: 'grayscale(0.1) saturate(0.5) contrast(1.1) brightness(0.85)',
+}
+
 const PARAMS = 'fm=jpg&q=85&w=2400&auto=format&fit=crop'
 
 /** Construit l'URL finale. Le `w=2400` sert de source ; next/image redimensionne. */

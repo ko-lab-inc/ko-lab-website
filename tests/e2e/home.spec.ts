@@ -189,10 +189,10 @@ test.describe('Accueil', () => {
     await deroulerPuisRemonter(page)
 
     const { total, reveles } = await page.evaluate(() => {
-      // On ne compte que les .reveal RÉELLEMENT AFFICHÉS à ce breakpoint.
-      // La carte de stats du hero est en `hidden md:block` : masquée en
-      // display:none, elle n'intersecte jamais le viewport, donc ne reçoit
-      // jamais .in. Ce n'est pas une régression, c'est le comportement voulu.
+      // On ne compte que les .reveal RÉELLEMENT AFFICHÉS à ce breakpoint —
+      // garde-fou générique pour tout élément qu'un futur écran masquerait
+      // en display:none (il n'intersecterait alors jamais le viewport, donc
+      // ne recevrait jamais .in sans que ce soit une régression).
       const visibles = [...document.querySelectorAll<HTMLElement>('.reveal')].filter(
         (el) => el.offsetParent !== null,
       )

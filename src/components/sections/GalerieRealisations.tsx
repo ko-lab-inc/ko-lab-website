@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 
+import { FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD } from '@/lib/images'
 import { cn } from '@/lib/utils/cn'
 
 import type { CategorieRealisation } from '@/types'
@@ -48,8 +49,6 @@ type GalerieProps = {
   labelFiltres: string
   aucunResultat: string
 }
-
-const FILTRE_AMBRE = { filter: 'saturate(0.5) contrast(1.1) brightness(0.9)' }
 
 export function GalerieRealisations({
   realisations,
@@ -157,7 +156,7 @@ export function GalerieRealisations({
                   priority={i === 0}
                   quality={80}
                   sizes={i === 0 ? '(max-width: 1024px) 100vw, 66vw' : '(max-width: 1024px) 100vw, 33vw'}
-                  style={r.desature ? FILTRE_AMBRE : undefined}
+                  style={r.desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
                   className={cn(
                     'object-cover transition-transform duration-[400ms] group-hover:scale-[1.02]',
                     r.cadrage,

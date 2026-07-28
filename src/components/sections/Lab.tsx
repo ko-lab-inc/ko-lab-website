@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server'
 import { Parallax } from '@/components/ui/Parallax'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
-import { IMAGES } from '@/lib/images'
+import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
 
 /**
@@ -40,6 +40,7 @@ export async function Lab() {
               fill
               quality={80}
               sizes="(max-width: 1024px) 100vw, 50vw"
+              style={FILTRE_TERRAIN}
               className="object-cover object-center"
             />
           </Parallax>

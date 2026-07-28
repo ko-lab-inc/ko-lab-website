@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server'
 
 import { Parallax } from '@/components/ui/Parallax'
 import { Reveal } from '@/components/ui/Reveal'
-import { IMAGES } from '@/lib/images'
+import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
 
 /**
  * Preuve terrain — chiffre géant sur photo plein cadre.
@@ -45,6 +45,7 @@ export async function PreuveTerrain() {
           fill
           quality={80}
           sizes="100vw"
+          style={FILTRE_TERRAIN}
           className="object-cover object-center"
         />
       </Parallax>

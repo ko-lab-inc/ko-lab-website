@@ -5,6 +5,7 @@ import { buttonVariants } from '@/components/ui/Button'
 import { Parallax } from '@/components/ui/Parallax'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
+import { FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
@@ -35,8 +36,6 @@ type PageCapaciteProps = {
   /** Désature les contre-jours ambrés, trop saturés pour la palette. */
   desature?: boolean
 }
-
-const FILTRE_AMBRE = { filter: 'saturate(0.5) contrast(1.1) brightness(0.9)' }
 
 export async function PageCapacite({
   numero,
@@ -75,8 +74,8 @@ export async function PageCapacite({
             priority
             quality={85}
             sizes="100vw"
-            style={desature ? FILTRE_AMBRE : undefined}
-            className={cn('object-cover [filter:contrast(1.05)_brightness(0.65)]', cadrage)}
+            style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
+            className={cn('object-cover', cadrage)}
           />
         </Parallax>
 

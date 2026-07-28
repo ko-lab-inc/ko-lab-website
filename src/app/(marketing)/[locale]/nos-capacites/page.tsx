@@ -7,7 +7,7 @@ import { buttonVariants } from '@/components/ui/Button'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
-import { CADRAGES, IMAGES } from '@/lib/images'
+import { CADRAGES, FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD, IMAGES } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
@@ -70,8 +70,6 @@ const ITEMS_7 = [
   'item_6',
   'item_7',
 ] as const
-
-const FILTRE_AMBRE = { filter: 'saturate(0.5) contrast(1.1) brightness(0.9)' }
 
 export default async function CapacitesHubPage({ params }: Props) {
   const { locale } = await params
@@ -159,7 +157,8 @@ export default async function CapacitesHubPage({ params }: Props) {
           priority
           quality={85}
           sizes="100vw"
-          className="object-cover object-center [filter:grayscale(0.15)_contrast(1.05)_brightness(0.7)]"
+          style={FILTRE_TERRAIN}
+          className="object-cover object-center"
         />
 
         <div
@@ -221,7 +220,7 @@ export default async function CapacitesHubPage({ params }: Props) {
                         fill
                         quality={80}
                         sizes="(max-width: 1024px) 100vw, 50vw"
-                        style={desature ? FILTRE_AMBRE : undefined}
+                        style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
                         className={cn('object-cover', cadrage)}
                       />
                     </div>
