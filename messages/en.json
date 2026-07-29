@@ -573,7 +573,9 @@
     "livreurs_point_3": "Whether KO-LAB delivers itself or uses a carrier changes everything downstream.",
     "reglages_point_1": "The NEXT_PUBLIC_FEATURE_PANIER and NEXT_PUBLIC_SOLUTIONS_MODULAIRES flags live on Vercel and need a redeploy.",
     "reglages_point_2": "Site copy lives in messages/fr.json and messages/en.json, versioned with the code.",
-    "reglages_point_3": "Making all of it editable here means a configuration table and a cache to invalidate."
+    "reglages_point_3": "Making all of it editable here means a configuration table and a cache to invalidate.",
+    "role_vendeur": "Seller",
+    "role_livreur": "Courier"
   },
   "Aide": {
     "ouvrir": "Ask a question",

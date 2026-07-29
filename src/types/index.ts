@@ -63,10 +63,19 @@ export type TypePoste = (typeof TYPES_POSTE)[number]
  * à utiliser pour toute décision d'autorisation plutôt que `role !== 'invite'`
  * — un futur quatrième rôle sans droits casserait la seconde forme en silence.
  */
-export const ROLES = ['admin', 'editor', 'invite'] as const
+export const ROLES = ['admin', 'editor', 'vendeur', 'livreur', 'invite'] as const
 export type Role = (typeof ROLES)[number]
 
-/** Rôles donnant accès à l'espace équipe. Miroir exact des politiques de 0002. */
+/**
+ * Rôles donnant accès à l'espace de gestion. Miroir EXACT des politiques
+ * de 0002, qui nomment 'admin' et 'editor' et personne d'autre.
+ *
+ * ⚠️ 'vendeur' et 'livreur' existent (migration 0006) mais n'y sont PAS, et
+ * ne doivent pas y être ajoutés tant que les politiques RLS correspondantes
+ * n'existent pas. Cette constante gouverne l'accès à /admin : y verser un rôle
+ * sans politique lui donnerait les droits complets d'un editor, y compris la
+ * lecture de demandes_contact. Le détail de ce qui bloque est dans 0006.
+ */
 export const ROLES_EQUIPE = ['admin', 'editor'] as const satisfies readonly Role[]
 export type RoleEquipe = (typeof ROLES_EQUIPE)[number]
 

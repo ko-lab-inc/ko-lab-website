@@ -168,6 +168,16 @@ export async function changerMotDePasse(
   donnees: FormData,
 ): Promise<EtatMotDePasse> {
   const locale = String(donnees.get('locale') ?? 'fr')
+
+  // Manquait ici alors que les trois autres actions du parcours l'avaient —
+  // relevé en passant la checklist du skill sécurité production (§ 4). Cette
+  // action exige déjà une session valide obtenue par le lien reçu par
+  // courriel, donc elle n'est pas brute-forçable ; mais elle écrit, et une
+  // action d'écriture sans plafond finit toujours par servir à autre chose.
+  if (rateLimit(`nouveau-mdp:${await adresse()}`, { max: 10, windowMs: 900_000 })) {
+    return { erreur: 'trop_de_tentatives' }
+  }
+
   const analyse = schemaMotDePasse.safeParse(donnees.get('motDePasse'))
   if (!analyse.success) return { erreur: 'donnees' }
 

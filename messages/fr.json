@@ -573,7 +573,9 @@
     "livreurs_point_3": "Décider si KO-LAB livre elle-même ou passe par un transporteur change tout le reste.",
     "reglages_point_1": "Les drapeaux NEXT_PUBLIC_FEATURE_PANIER et NEXT_PUBLIC_SOLUTIONS_MODULAIRES vivent sur Vercel et exigent un redéploiement.",
     "reglages_point_2": "Les textes du site sont dans messages/fr.json et messages/en.json, versionnés avec le code.",
-    "reglages_point_3": "Rendre tout ça modifiable ici suppose une table de configuration et un cache à invalider."
+    "reglages_point_3": "Rendre tout ça modifiable ici suppose une table de configuration et un cache à invalider.",
+    "role_vendeur": "Vendeur",
+    "role_livreur": "Livreur"
   },
   "Aide": {
     "ouvrir": "Poser une question",

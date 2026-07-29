@@ -37,9 +37,13 @@ export default async function UtilisateursPage({ params }: Props) {
   const moi = profils?.find((p) => p.id === user?.id)
   const estAdmin = moi?.role === 'admin'
 
+  // Ordre du plus au moins privilégié : c'est celui du sélecteur, et il rend
+  // la portée de chaque rôle lisible sans commentaire.
   const libellesRoles: Record<Role, string> = {
     admin: t('role_admin'),
     editor: t('role_editor'),
+    vendeur: t('role_vendeur'),
+    livreur: t('role_livreur'),
     invite: t('role_invite'),
   }
 
