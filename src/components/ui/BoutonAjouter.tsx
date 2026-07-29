@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 
 import { buttonVariants } from '@/components/ui/Button'
+import { IconeMoins, IconePlus } from '@/components/ui/Icones'
 import { usePanier } from '@/lib/panier/PanierContext'
 import { cn } from '@/lib/utils/cn'
 
@@ -56,7 +57,7 @@ export function BoutonAjouter({
           aria-label={`${t('quantite')} −`}
           className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
         >
-          −
+          <IconeMoins taille={14} />
         </button>
 
         <span aria-live="polite" className="min-w-[2.5rem] text-center font-mono text-sm text-ko-ink">
@@ -69,7 +70,7 @@ export function BoutonAjouter({
           aria-label={`${t('quantite')} +`}
           className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
         >
-          +
+          <IconePlus taille={14} />
         </button>
       </div>
 

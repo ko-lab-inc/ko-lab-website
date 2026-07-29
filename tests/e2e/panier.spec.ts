@@ -1,10 +1,12 @@
 import { expect, test, type Page } from '@playwright/test'
 
 /**
- * Panier de demande de prix groupée.
+ * Panier / sélection groupée.
  *
- * Ce n'est PAS un panier de commerce : les assertions vérifient donc aussi
- * l'absence de vocabulaire marchand et de tout montant.
+ * Ce n'est PAS un panier de commerce : le prix indicatif par produit et le
+ * total sont affichés (catalogue, fiche produit, récapitulatif), mais aucun
+ * vocabulaire d'achat ferme (commande, achat, checkout) n'apparaît jamais —
+ * les assertions vérifient ça.
  */
 
 const CLE = 'kolab_panier'
@@ -18,7 +20,7 @@ const CLE = 'kolab_panier'
  */
 async function ajouterProduit(page: Page, index: number, attendu: number) {
   await page.getByRole('button', { name: /Ajouter au panier/ }).nth(index).click()
-  await expect(page.getByRole('link', { name: /Voir ma demande/ }).first()).toContainText(
+  await expect(page.getByRole('link', { name: /Voir ma sélection/ }).first()).toContainText(
     String(attendu),
   )
 }
@@ -28,7 +30,7 @@ async function ajouterProduit(page: Page, index: number, attendu: number) {
  * voir src/lib/config/features.ts. Si le drapeau repasse à false, re-skip
  * cette suite plutôt que la laisser échouer silencieusement.
  */
-test.describe('Panier de demande de prix', () => {
+test.describe('Panier / sélection', () => {
   test.beforeEach(async ({ page }) => {
     // Repart d'un panier vide : localStorage persiste entre les tests d'un
     // même contexte, ce qui rendrait les comptages dépendants de l'ordre.
@@ -38,7 +40,7 @@ test.describe('Panier de demande de prix', () => {
   })
 
   test('1 · ajout — le badge apparaît et se met à jour', async ({ page }) => {
-    const lien = page.getByRole('link', { name: /Voir ma demande/ })
+    const lien = page.getByRole('link', { name: /Voir ma sélection/ })
 
     // Aucun panier : pas d'icône. Une icône vide en permanence serait un
     // élément décoratif sans information (skill 08).
@@ -64,7 +66,7 @@ test.describe('Panier de demande de prix', () => {
 
     await page.reload()
 
-    await expect(page.getByRole('link', { name: /Voir ma demande/ }).first()).toContainText('2')
+    await expect(page.getByRole('link', { name: /Voir ma sélection/ }).first()).toContainText('2')
 
     const stocke = await page.evaluate((cle) => window.localStorage.getItem(cle), CLE)
     expect(JSON.parse(stocke ?? '[]')).toHaveLength(2)
@@ -76,13 +78,15 @@ test.describe('Panier de demande de prix', () => {
     await page.goto('/fr/boutique/demande')
 
     // Portée à la liste du panier : `li` seul capterait aussi les listes de
-    // la nav et du pied de page.
-    const lignes = page.locator('main ul li').filter({ has: page.locator('input[type="number"]') })
+    // la nav et du pied de page. Même contrôle +/- que la boutique
+    // (BoutonAjouter) — plus de <input type="number"> natif sur cette page.
+    const lignes = page.locator('main ul li').filter({ has: page.getByLabel(/Quantité \+/) })
     await expect(lignes).toHaveCount(2)
 
-    const quantite = page.locator('input[type="number"]').first()
-    await quantite.fill('4')
-    await quantite.blur()
+    const plus = lignes.first().getByLabel(/Quantité \+/)
+    await plus.click()
+    await plus.click()
+    await plus.click()
     await page.waitForTimeout(400)
 
     const apresQuantite = await page.evaluate((cle) => window.localStorage.getItem(cle), CLE)
@@ -92,18 +96,36 @@ test.describe('Panier de demande de prix', () => {
     await expect(lignes).toHaveCount(1)
   })
 
-  test('5 · aucun montant ni vocabulaire marchand', async ({ page }) => {
+  test('5 · prix par article ET total, tous indicatifs', async ({ page }) => {
+    // ⚠️ `.nth(1)` après un premier ajout NE cible PAS le 2ᵉ produit du
+    // catalogue : le bouton du 1ᵉʳ passe en « Ajouté » et sort du sélecteur
+    // /Ajouter au panier/, donc tous les index suivants se décalent d'un cran
+    // (X1-Carbon 1800 $ puis AMS 300 $, pas X1-Carbon puis P1S). Total
+    // attendu ci-dessous vérifié en conséquence, pas dans l'ordre du
+    // catalogue.
     await ajouterProduit(page, 0, 1)
+    await ajouterProduit(page, 1, 2)
     await page.goto('/fr/boutique/demande')
     await page.waitForTimeout(500)
 
-    const texte = (await page.locator('main').innerText()).toLowerCase()
+    // Intl.NumberFormat (fr-CA) sépare les milliers par une espace insécable
+    // (U+00A0 ou U+202F), pas une espace normale — invisible à l'œil mais
+    // différente pour `toContain`. Normalisée avant comparaison.
+    const texte = (await page.locator('main').innerText())
+      .toLowerCase()
+      .replace(/[  ]/g, ' ')
 
-    for (const interdit of ['commande', 'achat', 'checkout', 'total', 'panier']) {
+    // Toujours interdit : vocabulaire d'achat ferme, même avec un total
+    // affiché — la sélection reste sujette à confirmation, jamais une
+    // facture ou une commande passée.
+    for (const interdit of ['commande', 'achat', 'checkout', 'panier']) {
       expect(texte, `mot interdit trouvé : ${interdit}`).not.toContain(interdit)
     }
-    // Aucun montant : ni symbole, ni séparateur décimal monétaire.
-    expect(texte).not.toMatch(/\d+[,.]\d{2}\s*\$/)
+    // Les deux prix indicatifs individuels, et leur somme (2100 $).
+    expect(texte).toContain('1 800')
+    expect(texte).toContain('300')
+    expect(texte).toContain('total indicatif')
+    expect(texte).toContain('2 100')
   })
 
   test('6 · envoi groupé — le message est pré-rempli avec la liste', async ({ page }) => {
@@ -111,7 +133,7 @@ test.describe('Panier de demande de prix', () => {
     await ajouterProduit(page, 1, 2)
     await page.goto('/fr/boutique/demande')
 
-    await page.getByRole('link', { name: /Envoyer ma demande de prix/ }).click()
+    await page.getByRole('link', { name: /Confirmer ma sélection/ }).click()
     await page.waitForURL('**/contact**')
     await page.waitForTimeout(800)
 

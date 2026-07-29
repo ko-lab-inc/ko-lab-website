@@ -5,6 +5,7 @@ import { notFound, redirect } from 'next/navigation'
 import { PagePanier } from '@/components/sections/PagePanier'
 import { routing } from '@/i18n/routing'
 import { PANIER_ACTIF } from '@/lib/config/features'
+import { construireProduits } from '@/lib/produits'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -55,6 +56,14 @@ export default async function DemandePrixPage({ params }: Props) {
 
   const t = await getTranslations('Panier')
 
+  // Prix indicatifs, relus depuis la même source que la boutique (jamais
+  // stockés dans le panier lui-même) : la fiche reflète ainsi toujours le
+  // prix affiché aujourd'hui, pas celui du jour de l'ajout.
+  const tBoutique = await getTranslations('Boutique')
+  const prix = Object.fromEntries(
+    construireProduits(tBoutique).map((p) => [p.slug, p.prixIndicatif]),
+  )
+
   return (
     <>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
@@ -69,7 +78,7 @@ export default async function DemandePrixPage({ params }: Props) {
 
       <section className="bg-ko-white py-16 lg:py-24">
         <div className="mx-auto max-w-container px-6 lg:px-12">
-          <PagePanier />
+          <PagePanier prix={prix} />
         </div>
       </section>
     </>

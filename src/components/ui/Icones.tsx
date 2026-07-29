@@ -106,6 +106,35 @@ export function IconeCamion(props: IconeProps) {
 }
 
 /* =============================================================================
+ * Contrôle de quantité
+ * ========================================================================== */
+
+/**
+ * − et + du sélecteur de quantité, en trait plutôt qu'en glyphe de texte.
+ *
+ * Les caractères « − »/« + » nus, dans BoutonAjouter, restaient d'une
+ * lisibilité au repos beaucoup plus faible que leur état survolé (couleur
+ * bleue) — au clic ou au tactile, ce contraste n'existe jamais, le contrôle
+ * se lisait comme du texte flottant plutôt que comme un bouton. Un trait
+ * epais à taille fixe règle ça indépendamment du rendu de police.
+ */
+export function IconeMoins(props: IconeProps) {
+  return (
+    <Icone {...props} strokeWidth={2}>
+      <path d="M5 12h14" />
+    </Icone>
+  )
+}
+
+export function IconePlus(props: IconeProps) {
+  return (
+    <Icone {...props} strokeWidth={2}>
+      <path d="M12 5v14M5 12h14" />
+    </Icone>
+  )
+}
+
+/* =============================================================================
  * Badges boutique
  * ========================================================================== */
 

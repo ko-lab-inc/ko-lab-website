@@ -486,19 +486,21 @@
   },
 
   "Panier": {
-    "titre": "My price request",
-    "intro": "The products you've selected. Send them as a single request — we'll come back with prices and availability.",
-    "ouvrir": "View my request",
+    "titre": "My selection",
+    "intro": "The products you've selected, with their indicative price. Confirm your selection — we'll come back to finalize the exact price and availability.",
+    "ouvrir": "View my selection",
     "articles": "{n, plural, =0 {No products} one {# product} other {# products}}",
     "ajouter": "Add to cart",
     "ajoute": "Added",
     "retirer": "Remove",
     "quantite": "Quantity",
-    "vide_titre": "Your request is empty",
+    "vide_titre": "Your selection is empty",
     "vide_texte": "Browse the catalogue and add the products you're interested in.",
     "vide_lien": "View the catalogue",
-    "envoyer": "Send my price request",
-    "entete_message": "Products I'd like a price for:",
+    "envoyer": "Confirm my selection",
+    "total_indicatif": "Indicative total: {prix}",
+    "total_note_partiel": "Excludes products priced on request.",
+    "entete_message": "Selected products (indicative prices, to be confirmed):",
     "continuer": "Back to the catalogue"
   },
 

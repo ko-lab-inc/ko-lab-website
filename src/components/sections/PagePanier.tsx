@@ -1,22 +1,36 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useFormatter, useTranslations } from 'next-intl'
 
 import { buttonVariants } from '@/components/ui/Button'
+import { IconeMoins, IconePlus } from '@/components/ui/Icones'
 import { Link } from '@/i18n/navigation'
 import { usePanier } from '@/lib/panier/PanierContext'
 import { ROUTES } from '@/lib/routes'
 
 /**
- * Récapitulatif de la demande de prix.
+ * Récapitulatif de la sélection.
  *
- * Aucun montant, aucun sous-total, aucun total : le catalogue fonctionne sur
- * demande de prix, afficher une somme contredirait le positionnement et
- * transformerait la page en facture (skill 21, phase 1).
+ * Le prix indicatif par ligne est affiché — cohérent avec la boutique et la
+ * fiche produit, qui le montrent déjà — de même que le total, demandé par
+ * Christian une fois les prix visibles partout ailleurs dans le parcours.
+ * « Indicatif » reste le mot clé, répété sur le total lui-même : la somme de
+ * prix provisoires reste elle-même provisoire, jamais une facture.
  */
-export function PagePanier() {
+export function PagePanier({ prix }: { prix: Record<string, number | null> }) {
   const t = useTranslations('Panier')
+  const tBoutique = useTranslations('Boutique')
+  const format = useFormatter()
   const { articles, pret, retirer, changerQuantite } = usePanier()
+
+  // Somme uniquement les articles dont le prix indicatif est connu — un
+  // article `null` (prix sur demande) ne doit ni fausser le total ni le
+  // bloquer silencieusement.
+  const total = articles.reduce((somme, a) => {
+    const p = prix[a.slug]
+    return p != null ? somme + p * a.quantite : somme
+  }, 0)
+  const nbSansPrix = articles.filter((a) => prix[a.slug] == null).length
 
   // Rien tant que localStorage n'est pas lu : le serveur ignore le panier,
   // afficher « vide » puis le contenu produirait un clignotement.
@@ -42,46 +56,96 @@ export function PagePanier() {
       <p className="label-mono">{t('articles', { n: articles.length })}</p>
 
       <ul className="mt-6 divide-y divide-ko-line border-y border-ko-line">
-        {articles.map((article) => (
-          <li
-            key={article.slug}
-            className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8"
-          >
-            <div className="min-w-0">
-              <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
-                {article.categorie}
-              </p>
-              <p className="mt-2 font-serif text-[20px] leading-tight text-ko-ink">
-                {article.nom}
-              </p>
-            </div>
+        {articles.map((article) => {
+          const prixArticle = prix[article.slug]
 
-            <div className="flex shrink-0 items-center gap-6">
-              <label className="flex items-center gap-3">
-                <span className="font-mono text-[10px] uppercase tracking-widest text-ko-muted">
-                  {t('quantite')}
-                </span>
-                <input
-                  type="number"
-                  min={1}
-                  max={99}
-                  value={article.quantite}
-                  onChange={(e) => changerQuantite(article.slug, Number(e.target.value))}
-                  className="min-h-[44px] w-20 border border-ko-line bg-ko-white px-3 py-2 text-base text-ko-ink focus:border-ko-blue focus:outline-none"
-                />
-              </label>
+          return (
+            <li
+              key={article.slug}
+              className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8"
+            >
+              <div className="min-w-0">
+                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
+                  {article.categorie}
+                </p>
+                <p className="mt-2 font-serif text-[20px] leading-tight text-ko-ink">
+                  {article.nom}
+                </p>
+                {prixArticle != null && (
+                  <p className="mt-1 font-mono text-sm text-ko-muted">
+                    {tBoutique('a_partir_de', {
+                      prix: format.number(prixArticle, {
+                        style: 'currency',
+                        currency: 'CAD',
+                        maximumFractionDigits: 0,
+                      }),
+                    })}
+                  </p>
+                )}
+              </div>
 
-              <button
-                type="button"
-                onClick={() => retirer(article.slug)}
-                className="min-h-[44px] border-b border-ko-line pb-0.5 text-sm text-ko-muted transition-colors duration-200 hover:border-ko-ink hover:text-ko-ink"
-              >
-                {t('retirer')}
-              </button>
-            </div>
-          </li>
-        ))}
+              <div className="flex shrink-0 items-center gap-6">
+                {/* Même contrôle que la boutique (BoutonAjouter) : un
+                    sélecteur natif <input type=number> ici brisait la
+                    cohérence visuelle et dépendait du thème du navigateur
+                    pour ses flèches +/-, parfois à peine visibles. */}
+                <div className="flex items-center border border-ko-line">
+                  <button
+                    type="button"
+                    onClick={() => changerQuantite(article.slug, Math.max(1, article.quantite - 1))}
+                    disabled={article.quantite <= 1}
+                    aria-label={`${t('quantite')} −`}
+                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
+                  >
+                    <IconeMoins taille={14} />
+                  </button>
+
+                  <span
+                    aria-live="polite"
+                    className="min-w-[2.5rem] text-center font-mono text-sm text-ko-ink"
+                  >
+                    {article.quantite}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => changerQuantite(article.slug, article.quantite + 1)}
+                    aria-label={`${t('quantite')} +`}
+                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+                  >
+                    <IconePlus taille={14} />
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => retirer(article.slug)}
+                  className="min-h-[44px] border-b border-ko-line pb-0.5 text-sm text-ko-muted transition-colors duration-200 hover:border-ko-ink hover:text-ko-ink"
+                >
+                  {t('retirer')}
+                </button>
+              </div>
+            </li>
+          )
+        })}
       </ul>
+
+      {total > 0 && (
+        <div className="mt-8 flex items-baseline justify-between border-b border-ko-line pb-8">
+          <p className="font-mono text-base text-ko-ink">
+            {t('total_indicatif', {
+              prix: format.number(total, {
+                style: 'currency',
+                currency: 'CAD',
+                maximumFractionDigits: 0,
+              }),
+            })}
+          </p>
+          {nbSansPrix > 0 && (
+            <p className="text-sm text-ko-muted">{t('total_note_partiel')}</p>
+          )}
+        </div>
+      )}
 
       <div className="mt-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
         {/* `?type=boutique` sert uniquement à présélectionner le type de
