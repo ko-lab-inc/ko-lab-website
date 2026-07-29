@@ -49,7 +49,6 @@
       "description": "Start a project, request a quote or ask the KO-LAB team a question."
     }
   },
-
   "Nav": {
     "accueil": "Home",
     "capacites": "Capabilities",
@@ -70,7 +69,6 @@
     "menuPrincipal": "Main navigation",
     "changerLangue": "Français"
   },
-
   "Home": {
     "hero": {
       "tag": "From idea to the field",
@@ -198,7 +196,6 @@
       "bouton": "Start a project"
     }
   },
-
   "Capacites": {
     "hub": {
       "label": "Capabilities",
@@ -271,7 +268,6 @@
       "item_8": "Access to more machinery through GM Locations"
     }
   },
-
   "Realisations": {
     "title": "Our Work",
     "intro": "Field operations, installations, fabrication and deployments.",
@@ -298,7 +294,6 @@
       }
     }
   },
-
   "Boutique": {
     "title": "Shop",
     "positionnement": "Selected equipment, backed by a team that actually uses it.",
@@ -368,7 +363,6 @@
       "xtool_f1_texte": "Portable fibre and diode engraver, for marking metal parts."
     }
   },
-
   "Location": {
     "title": "Equipment Rental",
     "intro": "Trailers, lifts, tools and installation gear. Full inventory and availability are on our rental platform.",
@@ -387,7 +381,6 @@
     "cat_mobilier_titre": "Event furniture",
     "cat_mobilier_texte": "Infrastructure, temporary lighting and power distribution."
   },
-
   "Contact": {
     "title": "Start a project",
     "intro": "Tell us about the project. We'll get back to you within 48 hours.",
@@ -425,7 +418,6 @@
       "texte": "We'll get back to you within 48 hours."
     }
   },
-
   "Carrieres": {
     "title": "Careers",
     "intro": "KO-LAB crews work in the field, across the Outaouais region and elsewhere in Quebec.",
@@ -465,7 +457,6 @@
       }
     }
   },
-
   "APropos": {
     "title": "About",
     "signature": "From idea to the field.",
@@ -487,7 +478,6 @@
     "methode_3_texte": "Setup, support during the operation, teardown, removal and storage. The job ends when the site is handed back.",
     "chiffres_label": "In brief"
   },
-
   "Footer": {
     "signature": "From idea to the field.",
     "capacites_titre": "Capabilities",
@@ -498,7 +488,6 @@
     "droits": "KO-LAB Inc. All rights reserved.",
     "confidentialite": "Privacy policy"
   },
-
   "Panier": {
     "titre": "My selection",
     "intro": "The products you've selected, with their indicative price. Confirm your selection — we'll come back to finalize the exact price and availability.",
@@ -517,7 +506,6 @@
     "entete_message": "Selected products (indicative prices, to be confirmed):",
     "continuer": "Back to the catalogue"
   },
-
   "Commun": {
     "chargement": "Loading…",
     "erreur_titre": "Something went wrong",
@@ -540,7 +528,52 @@
     "statut_nouveau": "New",
     "aucune_demande": "No requests yet.",
     "erreur_lecture": "Reading the requests failed. Let Moussa know.",
-    "a_venir": "Catalogue, projects and member management: coming. Product prices and photos are still hardcoded."
+    "a_venir": "Catalogue, projects and member management: coming. Product prices and photos are still hardcoded.",
+    "nav_tableau": "Dashboard",
+    "nav_catalogue": "Catalogue",
+    "nav_utilisateurs": "Users",
+    "nav_vendeurs": "Sellers",
+    "nav_livreurs": "Couriers",
+    "nav_reglages": "Settings",
+    "section_gestion": "Management",
+    "section_equipe": "Team",
+    "section_compte": "Account",
+    "utilisateurs_titre": "Users",
+    "utilisateurs_intro": "Accounts created on the site. A new account has no rights at all — this is where they are granted.",
+    "colonne_courriel": "Email",
+    "colonne_role": "Role",
+    "colonne_cree": "Created",
+    "colonne_action": "Action",
+    "role_invite": "No access",
+    "enregistrer": "Save",
+    "aucun_utilisateur": "No accounts yet.",
+    "reserve_admin_titre": "Administrators only",
+    "reserve_admin_texte": "Only an administrator can change roles. Your account is an editor.",
+    "soi_meme": "You",
+    "a_construire": "To be built",
+    "catalogue_titre": "Catalogue",
+    "catalogue_texte": "The twelve products, their prices and photos are still hardcoded in src/lib/produits.ts. The produits_boutique table exists and is empty: the catalogue must be moved into it before it can be managed here.",
+    "vendeurs_titre": "Sellers",
+    "vendeurs_texte": "No notion of a seller exists in the database yet. To decide first: is a seller an account with a role, or a separate entity attached to products? The two lead to different schemas.",
+    "livreurs_titre": "Couriers",
+    "livreurs_texte": "Same question as for sellers, plus one more: without orders in the database, a courier has nothing to be assigned. The shop currently works on quote requests, with no orders.",
+    "reglages_titre": "Settings",
+    "reglages_texte": "Feature flags, contact details, site copy. Today split between Vercel environment variables and translation files.",
+    "erreur_soi_meme": "You cannot change your own role. Ask another administrator.",
+    "colonne_type": "Type",
+    "stat_catalogue_precision": "Still hardcoded",
+    "catalogue_point_1": "Move the twelve products from src/lib/produits.ts into the produits_boutique table (it exists and is empty).",
+    "catalogue_point_2": "Decide where images live: Supabase Storage, or public/images as today.",
+    "catalogue_point_3": "Three machine prices are still provisional — X1-Carbon, xTool P2, xTool F1.",
+    "vendeurs_point_1": "Is a seller an account with a role, or a separate entity attached to products?",
+    "vendeurs_point_2": "If it is a role, add the value to the profils.role CHECK and write the matching RLS policies.",
+    "vendeurs_point_3": "Does a seller see every request, or only those about their own products?",
+    "livreurs_point_1": "Same modelling question as for sellers.",
+    "livreurs_point_2": "There are no orders in the database: the shop works on quote requests. A courier has nothing to be assigned.",
+    "livreurs_point_3": "Whether KO-LAB delivers itself or uses a carrier changes everything downstream.",
+    "reglages_point_1": "The NEXT_PUBLIC_FEATURE_PANIER and NEXT_PUBLIC_SOLUTIONS_MODULAIRES flags live on Vercel and need a redeploy.",
+    "reglages_point_2": "Site copy lives in messages/fr.json and messages/en.json, versioned with the code.",
+    "reglages_point_3": "Making all of it editable here means a configuration table and a cache to invalidate."
   },
   "Aide": {
     "ouvrir": "Ask a question",
@@ -572,7 +605,7 @@
     "intro": "A validation email will be sent to confirm your address.",
     "courriel": "Email",
     "mot_de_passe": "Password",
-    "aide_mot_de_passe": "10 characters minimum.",
+    "aide_mot_de_passe": "8 characters minimum.",
     "confirmation": "Confirm password",
     "creer": "Create my account",
     "en_cours": "Creating…",
@@ -580,6 +613,7 @@
     "succes_texte": "If this address can receive an account, a validation link has just been sent to it. It expires after one hour.",
     "erreur_donnees": "Check the address and the password.",
     "erreur_confirmation": "The two passwords do not match.",
+    "erreur_faible": "This password is too easy to guess. Avoid common words and your email address.",
     "erreur_tentatives": "Too many attempts. Try again in an hour.",
     "erreur_refuse": "Account creation is temporarily closed.",
     "erreur_courriel": "The validation email could not be sent. This is not on you: try again later, or write to info@ko-lab.ca.",
@@ -598,11 +632,12 @@
     "nouveau_titre": "New password",
     "nouveau_intro": "Choose a new password for your account.",
     "mot_de_passe": "New password",
-    "aide_mot_de_passe": "10 characters minimum.",
+    "aide_mot_de_passe": "8 characters minimum.",
     "confirmation": "Confirm password",
     "enregistrer": "Save",
     "enregistrement": "Saving…",
     "erreur_donnees": "Password too short, or the two entries differ.",
+    "erreur_faible": "This password is too easy to guess. Avoid common words and your email address.",
     "erreur_tentatives": "Too many attempts. Try again in fifteen minutes.",
     "erreur_serveur": "The operation failed. Try again.",
     "lien_invalide_titre": "Link expired or already used",

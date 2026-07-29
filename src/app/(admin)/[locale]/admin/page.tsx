@@ -2,13 +2,21 @@ import { hasLocale } from 'next-intl'
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
+import {
+  EnteteAdmin,
+  EnteteTableau,
+  GrilleStats,
+  PanneauAdmin,
+  TuileStat,
+} from '@/components/layout/CadreAdmin'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
+import { SLUGS_PRODUITS } from '@/lib/produits'
 
 type Props = { params: Promise<{ locale: string }> }
 
 /**
- * Tableau de bord de l'espace équipe — premier écran.
+ * Tableau de bord de l'espace équipe.
  *
  * Il montre les DEMANDES REÇUES, et pas des statistiques décoratives : c'est
  * la seule donnée que le site produit aujourd'hui, et la seule qui se périme.
@@ -19,8 +27,6 @@ type Props = { params: Promise<{ locale: string }> }
  * role key. Un contournement du RLS ici afficherait des données qu'un editor
  * n'a peut-être pas le droit de voir, et masquerait toute erreur de politique
  * jusqu'au jour où elle compte.
- *
- * Rendu dynamique par nature : `createClient()` lit les cookies.
  */
 export default async function TableauDeBordPage({ params }: Props) {
   const { locale } = await params
@@ -31,77 +37,76 @@ export default async function TableauDeBordPage({ params }: Props) {
   const supabase = await createClient()
 
   // `head: true` : on veut le compte, pas les lignes. Ramener toute la table
-  // pour en mesurer la longueur deviendrait coûteux dès quelques centaines de
-  // demandes.
-  const [{ count: total }, { count: nouvelles }, { data: recentes, error }] = await Promise.all([
-    supabase.from('demandes_contact').select('*', { count: 'exact', head: true }),
-    supabase
-      .from('demandes_contact')
-      .select('*', { count: 'exact', head: true })
-      .eq('statut', 'nouveau'),
-    supabase
-      .from('demandes_contact')
-      .select('id, created_at, type, nom, email, statut')
-      .order('created_at', { ascending: false })
-      .limit(8),
-  ])
+  // pour en mesurer la longueur deviendrait coûteux dès quelques centaines.
+  const [{ count: total }, { count: nouvelles }, { count: comptes }, { data: recentes, error }] =
+    await Promise.all([
+      supabase.from('demandes_contact').select('*', { count: 'exact', head: true }),
+      supabase
+        .from('demandes_contact')
+        .select('*', { count: 'exact', head: true })
+        .eq('statut', 'nouveau'),
+      supabase.from('profils').select('*', { count: 'exact', head: true }),
+      supabase
+        .from('demandes_contact')
+        .select('id, created_at, type, nom, email, statut')
+        .order('created_at', { ascending: false })
+        .limit(8),
+    ])
 
   return (
     <>
-      <h1 className="ko-h2 text-ko-ink">{t('titre')}</h1>
+      <EnteteAdmin titre={t('titre')} />
 
-      <div className="mt-8 grid grid-cols-2 gap-px border border-ko-line bg-ko-line sm:grid-cols-2">
-        {/* Filets obtenus par `gap-px` sur fond ko-line : deux cellules
-            adjacentes partagent une seule ligne, sans double bordure. */}
-        <div className="bg-ko-white p-6">
-          <p className="label-mono text-ko-muted">{t('total_demandes')}</p>
-          <p className="mt-3 font-mono text-3xl text-ko-ink">{total ?? 0}</p>
-        </div>
-        <div className="bg-ko-white p-6">
-          <p className="label-mono text-ko-muted">{t('nouvelles')}</p>
-          <p className="mt-3 font-mono text-3xl text-ko-blue">{nouvelles ?? 0}</p>
-        </div>
-      </div>
+      <GrilleStats>
+        <TuileStat libelle={t('total_demandes')} valeur={total ?? 0} />
+        <TuileStat libelle={t('nouvelles')} valeur={nouvelles ?? 0} accent />
+        {/* Le catalogue n'est pas encore en base : le chiffre vient du fichier
+            source, et la précision le dit plutôt que de laisser croire à une
+            donnée gérée ici. */}
+        <TuileStat
+          libelle={t('nav_catalogue')}
+          valeur={SLUGS_PRODUITS.length}
+          precision={t('stat_catalogue_precision')}
+        />
+        <TuileStat libelle={t('nav_utilisateurs')} valeur={comptes ?? 0} />
+      </GrilleStats>
 
-      <h2 className="ko-h3 mt-12 text-[22px] text-ko-ink">{t('recentes')}</h2>
+      <h2 className="ko-h3 mb-4 mt-12 text-[22px] text-ko-ink">{t('recentes')}</h2>
 
-      {error ? (
-        // Le message technique n'est PAS affiché : il révélerait noms de tables
-        // et politiques. Il part dans les journaux du serveur, la personne voit
-        // qu'il y a un problème et qui prévenir.
-        <p className="mt-4 text-base text-ko-ink">{t('erreur_lecture')}</p>
-      ) : !recentes || recentes.length === 0 ? (
-        <p className="mt-4 text-base leading-relaxed text-ko-muted">{t('aucune_demande')}</p>
-      ) : (
-        <ul className="mt-6 divide-y divide-ko-line border-y border-ko-line">
-          {recentes.map((d) => (
-            <li key={d.id} className="flex flex-col gap-2 py-4 sm:flex-row sm:items-baseline sm:gap-6">
-              <span className="font-mono text-xs text-ko-muted sm:w-40 sm:shrink-0">
-                {format.dateTime(new Date(d.created_at), {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                })}
-              </span>
-              <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ko-blue sm:w-24 sm:shrink-0">
-                {d.type}
-              </span>
-              <span className="min-w-0 flex-1 truncate text-base text-ko-ink">
-                {d.nom} — {d.email}
-              </span>
-              {d.statut === 'nouveau' && (
-                <span className="label-mono shrink-0 text-ko-blue">{t('statut_nouveau')}</span>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {/* Honnêteté sur l'état du chantier : sans cette ligne, l'absence de
-          gestion du catalogue passerait pour un oubli plutôt que pour la
-          suite prévue. */}
-      <p className="mt-12 border-t border-ko-line pt-6 text-sm leading-relaxed text-ko-muted">
-        {t('a_venir')}
-      </p>
+      <PanneauAdmin sansPadding>
+        {error ? (
+          // Le message technique n'est PAS affiché : il révélerait noms de
+          // tables et politiques. Il part dans les journaux du serveur.
+          <p className="p-6 text-base text-ko-ink">{t('erreur_lecture')}</p>
+        ) : !recentes || recentes.length === 0 ? (
+          <p className="p-6 text-base leading-relaxed text-ko-muted">{t('aucune_demande')}</p>
+        ) : (
+          <>
+            <EnteteTableau
+              colonnes={[t('colonne_courriel'), t('colonne_type'), t('colonne_cree')]}
+            />
+            <ul className="divide-y divide-ko-line">
+              {recentes.map((d) => (
+                <li
+                  key={d.id}
+                  className="flex flex-col gap-1.5 px-6 py-4 sm:flex-row sm:items-baseline sm:gap-6"
+                >
+                  <span className="min-w-0 flex-1 truncate text-base text-ko-ink">
+                    {d.nom} — {d.email}
+                  </span>
+                  <span className="label-mono shrink-0 text-ko-blue sm:w-24">{d.type}</span>
+                  <span className="shrink-0 font-mono text-xs text-ko-muted sm:w-40 sm:text-right">
+                    {format.dateTime(new Date(d.created_at), {
+                      dateStyle: 'medium',
+                      timeStyle: 'short',
+                    })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </PanneauAdmin>
     </>
   )
 }

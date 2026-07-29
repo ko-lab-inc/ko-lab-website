@@ -51,6 +51,7 @@ export default async function InscriptionPage({ params }: Props) {
           succesTexte: t('succes_texte'),
           erreurDonnees: t('erreur_donnees'),
           erreurConfirmation: t('erreur_confirmation'),
+          erreurFaible: t('erreur_faible'),
           erreurTentatives: t('erreur_tentatives'),
           erreurRefuse: t('erreur_refuse'),
           erreurCourriel: t('erreur_courriel'),

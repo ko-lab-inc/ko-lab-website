@@ -193,6 +193,9 @@ export default async function MarketingLayout({ children, params }: Props) {
     // formulaire uniquement. Les pages /connexion et /inscription, elles,
     // résolvent leurs textes côté serveur et ne passent pas par ici.
     Connexion: tousLesMessages.Connexion,
+    // Le modal bascule entre connexion et création sans naviguer : il lui faut
+    // les deux jeux de libellés.
+    Inscription: tousLesMessages.Inscription,
     // ⚠️ SOUS-ENSEMBLE, pas l'espace de noms entier. `Boutique` contient les
     // noms des produits « Solutions modulaires », que le drapeau masque et que
     // le document de cadrage interdit de publier. Transmettre le namespace

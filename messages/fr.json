@@ -49,7 +49,6 @@
       "description": "Démarrer un projet, demander une soumission ou poser une question à l'équipe KO-LAB."
     }
   },
-
   "Nav": {
     "accueil": "Accueil",
     "capacites": "Nos capacités",
@@ -70,7 +69,6 @@
     "menuPrincipal": "Navigation principale",
     "changerLangue": "English"
   },
-
   "Home": {
     "hero": {
       "tag": "De l'idée au terrain",
@@ -198,7 +196,6 @@
       "bouton": "Démarrer un projet"
     }
   },
-
   "Capacites": {
     "hub": {
       "label": "Nos capacités",
@@ -271,7 +268,6 @@
       "item_8": "Accès à davantage de machinerie grâce à GM Locations"
     }
   },
-
   "Realisations": {
     "title": "Réalisations",
     "intro": "Opérations terrain, installations, fabrications et déploiements.",
@@ -298,7 +294,6 @@
       }
     }
   },
-
   "Boutique": {
     "title": "Boutique",
     "positionnement": "Des équipements sélectionnés, accompagnés par une équipe qui les utilise réellement.",
@@ -368,7 +363,6 @@
       "xtool_f1_texte": "Graveur portatif fibre et diode, pour le marquage de pièces métalliques."
     }
   },
-
   "Location": {
     "title": "Location d'équipement",
     "intro": "Remorques, nacelles, outils et matériel d'installation. L'inventaire complet et les disponibilités sont sur notre plateforme de location.",
@@ -387,7 +381,6 @@
     "cat_mobilier_titre": "Mobilier événementiel",
     "cat_mobilier_texte": "Infrastructures, éclairage temporaire et distribution électrique."
   },
-
   "Contact": {
     "title": "Démarrer un projet",
     "intro": "Décrivez-nous le projet. On revient vers vous dans les 48 heures.",
@@ -425,7 +418,6 @@
       "texte": "On revient vers vous dans les 48 heures."
     }
   },
-
   "Carrieres": {
     "title": "Carrières",
     "intro": "Les équipes KO-LAB travaillent sur le terrain, en Outaouais et ailleurs au Québec.",
@@ -465,7 +457,6 @@
       }
     }
   },
-
   "APropos": {
     "title": "À propos",
     "signature": "De l'idée au terrain.",
@@ -487,7 +478,6 @@
     "methode_3_texte": "Montage, soutien pendant l'opération, démontage, retrait et entreposage. Le mandat se termine quand le site est rendu.",
     "chiffres_label": "En bref"
   },
-
   "Footer": {
     "signature": "De l'idée au terrain.",
     "capacites_titre": "Capacités",
@@ -498,7 +488,6 @@
     "droits": "KO-LAB Inc. Tous droits réservés.",
     "confidentialite": "Politique de confidentialité"
   },
-
   "Panier": {
     "titre": "Ma sélection",
     "intro": "Les produits que vous avez retenus, avec leur prix indicatif. Confirmez votre sélection — on revient vers vous pour finaliser le prix exact et la disponibilité.",
@@ -517,7 +506,6 @@
     "entete_message": "Produits sélectionnés (prix indicatifs, à confirmer) :",
     "continuer": "Continuer le catalogue"
   },
-
   "Commun": {
     "chargement": "Chargement…",
     "erreur_titre": "Une erreur est survenue",
@@ -540,7 +528,52 @@
     "statut_nouveau": "Nouveau",
     "aucune_demande": "Aucune demande pour l'instant.",
     "erreur_lecture": "La lecture des demandes a échoué. Prévenez Moussa.",
-    "a_venir": "Gestion du catalogue, des réalisations et des membres : à venir. Les prix et les photos des produits sont encore écrits en dur dans le code."
+    "a_venir": "Gestion du catalogue, des réalisations et des membres : à venir. Les prix et les photos des produits sont encore écrits en dur dans le code.",
+    "nav_tableau": "Tableau de bord",
+    "nav_catalogue": "Catalogue",
+    "nav_utilisateurs": "Utilisateurs",
+    "nav_vendeurs": "Vendeurs",
+    "nav_livreurs": "Livreurs",
+    "nav_reglages": "Réglages",
+    "section_gestion": "Gestion",
+    "section_equipe": "Équipe",
+    "section_compte": "Compte",
+    "utilisateurs_titre": "Utilisateurs",
+    "utilisateurs_intro": "Comptes créés sur le site. Un compte arrive sans aucun droit : c’est ici qu’on lui en donne.",
+    "colonne_courriel": "Courriel",
+    "colonne_role": "Rôle",
+    "colonne_cree": "Créé le",
+    "colonne_action": "Action",
+    "role_invite": "Aucun accès",
+    "enregistrer": "Enregistrer",
+    "aucun_utilisateur": "Aucun compte pour l’instant.",
+    "reserve_admin_titre": "Réservé aux administrateurs",
+    "reserve_admin_texte": "Seul un administrateur peut modifier les rôles. Votre compte est éditeur.",
+    "soi_meme": "Vous",
+    "a_construire": "À construire",
+    "catalogue_titre": "Catalogue",
+    "catalogue_texte": "Les douze produits, leurs prix et leurs photos sont encore écrits en dur dans src/lib/produits.ts. La table produits_boutique existe et est vide : il faut y verser le catalogue avant de pouvoir le gérer ici.",
+    "vendeurs_titre": "Vendeurs",
+    "vendeurs_texte": "Aucune notion de vendeur n’existe encore en base. À définir avant de construire : un vendeur est-il un compte avec un rôle, ou une entité distincte rattachée à des produits ? Les deux mènent à des schémas différents.",
+    "livreurs_titre": "Livreurs",
+    "livreurs_texte": "Même question que pour les vendeurs, et une de plus : sans commandes en base, un livreur n’a rien à se voir attribuer. La boutique fonctionne aujourd’hui en demande de prix, sans commande.",
+    "reglages_titre": "Réglages",
+    "reglages_texte": "Drapeaux de fonctionnalité, coordonnées, textes du site. Aujourd’hui répartis entre les variables d’environnement Vercel et les fichiers de traduction.",
+    "erreur_soi_meme": "Vous ne pouvez pas modifier votre propre rôle. Demandez à un autre administrateur.",
+    "colonne_type": "Type",
+    "stat_catalogue_precision": "Encore en dur dans le code",
+    "catalogue_point_1": "Verser les douze produits de src/lib/produits.ts dans la table produits_boutique (elle existe, elle est vide).",
+    "catalogue_point_2": "Décider où vivent les images : Supabase Storage, ou public/images comme aujourd’hui.",
+    "catalogue_point_3": "Les prix de trois machines sont encore provisoires — X1-Carbon, xTool P2, xTool F1.",
+    "vendeurs_point_1": "Un vendeur est-il un compte avec un rôle, ou une entité distincte rattachée à des produits ?",
+    "vendeurs_point_2": "S’il s’agit d’un rôle, ajouter la valeur au CHECK de profils.role et écrire les politiques RLS correspondantes.",
+    "vendeurs_point_3": "Un vendeur voit-il toutes les demandes, ou seulement celles portant sur ses produits ?",
+    "livreurs_point_1": "Même question de modèle que pour les vendeurs.",
+    "livreurs_point_2": "Il n’existe aucune commande en base : la boutique fonctionne en demande de prix. Un livreur n’a donc rien à se voir attribuer.",
+    "livreurs_point_3": "Décider si KO-LAB livre elle-même ou passe par un transporteur change tout le reste.",
+    "reglages_point_1": "Les drapeaux NEXT_PUBLIC_FEATURE_PANIER et NEXT_PUBLIC_SOLUTIONS_MODULAIRES vivent sur Vercel et exigent un redéploiement.",
+    "reglages_point_2": "Les textes du site sont dans messages/fr.json et messages/en.json, versionnés avec le code.",
+    "reglages_point_3": "Rendre tout ça modifiable ici suppose une table de configuration et un cache à invalider."
   },
   "Aide": {
     "ouvrir": "Poser une question",
@@ -572,7 +605,7 @@
     "intro": "Un courriel de validation vous sera envoyé pour confirmer votre adresse.",
     "courriel": "Courriel",
     "mot_de_passe": "Mot de passe",
-    "aide_mot_de_passe": "10 caractères minimum.",
+    "aide_mot_de_passe": "8 caractères minimum.",
     "confirmation": "Confirmer le mot de passe",
     "creer": "Créer mon compte",
     "en_cours": "Création…",
@@ -580,6 +613,7 @@
     "succes_texte": "Si cette adresse peut recevoir un compte, un lien de validation vient d'y être envoyé. Il expire après une heure.",
     "erreur_donnees": "Vérifiez l'adresse et le mot de passe.",
     "erreur_confirmation": "Les deux mots de passe ne correspondent pas.",
+    "erreur_faible": "Ce mot de passe est trop facile à deviner. Évitez les mots courants et votre adresse courriel.",
     "erreur_tentatives": "Trop de tentatives. Réessayez dans une heure.",
     "erreur_refuse": "La création de compte est momentanément fermée.",
     "erreur_courriel": "Le courriel de validation n'a pas pu être envoyé. Ce n'est pas vous : réessayez plus tard, ou écrivez à info@ko-lab.ca.",
@@ -598,11 +632,12 @@
     "nouveau_titre": "Nouveau mot de passe",
     "nouveau_intro": "Choisissez un nouveau mot de passe pour votre compte.",
     "mot_de_passe": "Nouveau mot de passe",
-    "aide_mot_de_passe": "10 caractères minimum.",
+    "aide_mot_de_passe": "8 caractères minimum.",
     "confirmation": "Confirmer le mot de passe",
     "enregistrer": "Enregistrer",
     "enregistrement": "Enregistrement…",
     "erreur_donnees": "Mot de passe trop court, ou les deux saisies diffèrent.",
+    "erreur_faible": "Ce mot de passe est trop facile à deviner. Évitez les mots courants et votre adresse courriel.",
     "erreur_tentatives": "Trop de tentatives. Réessayez dans quinze minutes.",
     "erreur_serveur": "L'opération a échoué. Réessayez.",
     "lien_invalide_titre": "Lien expiré ou déjà utilisé",

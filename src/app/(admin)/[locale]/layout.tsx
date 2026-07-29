@@ -3,6 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { Fraunces, Instrument_Sans, JetBrains_Mono } from 'next/font/google'
 import { notFound, redirect } from 'next/navigation'
 
+import { NavAdmin } from '@/components/layout/NavAdmin'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import { ROLES_EQUIPE } from '@/types'
@@ -98,12 +99,17 @@ export default async function AdminLayout({ children, params }: Props) {
               <span className="label-mono text-ko-blue">{t('espace')}</span>
             </div>
 
-            <div className="flex items-center gap-5">
+            <div className="flex items-center gap-6">
               {/* Le rôle est affiché : un editor qui ne comprend pas pourquoi
                   un bouton de suppression lui est refusé doit pouvoir le
-                  constater sans ouvrir la base. */}
-              <span className="hidden text-sm text-ko-muted sm:inline">
-                {profil.email} · {t(`role_${profil.role === 'admin' ? 'admin' : 'editor'}`)}
+                  constater sans ouvrir la base. Sur deux lignes plutôt qu'une
+                  suite séparée par un point médian — une adresse longue et un
+                  rôle collés se lisaient comme une seule chaîne. */}
+              <span className="hidden text-right leading-tight sm:block">
+                <span className="block text-sm text-ko-ink">{profil.email}</span>
+                <span className="label-mono text-ko-blue">
+                  {t(`role_${profil.role === 'admin' ? 'admin' : 'editor'}`)}
+                </span>
               </span>
 
               {/* Server Action en ligne : la déconnexion n'a besoin d'aucun
@@ -127,7 +133,44 @@ export default async function AdminLayout({ children, params }: Props) {
           </div>
         </header>
 
-        <main className="mx-auto max-w-container px-6 py-10 lg:px-12 lg:py-14">{children}</main>
+        {/* Menu latéral à partir de lg. En dessous il passe au-dessus du
+            contenu : une colonne fixe sur un téléphone ne laisserait pas de
+            place au tableau qu'elle est censée accompagner. */}
+        <div className="mx-auto flex max-w-container flex-col gap-8 px-6 py-10 lg:flex-row lg:gap-14 lg:px-12 lg:py-14">
+          {/* Menu sur son propre panneau blanc : posé à même le fond crème il
+              se confondait avec le contenu, et l'écran n'avait plus de
+              structure lisible. */}
+          <aside className="border border-ko-line bg-ko-white p-5 lg:w-56 lg:shrink-0">
+            {/* Href préfixés ICI, côté serveur : NavAdmin utilise le
+                `next/link` natif, qui ne connaît pas la langue courante. */}
+            <NavAdmin
+              racine={`/${locale}/admin`}
+              groupes={[
+                {
+                  titre: t('section_gestion'),
+                  entrees: [
+                    { href: `/${locale}/admin`, label: t('nav_tableau') },
+                    { href: `/${locale}/admin/catalogue`, label: t('nav_catalogue') },
+                  ],
+                },
+                {
+                  titre: t('section_equipe'),
+                  entrees: [
+                    { href: `/${locale}/admin/utilisateurs`, label: t('nav_utilisateurs') },
+                    { href: `/${locale}/admin/vendeurs`, label: t('nav_vendeurs') },
+                    { href: `/${locale}/admin/livreurs`, label: t('nav_livreurs') },
+                  ],
+                },
+                {
+                  titre: t('section_compte'),
+                  entrees: [{ href: `/${locale}/admin/reglages`, label: t('nav_reglages') }],
+                },
+              ]}
+            />
+          </aside>
+
+          <main className="min-w-0 flex-1">{children}</main>
+        </div>
       </body>
     </html>
   )

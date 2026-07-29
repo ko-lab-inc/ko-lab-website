@@ -41,8 +41,13 @@ function Erreur({ message }: { message: string | null }) {
 export function FormulaireInscription({
   locale,
   libelles,
+  prefixe = '',
 }: {
   locale: string
+  /** Préfixe des `id` — obligatoire quand le formulaire coexiste avec un
+   *  autre dans le même document (modal par-dessus une page). Voir
+   *  FormulaireConnexion pour le détail du problème d'association. */
+  prefixe?: string
   libelles: {
     courriel: string
     motDePasse: string
@@ -54,6 +59,7 @@ export function FormulaireInscription({
     succesTexte: string
     erreurDonnees: string
     erreurConfirmation: string
+    erreurFaible: string
     erreurTentatives: string
     erreurRefuse: string
     erreurCourriel: string
@@ -71,26 +77,23 @@ export function FormulaireInscription({
     )
   }
 
-  const message =
-    etat.erreur === 'confirmation'
-      ? libelles.erreurConfirmation
-      : etat.erreur === 'trop_de_tentatives'
-        ? libelles.erreurTentatives
-        : etat.erreur === 'refuse'
-          ? libelles.erreurRefuse
-          : etat.erreur === 'courriel'
-            ? libelles.erreurCourriel
-            : etat.erreur === 'serveur'
-              ? libelles.erreurServeur
-              : etat.erreur
-                ? libelles.erreurDonnees
-                : null
+  // Table plutôt qu'une cascade de ternaires : sept cas imbriqués devenaient
+  // impossibles à relire, et l'indentation ne suivait plus la logique.
+  const messages: Record<string, string> = {
+    confirmation: libelles.erreurConfirmation,
+    faible: libelles.erreurFaible,
+    trop_de_tentatives: libelles.erreurTentatives,
+    refuse: libelles.erreurRefuse,
+    courriel: libelles.erreurCourriel,
+    serveur: libelles.erreurServeur,
+  }
+  const message = etat.erreur ? (messages[etat.erreur] ?? libelles.erreurDonnees) : null
 
   return (
     <form action={action} className="mt-8 space-y-4">
       <input type="hidden" name="locale" value={locale} />
       <ChampAuth
-        id="email"
+        id={`${prefixe}email`}
         name="email"
         type="email"
         required
@@ -99,11 +102,11 @@ export function FormulaireInscription({
         libelle={libelles.courriel}
       />
       <ChampAuth
-        id="motDePasse"
+        id={`${prefixe}motDePasse`}
         name="motDePasse"
         type="password"
         required
-        minLength={10}
+        minLength={8}
         maxLength={200}
         // `new-password` : indique au gestionnaire de mots de passe qu'il faut
         // en proposer un nouveau, pas remplir l'existant.
@@ -112,7 +115,7 @@ export function FormulaireInscription({
         aide={libelles.aideMotDePasse}
       />
       <ChampAuth
-        id="confirmation"
+        id={`${prefixe}confirmation`}
         name="confirmation"
         type="password"
         required
@@ -222,7 +225,7 @@ export function FormulaireNouveauMotDePasse({
         name="motDePasse"
         type="password"
         required
-        minLength={10}
+        minLength={8}
         maxLength={200}
         autoComplete="new-password"
         libelle={libelles.motDePasse}

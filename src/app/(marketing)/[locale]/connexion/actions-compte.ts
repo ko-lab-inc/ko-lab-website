@@ -28,7 +28,14 @@ import { rateLimit } from '@/lib/utils/rateLimit'
  */
 
 export type EtatInscription = {
-  erreur?: 'donnees' | 'confirmation' | 'trop_de_tentatives' | 'refuse' | 'courriel' | 'serveur'
+  erreur?:
+    | 'donnees'
+    | 'confirmation'
+    | 'faible'
+    | 'trop_de_tentatives'
+    | 'refuse'
+    | 'courriel'
+    | 'serveur'
   succes?: boolean
 }
 export type EtatMotDePasse = { erreur?: 'donnees' | 'trop_de_tentatives' | 'serveur'; succes?: boolean }
@@ -62,11 +69,18 @@ export async function inscrire(
   })
 
   if (!analyse.success) {
-    // Deux messages distincts ici, contrairement à la connexion : à
-    // l'inscription, la personne saisit SES propres données. Lui dire que les
-    // deux mots de passe diffèrent ne révèle rien sur qui d'autre a un compte.
-    const surConfirmation = analyse.error.issues.some((i) => i.path[0] === 'confirmation')
-    return { erreur: surConfirmation ? 'confirmation' : 'donnees' }
+    // Messages distincts ici, contrairement à la connexion : à l'inscription
+    // la personne saisit SES propres données. Lui dire ce qui cloche ne révèle
+    // rien sur qui d'autre a un compte — et sans ça, un mot de passe rejeté
+    // pour cause de faiblesse se lit comme un bug.
+    const codes = analyse.error.issues.map((i) => i.message)
+    if (analyse.error.issues.some((i) => i.path[0] === 'confirmation')) {
+      return { erreur: 'confirmation' }
+    }
+    if (codes.includes('courant') || codes.includes('reprend_courriel')) {
+      return { erreur: 'faible' }
+    }
+    return { erreur: 'donnees' }
   }
 
   try {
