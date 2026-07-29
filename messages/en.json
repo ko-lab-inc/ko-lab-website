@@ -306,6 +306,19 @@
     "voir_produit": "View product",
     "retour_catalogue": "Back to catalogue",
     "coloris": "Colour",
+    "fil_ariane_accueil": "Home",
+    "reassurance": {
+      "prix": "Price confirmed before ordering",
+      "disponibilite": "Availability checked",
+      "accompagnement": "Guided ordering",
+      "equipe": "A team that uses this equipment"
+    },
+    "commande": {
+      "titre": "How it works",
+      "etape_1": "Your selection reaches our team. We come back to you with the exact price, availability and lead time.",
+      "etape_2": "Prices shown are indicative and exclude taxes. Nothing is committed until you confirm.",
+      "etape_3": "Delivery, installation and commissioning can be added to the order."
+    },
     "demander_prix": "Request a price",
     "site_fabricant": "Manufacturer site",
     "specs_titre": "Specifications",

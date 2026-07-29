@@ -5,6 +5,12 @@ import { notFound } from 'next/navigation'
 import { BoutonAjouter } from '@/components/ui/BoutonAjouter'
 import { buttonVariants } from '@/components/ui/Button'
 import { GalerieProduit } from '@/components/ui/GalerieProduit'
+import {
+  IconeAccompagnement,
+  IconeBadgeStock,
+  IconeCle,
+  IconeEtiquette,
+} from '@/components/ui/Icones'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing, type AppLocale } from '@/i18n/routing'
@@ -96,19 +102,44 @@ export default async function FicheProduitPage({ params }: Props) {
   return (
     <>
       {/* Espace pour la barre d'achat collante (mobile) : sans lui, le dernier
-          bloc de contenu se retrouve masqué au premier rendu. */}
-      <div className="pb-24 lg:pb-0">
-        <section className="border-b border-ko-line bg-ko-cream py-6">
-          <div className="mx-auto max-w-container px-6 lg:px-12">
-            <Link
-              href={ROUTES.boutique}
-              className="inline-flex items-center gap-2 text-sm text-ko-muted transition-colors duration-200 hover:text-ko-blue"
-            >
-              <span aria-hidden="true">←</span>
-              {t('retour_catalogue')}
-            </Link>
-          </div>
-        </section>
+          bloc de contenu se retrouve masqué au premier rendu.
+          pb-28 (112 px) et non pb-24 : la barre mesure 97 px à 375 px, le
+          prix et le contrôle de quantité passant sur deux lignes. La réserve
+          était donc plus courte d'un pixel que ce qu'elle devait couvrir. */}
+      <div className="pb-28 lg:pb-0">
+        {/* Fil d'Ariane plutôt qu'un simple « Retour au catalogue » : il dit
+            OÙ l'on se trouve, pas seulement d'où l'on vient — et il rend la
+            boutique atteignable depuis n'importe quelle fiche ouverte
+            directement depuis un moteur de recherche.
+
+            Pas de balisage JSON-LD pour l'instant : le schéma Product qui
+            l'accompagne normalement publierait `prixIndicatif` comme une
+            offre ferme auprès de Google, alors que trois de ces prix sont
+            encore provisoires. À ajouter quand les prix seront confirmés. */}
+        <nav
+          aria-label={t('fil_ariane_accueil')}
+          className="border-b border-ko-line bg-ko-cream py-6"
+        >
+          <ol className="mx-auto flex max-w-container flex-wrap items-center gap-2 px-6 text-sm text-ko-muted lg:px-12">
+            <li>
+              <Link href={ROUTES.accueil} className="transition-colors duration-200 hover:text-ko-blue">
+                {t('fil_ariane_accueil')}
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            <li>
+              <Link href={ROUTES.boutique} className="transition-colors duration-200 hover:text-ko-blue">
+                {t('title')}
+              </Link>
+            </li>
+            <li aria-hidden="true">/</li>
+            {/* `aria-current="page"` : la dernière miette n'est pas un lien,
+                elle désigne la page courante. */}
+            <li aria-current="page" className="min-w-0 truncate text-ko-ink">
+              {produit.nom}
+            </li>
+          </ol>
+        </nav>
 
         <section className="bg-ko-white py-14 lg:py-20">
           <div className="mx-auto max-w-container px-6 lg:px-12">
@@ -120,6 +151,11 @@ export default async function FicheProduitPage({ params }: Props) {
                     métadonnées) est rendu sur le serveur. Sans coloris — cas
                     des douze produits actuels — il se comporte exactement
                     comme le bloc image qu'il remplace. */}
+                {/* Une seule cellule de grille pour la photo ET le bandeau
+                    qui la suit : en frères directs, le bandeau occuperait la
+                    deuxième colonne et repousserait la colonne d'infos hors
+                    de la grille à deux colonnes. */}
+                <div>
                 <GalerieProduit
                   src={produit.src}
                   cadrage={produit.cadrage}
@@ -140,6 +176,43 @@ export default async function FicheProduitPage({ params }: Props) {
                     </span>
                   )}
                 </GalerieProduit>
+
+                  {/*
+                    Bandeau de réassurance, sous la photo — même emplacement
+                    que la référence Bambu Store.
+
+                    ⚠️ LE TEXTE N'EST PAS CELUI DE LA RÉFÉRENCE, ET C'EST
+                    VOLONTAIRE. Bambu affiche « Free Shipping », « 30-Day Price
+                    Protection », « 14-Day Returns », « 1-Year Warranty » :
+                    quatre engagements commerciaux qui lieraient KO-LAB si on
+                    les recopiait, alors qu'aucune de ces politiques n'a été
+                    confirmée. Au Québec une garantie ou une politique de
+                    retour annoncée est opposable. Les quatre libellés retenus
+                    décrivent le fonctionnement réel de la boutique et sont
+                    tirés de textes déjà validés — « commandes accompagnées »
+                    et « une équipe qui les utilise réellement » sont mot pour
+                    mot ceux de la page boutique.
+
+                    Ce sont quatre clés de traduction (Boutique.reassurance.*).
+                    Si KO-LAB offre bien la livraison gratuite, une garantie ou
+                    des retours, il suffit de les remplacer.
+                  */}
+                  <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-6 border-t border-ko-line pt-8 lg:grid-cols-4 lg:gap-x-2">
+                    {[
+                      { Icone: IconeEtiquette, texte: t('reassurance.prix') },
+                      { Icone: IconeBadgeStock, texte: t('reassurance.disponibilite') },
+                      { Icone: IconeAccompagnement, texte: t('reassurance.accompagnement') },
+                      { Icone: IconeCle, texte: t('reassurance.equipe') },
+                    ].map(({ Icone, texte }) => (
+                      <li key={texte} className="flex flex-col items-center gap-2.5 text-center">
+                        {/* Icône en trait, `aria-hidden` par construction :
+                            elle appuie le libellé, ne le remplace pas. */}
+                        <Icone taille={24} className="text-ko-blue" />
+                        <span className="text-xs leading-snug text-ko-muted">{texte}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
                 {/* ------------------------------ Infos ------------------------------ */}
                 <div>
@@ -182,6 +255,37 @@ export default async function FicheProduitPage({ params }: Props) {
                         </Link>
                       )}
                     </div>
+                  </div>
+
+                  {/*
+                    Équivalent du bloc « Informations sur la commande » de la
+                    référence — mais décrivant NOTRE parcours, qui n'est pas
+                    le sien. Bambu y annonce un délai d'expédition depuis la
+                    Californie et aligne les logos de moyens de paiement ;
+                    ici il n'y a ni paiement, ni stock, ni expédition : la
+                    sélection part en demande et KO-LAB revient avec le prix
+                    ferme. Afficher des logos Visa/PayPal sur une page qui
+                    n'encaisse rien laisserait croire à un achat immédiat.
+
+                    Placé sous le prix et le bouton, pas au-dessus : il
+                    répond à la question qui vient APRÈS l'envie d'acheter,
+                    « et ensuite, il se passe quoi ».
+                  */}
+                  <div className="mt-10 border-t border-ko-line pt-8">
+                    <p className="label-mono text-ko-muted">{t('commande.titre')}</p>
+                    <ul className="mt-4 space-y-3">
+                      {[t('commande.etape_1'), t('commande.etape_2'), t('commande.etape_3')].map(
+                        (ligne) => (
+                          <li
+                            key={ligne}
+                            className="flex gap-3 text-sm leading-relaxed text-ko-muted"
+                          >
+                            <span aria-hidden="true" className="mt-2 h-px w-3 shrink-0 bg-ko-blue" />
+                            <span className="max-w-[52ch]">{ligne}</span>
+                          </li>
+                        ),
+                      )}
+                    </ul>
                   </div>
                 </div>
               </div>

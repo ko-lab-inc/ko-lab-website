@@ -165,6 +165,34 @@ export function IconeBadgeStock(props: IconeProps) {
 }
 
 /* =============================================================================
+ * Réassurance — fiche produit
+ *
+ * Les deux autres icônes du bandeau sont réutilisées : IconeBadgeStock pour la
+ * disponibilité et IconeCle pour l'équipe qui utilise le matériel. En dessiner
+ * de nouvelles pour un sens déjà couvert ferait diverger le vocabulaire.
+ * ========================================================================== */
+
+/** Prix confirmé avant commande. Étiquette et son œillet. */
+export function IconeEtiquette(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M11.6 2.5H20a1.5 1.5 0 0 1 1.5 1.5v8.4a1.5 1.5 0 0 1-.44 1.06l-7.5 7.5a1.5 1.5 0 0 1-2.12 0l-8.4-8.4a1.5 1.5 0 0 1 0-2.12l7.5-7.5a1.5 1.5 0 0 1 1.06-.44z" />
+      <circle cx="16.8" cy="7.2" r="1.6" />
+    </Icone>
+  )
+}
+
+/** Commande accompagnée. Bulle de dialogue — un interlocuteur, pas un tunnel. */
+export function IconeAccompagnement(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M21 12.6a7.6 7.6 0 0 1-8.2 7.6 8.7 8.7 0 0 1-2.9-.6L4.5 21l1.5-4.6a7.4 7.4 0 0 1-1-3.8A7.6 7.6 0 0 1 12.9 5 7.6 7.6 0 0 1 21 12.6z" />
+      <path d="M9.4 12.6h.01M12.6 12.6h.01M15.8 12.6h.01" />
+    </Icone>
+  )
+}
+
+/* =============================================================================
  * Stats bar
  * ========================================================================== */
 

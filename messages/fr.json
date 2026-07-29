@@ -306,6 +306,19 @@
     "voir_produit": "Voir le produit",
     "retour_catalogue": "Retour au catalogue",
     "coloris": "Coloris",
+    "fil_ariane_accueil": "Accueil",
+    "reassurance": {
+      "prix": "Prix confirmé avant commande",
+      "disponibilite": "Disponibilité vérifiée",
+      "accompagnement": "Commande accompagnée",
+      "equipe": "Équipe qui utilise le matériel"
+    },
+    "commande": {
+      "titre": "Comment ça se passe",
+      "etape_1": "Votre sélection nous est transmise. On revient vers vous avec le prix exact, la disponibilité et le délai.",
+      "etape_2": "Les prix affichés sont indicatifs et hors taxes. Rien n'est engagé tant que vous n'avez pas confirmé.",
+      "etape_3": "Livraison, installation et mise en service peuvent être ajoutées à la commande."
+    },
     "demander_prix": "Demander un prix",
     "site_fabricant": "Site du fabricant",
     "specs_titre": "Caractéristiques",
