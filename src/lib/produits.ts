@@ -60,14 +60,13 @@ type Traducteur = Awaited<ReturnType<typeof getTranslations>>
 /**
  * ⚠️ CONTENU PROVISOIRE — produits en dur en attendant Supabase.
  *
- * ⚠️ IMAGES — les douze produits en ont une depuis le 28 juillet 2026, mais
- * QUATRE ne montrent pas le modèle qu'elles annoncent (bambu-lab-p1s,
- * xtool-p2, xtool-s1, xtool-f1 — détail sur chaque fiche plus bas). Deux
- * d'entre elles affichent même une marque concurrente, CREALITY et ACMER.
- * C'est exactement le risque que ce fichier documentait quand ces champs
- * valaient encore `null` : une photo générique sous le nom d'un modèle précis
- * désigne une autre machine. Christian les remplace ; d'ici là, ne pas
- * considérer la boutique comme publiable en production.
+ * IMAGES — les douze produits en ont une. Chaque machine nommée a été
+ * confirmée VISUELLEMENT, modèle lisible sur l'appareil ou sur le visuel
+ * officiel du fabricant : c'est la seule vérification qui vaut ici, un nom de
+ * fichier ne prouve rien. Quatre visuels intermédiaires ont dû être écartés le
+ * 28 juillet 2026 parce qu'ils montraient une AUTRE machine — dont deux d'une
+ * marque concurrente (Creality, ACMER) sous nos propres noms et prix.
+ * Reproduire cette vérification avant tout ajout.
  *
  * ⚠️ EN REMPLAÇANT UNE IMAGE, CHANGER LE NOM DU FICHIER (par exemple
  * `xtool-f1-v2.webp`). L'optimiseur de next/image met en cache par URL, pas
@@ -122,13 +121,15 @@ export function construireProduits(t: Traducteur): ProduitCarte[] {
       categorie: 'impression',
       nom: t('produits.bambu_p1s_nom'),
       texte: t('produits.bambu_p1s_texte'),
-      // ⚠️ LE VISUEL NE MONTRE PAS CE MODÈLE. Fourni par Christian le
-      // 28 juillet 2026 sous le nom « bambu lab p1s », mais la machine porte
-      // « Bambu Lab A1 » sur son portique : c'est une A1 à cadre ouvert avec
-      // AMS lite (quatre bobines externes). La P1S est une imprimante FERMÉE,
-      // de forme cubique. Bonne marque, mauvais modèle — à remplacer avant
-      // mise en production.
-      src: '/images/produits/bambu-lab-p1s.webp',
+      // Fiche Amazon « Bambu Lab P1S 3D Printer ». Modèle confirmé à l'œil :
+      // « Bambu Lab P1S » est sérigraphié sur le bandeau avant, et la machine
+      // est bien FERMÉE, de forme cubique.
+      //
+      // Remplace un visuel fourni le 28 juillet 2026 sous le nom « p1s » qui
+      // montrait en réalité une Bambu Lab A1 — cadre ouvert, portique, quatre
+      // bobines externes. Bonne marque, mauvais modèle. Suffixe `-v2` parce
+      // que next/image cache par URL (voir l'en-tête du fichier).
+      src: '/images/produits/bambu-lab-p1s-v2.webp',
       prixIndicatif: 899,
     },
     {
@@ -155,14 +156,19 @@ export function construireProduits(t: Traducteur): ProduitCarte[] {
       categorie: 'laser',
       nom: t('produits.xtool_p2_nom'),
       texte: t('produits.xtool_p2_texte'),
-      // ⚠️ LE VISUEL NE MONTRE PAS CE PRODUIT, sur deux points. La machine
-      // porte « CREALITY » et « Creality Falcon » sur son châssis, et la
-      // gravure affiche « 10W » : c'est un graveur DIODE 10 W d'une marque
-      // concurrente. La fiche vend un xTool P2, laser CO2 55 W, qui est une
-      // machine fermée d'un autre gabarit et d'une autre technologie.
-      // Afficher une marque tierce sous notre nom de produit et notre prix
-      // est le cas le plus net des quatre — à remplacer en priorité.
-      src: '/images/produits/xtool-p2.webp',
+      // Fiche Amazon.ca « xTool P2 55W CO2 Laser Cutter » (P2, pas P2S) ;
+      // logo xTOOL en façade, caisson fermé grand format conforme au CO2.
+      // La bande de projets d'exemple sous la machine a été rognée : dans un
+      // cadre carré elle aurait réduit l'appareil de moitié.
+      //
+      // Passé par un revendeur et non par xtool.com : le fabricant ne met
+      // plus le P2 « nu » en avant (remplacé par le P2S) et ses propres
+      // visuels actuels portent un badge « Editor's Choice », donc écartés —
+      // même règle que le badge U.S. News retiré du F1.
+      //
+      // Remplace un visuel qui montrait un CREALITY Falcon, graveur DIODE
+      // 10 W à cadre ouvert : marque concurrente ET technologie différente.
+      src: '/images/produits/xtool-p2-v2.webp',
       prixIndicatif: 5000,
     },
     {
@@ -173,10 +179,13 @@ export function construireProduits(t: Traducteur): ProduitCarte[] {
       categorie: 'laser',
       nom: t('produits.xtool_s1_nom'),
       texte: t('produits.xtool_s1_texte'),
-      // ⚠️ LE VISUEL NE MONTRE PAS CE PRODUIT. La machine porte « ACMER » en
-      // façade — marque concurrente — et son cadre est OUVERT, alors que la
-      // fiche vend un laser diode fermé. À remplacer avant mise en production.
-      src: '/images/produits/xtool-s1.webp',
+      // Visuel officiel xtool.com. Modèle confirmé à l'œil : « S1 » sur le
+      // capot, « xTOOL » en façade, machine bien FERMÉE. Le seul des quatre
+      // à venir directement du fabricant, sans badge ni filigrane.
+      //
+      // Remplace un visuel qui montrait un ACMER à cadre ouvert : marque
+      // concurrente et type de machine opposé à ce que la fiche décrit.
+      src: '/images/produits/xtool-s1-v2.webp',
       prixIndicatif: 3399,
     },
     {
@@ -187,15 +196,20 @@ export function construireProduits(t: Traducteur): ProduitCarte[] {
       categorie: 'laser',
       nom: t('produits.xtool_f1_nom'),
       texte: t('produits.xtool_f1_texte'),
-      // ⚠️ Visuel fourni par Christian le 28 juillet 2026, en remplacement de
-      // la photo revendeur (filaments.ca) qui portait un badge « Best Overall
-      // — U.S. News 2024 » non vérifiable par KO-LAB. Le nouveau visuel ne
-      // porte AUCUNE marque tierce ni badge — sur ce plan il est meilleur —
-      // mais rien n'y identifie non plus le modèle, et sa forme (bras en
-      // porte-à-faux sur socle) ne correspond pas au F1, qui est un caisson
-      // fermé. Source d'origine 350×468 : c'est le plus petit fichier des
-      // douze, il sera visiblement flou sur la fiche produit.
-      src: '/images/produits/xtool-f1.webp',
+      // Galerie produit officielle ca.xtool.com, fiche « xTool F1 » (ni Ultra
+      // ni Lite). Logo xTOOL sur le capot vert.
+      //
+      // Boucle complète sur ce produit : c'est la même machine que la photo
+      // revendeur (filaments.ca) utilisée au départ — celle-ci montrait donc
+      // le BON modèle, seul son badge « Best Overall — U.S. News 2024 » posait
+      // problème. Le remplacement fourni le 28 juillet 2026 (bras en
+      // porte-à-faux sur socle, 350×468) montrait, lui, une autre machine.
+      // Reprise ici depuis la source officielle, en pleine résolution.
+      //
+      // À noter : le visuel og:image mis en avant par xTool porte le même
+      // badge U.S. News — c'est une image de galerie secondaire qui est
+      // utilisée. Ne pas « corriger » vers l'image principale.
+      src: '/images/produits/xtool-f1-v2.webp',
       prixIndicatif: 1100,
     },
 
