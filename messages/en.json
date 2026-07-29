@@ -64,6 +64,7 @@
     "carrieres": "Careers",
     "contact": "Contact",
     "cta": "Start a project",
+    "espaceEquipe": "Team area",
     "ouvrirMenu": "Open menu",
     "fermerMenu": "Close menu",
     "menuPrincipal": "Main navigation",
@@ -526,5 +527,26 @@
     "page_introuvable_texte": "This page doesn't exist or has been moved.",
     "photo_placeholder": "KO-LAB field photo",
     "aller_au_contenu": "Skip to content"
+  },
+  "Aide": {
+    "ouvrir": "Ask a question",
+    "fermer": "Close",
+    "titre": "A question?",
+    "intro": "Write us two lines. We reply during business hours, from the Outaouais.",
+    "nom": "Your name",
+    "courriel": "Your email",
+    "message": "Your question",
+    "envoyer": "Send",
+    "envoi": "Sending…",
+    "succes_titre": "Message received.",
+    "succes_texte": "We'll get back to you at the address you gave.",
+    "erreur": "Sending failed. Try again, or write directly to info@ko-lab.ca."
+  },
+  "Connexion": {
+    "titre": "Team area",
+    "intro": "This area is reserved for the KO-LAB team: catalogue, incoming requests and site content.",
+    "statut_titre": "Being built",
+    "statut_texte": "Authentication and the dashboard arrive with the admin section. Until then, there is nothing to do here.",
+    "retour": "Back to the site"
   }
 }

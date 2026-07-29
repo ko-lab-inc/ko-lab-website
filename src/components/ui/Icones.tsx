@@ -193,6 +193,30 @@ export function IconeAccompagnement(props: IconeProps) {
 }
 
 /* =============================================================================
+ * Navigation et widget d'aide
+ * ========================================================================== */
+
+/** Accès à l'espace équipe. Buste dans un cercle, comme les nav de boutique. */
+export function IconeProfil(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <circle cx="12" cy="12" r="9.2" />
+      <circle cx="12" cy="9.8" r="3.1" />
+      <path d="M5.8 19.2a6.6 6.6 0 0 1 12.4 0" />
+    </Icone>
+  )
+}
+
+/** Fermeture du panneau d'aide. Croix simple. */
+export function IconeFermer(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </Icone>
+  )
+}
+
+/* =============================================================================
  * Stats bar
  * ========================================================================== */
 

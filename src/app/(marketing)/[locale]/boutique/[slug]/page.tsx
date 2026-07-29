@@ -300,7 +300,15 @@ export default async function FicheProduitPage({ params }: Props) {
         déjà visible sans défilement, une deuxième copie flottante serait
         redondante (skill 08 déconseille l'ornement qui n'ajoute rien).
       */}
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-ko-line bg-ko-white/95 p-4 backdrop-blur-sm lg:hidden">
+      {/* `data-barre-achat` : repère lu par WidgetAide, qui remonte sa bulle
+          d'aide au-dessus de cette barre quand elle est visible. Un attribut
+          plutôt qu'une classe — c'est un point d'accroche fonctionnel, pas du
+          style, et le renommer par mégarde en refactorant le CSS casserait le
+          calcul silencieusement. */}
+      <div
+        data-barre-achat
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-ko-line bg-ko-white/95 p-4 backdrop-blur-sm lg:hidden"
+      >
         <div className="mx-auto flex max-w-container items-center justify-between gap-4">
           <p className="font-mono text-sm text-ko-ink">{prixFormate}</p>
           {PANIER_ACTIF ? (

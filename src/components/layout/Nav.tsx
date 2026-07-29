@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { Link, usePathname } from '@/i18n/navigation'
 import { useScrolled } from '@/hooks/useScrolled'
 import { buttonVariants } from '@/components/ui/Button'
+import { IconeProfil } from '@/components/ui/Icones'
 import { LienPanier } from '@/components/ui/LienPanier'
 import { PANIER_ACTIF } from '@/lib/config/features'
 import { cn } from '@/lib/utils/cn'
@@ -150,6 +151,29 @@ export function Nav() {
               src/lib/config/features.ts. */}
           {PANIER_ACTIF && <LienPanier />}
 
+          {/*
+            Accès à l'espace équipe — icône seule, comme le panier.
+
+            ⚠️ Ce n'est PAS un compte client, contrairement à l'icône de profil
+            des boutiques dont ce motif est repris : la boutique KO-LAB
+            fonctionne en demande de prix, le visiteur n'a ni commande à suivre
+            ni historique à consulter. Le libellé accessible dit « espace
+            équipe » et pas « mon compte », pour ne pas promettre un espace
+            client qui n'existera pas.
+
+            À arbitrer avec Christian : afficher la porte d'entrée de
+            l'administration dans la nav publique la rend visible de tous, donc
+            cible d'essais de mots de passe. L'usage courant est de la laisser
+            sur une URL non annoncée. Se retire d'une ligne si besoin.
+          */}
+          <Link
+            href={ROUTES.connexion}
+            aria-label={t('espaceEquipe')}
+            className="flex h-11 w-11 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+          >
+            <IconeProfil taille={20} />
+          </Link>
+
           <Link href={ROUTES.contact} className={buttonVariants({ variant: 'primary', size: 'sm' })}>
             {t('cta')}
           </Link>
@@ -234,6 +258,16 @@ export function Nav() {
               className="flex min-h-[44px] items-center font-mono text-xs uppercase tracking-widest text-ko-muted"
             >
               {t('changerLangue')}
+            </Link>
+
+            {/* Sur mobile l'icône seule serait illisible hors du contexte de
+                la barre : le libellé est écrit. */}
+            <Link
+              href={ROUTES.connexion}
+              className="flex min-h-[44px] items-center gap-2 text-sm text-ko-muted"
+            >
+              <IconeProfil taille={18} />
+              {t('espaceEquipe')}
             </Link>
 
             <Link

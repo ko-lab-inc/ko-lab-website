@@ -64,6 +64,7 @@
     "carrieres": "Carrières",
     "contact": "Contact",
     "cta": "Démarrer un projet",
+    "espaceEquipe": "Espace équipe",
     "ouvrirMenu": "Ouvrir le menu",
     "fermerMenu": "Fermer le menu",
     "menuPrincipal": "Navigation principale",
@@ -526,5 +527,26 @@
     "page_introuvable_texte": "Cette page n'existe pas ou a été déplacée.",
     "photo_placeholder": "Photo terrain KO-LAB",
     "aller_au_contenu": "Aller au contenu"
+  },
+  "Aide": {
+    "ouvrir": "Poser une question",
+    "fermer": "Fermer",
+    "titre": "Une question ?",
+    "intro": "Écrivez-nous en deux lignes. On répond pendant les heures ouvrables, depuis l'Outaouais.",
+    "nom": "Votre nom",
+    "courriel": "Votre courriel",
+    "message": "Votre question",
+    "envoyer": "Envoyer",
+    "envoi": "Envoi…",
+    "succes_titre": "Message reçu.",
+    "succes_texte": "On revient vers vous à l'adresse indiquée.",
+    "erreur": "L'envoi a échoué. Réessayez, ou écrivez directement à info@ko-lab.ca."
+  },
+  "Connexion": {
+    "titre": "Espace équipe",
+    "intro": "Cet espace est réservé à l'équipe KO-LAB : gestion du catalogue, des demandes reçues et des contenus du site.",
+    "statut_titre": "En construction",
+    "statut_texte": "L'authentification et le tableau de bord arrivent avec la partie administration. D'ici là, rien à faire ici.",
+    "retour": "Retour au site"
   }
 }

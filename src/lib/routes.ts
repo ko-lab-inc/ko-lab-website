@@ -26,6 +26,14 @@ export const ROUTES = {
   apropos: '/a-propos',
   carrieres: '/carrieres',
   contact: '/contact',
+  /**
+   * Espace équipe KO-LAB — porte d'entrée de la partie administration.
+   *
+   * ⚠️ Ce n'est PAS un espace client. La boutique fonctionne en demande de
+   * prix : le visiteur n'a rien à gérer, donc rien à quoi se connecter. Une
+   * icône de profil qui promettrait un compte client serait un cul-de-sac.
+   */
+  connexion: '/connexion',
 } as const
 
 export type RouteKey = keyof typeof ROUTES

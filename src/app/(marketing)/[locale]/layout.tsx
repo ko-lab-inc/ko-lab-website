@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { Footer } from '@/components/layout/Footer'
 import { Nav } from '@/components/layout/Nav'
 import { ChatCrisp } from '@/components/ui/ChatCrisp'
+import { WidgetAide } from '@/components/ui/WidgetAide'
 import { PanierProvider } from '@/lib/panier/PanierContext'
 import { routing } from '@/i18n/routing'
 
@@ -69,6 +70,11 @@ const jetbrainsMono = JetBrains_Mono({
 // sur toutes les pages, y compris en production si la variable est oubliée
 // sur Vercel.
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab.ca'
+
+// Accès littéral à process.env, comme dans ChatCrisp : Next substitue ces
+// expressions au build par analyse statique du texte, un accès dynamique
+// vaudrait undefined dans le bundle client.
+const CRISP_CONFIGURE = Boolean(process.env.NEXT_PUBLIC_CRISP_WEBSITE_ID)
 
 type Props = {
   children: ReactNode
@@ -162,6 +168,7 @@ export default async function MarketingLayout({ children, params }: Props) {
    *   GalerieRealisations.tsx  → Realisations
    *   CatalogueBoutique.tsx    → Panier, Boutique
    *   PagePanier.tsx           → Panier
+   *   WidgetAide.tsx           → Aide
    *
    * CatalogueBoutique reçoit ses chaînes en props, résolues côté serveur —
    * c'est le modèle à privilégier pour tout nouveau composant.
@@ -178,6 +185,9 @@ export default async function MarketingLayout({ children, params }: Props) {
     // Ajouté explicitement, PAS en élargissant au catalogue entier : le panier
     // vit côté client, ses libellés doivent y être — mais rien d'autre.
     Panier: tousLesMessages.Panier,
+    // Namespace entier : ce ne sont que des libellés d'interface du widget
+    // d'aide, aucun contenu non publié ne s'y trouve.
+    Aide: tousLesMessages.Aide,
     // ⚠️ SOUS-ENSEMBLE, pas l'espace de noms entier. `Boutique` contient les
     // noms des produits « Solutions modulaires », que le drapeau masque et que
     // le document de cadrage interdit de publier. Transmettre le namespace
@@ -214,9 +224,18 @@ export default async function MarketingLayout({ children, params }: Props) {
 
           <Footer />
 
-          {/* Bulle de chat — hors du <main>, présente sur toutes les pages
-              publiques. Ne rend rien si NEXT_PUBLIC_CRISP_WEBSITE_ID est vide. */}
-          <ChatCrisp />
+          {/*
+            Bulle d'aide — hors du <main>, présente sur toutes les pages
+            publiques. UNE SEULE des deux s'affiche, jamais les deux : deux
+            bulles superposées dans le même coin seraient un défaut visible.
+
+            Crisp s'il est configuré (vrai clavardage en direct, mais compte
+            tiers, script externe et iframe hors de portée de nos tokens) ;
+            sinon notre widget, qui poste dans /api/contact sans charger quoi
+            que ce soit de l'extérieur. Renseigner
+            NEXT_PUBLIC_CRISP_WEBSITE_ID bascule de l'un à l'autre.
+          */}
+          {CRISP_CONFIGURE ? <ChatCrisp /> : <WidgetAide />}
           </PanierProvider>
         </NextIntlClientProvider>
       </body>
