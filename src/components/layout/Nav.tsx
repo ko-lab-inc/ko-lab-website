@@ -152,23 +152,18 @@ export function Nav() {
           {PANIER_ACTIF && <LienPanier />}
 
           {/*
-            Accès à l'espace équipe — icône seule, comme le panier.
+            Compte — icône seule, comme le panier.
 
-            ⚠️ Ce n'est PAS un compte client, contrairement à l'icône de profil
-            des boutiques dont ce motif est repris : la boutique KO-LAB
-            fonctionne en demande de prix, le visiteur n'a ni commande à suivre
-            ni historique à consulter. Le libellé accessible dit « espace
-            équipe » et pas « mon compte », pour ne pas promettre un espace
-            client qui n'existera pas.
-
-            À arbitrer avec Christian : afficher la porte d'entrée de
-            l'administration dans la nav publique la rend visible de tous, donc
-            cible d'essais de mots de passe. L'usage courant est de la laisser
-            sur une URL non annoncée. Se retire d'une ligne si besoin.
+            Pointe vers /compte et non vers /connexion : la page redirige
+            elle-même vers la connexion si personne n'est identifié. C'est le
+            comportement attendu d'une icône de profil — on clique pour voir
+            SON compte, pas pour tomber sur un écran d'administration. La
+            version précédente menait à une page intitulée « Espace équipe »,
+            ce qui n'avait aucun sens pour un visiteur (relevé par Christian).
           */}
           <Link
-            href={ROUTES.connexion}
-            aria-label={t('espaceEquipe')}
+            href={ROUTES.compte}
+            aria-label={t('compte')}
             className="flex h-11 w-11 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
           >
             <IconeProfil taille={20} />
@@ -263,11 +258,11 @@ export function Nav() {
             {/* Sur mobile l'icône seule serait illisible hors du contexte de
                 la barre : le libellé est écrit. */}
             <Link
-              href={ROUTES.connexion}
+              href={ROUTES.compte}
               className="flex min-h-[44px] items-center gap-2 text-sm text-ko-muted"
             >
               <IconeProfil taille={18} />
-              {t('espaceEquipe')}
+              {t('compte')}
             </Link>
 
             <Link

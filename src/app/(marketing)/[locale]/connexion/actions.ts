@@ -104,6 +104,10 @@ export async function connecter(
      * Une seule redirection, décidée une fois. Le proxy et le layout admin
      * gardent leur contrôle : ils protègent l'accès direct par URL, pas ce
      * chemin-ci.
+     *
+     * Un compte sans rôle d'équipe n'est PAS une erreur depuis l'ouverture de
+     * l'inscription publique : c'est le cas normal. Il part donc vers /compte,
+     * pas vers un écran de refus.
      */
     const { data: profil } = await supabase
       .from('profils')
@@ -115,7 +119,7 @@ export async function connecter(
     cible =
       role && ROLES_EQUIPE.some((r) => r === role)
         ? destination(String(donnees.get('suivant') ?? ''), locale)
-        : `/${locale}/connexion?refus=role`
+        : `/${locale}/compte`
   } catch (err) {
     console.error('[connexion] échec', err)
     return { erreur: 'serveur' }

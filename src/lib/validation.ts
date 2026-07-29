@@ -51,3 +51,27 @@ export const schemaContact = z.object({
 })
 
 export type DonneesContact = z.infer<typeof schemaContact>
+
+/**
+ * Mot de passe — 10 caractères minimum.
+ *
+ * Supabase accepte 6 par défaut. On est plus strict, jamais plus permissif :
+ * la longueur est le seul facteur qui compte vraiment contre une attaque hors
+ * ligne, et imposer des classes de caractères (majuscule, chiffre, symbole)
+ * pousse surtout à « Password1! », plus court et plus prévisible qu'une phrase.
+ *
+ * Plafond à 200 : sans limite haute, une chaîne de plusieurs mégaoctets fait
+ * travailler bcrypt pour rien — un déni de service à un seul octet près.
+ */
+export const schemaMotDePasse = z.string().min(10).max(200)
+
+export const schemaInscription = z
+  .object({
+    email: z.string().trim().email().max(200),
+    motDePasse: schemaMotDePasse,
+    confirmation: z.string().max(200),
+  })
+  // Vérifié côté serveur AUSSI, pas seulement dans le navigateur : la
+  // confirmation évite une faute de frappe qui rendrait le compte
+  // inaccessible, et rien de ce qui vient du réseau n'est digne de confiance.
+  .refine((d) => d.motDePasse === d.confirmation, { path: ['confirmation'] })

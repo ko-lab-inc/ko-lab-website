@@ -27,13 +27,19 @@ export const ROUTES = {
   carrieres: '/carrieres',
   contact: '/contact',
   /**
-   * Espace équipe KO-LAB — porte d'entrée de la partie administration.
+   * Parcours de compte — connexion, création, récupération.
    *
-   * ⚠️ Ce n'est PAS un espace client. La boutique fonctionne en demande de
-   * prix : le visiteur n'a rien à gérer, donc rien à quoi se connecter. Une
-   * icône de profil qui promettrait un compte client serait un cul-de-sac.
+   * Christian a tranché le 29 juillet 2026 : parcours normal, ouvert à tous,
+   * plutôt qu'une porte d'équipe sur invitation. Ce qui est possible sans
+   * risque depuis la migration 0004 — un compte créé arrive en 'invite', sans
+   * aucun droit. L'accès à /admin reste conditionné à une élévation manuelle.
    */
   connexion: '/connexion',
+  inscription: '/inscription',
+  motDePasseOublie: '/mot-de-passe-oublie',
+  motDePasseNouveau: '/mot-de-passe/nouveau',
+  /** Où atterrit un compte ordinaire : ni /admin, ni la page de connexion. */
+  compte: '/compte',
 } as const
 
 export type RouteKey = keyof typeof ROUTES
