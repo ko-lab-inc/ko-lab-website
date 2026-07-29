@@ -207,6 +207,17 @@ export function IconeProfil(props: IconeProps) {
   )
 }
 
+/** Point d'attention — triangle et barre. Jamais seul : un libellé l'accompagne. */
+export function IconeAlerte(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M12 3.6 21.5 20H2.5z" />
+      <path d="M12 9.8v4.4" />
+      <path d="M12 17.2h.01" />
+    </Icone>
+  )
+}
+
 /** Fermeture du panneau d'aide. Croix simple. */
 export function IconeFermer(props: IconeProps) {
   return (

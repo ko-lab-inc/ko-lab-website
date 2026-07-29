@@ -1,6 +1,7 @@
 import { cn } from '@/lib/utils/cn'
 
-import type { ReactNode } from 'react'
+import type { IconeProps } from '@/components/ui/Icones'
+import type { ComponentType, ReactNode } from 'react'
 
 /**
  * Vocabulaire visuel de l'espace équipe.
@@ -84,15 +85,23 @@ export function TuileStat({
   valeur,
   precision,
   accent = false,
+  Icone,
 }: {
   libelle: string
   valeur: string | number
   precision?: string
   accent?: boolean
+  /** Icône en trait, posée en tête de tuile. `aria-hidden` par construction. */
+  Icone?: ComponentType<IconeProps>
 }) {
   return (
     <div className="bg-ko-white p-6">
-      <p className="label-mono text-ko-muted">{libelle}</p>
+      <div className="flex items-center gap-2.5">
+        {/* L'icône accompagne le libellé, elle ne le remplace pas : à elle
+            seule, une enveloppe ne dit pas « demandes reçues ». */}
+        {Icone && <Icone taille={16} className="text-ko-muted" />}
+        <p className="label-mono text-ko-muted">{libelle}</p>
+      </div>
       <p
         className={cn(
           'mt-3 font-mono text-[32px] leading-none',
