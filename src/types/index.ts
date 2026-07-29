@@ -47,9 +47,28 @@ export type StatutDemande = (typeof STATUTS_DEMANDE)[number]
 export const TYPES_POSTE = ['temps-plein', 'temps-partiel', 'contrat'] as const
 export type TypePoste = (typeof TYPES_POSTE)[number]
 
-/** profils.role — skill 24 (RBAC) */
-export const ROLES = ['admin', 'editor'] as const
+/**
+ * profils.role — skill 24 (RBAC).
+ *
+ * ⚠️ 'invite' ajouté par la migration 0004, et c'est désormais la valeur PAR
+ * DÉFAUT. Le skill 24 et la migration 0001 faisaient défaut à 'editor' : comme
+ * un profil est créé automatiquement à chaque inscription (trigger
+ * on_auth_user_created) et que l'inscription publique était ouverte, n'importe
+ * qui pouvait devenir éditeur du site — donc lire tout demandes_contact.
+ *
+ * 'invite' ne correspond à AUCUNE politique RLS de 0002 : le compte existe,
+ * il n'ouvre rien. Un admin l'élève ensuite à la main.
+ *
+ * L'ordre compte : ROLES_EQUIPE liste les rôles qui donnent réellement accès,
+ * à utiliser pour toute décision d'autorisation plutôt que `role !== 'invite'`
+ * — un futur quatrième rôle sans droits casserait la seconde forme en silence.
+ */
+export const ROLES = ['admin', 'editor', 'invite'] as const
 export type Role = (typeof ROLES)[number]
+
+/** Rôles donnant accès à l'espace équipe. Miroir exact des politiques de 0002. */
+export const ROLES_EQUIPE = ['admin', 'editor'] as const satisfies readonly Role[]
+export type RoleEquipe = (typeof ROLES_EQUIPE)[number]
 
 /* -----------------------------------------------------------------------------
  * Colonnes jsonb
