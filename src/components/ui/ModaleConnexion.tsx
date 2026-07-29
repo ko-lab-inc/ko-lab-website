@@ -90,6 +90,10 @@ export function ModaleConnexion({
 
         <FormulaireConnexion
           locale={locale}
+          // Identifiants distincts de ceux de la page /connexion : le modal
+          // peut s'ouvrir par-dessus n'importe quelle page, et deux `id`
+          // identiques casseraient l'association libellé/champ.
+          prefixe="modale-"
           libelles={{
             courriel: t('courriel'),
             motDePasse: t('mot_de_passe'),

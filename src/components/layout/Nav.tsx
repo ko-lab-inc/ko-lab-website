@@ -34,9 +34,29 @@ export function Nav() {
   const [connexionOuverte, setConnexionOuverte] = useState(false)
 
   /**
+   * Sommes-nous déjà sur un écran du parcours de compte ?
+   *
+   * `usePathname` de next-intl renvoie le chemin SANS préfixe de langue, la
+   * comparaison avec ROUTES fonctionne donc telle quelle en /fr comme en /en.
+   * Le test sur `${c}/` couvre les sous-chemins sans confondre
+   * /mot-de-passe-oublie et /mot-de-passe/nouveau.
+   */
+  const surPageDeCompte = [
+    ROUTES.connexion,
+    ROUTES.inscription,
+    ROUTES.motDePasseOublie,
+    ROUTES.motDePasseNouveau,
+    ROUTES.compte,
+  ].some((c) => pathname === c || pathname.startsWith(`${c}/`))
+
+  /**
    * Ouvre le modal plutôt que de naviguer — mais seulement quand ça a du sens.
    *
    * On laisse filer le clic si :
+   *   - on est DÉJÀ sur une page du parcours de compte : ouvrir le modal y
+   *     superposait un second formulaire de connexion identique à celui de la
+   *     page, par-dessus un fond assombri (constaté en production par
+   *     Christian sur /connexion?suivant=/fr/compte) ;
    *   - une session semble déjà ouverte : la personne veut voir SON compte,
    *     pas un formulaire de connexion ;
    *   - Ctrl/Cmd/Maj ou le clic du milieu : l'intention est d'ouvrir un onglet.
@@ -49,6 +69,7 @@ export function Nav() {
    */
   const surClicCompte = (e: React.MouseEvent) => {
     if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+    if (surPageDeCompte) return
     if (document.cookie.includes('-auth-token')) return
     e.preventDefault()
     setConnexionOuverte(true)
@@ -303,12 +324,20 @@ export function Nav() {
       )}
 
       {/* Hors des deux <nav> : un <dialog> imbriqué dans le menu mobile
-          disparaîtrait avec lui à la fermeture du menu. */}
-      <ModaleConnexion
-        ouvert={connexionOuverte}
-        surFermeture={() => setConnexionOuverte(false)}
-        locale={locale}
-      />
+          disparaîtrait avec lui à la fermeture du menu.
+
+          Pas monté du tout sur les pages du parcours de compte. Un <dialog>
+          fermé est en display:none, donc inoffensif — mais il laisserait un
+          second formulaire de connexion complet dans le document d'une page
+          qui en affiche déjà un. Deux formulaires identiques, c'est ce que
+          voit un gestionnaire de mots de passe, et c'est du poids pour rien. */}
+      {!surPageDeCompte && (
+        <ModaleConnexion
+          ouvert={connexionOuverte}
+          surFermeture={() => setConnexionOuverte(false)}
+          locale={locale}
+        />
+      )}
     </header>
   )
 }

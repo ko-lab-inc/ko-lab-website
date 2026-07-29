@@ -34,12 +34,25 @@ export function FormulaireConnexion({
   locale,
   suivant,
   libelles,
+  prefixe = '',
 }: {
   locale: string
   suivant?: string
   libelles: Libelles
+  /**
+   * Préfixe des `id` de champs.
+   *
+   * ⚠️ Obligatoire dès qu'un second exemplaire de ce formulaire peut coexister
+   * dans le même document — c'est le cas du modal ouvert par-dessus une page.
+   * Deux `id="email"` dans une même page, et `<label for="email">` s'associe
+   * au PREMIER dans l'ordre du document : cliquer le libellé du modal donnait
+   * le focus au champ de la page, derrière le fond assombri.
+   */
+  prefixe?: string
 }) {
   const [etat, action, enCours] = useActionState<EtatConnexion, FormData>(connecter, {})
+  const idEmail = `${prefixe}email`
+  const idMotDePasse = `${prefixe}motDePasse`
 
   const message =
     etat.erreur === 'identifiants'
@@ -58,11 +71,11 @@ export function FormulaireConnexion({
       {suivant && <input type="hidden" name="suivant" value={suivant} />}
 
       <div>
-        <label htmlFor="email" className="label-mono mb-2 block text-ko-muted">
+        <label htmlFor={idEmail} className="label-mono mb-2 block text-ko-muted">
           {libelles.courriel}
         </label>
         <input
-          id="email"
+          id={idEmail}
           name="email"
           type="email"
           required
@@ -73,11 +86,11 @@ export function FormulaireConnexion({
       </div>
 
       <div>
-        <label htmlFor="motDePasse" className="label-mono mb-2 block text-ko-muted">
+        <label htmlFor={idMotDePasse} className="label-mono mb-2 block text-ko-muted">
           {libelles.motDePasse}
         </label>
         <input
-          id="motDePasse"
+          id={idMotDePasse}
           name="motDePasse"
           type="password"
           required
