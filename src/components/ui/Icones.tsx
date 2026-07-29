@@ -19,7 +19,7 @@ import type { SVGProps } from 'react'
  * l'information pour un lecteur d'écran.
  */
 
-type IconeProps = SVGProps<SVGSVGElement> & {
+export type IconeProps = SVGProps<SVGSVGElement> & {
   /** Côté du carré, en pixels. 24 pour les cartes, 20 pour la stats bar. */
   taille?: number
 }
@@ -101,6 +101,36 @@ export function IconeCamion(props: IconeProps) {
       <circle cx="6" cy="18" r="2.2" />
       <circle cx="17" cy="18" r="2.2" />
       <path d="M8.2 18h6.6" />
+    </Icone>
+  )
+}
+
+/* =============================================================================
+ * Badges boutique
+ * ========================================================================== */
+
+/**
+ * Badge « officiel/vérifié ». Bouclier à coche — usage générique : le texte
+ * accolé (badgeRibbon) porte le sens exact, l'icône ne fait qu'appuyer.
+ * `aria-hidden` comme toutes les icônes d'ici : le texte du badge la décrit
+ * déjà, la doubler serait redondant pour un lecteur d'écran.
+ */
+export function IconeBadgeOfficiel(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M12 2.8 19.5 6v6c0 5-3.2 8.3-7.5 10-4.3-1.7-7.5-5-7.5-10V6z" />
+      <path d="M8.7 12.2l2.2 2.2 4.4-4.6" />
+    </Icone>
+  )
+}
+
+/** Badge « disponibilité/stock ». Boîte simple, coin plié. */
+export function IconeBadgeStock(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M3.5 8.2 12 4l8.5 4.2v8.6L12 21 3.5 16.8z" />
+      <path d="M3.5 8.2 12 12l8.5-3.8" />
+      <path d="M12 12v9" />
     </Icone>
   )
 }

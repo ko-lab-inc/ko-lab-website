@@ -4,13 +4,16 @@ import Image from 'next/image'
 import { useFormatter, useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 
-import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
+import { BoutonAjouter } from '@/components/ui/BoutonAjouter'
 import { buttonVariants } from '@/components/ui/Button'
-import { usePanier } from '@/lib/panier/PanierContext'
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Link } from '@/i18n/navigation'
 import { PANIER_ACTIF } from '@/lib/config/features'
-import { ROUTES } from '@/lib/routes'
+import type { ProduitCarte } from '@/lib/produits'
+import { ROUTES, routeProduit } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
+
+export type { ProduitCarte }
 
 /**
  * Catalogue filtrable — skill 21.
@@ -18,37 +21,11 @@ import { cn } from '@/lib/utils/cn'
  * Rapproché du style Bambu Store sur décision de Christian (changement de
  * direction assumé, boutique seulement — le reste du site garde son
  * traitement anti-générique habituel, skill 08) : rubans de badge, prix
- * visible, grille pleine largeur. Reste au vocabulaire KO-LAB : filets 1px,
- * Fraunces pour les noms, bleu en accent unique — pas de pastille multicolore
- * ni d'ornement décoratif au-delà de ce que Christian a validé.
+ * visible, cartes cliquables vers une fiche produit. Reste au vocabulaire
+ * KO-LAB : filets 1px, Fraunces pour les noms, bleu en accent unique — pas de
+ * pastille multicolore ni d'ornement décoratif au-delà de ce que Christian a
+ * validé.
  */
-
-export type ProduitCarte = {
-  slug: string
-  categorie: string
-  nom: string
-  texte: string
-  /** URL d'image, ou null pour un emplacement réservé. */
-  src: string | null
-  /**
-   * Prix indicatif CAD, avant taxes. `null` = pas de prix indicatif
-   * disponible (la carte retombe sur `prixSurDemande`).
-   *
-   * Champ numérique structuré — pas de texte libre — pour qu'un vrai prix
-   * Supabase le remplace un jour sans toucher à l'affichage.
-   */
-  prixIndicatif: number | null
-  /**
-   * Ruban coin supérieur gauche. VIDE PAR DÉFAUT : Christian doit confirmer
-   * un texte vrai et vérifiable par produit avant affichage (« Revendeur
-   * officiel », « En stock »…) — jamais une allégation copiée d'une
-   * référence externe sans vérifier qu'elle s'applique à KO-LAB.
-   */
-  badgeRibbon?: string
-  /** Badge coin supérieur droit — uniquement si KO-LAB a un vrai badge à
-   *  afficher (certification, exclusivité régionale). Rien par défaut. */
-  badgeSecondaire?: string
-}
 
 type Filtre = { valeur: string; label: string }
 
@@ -60,93 +37,6 @@ type Props = {
   demanderPrix: string
   aucunResultat: string
   photoPlaceholder: string
-}
-
-/**
- * Ajout à la demande groupée.
- *
- * Une fois le produit retenu, le bouton passe en état « Ajouté » et se
- * désactive : ré-appuyer incrémenterait la quantité sans retour visible, ce qui
- * se lit comme un bug. La quantité se règle sur la page de demande, où elle est
- * visible.
- */
-function BoutonAjouter({
-  slug,
-  nom,
-  categorie,
-}: {
-  slug: string
-  nom: string
-  categorie: string
-}) {
-  const t = useTranslations('Panier')
-  const { ajouter, changerQuantite, articles, pret } = usePanier()
-
-  const dansPanier = pret ? articles.find((a) => a.slug === slug) : undefined
-
-  // Quantité locale tant que le produit n'est pas retenu ; une fois dedans,
-  // le contrôle reflète et pilote la quantité du panier. Pas de maximum
-  // arbitraire — ce sont des demandes de prix, pas des stocks.
-  const [quantiteLocale, setQuantiteLocale] = useState(1)
-  const quantite = dansPanier?.quantite ?? quantiteLocale
-
-  const regler = (valeur: number) => {
-    const bornee = Math.max(1, valeur)
-    if (dansPanier) changerQuantite(slug, bornee)
-    else setQuantiteLocale(bornee)
-  }
-
-  return (
-    <div className="mt-auto">
-      <div className="flex items-center gap-3">
-        {/* Contrôle − [n] + — filets 1px, aucun fond coloré (skill 08). */}
-        <div className="flex items-center border border-ko-line">
-          <button
-            type="button"
-            onClick={() => regler(quantite - 1)}
-            disabled={quantite <= 1}
-            aria-label={`${t('quantite')} −`}
-            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
-          >
-            −
-          </button>
-
-          <span
-            aria-live="polite"
-            className="min-w-[2.5rem] text-center font-mono text-sm text-ko-ink"
-          >
-            {quantite}
-          </span>
-
-          <button
-            type="button"
-            onClick={() => regler(quantite + 1)}
-            aria-label={`${t('quantite')} +`}
-            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
-          >
-            +
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            if (dansPanier) return
-            ajouter({ slug, nom, categorie })
-            // La quantité choisie avant l'ajout est reportée dans le panier.
-            if (quantiteLocale > 1) changerQuantite(slug, quantiteLocale)
-          }}
-          // `disabled` et non `pointer-events-none` : ce dernier laisse le
-          // bouton focusable et activable au clavier, donc annonçable comme
-          // cliquable par un lecteur d'écran alors qu'il ne fait rien.
-          disabled={!!dansPanier}
-          className={cn(buttonVariants({ variant: 'primary', size: 'sm' }), 'flex-1')}
-        >
-          {dansPanier ? t('ajoute') : t('ajouter')}
-        </button>
-      </div>
-    </div>
-  )
 }
 
 export function CatalogueBoutique({
@@ -233,118 +123,145 @@ export function CatalogueBoutique({
 
       {/* ------------------------------ Grille ------------------------------ */}
       {/*
-        Revenue au conteneur normal de la page (max-w-container, gap-5) sur
-        retour de Christian : la version pleine largeur (mx-[calc(50%-50vw)])
-        se lisait trop dense/trop large. Centrée et aérée à nouveau.
+        Conteneur normal de la page (max-w-container, gap-5) — la version
+        pleine largeur essayée plus tôt se lisait trop dense/trop large,
+        revenue en arrière sur retour de Christian.
       */}
       {visibles.length === 0 ? (
         <p className="mt-14 text-base text-ko-muted">{messageVide}</p>
       ) : (
         <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {visibles.map((produit) => (
-            <article
-              key={produit.slug}
-              className="group flex flex-col border border-ko-line bg-ko-white transition-colors duration-250 hover:border-ko-blue"
-            >
-              <div className="relative aspect-[4/3] overflow-hidden bg-ko-cream2">
-                {/* Ruban — vide tant que Christian n'a pas confirmé un texte
-                    vrai par produit (voir le commentaire sur ProduitCarte). */}
-                {produit.badgeRibbon && (
-                  <span className="absolute left-0 top-4 z-10 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-white [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]">
-                    {produit.badgeRibbon}
-                  </span>
-                )}
-                {produit.badgeSecondaire && (
-                  <span className="absolute right-3 top-3 z-10 rounded-sm bg-ko-black px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-ko-white">
-                    {produit.badgeSecondaire}
-                  </span>
-                )}
+          {visibles.map((produit) => {
+            const nomCategorie =
+              filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie
 
-                {produit.src ? (
-                  <Image
-                    src={produit.src}
-                    alt=""
-                    fill
-                    quality={80}
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="object-cover transition-transform duration-[400ms] group-hover:scale-[1.03]"
-                  />
-                ) : (
-                  // Emplacement réservé plutôt qu'une photo de stock approchante :
-                  // sur une fiche produit, une image générique désigne un autre
-                  // objet que celui nommé (skill 22).
-                  <PhotoPlaceholder ratio="aspect-[4/3]" label={photoPlaceholder} />
-                )}
-              </div>
+            return (
+              <article
+                key={produit.slug}
+                className="group flex flex-col border border-ko-line bg-ko-white transition-colors duration-250 hover:border-ko-blue"
+              >
+                {/* Photo cliquable vers la fiche produit — anchor séparée de
+                    celle du titre plus bas : deux cibles identiques sur une
+                    même carte est un motif courant et sans ambiguïté au
+                    clavier ou au lecteur d'écran (chacune est autonome). */}
+                <Link
+                  href={routeProduit(produit.slug)}
+                  className="relative block aspect-[4/3] overflow-hidden bg-ko-cream2"
+                >
+                  {/* Ruban — vide tant que Christian n'a pas confirmé un texte
+                      vrai par produit (voir le commentaire sur ProduitCarte). */}
+                  {produit.badgeRibbon && (
+                    <span className="absolute left-0 top-4 z-10 flex items-center gap-1.5 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-white [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]">
+                      {produit.badgeRibbonIcone && <produit.badgeRibbonIcone taille={12} />}
+                      {produit.badgeRibbon}
+                    </span>
+                  )}
+                  {produit.badgeSecondaire && (
+                    <span className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-sm bg-ko-black px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-ko-white">
+                      {produit.badgeSecondaireIcone && <produit.badgeSecondaireIcone taille={12} />}
+                      {produit.badgeSecondaire}
+                    </span>
+                  )}
 
-              <div className="flex flex-1 flex-col p-6">
-                {/* Catégorie en mono nu — pas de pastille colorée (skill 08). */}
-                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
-                  {filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie}
-                </p>
+                  {produit.src ? (
+                    <Image
+                      src={produit.src}
+                      alt=""
+                      fill
+                      quality={80}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-[400ms] group-hover:scale-[1.03]"
+                    />
+                  ) : (
+                    // Emplacement réservé plutôt qu'une photo de stock approchante :
+                    // sur une fiche produit, une image générique désigne un autre
+                    // objet que celui nommé (skill 22).
+                    <PhotoPlaceholder ratio="aspect-[4/3]" label={photoPlaceholder} />
+                  )}
+                </Link>
 
-                <h3 className="mt-3 font-serif text-[20px] leading-tight text-ko-ink">
-                  {produit.nom}
-                </h3>
+                <div className="flex flex-1 flex-col p-6">
+                  {/* `contents` : ce Link disparaît de la boîte, ses enfants
+                      restent des enfants directs de la colonne flex — sinon
+                      le prix et le bouton, hors du lien, se retrouveraient
+                      mal alignés dans une boîte à part. */}
+                  <Link href={routeProduit(produit.slug)} className="contents">
+                    {/* Catégorie en mono nu — pas de pastille colorée (skill 08). */}
+                    <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
+                      {nomCategorie}
+                    </p>
 
-                {/* line-clamp-2 : deux lignes maximum, pour que toutes les
-                    cartes d'une rangée gardent la même hauteur de texte. */}
-                <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ko-muted">
-                  {produit.texte}
-                </p>
+                    <h3 className="mt-3 font-serif text-[20px] leading-tight text-ko-ink transition-colors duration-200 group-hover:text-ko-blue">
+                      {produit.nom}
+                    </h3>
 
-                {/*
-                  Prix indicatif visible — changement de direction assumé
-                  (Bambu Store en référence). `prixIndicatif` reste un champ
-                  numérique structuré : un vrai prix Supabase le remplacera
-                  sans toucher au format d'affichage. `null` retombe sur
-                  l'ancien "Prix sur demande", pour le cas où le panier est
-                  désactivé (PANIER_ACTIF) et où aucun CTA de rechange
-                  n'existe encore sur cette carte précise.
-                */}
-                {produit.prixIndicatif !== null ? (
-                  <p className="mt-6 font-mono text-sm text-ko-ink">
-                    {t('a_partir_de', {
-                      prix: format.number(produit.prixIndicatif, {
-                        style: 'currency',
-                        currency: 'CAD',
-                        maximumFractionDigits: 0,
-                      }),
-                    })}
-                  </p>
-                ) : (
-                  <p className="label-mono mt-6">{prixSurDemande}</p>
-                )}
+                    {/* line-clamp-2 : deux lignes maximum, pour que toutes les
+                        cartes d'une rangée gardent la même hauteur de texte. */}
+                    <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-ko-muted">
+                      {produit.texte}
+                    </p>
 
-                {/*
-                  Panier actif : l'action principale devient l'ajout au
-                  panier, prix déjà visible plus haut — plus de « Demander
-                  un prix » isolé sur la carte (décision de Christian).
-                  Panier désactivé (PANIER_ACTIF=false, voir
-                  src/lib/config/features.ts) : on retombe sur l'ancien CTA
-                  de contact, pour qu'un simple retour en arrière du drapeau
-                  ne laisse jamais une carte sans action.
-                */}
-                {PANIER_ACTIF ? (
-                  <BoutonAjouter
-                    slug={produit.slug}
-                    nom={produit.nom}
-                    categorie={
-                      filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie
-                    }
-                  />
-                ) : (
-                  <Link
-                    href={`${ROUTES.contact}?type=boutique&produit=${produit.slug}`}
-                    className={cn('mt-auto', buttonVariants({ variant: 'primary', size: 'sm' }))}
-                  >
-                    {demanderPrix}
-                    <span aria-hidden="true">→</span>
+                    {/* Rend la destination explicite : le survol du titre seul
+                        (changement de couleur) ne suffit pas à annoncer
+                        qu'une carte entière est cliquable. */}
+                    <span className="mt-3 inline-flex items-center gap-2 text-sm text-ko-blue">
+                      {t('voir_produit')}
+                      <span aria-hidden="true">→</span>
+                    </span>
                   </Link>
-                )}
-              </div>
-            </article>
-          ))}
+
+                  {/*
+                    Prix indicatif visible — changement de direction assumé
+                    (Bambu Store en référence). `prixIndicatif` reste un champ
+                    numérique structuré : un vrai prix Supabase le remplacera
+                    sans toucher au format d'affichage. `null` retombe sur
+                    l'ancien "Prix sur demande", pour le cas où le panier est
+                    désactivé (PANIER_ACTIF) et où aucun CTA de rechange
+                    n'existe encore sur cette carte précise.
+                  */}
+                  {produit.prixIndicatif !== null ? (
+                    <p className="mt-6 font-mono text-sm text-ko-ink">
+                      {t('a_partir_de', {
+                        prix: format.number(produit.prixIndicatif, {
+                          style: 'currency',
+                          currency: 'CAD',
+                          maximumFractionDigits: 0,
+                        }),
+                      })}
+                    </p>
+                  ) : (
+                    <p className="label-mono mt-6">{prixSurDemande}</p>
+                  )}
+
+                  {/*
+                    Panier actif : l'action principale devient l'ajout au
+                    panier, prix déjà visible plus haut — plus de « Demander
+                    un prix » isolé sur la carte (décision de Christian).
+                    Panier désactivé (PANIER_ACTIF=false, voir
+                    src/lib/config/features.ts) : on retombe sur l'ancien CTA
+                    de contact, pour qu'un simple retour en arrière du drapeau
+                    ne laisse jamais une carte sans action.
+                  */}
+                  {PANIER_ACTIF ? (
+                    <BoutonAjouter
+                      slug={produit.slug}
+                      nom={produit.nom}
+                      categorie={nomCategorie}
+                      className="mt-auto"
+                    />
+                  ) : (
+                    <Link
+                      href={`${ROUTES.contact}?type=boutique&produit=${produit.slug}`}
+                      className={cn('mt-auto', buttonVariants({ variant: 'primary', size: 'sm' }))}
+                    >
+                      {demanderPrix}
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  )}
+                </div>
+              </article>
+            )
+          })}
         </div>
       )}
     </>

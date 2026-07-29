@@ -30,6 +30,10 @@ export const ROUTES = {
 
 export type RouteKey = keyof typeof ROUTES
 
+/** Fiche produit boutique — chemin construit, pas de segment dans ROUTES
+ *  puisqu'il dépend d'un slug qui n'existe qu'au pluriel (SLUGS_PRODUITS). */
+export const routeProduit = (slug: string) => `${ROUTES.boutique}/${slug}`
+
 /** Les quatre pages de capacités, dans l'ordre du document de cadrage. */
 export const ROUTES_CAPACITES = [
   { key: 'operations', href: ROUTES.operations },
