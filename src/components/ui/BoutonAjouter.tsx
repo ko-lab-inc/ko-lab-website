@@ -23,11 +23,21 @@ export function BoutonAjouter({
   nom,
   categorie,
   className,
+  compact = false,
 }: {
   slug: string
   nom: string
   categorie: string
   className?: string
+  /**
+   * Bouton seul, sans sélecteur de quantité — pour la grille du catalogue,
+   * où la carte fait ~210 px de large à quatre colonnes : le sélecteur y
+   * mangeait 130 px et « Ajouter au panier » se cassait sur trois lignes.
+   * C'est aussi le modèle de la référence Bambu Store, et ça rejoint ce que
+   * documente déjà ce composant — la quantité se règle là où elle est
+   * visible, sur la fiche produit et le récapitulatif.
+   */
+  compact?: boolean
 }) {
   const t = useTranslations('Panier')
   const { ajouter, changerQuantite, articles, pret } = usePanier()
@@ -48,31 +58,40 @@ export function BoutonAjouter({
 
   return (
     <div className={cn('flex items-center gap-3', className)}>
-      {/* Contrôle − [n] + — filets 1px, aucun fond coloré (skill 08). */}
-      <div className="flex items-center border border-ko-line">
-        <button
-          type="button"
-          onClick={() => regler(quantite - 1)}
-          disabled={quantite <= 1}
-          aria-label={`${t('quantite')} −`}
-          className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
-        >
-          <IconeMoins taille={14} />
-        </button>
+      {/* Contrôle − [n] + — filets 1px, aucun fond coloré (skill 08).
+          Non rendu en mode compact plutôt que masqué en CSS : `hidden`
+          laisserait deux boutons vivants dans le DOM de chacune des douze
+          cartes, invisibles mais bien présents pour un lecteur d'écran qui
+          parcourt le document autrement que par la navigation au clavier. */}
+      {!compact && (
+        <div className="flex items-center border border-ko-line">
+          <button
+            type="button"
+            onClick={() => regler(quantite - 1)}
+            disabled={quantite <= 1}
+            aria-label={`${t('quantite')} −`}
+            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
+          >
+            <IconeMoins taille={14} />
+          </button>
 
-        <span aria-live="polite" className="min-w-[2.5rem] text-center font-mono text-sm text-ko-ink">
-          {quantite}
-        </span>
+          <span
+            aria-live="polite"
+            className="min-w-[2.5rem] text-center font-mono text-sm text-ko-ink"
+          >
+            {quantite}
+          </span>
 
-        <button
-          type="button"
-          onClick={() => regler(quantite + 1)}
-          aria-label={`${t('quantite')} +`}
-          className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
-        >
-          <IconePlus taille={14} />
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={() => regler(quantite + 1)}
+            aria-label={`${t('quantite')} +`}
+            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+          >
+            <IconePlus taille={14} />
+          </button>
+        </div>
+      )}
 
       <button
         type="button"

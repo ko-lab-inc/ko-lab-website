@@ -25,12 +25,18 @@ const REVEALED_CLASS = 'in'
  *      l'affichage, mais poser `.in` garde le DOM cohérent et évite de faire
  *      tourner un observer pour une transition désactivée (skill 20).
  *
- * Reste un troisième cas, hors de portée d'un hook : si le JavaScript ne
+ *   3. Élément trop haut pour que le seuil soit atteignable → seuil borné.
+ *      Détaillé dans le corps du hook : c'est le cas le moins évident des
+ *      trois, et le seul qui ne se voit qu'à certaines tailles d'écran.
+ *
+ * Reste un quatrième cas, hors de portée d'un hook : si le JavaScript ne
  * s'exécute pas du tout, aucun code client ne peut réagir. Il se traite au
  * niveau du document — voir la note en bas de fichier.
  * ---------------------------------------------------------------------------
  *
  * @param threshold Fraction visible déclenchant la révélation (0.12 — skill 02).
+ *                  Plafonné à l'exécution si l'élément est plus haut que
+ *                  l'écran ne permet de l'atteindre.
  */
 export function useReveal<T extends HTMLElement = HTMLDivElement>(threshold = 0.12) {
   const ref = useRef<T>(null)
@@ -46,6 +52,31 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(threshold = 0.
       return
     }
 
+    /**
+     * 3ᵉ garde-fou — un seuil en fraction peut être GÉOMÉTRIQUEMENT inatteignable.
+     *
+     * IntersectionObserver compare la surface visible à celle de l'élément
+     * ENTIER. Un bloc plus haut que `viewport ÷ seuil` ne peut donc jamais
+     * intersecter à 12 %, quelle que soit la position de défilement : la
+     * callback ne part pas, `.in` n'est jamais posée, et le contenu reste à
+     * opacity 0 — définitivement.
+     *
+     * Ce n'est pas théorique. La grille boutique en une colonne sur téléphone
+     * (375 × 812) mesure 6 874 px : ratio maximal 0.118, sous le seuil de 0.12.
+     * Toute la boutique était invisible, et seulement sur mobile — la même page
+     * s'affichait normalement dès 768 px, où la grille repasse à deux colonnes.
+     * Elle est passée sous la barre en gagnant 300 px de gouttières.
+     *
+     * Le seuil est donc borné à ce que la géométrie autorise. `offsetHeight` et
+     * non `getBoundingClientRect()` : le second renvoie la hauteur APRÈS la
+     * transformation de `.reveal` (scale 0.94), donc une hauteur minorée de 6 %
+     * et un seuil trop optimiste. Le facteur 0.8 garde une marge pour les
+     * arrondis de sous-pixel du navigateur.
+     */
+    const hauteur = element.offsetHeight
+    const seuil =
+      hauteur > 0 ? Math.min(threshold, (window.innerHeight / hauteur) * 0.8) : threshold
+
     const observer = new IntersectionObserver(
       (entries) => {
         // Boucle plutôt que déstructuration `([entry])` : avec
@@ -57,7 +88,7 @@ export function useReveal<T extends HTMLElement = HTMLDivElement>(threshold = 0.
           observer.unobserve(entry.target)
         }
       },
-      { threshold },
+      { threshold: seuil },
     )
 
     observer.observe(element)

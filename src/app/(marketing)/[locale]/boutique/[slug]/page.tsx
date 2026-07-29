@@ -115,8 +115,15 @@ export default async function FicheProduitPage({ params }: Props) {
           <div className="mx-auto max-w-container px-6 lg:px-12">
             <Reveal>
               <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
-                {/* ------------------------------ Photo ------------------------------ */}
-                <div className="relative aspect-square overflow-hidden bg-ko-white">
+                {/* ------------------------------ Photo ------------------------------
+                    Même cadre que la grille du catalogue : filet 1px et fond
+                    blanc PUR (ko-photo, voir globals.css). Les visuels
+                    fabricants sont détourés sur #ffffff — sur le blanc chaud du
+                    design system, un rectangle plus clair se voyait autour de
+                    l'appareil. Les deux surfaces doivent rester alignées : un
+                    produit ne peut pas changer d'apparence entre la grille et
+                    sa fiche. */}
+                <div className="relative aspect-square overflow-hidden border border-ko-line bg-ko-photo">
                   {produit.badgeRibbon && (
                     <span className="absolute left-0 top-4 z-10 flex items-center gap-1.5 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-white [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]">
                       {produit.badgeRibbonIcone && <produit.badgeRibbonIcone taille={12} />}
@@ -138,7 +145,13 @@ export default async function FicheProduitPage({ params }: Props) {
                       priority
                       quality={85}
                       sizes="(max-width: 1024px) 100vw, 50vw"
-                      className="object-contain p-10"
+                      // Même règle que la grille : les photos de scène
+                      // (conteneurs) remplissent le cadre, les visuels
+                      // détourés gardent leur marge. Voir `cadrage` dans
+                      // src/lib/produits.ts.
+                      className={cn(
+                        produit.cadrage === 'cover' ? 'object-cover' : 'object-contain p-8',
+                      )}
                     />
                   ) : (
                     // ⚠️ Une seule photo par produit dans le modèle actuel —
@@ -146,7 +159,11 @@ export default async function FicheProduitPage({ params }: Props) {
                     // un emplacement réservé identifiable qu'une image
                     // approximative). La galerie de la référence Bambu Store
                     // suppose plusieurs angles par produit, absents ici.
-                    <PhotoPlaceholder ratio="aspect-square" label={tCommun('photo_placeholder')} />
+                    <PhotoPlaceholder
+                      ratio="aspect-square"
+                      label={tCommun('photo_placeholder')}
+                      className="bg-ko-photo"
+                    />
                   )}
                 </div>
 

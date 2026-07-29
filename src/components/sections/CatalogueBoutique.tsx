@@ -83,7 +83,12 @@ export function CatalogueBoutique({
     // grille sous lg, où une colonne fixe grignoterait toute la largeur utile.
     <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-12">
       {/* ------------------------------ Filtres ------------------------------ */}
-      <aside className="lg:sticky lg:top-24 lg:w-52 lg:shrink-0">
+      {/* w-60 et non w-52 : à 208 px, le champ de recherche tronquait sa
+          propre invite (« Rechercher un produi… », le « t » invisible relevé
+          par Christian). L'invite n'est pas raccourcie pour autant — la
+          police du champ reste à 16 px, en dessous desquels iOS zoome
+          automatiquement à la mise au point (skill 11). */}
+      <aside className="lg:sticky lg:top-24 lg:w-60 lg:shrink-0">
         <label htmlFor="recherche-boutique" className="sr-only">
           {t('recherche_label')}
         </label>
@@ -126,27 +131,42 @@ export function CatalogueBoutique({
         {visibles.length === 0 ? (
           <p className="text-base text-ko-muted">{messageVide}</p>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          // Gouttières dissociées : 32 px entre colonnes, 48 px entre rangées.
+          // À gap-5 uniforme, les cadres de deux produits voisins se touchaient
+          // presque — c'est le « trop collé » signalé. Un écart vertical plus
+          // large qu'horizontal fait aussi lire la grille par rangées plutôt
+          // qu'en damier.
+          <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {visibles.map((produit) => {
               const nomCategorie =
                 filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie
 
               return (
-                <article
-                  key={produit.slug}
-                  className="group flex flex-col border border-transparent transition-colors duration-250 hover:border-ko-line"
-                >
+                // Plus de bordure au survol autour de la carte ENTIÈRE : elle
+                // apparaissait à un cheveu du produit voisin et écrasait
+                // l'espace qu'on vient de gagner. Le cadre est désormais porté
+                // par la photo seule, en permanence ; le survol se lit au
+                // zoom de l'image et au titre qui passe au bleu.
+                <article key={produit.slug} className="group flex flex-col">
                   {/* Photo cliquable vers la fiche produit — anchor séparée de
                       celle du titre plus bas : deux cibles identiques sur une
                       même carte est un motif courant et sans ambiguïté au
                       clavier ou au lecteur d'écran (chacune est autonome).
-                      Fond blanc et `object-contain`, PAS `object-cover` : le
-                      produit doit rester entier et centré, jamais recadré —
-                      référence Bambu Store, où chaque appareil flotte sur son
-                      fond avec une marge généreuse tout autour. */}
+
+                      `bg-ko-photo` (blanc PUR) et non `bg-ko-white` : les
+                      visuels fabricants sont détourés sur #ffffff, et le fond
+                      chaud du design system laissait un rectangle plus clair
+                      visible autour de chaque appareil. Le filet 1px donne au
+                      cadre une limite franche, identique sur les douze cartes
+                      — photo présente ou emplacement réservé.
+
+                      `object-contain`, PAS `object-cover` : le produit reste
+                      entier et centré, jamais recadré. Padding réduit à p-5 :
+                      les images portent déjà 8 % de marge interne, cumuler les
+                      deux rapetissait l'appareil au milieu du vide. */}
                   <Link
                     href={routeProduit(produit.slug)}
-                    className="relative block aspect-square overflow-hidden bg-ko-white"
+                    className="relative block aspect-square overflow-hidden border border-ko-line bg-ko-photo"
                   >
                     {/* Ruban — vide tant que Christian n'a pas confirmé un texte
                         vrai par produit (voir le commentaire sur ProduitCarte). */}
@@ -170,13 +190,31 @@ export function CatalogueBoutique({
                         fill
                         quality={85}
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                        className="object-contain p-8 transition-transform duration-[400ms] group-hover:scale-[1.04]"
+                        className={cn(
+                          'transition-transform duration-[400ms] group-hover:scale-[1.04]',
+                          // Une photo de scène (conteneur) remplit le cadre
+                          // bord à bord : lui appliquer le padding du détouré
+                          // laisserait un liseré blanc autour de la photo, qui
+                          // se lirait comme un défaut d'alignement.
+                          produit.cadrage === 'cover'
+                            ? 'object-cover'
+                            : 'object-contain p-5',
+                        )}
                       />
                     ) : (
                       // Emplacement réservé plutôt qu'une photo de stock approchante :
                       // sur une fiche produit, une image générique désigne un autre
                       // objet que celui nommé (skill 22).
-                      <PhotoPlaceholder ratio="aspect-square" label={photoPlaceholder} />
+                      //
+                      // Ramené au fond du cadre : en ko-cream2 par défaut, les
+                      // neuf produits sans photo formaient des blocs beiges
+                      // pleins entre les trois cadres blancs — la grille se
+                      // lisait comme deux jeux de cartes différents.
+                      <PhotoPlaceholder
+                        ratio="aspect-square"
+                        label={photoPlaceholder}
+                        className="bg-ko-photo"
+                      />
                     )}
                   </Link>
 
@@ -210,9 +248,14 @@ export function CatalogueBoutique({
                       l'ancien "Prix sur demande", pour le cas où le panier
                       est désactivé (PANIER_ACTIF) et où aucun CTA de
                       rechange n'existe encore sur cette carte précise.
+
+                      `mt-auto` : le bloc prix + bouton est plaqué au bas de la
+                      carte. Sans lui, un nom sur deux lignes (« Conteneur
+                      40 pieds high cube ») décale prix et bouton d'un cran par
+                      rapport aux cartes voisines de la même rangée.
                     */}
                     {produit.prixIndicatif !== null ? (
-                      <p className="mt-3 font-mono text-base text-ko-ink">
+                      <p className="mt-auto pt-3 font-mono text-base text-ko-ink">
                         {format.number(produit.prixIndicatif, {
                           style: 'currency',
                           currency: 'CAD',
@@ -220,7 +263,7 @@ export function CatalogueBoutique({
                         })}
                       </p>
                     ) : (
-                      <p className="label-mono mt-3">{prixSurDemande}</p>
+                      <p className="label-mono mt-auto pt-3">{prixSurDemande}</p>
                     )}
 
                     {/*
@@ -233,10 +276,16 @@ export function CatalogueBoutique({
                       ne laisse jamais une carte sans action.
                     */}
                     {PANIER_ACTIF ? (
+                      // `compact` : bouton seul, sans sélecteur de quantité.
+                      // À quatre colonnes la carte fait ~210 px ; le sélecteur
+                      // en mangeait 130 et « Ajouter au panier » se cassait sur
+                      // trois lignes. La quantité se règle sur la fiche produit
+                      // et le récapitulatif, où elle est lisible.
                       <BoutonAjouter
                         slug={produit.slug}
                         nom={produit.nom}
                         categorie={nomCategorie}
+                        compact
                         className="mt-4"
                       />
                     ) : (

@@ -35,6 +35,9 @@ const config: Config = {
         'ko-muted-d': 'var(--ko-muted-d)',
         'ko-line': 'var(--ko-line)',
         'ko-line-d': 'var(--ko-line-d)',
+        // Blanc pur — RÉSERVÉ aux cadres de photo produit (voir globals.css).
+        // Pour un fond clair de section, c'est ko-white qu'il faut.
+        'ko-photo': 'var(--ko-photo)',
         // Voiles translucides sur photo — les SEULS tokens acceptant un
         // modificateur d'opacité (bg-ko-scrim/70, text-ko-frost/60…).
         // Réservés aux dégradés de lisibilité et au glassmorphism du hero ;

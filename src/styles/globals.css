@@ -27,6 +27,14 @@
     --ko-line: #e0ddd6; /* bordures sur fond clair */
     --ko-line-d: rgba(255, 255, 255, 0.12); /* bordures sur fond sombre */
 
+    /* Blanc PUR — cadres de photo produit de la boutique, et rien d'autre.
+       N'ajoute pas une couleur à la palette (aucune teinte : c'est un neutre) :
+       les visuels fabricants sont détourés sur #ffffff, et le poser sur
+       --ko-white (#f8f6f1, chaud) laissait un rectangle plus clair visible
+       autour de chaque appareil — le défaut de cadre signalé par Christian.
+       Interdit partout ailleurs : le blanc du design system reste --ko-white. */
+    --ko-photo: #ffffff;
+
     /* Canaux RVB des deux couleurs de base — UNIQUEMENT pour les voiles
        translucides posés sur photo (dégradés de lisibilité, glassmorphism).
        Tailwind ne sait appliquer un modificateur d'opacité que sur une couleur
