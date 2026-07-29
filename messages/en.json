@@ -528,6 +528,20 @@
     "photo_placeholder": "KO-LAB field photo",
     "aller_au_contenu": "Skip to content"
   },
+  "Admin": {
+    "espace": "Team area",
+    "deconnexion": "Sign out",
+    "role_admin": "Administrator",
+    "role_editor": "Editor",
+    "titre": "Dashboard",
+    "total_demandes": "Requests received",
+    "nouvelles": "Unhandled",
+    "recentes": "Latest requests",
+    "statut_nouveau": "New",
+    "aucune_demande": "No requests yet.",
+    "erreur_lecture": "Reading the requests failed. Let Moussa know.",
+    "a_venir": "Catalogue, projects and member management: coming. Product prices and photos are still hardcoded."
+  },
   "Aide": {
     "ouvrir": "Ask a question",
     "fermer": "Close",

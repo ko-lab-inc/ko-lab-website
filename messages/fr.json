@@ -528,6 +528,20 @@
     "photo_placeholder": "Photo terrain KO-LAB",
     "aller_au_contenu": "Aller au contenu"
   },
+  "Admin": {
+    "espace": "Espace équipe",
+    "deconnexion": "Se déconnecter",
+    "role_admin": "Administrateur",
+    "role_editor": "Éditeur",
+    "titre": "Tableau de bord",
+    "total_demandes": "Demandes reçues",
+    "nouvelles": "Non traitées",
+    "recentes": "Dernières demandes",
+    "statut_nouveau": "Nouveau",
+    "aucune_demande": "Aucune demande pour l'instant.",
+    "erreur_lecture": "La lecture des demandes a échoué. Prévenez Moussa.",
+    "a_venir": "Gestion du catalogue, des réalisations et des membres : à venir. Les prix et les photos des produits sont encore écrits en dur dans le code."
+  },
   "Aide": {
     "ouvrir": "Poser une question",
     "fermer": "Fermer",

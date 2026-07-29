@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import { rateLimit } from '@/lib/utils/rateLimit'
+import { ROLES_EQUIPE } from '@/types'
 
 /**
  * Connexion à l'espace équipe — Server Action.
@@ -75,11 +76,11 @@ export async function connecter(
   // de « identifiants invalides » indiquerait déjà quelles adresses existent.
   if (!analyse.success) return { erreur: 'identifiants' }
 
-  let succes = false
+  let cible: string | null = null
 
   try {
     const supabase = await createClient()
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email: analyse.data.email,
       password: analyse.data.motDePasse,
     })
@@ -88,8 +89,33 @@ export async function connecter(
     // « Invalid login credentials » générique ; le relayer tel quel ferait
     // fuiter la langue et la formulation d'un service tiers dans notre
     // interface, sans rien apporter.
-    if (error) return { erreur: 'identifiants' }
-    succes = true
+    if (error || !data.user) return { erreur: 'identifiants' }
+
+    /**
+     * Le rôle est lu ICI, et la destination choisie en conséquence.
+     *
+     * On pourrait se contenter de renvoyer vers /admin et laisser le proxy
+     * refuser : c'est ce que faisait la première version, et l'accès était bien
+     * bloqué. Mais la chaîne « action -> /admin -> proxy -> /connexion » laissait
+     * le navigateur sur l'URL /admin tout en affichant la page de refus —
+     * mesuré. Adresse et contenu désaccordés, sur un écran qui annonce
+     * justement un refus : de quoi croire à une panne.
+     *
+     * Une seule redirection, décidée une fois. Le proxy et le layout admin
+     * gardent leur contrôle : ils protègent l'accès direct par URL, pas ce
+     * chemin-ci.
+     */
+    const { data: profil } = await supabase
+      .from('profils')
+      .select('role')
+      .eq('id', data.user.id)
+      .single()
+
+    const role = profil?.role
+    cible =
+      role && ROLES_EQUIPE.some((r) => r === role)
+        ? destination(String(donnees.get('suivant') ?? ''), locale)
+        : `/${locale}/connexion?refus=role`
   } catch (err) {
     console.error('[connexion] échec', err)
     return { erreur: 'serveur' }
@@ -98,9 +124,7 @@ export async function connecter(
   // ⚠️ redirect() HORS du try : il fonctionne en levant une exception que Next
   // intercepte. À l'intérieur, le catch l'attraperait et la connexion réussie
   // s'afficherait comme une erreur serveur.
-  if (succes) redirect(destination(String(donnees.get('suivant') ?? ''), locale))
-
-  return {}
+  redirect(cible)
 }
 
 export async function deconnecter(locale: string) {
