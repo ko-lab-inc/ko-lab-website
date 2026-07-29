@@ -287,6 +287,38 @@ export function construireProduits(t: Traducteur): ProduitCarte[] {
 }
 
 /**
+ * Ce que le récapitulatif de sélection a besoin de savoir d'un produit, en
+ * plus de ce que le panier stocke lui-même (slug, nom, catégorie, quantité).
+ */
+export type FichePanier = {
+  prix: number | null
+  src: string | null
+  cadrage?: 'contain' | 'cover'
+}
+
+/**
+ * Indexe le catalogue par slug pour le récapitulatif de sélection.
+ *
+ * Le panier ne mémorise NI le prix NI l'image : il ne garde que le slug, et
+ * ces champs sont relus ici à chaque affichage. Une sélection vieille de trois
+ * semaines montre donc le prix et le visuel d'aujourd'hui, pas ceux figés au
+ * moment de l'ajout — c'est le seul comportement défendable pour un prix
+ * indicatif, et ça évite de faire vivre une copie du catalogue dans le
+ * localStorage du visiteur.
+ *
+ * Un seul enregistrement plutôt qu'un `Record` par champ : le troisième aurait
+ * imposé de garder trois tables parallèles synchronisées à la main.
+ */
+export function construireFichesPanier(t: Traducteur): Record<string, FichePanier> {
+  return Object.fromEntries(
+    construireProduits(t).map((p) => [
+      p.slug,
+      { prix: p.prixIndicatif, src: p.src, cadrage: p.cadrage },
+    ]),
+  )
+}
+
+/**
  * Slugs seuls, sans traduction — pour generateStaticParams (qui tourne une
  * fois par langue mais n'a pas besoin du nom traduit, seulement du chemin).
  * Garder cette liste synchronisée avec construireProduits ci-dessus.

@@ -1,12 +1,15 @@
 'use client'
 
+import Image from 'next/image'
 import { useFormatter, useTranslations } from 'next-intl'
 
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeMoins, IconePlus } from '@/components/ui/Icones'
 import { Link } from '@/i18n/navigation'
 import { usePanier } from '@/lib/panier/PanierContext'
+import type { FichePanier } from '@/lib/produits'
 import { ROUTES } from '@/lib/routes'
+import { cn } from '@/lib/utils/cn'
 
 /**
  * Récapitulatif de la sélection.
@@ -17,19 +20,20 @@ import { ROUTES } from '@/lib/routes'
  * « Indicatif » reste le mot clé, répété sur le total lui-même : la somme de
  * prix provisoires reste elle-même provisoire, jamais une facture.
  */
-export function PagePanier({ prix }: { prix: Record<string, number | null> }) {
+export function PagePanier({ fiches }: { fiches: Record<string, FichePanier> }) {
   const t = useTranslations('Panier')
   const format = useFormatter()
   const { articles, pret, retirer, changerQuantite } = usePanier()
 
   // Somme uniquement les articles dont le prix indicatif est connu — un
   // article `null` (prix sur demande) ne doit ni fausser le total ni le
-  // bloquer silencieusement.
+  // bloquer silencieusement. `?.` obligatoire : le panier peut contenir un
+  // slug retiré du catalogue depuis, et noUncheckedIndexedAccess le rappelle.
   const total = articles.reduce((somme, a) => {
-    const p = prix[a.slug]
+    const p = fiches[a.slug]?.prix
     return p != null ? somme + p * a.quantite : somme
   }, 0)
-  const nbSansPrix = articles.filter((a) => prix[a.slug] == null).length
+  const nbSansPrix = articles.filter((a) => fiches[a.slug]?.prix == null).length
 
   // Rien tant que localStorage n'est pas lu : le serveur ignore le panier,
   // afficher « vide » puis le contenu produirait un clignotement.
@@ -56,29 +60,61 @@ export function PagePanier({ prix }: { prix: Record<string, number | null> }) {
 
       <ul className="mt-6 divide-y divide-ko-line border-y border-ko-line">
         {articles.map((article) => {
-          const prixArticle = prix[article.slug]
+          const fiche = fiches[article.slug]
 
           return (
             <li
               key={article.slug}
               className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8"
             >
-              <div className="min-w-0">
-                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
-                  {article.categorie}
-                </p>
-                <p className="mt-2 font-serif text-[20px] leading-tight text-ko-ink">
-                  {article.nom}
-                </p>
-                {prixArticle != null && (
-                  <p className="mt-1 font-mono text-sm text-ko-muted">
-                    {format.number(prixArticle, {
-                      style: 'currency',
-                      currency: 'CAD',
-                      maximumFractionDigits: 0,
-                    })}
+              <div className="flex min-w-0 items-center gap-5">
+                {/* Vignette — même vocabulaire de cadre que la grille et la
+                    fiche produit : filet 1px, blanc pur, `contain` pour un
+                    visuel détouré et `cover` pour une photo de scène. Un
+                    troisième traitement ici ferait lire trois boutiques
+                    différentes pour un même produit.
+
+                    80 px puis 96 px : assez pour reconnaître la machine d'un
+                    coup d'œil sans transformer le récapitulatif en seconde
+                    grille — le sujet de cette page reste la liste et le
+                    total, pas la découverte des produits. */}
+                <div className="relative h-20 w-20 shrink-0 overflow-hidden border border-ko-line bg-ko-photo sm:h-24 sm:w-24">
+                  {fiche?.src && (
+                    <Image
+                      src={fiche.src}
+                      // Décoratif : le nom du produit est juste à côté, le
+                      // répéter en alternative ferait doublon au lecteur
+                      // d'écran.
+                      alt=""
+                      fill
+                      sizes="96px"
+                      className={cn(
+                        fiche.cadrage === 'cover' ? 'object-cover' : 'object-contain p-2',
+                      )}
+                    />
+                  )}
+                  {/* Pas de visuel : le cadre vide suffit. Le placeholder
+                      complet (carré + libellé « photo terrain ») est illisible
+                      à 80 px et attirerait l'œil sur ce qui manque. */}
+                </div>
+
+                <div className="min-w-0">
+                  <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
+                    {article.categorie}
                   </p>
-                )}
+                  <p className="mt-2 font-serif text-[20px] leading-tight text-ko-ink">
+                    {article.nom}
+                  </p>
+                  {fiche?.prix != null && (
+                    <p className="mt-1 font-mono text-sm text-ko-muted">
+                      {format.number(fiche.prix, {
+                        style: 'currency',
+                        currency: 'CAD',
+                        maximumFractionDigits: 0,
+                      })}
+                    </p>
+                  )}
+                </div>
               </div>
 
               <div className="flex shrink-0 items-center gap-6">
