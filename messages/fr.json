@@ -544,9 +544,17 @@
   },
   "Connexion": {
     "titre": "Espace équipe",
-    "intro": "Cet espace est réservé à l'équipe KO-LAB : gestion du catalogue, des demandes reçues et des contenus du site.",
-    "statut_titre": "En construction",
-    "statut_texte": "L'authentification et le tableau de bord arrivent avec la partie administration. D'ici là, rien à faire ici.",
+    "intro": "Réservé à l'équipe KO-LAB : catalogue, demandes reçues et contenus du site.",
+    "courriel": "Courriel",
+    "mot_de_passe": "Mot de passe",
+    "se_connecter": "Se connecter",
+    "en_cours": "Connexion…",
+    "erreur_identifiants": "Courriel ou mot de passe incorrect.",
+    "erreur_tentatives": "Trop de tentatives. Réessayez dans quelques minutes.",
+    "erreur_serveur": "La connexion a échoué. Réessayez, ou prévenez Moussa si ça persiste.",
+    "refus_role_titre": "Compte sans accès",
+    "refus_role_texte": "Votre compte existe mais n'a pas encore de droits. Un administrateur doit l'activer.",
+    "pas_de_compte": "Les comptes sont créés par invitation. Écrivez à info@ko-lab.ca.",
     "retour": "Retour au site"
   }
 }

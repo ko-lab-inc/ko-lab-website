@@ -544,9 +544,17 @@
   },
   "Connexion": {
     "titre": "Team area",
-    "intro": "This area is reserved for the KO-LAB team: catalogue, incoming requests and site content.",
-    "statut_titre": "Being built",
-    "statut_texte": "Authentication and the dashboard arrive with the admin section. Until then, there is nothing to do here.",
+    "intro": "Reserved for the KO-LAB team: catalogue, incoming requests and site content.",
+    "courriel": "Email",
+    "mot_de_passe": "Password",
+    "se_connecter": "Sign in",
+    "en_cours": "Signing in…",
+    "erreur_identifiants": "Incorrect email or password.",
+    "erreur_tentatives": "Too many attempts. Try again in a few minutes.",
+    "erreur_serveur": "Sign-in failed. Try again, or let Moussa know if it persists.",
+    "refus_role_titre": "Account without access",
+    "refus_role_texte": "Your account exists but has no rights yet. An administrator must activate it.",
+    "pas_de_compte": "Accounts are created by invitation. Write to info@ko-lab.ca.",
     "retour": "Back to the site"
   }
 }
