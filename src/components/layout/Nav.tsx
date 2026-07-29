@@ -8,6 +8,7 @@ import { useScrolled } from '@/hooks/useScrolled'
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeProfil } from '@/components/ui/Icones'
 import { LienPanier } from '@/components/ui/LienPanier'
+import { ModaleConnexion } from '@/components/ui/ModaleConnexion'
 import { PANIER_ACTIF } from '@/lib/config/features'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
@@ -30,6 +31,28 @@ export function Nav() {
 
   const [menuOuvert, setMenuOuvert] = useState(false)
   const [capacitesOuvert, setCapacitesOuvert] = useState(false)
+  const [connexionOuverte, setConnexionOuverte] = useState(false)
+
+  /**
+   * Ouvre le modal plutôt que de naviguer — mais seulement quand ça a du sens.
+   *
+   * On laisse filer le clic si :
+   *   - une session semble déjà ouverte : la personne veut voir SON compte,
+   *     pas un formulaire de connexion ;
+   *   - Ctrl/Cmd/Maj ou le clic du milieu : l'intention est d'ouvrir un onglet.
+   *
+   * ⚠️ Le test de session lit le cookie d'authentification Supabase. C'est un
+   * indice D'AFFICHAGE, jamais une décision d'autorisation : un cookie expiré
+   * ou fabriqué mènerait simplement à /compte, qui vérifie réellement côté
+   * serveur avec getUser() et redirige. Passer par le client Supabase juste
+   * pour ce choix ajouterait sa bibliothèque au bundle de toutes les pages.
+   */
+  const surClicCompte = (e: React.MouseEvent) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+    if (document.cookie.includes('-auth-token')) return
+    e.preventDefault()
+    setConnexionOuverte(true)
+  }
 
   const autreLocale = locale === 'fr' ? 'en' : 'fr'
 
@@ -163,6 +186,8 @@ export function Nav() {
           */}
           <Link
             href={ROUTES.compte}
+            onClick={surClicCompte}
+            aria-haspopup="dialog"
             aria-label={t('compte')}
             className="flex h-11 w-11 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
           >
@@ -259,6 +284,8 @@ export function Nav() {
                 la barre : le libellé est écrit. */}
             <Link
               href={ROUTES.compte}
+              onClick={surClicCompte}
+              aria-haspopup="dialog"
               className="flex min-h-[44px] items-center gap-2 text-sm text-ko-muted"
             >
               <IconeProfil taille={18} />
@@ -274,6 +301,14 @@ export function Nav() {
           </div>
         </nav>
       )}
+
+      {/* Hors des deux <nav> : un <dialog> imbriqué dans le menu mobile
+          disparaîtrait avec lui à la fermeture du menu. */}
+      <ModaleConnexion
+        ouvert={connexionOuverte}
+        surFermeture={() => setConnexionOuverte(false)}
+        locale={locale}
+      />
     </header>
   )
 }

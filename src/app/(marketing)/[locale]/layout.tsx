@@ -164,6 +164,7 @@ export default async function MarketingLayout({ children, params }: Props) {
    * concernés aujourd'hui :
    *
    *   Nav.tsx                  → Nav, Panier
+   *   ModaleConnexion.tsx      → Connexion  (montée par Nav.tsx)
    *   FormulaireContact.tsx    → Contact, Panier
    *   GalerieRealisations.tsx  → Realisations
    *   CatalogueBoutique.tsx    → Panier, Boutique
@@ -188,6 +189,10 @@ export default async function MarketingLayout({ children, params }: Props) {
     // Namespace entier : ce ne sont que des libellés d'interface du widget
     // d'aide, aucun contenu non publié ne s'y trouve.
     Aide: tousLesMessages.Aide,
+    // Idem pour le modal de connexion ouvert depuis la nav : libellés de
+    // formulaire uniquement. Les pages /connexion et /inscription, elles,
+    // résolvent leurs textes côté serveur et ne passent pas par ici.
+    Connexion: tousLesMessages.Connexion,
     // ⚠️ SOUS-ENSEMBLE, pas l'espace de noms entier. `Boutique` contient les
     // noms des produits « Solutions modulaires », que le drapeau masque et que
     // le document de cadrage interdit de publier. Transmettre le namespace
