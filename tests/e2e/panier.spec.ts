@@ -100,9 +100,9 @@ test.describe('Panier / sélection', () => {
     // ⚠️ `.nth(1)` après un premier ajout NE cible PAS le 2ᵉ produit du
     // catalogue : le bouton du 1ᵉʳ passe en « Ajouté » et sort du sélecteur
     // /Ajouter au panier/, donc tous les index suivants se décalent d'un cran
-    // (X1-Carbon 1800 $ puis AMS 300 $, pas X1-Carbon puis P1S). Total
+    // (X1-Carbon 1800 $ puis AMS 449 $, pas X1-Carbon puis P1S). Total
     // attendu ci-dessous vérifié en conséquence, pas dans l'ordre du
-    // catalogue.
+    // catalogue. Prix AMS relevé sur ca.store.bambulab.com (voir produits.ts).
     await ajouterProduit(page, 0, 1)
     await ajouterProduit(page, 1, 2)
     await page.goto('/fr/boutique/demande')
@@ -121,11 +121,11 @@ test.describe('Panier / sélection', () => {
     for (const interdit of ['commande', 'achat', 'checkout', 'panier']) {
       expect(texte, `mot interdit trouvé : ${interdit}`).not.toContain(interdit)
     }
-    // Les deux prix indicatifs individuels, et leur somme (2100 $).
+    // Les deux prix indicatifs individuels, et leur somme (2249 $).
     expect(texte).toContain('1 800')
-    expect(texte).toContain('300')
+    expect(texte).toContain('449')
     expect(texte).toContain('total indicatif')
-    expect(texte).toContain('2 100')
+    expect(texte).toContain('2 249')
   })
 
   test('6 · envoi groupé — le message est pré-rempli avec la liste', async ({ page }) => {
@@ -158,7 +158,9 @@ test.describe('Recherche boutique', () => {
   test('8 · la recherche et le filtre de catégorie se cumulent', async ({ page }) => {
     await page.goto('/fr/boutique')
     const cartes = page.locator('article')
-    await expect(cartes).toHaveCount(9)
+    // 12 avec la catégorie Conteneurs active (NEXT_PUBLIC_SOLUTIONS_MODULAIRES,
+    // entente commerciale confirmée le 28 juillet 2026) — 9 sans elle.
+    await expect(cartes).toHaveCount(12)
 
     const champ = page.getByPlaceholder('Rechercher un produit…')
 
@@ -179,6 +181,8 @@ test.describe('Recherche boutique', () => {
     // Retour à l'état complet.
     await champ.fill('')
     await page.getByRole('button', { name: 'Tout voir', exact: true }).click()
-    await expect(cartes).toHaveCount(9)
+    // 12 avec la catégorie Conteneurs active (NEXT_PUBLIC_SOLUTIONS_MODULAIRES,
+    // entente commerciale confirmée le 28 juillet 2026) — 9 sans elle.
+    await expect(cartes).toHaveCount(12)
   })
 })

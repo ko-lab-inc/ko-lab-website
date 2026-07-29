@@ -19,7 +19,6 @@ import { ROUTES } from '@/lib/routes'
  */
 export function PagePanier({ prix }: { prix: Record<string, number | null> }) {
   const t = useTranslations('Panier')
-  const tBoutique = useTranslations('Boutique')
   const format = useFormatter()
   const { articles, pret, retirer, changerQuantite } = usePanier()
 
@@ -73,12 +72,10 @@ export function PagePanier({ prix }: { prix: Record<string, number | null> }) {
                 </p>
                 {prixArticle != null && (
                   <p className="mt-1 font-mono text-sm text-ko-muted">
-                    {tBoutique('a_partir_de', {
-                      prix: format.number(prixArticle, {
-                        style: 'currency',
-                        currency: 'CAD',
-                        maximumFractionDigits: 0,
-                      }),
+                    {format.number(prixArticle, {
+                      style: 'currency',
+                      currency: 'CAD',
+                      maximumFractionDigits: 0,
                     })}
                   </p>
                 )}

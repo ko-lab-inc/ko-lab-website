@@ -1,5 +1,3 @@
-import { IMAGES } from '@/lib/images'
-
 import type { IconeProps } from '@/components/ui/Icones'
 import type { getTranslations } from 'next-intl/server'
 import type { ComponentType } from 'react'
@@ -73,32 +71,50 @@ export function construireProduits(t: Traducteur): ProduitCarte[] {
   return [
     // ---- Impression 3D
     {
+      // ⚠️ PROVISOIRE — non confirmé : ca.store.bambulab.com bloque la
+      // récupération automatisée (402) et aucune autre source n'a donné un
+      // prix CAD fiable pour ce modèle précis. À vérifier manuellement avant
+      // mise en prod.
       slug: 'bambu-lab-x1-carbon',
       categorie: 'impression',
       nom: t('produits.bambu_x1c_nom'),
       texte: t('produits.bambu_x1c_texte'),
-      src: IMAGES.boutiqueImpression3d,
+      // Photo revendeur (shop3d.ca), vérifiée visuellement le 28 juillet 2026 :
+      // fond clair, modèle correctement identifié (logo « X1-Carbon » visible
+      // sur l'appareil). À remplacer par le visuel presse officiel dès que
+      // possible.
+      src: '/images/produits/bambu-lab-x1-carbon.png',
       prixIndicatif: 1800,
     },
     {
+      // Prix relevé sur ca.store.bambulab.com (prix régulier, hors promotion
+      // temporaire) le 28 juillet 2026 — à reconfirmer avant mise en prod,
+      // les fabricants ajustent leurs prix sans préavis.
       slug: 'bambu-lab-p1s',
       categorie: 'impression',
       nom: t('produits.bambu_p1s_nom'),
       texte: t('produits.bambu_p1s_texte'),
       src: null,
-      prixIndicatif: 750,
+      prixIndicatif: 899,
     },
     {
+      // Prix relevé sur ca.store.bambulab.com (prix régulier) le 28 juillet
+      // 2026 — à reconfirmer avant mise en prod.
       slug: 'bambu-lab-ams',
       categorie: 'impression',
       nom: t('produits.bambu_ams_nom'),
       texte: t('produits.bambu_ams_texte'),
-      src: null,
-      prixIndicatif: 300,
+      // Photo revendeur (caz3d.com), vérifiée visuellement le 28 juillet 2026.
+      src: '/images/produits/bambu-lab-ams.png',
+      prixIndicatif: 449,
     },
 
     // ---- Découpe laser
     {
+      // ⚠️ PROVISOIRE — n'a pas pu être confirmé sur une source officielle :
+      // les résultats trouvés variaient de 4999 $US à 6599 $CA selon la
+      // source, aucune ne provenant directement de ca.xtool.com. À vérifier
+      // manuellement avant mise en prod.
       slug: 'xtool-p2',
       categorie: 'laser',
       nom: t('produits.xtool_p2_nom'),
@@ -107,19 +123,29 @@ export function construireProduits(t: Traducteur): ProduitCarte[] {
       prixIndicatif: 5000,
     },
     {
+      // Prix relevé chez un revendeur canadien officiel xTool (RB Digital,
+      // prix régulier hors promotion) le 28 juillet 2026 — à reconfirmer
+      // avant mise en prod.
       slug: 'xtool-s1',
       categorie: 'laser',
       nom: t('produits.xtool_s1_nom'),
       texte: t('produits.xtool_s1_texte'),
       src: null,
-      prixIndicatif: 1700,
+      prixIndicatif: 3399,
     },
     {
+      // ⚠️ PROVISOIRE — non confirmé : les prix trouvés visaient le F1 Ultra
+      // (modèle supérieur, ~3999 $CA), pas le F1 de base vendu ici. À vérifier
+      // manuellement avant mise en prod.
       slug: 'xtool-f1',
       categorie: 'laser',
       nom: t('produits.xtool_f1_nom'),
       texte: t('produits.xtool_f1_texte'),
-      src: null,
+      // Photo revendeur (filaments.ca), vérifiée le 28 juillet 2026 : fond
+      // blanc correct, mais porte un badge « Best Overall — U.S. News 2024 »
+      // non vérifié par KO-LAB. Idéalement recadré ou remplacé avant
+      // publication définitive.
+      src: '/images/produits/xtool-f1.webp',
       prixIndicatif: 1100,
     },
 

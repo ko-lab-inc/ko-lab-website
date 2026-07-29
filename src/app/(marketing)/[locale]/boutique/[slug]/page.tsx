@@ -87,12 +87,10 @@ export default async function FicheProduitPage({ params }: Props) {
 
   const prixFormate =
     produit.prixIndicatif !== null
-      ? t('a_partir_de', {
-          prix: format.number(produit.prixIndicatif, {
-            style: 'currency',
-            currency: 'CAD',
-            maximumFractionDigits: 0,
-          }),
+      ? format.number(produit.prixIndicatif, {
+          style: 'currency',
+          currency: 'CAD',
+          maximumFractionDigits: 0,
         })
       : t('prix_sur_demande')
 
@@ -118,7 +116,7 @@ export default async function FicheProduitPage({ params }: Props) {
             <Reveal>
               <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
                 {/* ------------------------------ Photo ------------------------------ */}
-                <div className="relative aspect-[4/3] overflow-hidden border border-ko-line bg-ko-cream2 lg:aspect-square">
+                <div className="relative aspect-square overflow-hidden bg-ko-white">
                   {produit.badgeRibbon && (
                     <span className="absolute left-0 top-4 z-10 flex items-center gap-1.5 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-white [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]">
                       {produit.badgeRibbonIcone && <produit.badgeRibbonIcone taille={12} />}
@@ -140,7 +138,7 @@ export default async function FicheProduitPage({ params }: Props) {
                       priority
                       quality={85}
                       sizes="(max-width: 1024px) 100vw, 50vw"
-                      className="object-cover"
+                      className="object-contain p-10"
                     />
                   ) : (
                     // ⚠️ Une seule photo par produit dans le modèle actuel —
@@ -148,7 +146,7 @@ export default async function FicheProduitPage({ params }: Props) {
                     // un emplacement réservé identifiable qu'une image
                     // approximative). La galerie de la référence Bambu Store
                     // suppose plusieurs angles par produit, absents ici.
-                    <PhotoPlaceholder ratio="aspect-[4/3]" label={tCommun('photo_placeholder')} />
+                    <PhotoPlaceholder ratio="aspect-square" label={tCommun('photo_placeholder')} />
                   )}
                 </div>
 
