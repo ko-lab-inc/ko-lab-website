@@ -10,6 +10,28 @@ import type { ComponentType } from 'react'
  * ajouté ici apparaît automatiquement dans les deux pages.
  */
 
+/**
+ * Un coloris d'un même produit — une pastille et la photo correspondante.
+ */
+export type VarianteCouleur = {
+  /** Libellé lisible du coloris (« Noir », « Vert »…), annoncé au survol
+   *  et aux lecteurs d'écran. À traduire le jour où il vient de Supabase. */
+  nom: string
+  /**
+   * Couleur de la pastille, en hexadécimal.
+   *
+   * SEULE exception à la règle « aucune couleur en dur hors globals.css », et
+   * elle est de même nature que le champ `src` juste au-dessus : c'est une
+   * DONNÉE sur le produit, pas une décision de design. Le vert d'un xTool ne
+   * peut pas sortir de la palette KO-LAB — il appartient à l'appareil. Ne pas
+   * en profiter pour introduire des couleurs ailleurs dans l'interface.
+   */
+  echantillon: string
+  /** Photo de ce coloris précis. Même traitement que `src` : détourée sur
+   *  blanc pur, produit centré au même gabarit que les autres. */
+  src: string
+}
+
 export type ProduitCarte = {
   slug: string
   categorie: string
@@ -31,6 +53,27 @@ export type ProduitCarte = {
    * codée dans le composant.
    */
   cadrage?: 'contain' | 'cover'
+  /**
+   * Coloris disponibles pour CE produit, affichés en pastilles sous la photo
+   * de la fiche produit. Absent ou vide = pas de sélecteur, ce qui est le cas
+   * des douze produits aujourd'hui.
+   *
+   * ⚠️ VOLONTAIREMENT VIDE PARTOUT, même règle que badgeRibbon : une pastille
+   * annonce qu'un coloris EXISTE et qu'on peut le commander. Inventer un
+   * « noir » et un « blanc » pour meubler la fiche serait l'erreur qu'on vient
+   * de corriger sur les visuels, en pire — elle porterait cette fois sur la
+   * disponibilité d'une référence. Christian confirme les coloris réels et
+   * fournit UNE PHOTO PAR COLORIS, ensuite on remplit.
+   *
+   * Le sélecteur lui-même est complet : dès qu'un tableau est rempli il
+   * apparaît, sans autre changement. Format attendu :
+   *
+   *     couleurs: [
+   *       { nom: 'Noir', echantillon: '#111210', src: '/images/produits/x-noir.webp' },
+   *       { nom: 'Vert', echantillon: '#2f7d4f', src: '/images/produits/x-vert.webp' },
+   *     ]
+   */
+  couleurs?: VarianteCouleur[]
   /**
    * Prix indicatif CAD, avant taxes. `null` = pas de prix indicatif
    * disponible (la carte retombe sur `prixSurDemande`).

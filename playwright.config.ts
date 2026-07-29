@@ -56,7 +56,28 @@ export default defineConfig({
     },
   ],
 
-  // Démarre le serveur automatiquement et réutilise celui déjà ouvert en local.
+  /**
+   * Démarre le serveur automatiquement et réutilise celui déjà ouvert en local.
+   *
+   * ⚠️ AVANT DE CROIRE UN ÉCHEC LOCAL, LE REJOUER EN PRODUCTION.
+   *
+   * En local le serveur est `next dev` : les charges utiles RSC y sont
+   * compilées à la demande, et une compilation entrecoupée renvoie un flux
+   * tronqué. Le navigateur lève alors « SyntaxError: Unexpected end of JSON
+   * input », le composant client ne monte pas, et le test qui passait par là
+   * échoue — au hasard, un test différent à chaque exécution. Le symptôme
+   * ressemble à un vrai bug du panier ; la signature est le SyntaxError dans
+   * la sortie [WebServer], pas dans l'assertion.
+   *
+   * Pour trancher :
+   *     npm run build && npm run start     (port 3000, réutilisé ci-dessous)
+   *     npx playwright test
+   *
+   * Mesuré le 29 juillet 2026 : le test 4 échouait ~1 fois sur 6 en dev, et
+   * passait 16 fois sur 16 en production, suite complète verte deux fois de
+   * suite. C'est le mode production que la CI utilise, et c'est celui qui
+   * compte.
+   */
   webServer: {
     command: process.env.CI ? 'npm run build && npm run start' : 'npm run dev',
     url: baseURL,

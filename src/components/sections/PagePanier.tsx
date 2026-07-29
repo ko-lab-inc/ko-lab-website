@@ -8,7 +8,7 @@ import { IconeMoins, IconePlus } from '@/components/ui/Icones'
 import { Link } from '@/i18n/navigation'
 import { usePanier } from '@/lib/panier/PanierContext'
 import type { FichePanier } from '@/lib/produits'
-import { ROUTES } from '@/lib/routes'
+import { ROUTES, routeProduit } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -67,7 +67,19 @@ export function PagePanier({ fiches }: { fiches: Record<string, FichePanier> }) 
               key={article.slug}
               className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8"
             >
-              <div className="flex min-w-0 items-center gap-5">
+              {/* Vignette + texte dans UNE seule ancre vers la fiche produit.
+                  Son nom accessible vient du texte qu'elle contient — le nom
+                  du produit — pas de l'image, qui reste en `alt=""`. Envelopper
+                  les deux évite de créer deux liens voisins vers la même page,
+                  le défaut qu'on vient de corriger dans la grille.
+
+                  Le sélecteur de quantité et « Retirer » restent DEHORS : ce
+                  sont des <button>, et un bouton dans un lien est du HTML
+                  invalide. */}
+              <Link
+                href={routeProduit(article.slug)}
+                className="group flex min-w-0 items-center gap-5"
+              >
                 {/* Vignette — même vocabulaire de cadre que la grille et la
                     fiche produit : filet 1px, blanc pur, `contain` pour un
                     visuel détouré et `cover` pour une photo de scène. Un
@@ -78,7 +90,7 @@ export function PagePanier({ fiches }: { fiches: Record<string, FichePanier> }) 
                     coup d'œil sans transformer le récapitulatif en seconde
                     grille — le sujet de cette page reste la liste et le
                     total, pas la découverte des produits. */}
-                <div className="relative h-20 w-20 shrink-0 overflow-hidden border border-ko-line bg-ko-photo sm:h-24 sm:w-24">
+                <div className="relative h-20 w-20 shrink-0 overflow-hidden border border-ko-line bg-ko-photo transition-colors duration-200 group-hover:border-ko-blue sm:h-24 sm:w-24">
                   {fiche?.src && (
                     <Image
                       src={fiche.src}
@@ -102,7 +114,7 @@ export function PagePanier({ fiches }: { fiches: Record<string, FichePanier> }) 
                   <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
                     {article.categorie}
                   </p>
-                  <p className="mt-2 font-serif text-[20px] leading-tight text-ko-ink">
+                  <p className="mt-2 font-serif text-[20px] leading-tight text-ko-ink transition-colors duration-200 group-hover:text-ko-blue">
                     {article.nom}
                   </p>
                   {fiche?.prix != null && (
@@ -115,7 +127,7 @@ export function PagePanier({ fiches }: { fiches: Record<string, FichePanier> }) 
                     </p>
                   )}
                 </div>
-              </div>
+              </Link>
 
               <div className="flex shrink-0 items-center gap-6">
                 {/* Même contrôle que la boutique (BoutonAjouter) : un

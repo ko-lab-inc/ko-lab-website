@@ -142,16 +142,18 @@ export function CatalogueBoutique({
                 filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie
 
               return (
-                // Plus de bordure au survol autour de la carte ENTIÈRE : elle
-                // apparaissait à un cheveu du produit voisin et écrasait
-                // l'espace qu'on vient de gagner. Le cadre est désormais porté
-                // par la photo seule, en permanence ; le survol se lit au
-                // zoom de l'image et au titre qui passe au bleu.
-                <article key={produit.slug} className="group flex flex-col">
-                  {/* Photo cliquable vers la fiche produit — anchor séparée de
-                      celle du titre plus bas : deux cibles identiques sur une
-                      même carte est un motif courant et sans ambiguïté au
-                      clavier ou au lecteur d'écran (chacune est autonome).
+                // `relative` : ancre le lien étiré du titre (plus bas), qui
+                // couvre toute la carte. `isolate` crée un contexte
+                // d'empilement propre à la carte, pour que le z-index du
+                // bouton n'ait à rivaliser qu'avec ses propres voisins.
+                <article key={produit.slug} className="group relative isolate flex flex-col">
+                  {/* Cadre photo — PLUS un lien.
+                      La photo et le titre pointaient vers la même fiche par
+                      DEUX ancres distinctes, et celle de la photo n'avait pour
+                      contenu qu'une image en `alt=""` : un lien sans nom
+                      accessible, annoncé « lien » et rien d'autre. Les deux
+                      sont désormais une seule ancre, portée par le titre et
+                      étirée sur la carte (voir plus bas).
 
                       `bg-ko-photo` (blanc PUR) et non `bg-ko-white` : les
                       visuels fabricants sont détourés sur #ffffff, et le fond
@@ -163,11 +165,14 @@ export function CatalogueBoutique({
                       `object-contain`, PAS `object-cover` : le produit reste
                       entier et centré, jamais recadré. Padding réduit à p-5 :
                       les images portent déjà 8 % de marge interne, cumuler les
-                      deux rapetissait l'appareil au milieu du vide. */}
-                  <Link
-                    href={routeProduit(produit.slug)}
-                    className="relative block aspect-square overflow-hidden border border-ko-line bg-ko-photo"
-                  >
+                      deux rapetissait l'appareil au milieu du vide.
+
+                      Au survol le cadre entier avance (scale 1.03) et l'image
+                      avance un peu plus (1.06) : l'écart entre les deux donne
+                      la profondeur, le produit semble sortir de son cadre.
+                      1.03 sur 200 px = 3 px de débord par côté, contre 32 px
+                      de gouttière — aucun risque de chevaucher le voisin. */}
+                  <div className="relative aspect-square overflow-hidden border border-ko-line bg-ko-photo transition-transform duration-[400ms] group-hover:scale-[1.03]">
                     {/* Ruban — vide tant que Christian n'a pas confirmé un texte
                         vrai par produit (voir le commentaire sur ProduitCarte). */}
                     {produit.badgeRibbon && (
@@ -191,7 +196,7 @@ export function CatalogueBoutique({
                         quality={85}
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
                         className={cn(
-                          'transition-transform duration-[400ms] group-hover:scale-[1.04]',
+                          'transition-transform duration-[400ms] group-hover:scale-[1.06]',
                           // Une photo de scène (conteneur) remplit le cadre
                           // bord à bord : lui appliquer le padding du détouré
                           // laisserait un liseré blanc autour de la photo, qui
@@ -216,29 +221,46 @@ export function CatalogueBoutique({
                         className="bg-ko-photo"
                       />
                     )}
-                  </Link>
+                  </div>
 
                   <div className="flex flex-1 flex-col pt-4">
-                    {/* `contents` : ce Link disparaît de la boîte, ses enfants
-                        restent des enfants directs de la colonne flex — sinon
-                        le prix et le bouton, hors du lien, se retrouveraient
-                        mal alignés dans une boîte à part. */}
-                    <Link href={routeProduit(produit.slug)} className="contents">
-                      {/* Catégorie en mono nu — pas de pastille colorée (skill 08). */}
-                      <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
-                        {nomCategorie}
-                      </p>
+                    {/* Catégorie en mono nu — pas de pastille colorée (skill 08). */}
+                    <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
+                      {nomCategorie}
+                    </p>
 
-                      <h3 className="mt-2 font-serif text-[18px] leading-tight text-ko-ink transition-colors duration-200 group-hover:text-ko-blue">
+                    <h3 className="mt-2 font-serif text-[18px] leading-tight text-ko-ink transition-colors duration-200 group-hover:text-ko-blue">
+                      {/*
+                        LIEN UNIQUE de la carte, étiré sur toute sa surface.
+
+                        Le pseudo-élément `before` est positionné en absolu sur
+                        l'`article` (qui porte `relative`) : la photo, le texte
+                        et le prix deviennent donc cliquables sans être DANS
+                        l'ancre. Ça règle trois choses d'un coup —
+                        - une seule cible au lieu de deux vers la même page ;
+                        - un nom accessible réel, le nom du produit, au lieu
+                          d'un lien vide autour d'une image en `alt=""` ;
+                        - le bouton reste hors du lien, un <button> imbriqué
+                          dans un <a> étant du HTML invalide.
+
+                        Contrepartie assumée : sélectionner le texte de la
+                        carte à la souris devient malaisé. C'est le compromis
+                        connu de ce motif, et il est sans conséquence ici —
+                        personne ne copie une description de catalogue.
+                      */}
+                      <Link
+                        href={routeProduit(produit.slug)}
+                        className="before:absolute before:inset-0 before:z-0 before:content-['']"
+                      >
                         {produit.nom}
-                      </h3>
+                      </Link>
+                    </h3>
 
-                      {/* line-clamp-2 : deux lignes maximum, pour que toutes les
-                          cartes d'une rangée gardent la même hauteur de texte. */}
-                      <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ko-muted">
-                        {produit.texte}
-                      </p>
-                    </Link>
+                    {/* line-clamp-2 : deux lignes maximum, pour que toutes les
+                        cartes d'une rangée gardent la même hauteur de texte. */}
+                    <p className="mt-1.5 line-clamp-2 text-sm leading-relaxed text-ko-muted">
+                      {produit.texte}
+                    </p>
 
                     {/*
                       Prix — aligné à gauche, juste sous le nom (référence
@@ -281,17 +303,24 @@ export function CatalogueBoutique({
                       // en mangeait 130 et « Ajouter au panier » se cassait sur
                       // trois lignes. La quantité se règle sur la fiche produit
                       // et le récapitulatif, où elle est lisible.
+                      // `relative z-10` : repasse AU-DESSUS du lien étiré du
+                      // titre, qui couvre sinon toute la carte, bouton
+                      // compris — un clic sur « Ajouter au panier » partirait
+                      // alors vers la fiche produit.
                       <BoutonAjouter
                         slug={produit.slug}
                         nom={produit.nom}
                         categorie={nomCategorie}
                         compact
-                        className="mt-4"
+                        className="relative z-10 mt-4"
                       />
                     ) : (
                       <Link
                         href={`${ROUTES.contact}?type=boutique&produit=${produit.slug}`}
-                        className={cn('mt-4', buttonVariants({ variant: 'primary', size: 'sm' }))}
+                        className={cn(
+                          'relative z-10 mt-4',
+                          buttonVariants({ variant: 'primary', size: 'sm' }),
+                        )}
                       >
                         {demanderPrix}
                         <span aria-hidden="true">→</span>
