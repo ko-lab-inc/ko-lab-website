@@ -214,13 +214,20 @@ export async function creerProduit(
     const photo = await televerserPhoto(supabase, donnees.get('photo'), baseSlug)
     if (photo === undefined) return { erreur: 'photo' }
 
-    const { data: dernier } = await supabase
+    // Le plus PETIT `ordre` existant, pas le plus grand : le tri d'affichage
+    // (admin/catalogue/page.tsx, boutique publique) est ascendant, donc un
+    // nouveau produit doit recevoir une valeur plus petite que tout le reste
+    // pour apparaître EN PREMIER — demande de Christian, « en fonction du
+    // plus récent au plus ancien ». `- 10` et non `- 1` : même marge que
+    // l'ancien `+ 10`, pour laisser de la place à un réordonnancement manuel
+    // futur sans devoir tout renuméroter.
+    const { data: premier } = await supabase
       .from('produits_boutique')
       .select('ordre')
-      .order('ordre', { ascending: false })
+      .order('ordre', { ascending: true })
       .limit(1)
       .maybeSingle()
-    const ordre = (dernier?.ordre ?? 0) + 10
+    const ordre = (premier?.ordre ?? 10) - 10
 
     let creation: { erreur: true } | { erreur: false } = { erreur: true }
 

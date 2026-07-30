@@ -1,7 +1,7 @@
 'use client'
 
 import Image from 'next/image'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { basculerPublication, supprimerProduit } from '@/app/(admin)/[locale]/admin/catalogue/actions'
 import {
@@ -18,6 +18,7 @@ import {
   IconeOeil,
   IconePoubelle,
 } from '@/components/ui/Icones'
+import { statutSuggere } from '@/lib/stock'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -130,6 +131,11 @@ export function TableauProduits({
     pageGabarit: string
     pagePrecedente: string
     pageSuivante: string
+    rechercheLabel: string
+    recherchePlaceholder: string
+    toutesCategories: string
+    /** Distinct de `vide` : « rien du tout » n'est pas « rien pour ce filtre ». */
+    videFiltre: string
   }
 }) {
   // Lu une fois : NEXT_PUBLIC_* est figé à la compilation, et refaire le
@@ -144,6 +150,48 @@ export function TableauProduits({
   }
 
   /**
+   * Statut EFFECTIF, pas le statut brut de la base.
+   *
+   * ⚠️ Relevé par Christian sur un produit à quantité 0 : la fiche affichait
+   * encore « En stock » (juste teinté de bleu), parce que le texte venait du
+   * `statut_stock` STOCKÉ — resté à sa valeur par défaut de la migration 0013
+   * pour tout produit jamais réenregistré depuis. `statutSuggere` (déjà
+   * utilisée par le formulaire) recalcule ce que le statut DEVRAIT être
+   * d'après la quantité, sans jamais toucher un statut fournisseur choisi à
+   * la main — c'est cette version qu'on affiche, partout, pas la brute.
+   */
+  function libelleStock(statut: string, quantite: number): string {
+    const effectif = statutSuggere(statut, quantite)
+    return effectif === 'en_stock'
+      ? `${quantite} ${libelles.quantite.toLowerCase()}`
+      : (libellesStatutStock[effectif] ?? effectif)
+  }
+
+  /**
+   * Recherche + filtre catégorie — même mécanique que CatalogueBoutique.tsx
+   * (recherche publique) : les deux filtres SE CUMULENT, et la normalisation
+   * NFD ignore les accents pour que « decoupe » trouve « découpe ».
+   */
+  const [categorie, setCategorie] = useState('all')
+  const [recherche, setRecherche] = useState('')
+
+  const produitsFiltres = useMemo(() => {
+    const normaliser = (s: string) =>
+      s
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[̀-ͯ]/g, '')
+
+    const terme = normaliser(recherche.trim())
+
+    return produits.filter((p) => {
+      if (categorie !== 'all' && p.categorie !== categorie) return false
+      if (terme === '') return true
+      return normaliser(`${p.nom_fr} ${p.marque}`).includes(terme)
+    })
+  }, [produits, categorie, recherche])
+
+  /**
    * Pagination — 8 produits par page.
    *
    * Entièrement côté client : les douze produits (et les quelques dizaines à
@@ -151,13 +199,22 @@ export function TableauProduits({
    * `ordre`. Paginer côté serveur demanderait une route dédiée et un
    * paramètre d'URL pour un gain nul à cette échelle — la liste complète tient
    * largement en mémoire.
+   *
+   * Basée sur la liste FILTRÉE. Les deux champs de filtre remettent `page` à
+   * 0 eux-mêmes (sinon une recherche tapée depuis la page 2 affiche une page
+   * 2 qui n'a plus de sens pour ce sous-ensemble) ; le `Math.min` ci-dessous
+   * reste un filet pour l'autre cas — une suppression qui fait disparaître la
+   * dernière page affichée.
    */
   const PAR_PAGE = 8
   const [page, setPage] = useState(0)
-  const totalPages = Math.max(1, Math.ceil(produits.length / PAR_PAGE))
-  // Se recale si une suppression fait disparaître la dernière page affichée.
+  const totalPages = Math.max(1, Math.ceil(produitsFiltres.length / PAR_PAGE))
+  // Se recale si un filtre ou une suppression fait disparaître la dernière page affichée.
   const pageActuelle = Math.min(page, totalPages - 1)
-  const produitsPage = produits.slice(pageActuelle * PAR_PAGE, pageActuelle * PAR_PAGE + PAR_PAGE)
+  const produitsPage = produitsFiltres.slice(
+    pageActuelle * PAR_PAGE,
+    pageActuelle * PAR_PAGE + PAR_PAGE,
+  )
 
   const boite = useRef<HTMLDialogElement>(null)
   // `null` = création, un produit = édition, `undefined` = fermé.
@@ -208,7 +265,44 @@ export function TableauProduits({
 
   return (
     <>
-      <div className="mb-5 flex justify-end">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <label htmlFor="recherche-catalogue-admin" className="sr-only">
+            {textes.rechercheLabel}
+          </label>
+          <input
+            id="recherche-catalogue-admin"
+            type="search"
+            value={recherche}
+            onChange={(e) => {
+              setPage(0)
+              setRecherche(e.target.value)
+            }}
+            placeholder={textes.recherchePlaceholder}
+            className="min-h-[40px] w-full border border-ko-line bg-ko-white px-3 py-2 text-sm text-ko-ink transition-colors duration-200 placeholder:text-ko-muted focus:border-ko-blue focus:outline-none sm:w-60"
+          />
+
+          <label htmlFor="filtre-categorie-admin" className="sr-only">
+            {libelles.categorie}
+          </label>
+          <select
+            id="filtre-categorie-admin"
+            value={categorie}
+            onChange={(e) => {
+              setPage(0)
+              setCategorie(e.target.value)
+            }}
+            className="min-h-[40px] border border-ko-line bg-ko-white px-3 py-2 text-sm text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none"
+          >
+            <option value="all">{textes.toutesCategories}</option>
+            {Object.entries(libelles.categories).map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <button
           type="button"
           onClick={() => setEdite(null)}
@@ -221,7 +315,9 @@ export function TableauProduits({
 
       <div className="border border-ko-line bg-ko-white">
         {produitsPage.length === 0 ? (
-          <p className="p-6 text-base leading-relaxed text-ko-muted">{textes.vide}</p>
+          <p className="p-6 text-base leading-relaxed text-ko-muted">
+            {produits.length === 0 ? textes.vide : textes.videFiltre}
+          </p>
         ) : (
           <ul className="divide-y divide-ko-line">
             {produitsPage.map((p) => {
@@ -275,13 +371,9 @@ export function TableauProduits({
                       complète sur mobile. */}
                   <span className="label-mono hidden w-28 shrink-0 xl:block">
                     <EtiquetteStock
-                      statut={p.statut_stock}
+                      statut={statutSuggere(p.statut_stock, p.quantite)}
                       quantite={p.quantite}
-                      texte={
-                        p.statut_stock === 'en_stock'
-                          ? `${p.quantite} ${libelles.quantite.toLowerCase()}`
-                          : (libellesStatutStock[p.statut_stock] ?? p.statut_stock)
-                      }
+                      texte={libelleStock(p.statut_stock, p.quantite)}
                       className="justify-end"
                     />
                   </span>
@@ -540,9 +632,9 @@ export function TableauProduits({
                   <dt className="label-mono text-ko-muted">{libelles.statutStock}</dt>
                   <dd className="mt-1 text-sm">
                     <EtiquetteStock
-                      statut={voir.statut_stock}
+                      statut={statutSuggere(voir.statut_stock, voir.quantite)}
                       quantite={voir.quantite}
-                      texte={libellesStatutStock[voir.statut_stock] ?? voir.statut_stock}
+                      texte={libelleStock(voir.statut_stock, voir.quantite)}
                     />
                   </dd>
                 </div>

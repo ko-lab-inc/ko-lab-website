@@ -79,7 +79,7 @@ export default async function TableauDeBordPage({ params }: Props) {
   const debutFenetre = new Date(Date.now() - (JOURS - 1) * 86_400_000)
   debutFenetre.setHours(0, 0, 0, 0)
 
-  const [{ count: total }, { count: nouvelles }, { count: comptes }, fenetre, recentes, stock] =
+  const [{ count: total }, { count: nouvelles }, { count: comptes }, fenetre, recentes, catalogue] =
     await Promise.all([
       // `head: true` : on veut le compte, pas les lignes. Ramener la table
       // entière pour en mesurer la longueur deviendrait coûteux dès quelques
@@ -101,9 +101,10 @@ export default async function TableauDeBordPage({ params }: Props) {
         .select('id, created_at, type, nom, email, statut')
         .order('created_at', { ascending: false })
         .limit(8),
-      // Quantité/statut de tout le catalogue (migration 0013) — une douzaine
-      // de lignes, filtrées ici même plutôt qu'en SQL : voir stockEnAttention.
-      supabase.from('produits_boutique').select('quantite, statut_stock'),
+      // Catalogue réel (migration 0013) — une douzaine de lignes, agrégées
+      // ici même plutôt qu'en SQL : sert le compte, la répartition par
+      // catégorie ET l'alerte de stock, sans trois requêtes séparées.
+      supabase.from('produits_boutique').select('categorie, quantite, statut_stock, publie'),
     ])
 
   const lignes = fenetre.data ?? []
@@ -121,15 +122,24 @@ export default async function TableauDeBordPage({ params }: Props) {
     valeur: lignes.filter((l) => l.type === type).length,
   })).sort((a, b) => b.valeur - a.valeur)
 
-  // Catalogue par catégorie — à la place du « Top Products » de la référence,
-  // qui suppose des ventes. Lu depuis le code : le catalogue n'est pas encore
-  // en base (voir /admin/catalogue).
-  const produits = construireProduits(tBoutique)
+  /**
+   * Contenu du catalogue PUBLIC — encore codé en dur dans lib/produits.ts,
+   * /boutique/[slug] ne lit pas produits_boutique (voir la docstring de ce
+   * fichier). Sert uniquement les deux alertes de prix ci-dessous, qui
+   * parlent justement de CE contenu-là — pas le compte, la répartition par
+   * catégorie ni le stock, qui viennent maintenant de `catalogue` (la vraie
+   * table, lue plus haut) : Christian a signalé que le tableau de bord ne
+   * reflétait pas le vrai statut des produits gérés depuis /admin/catalogue.
+   */
+  const produitsPublics = construireProduits(tBoutique)
+
+  const produitsCatalogue = catalogue.data ?? []
+  const produitsPublies = produitsCatalogue.filter((p) => p.publie).length
 
   // Table explicite plutôt que `t(\`cat_${cle}\`)` : les clés de messages sont
   // typées, et une clé construite à partir d'un `string` échappe au contrôle.
-  // Une catégorie ajoutée à produits.ts sans libellé ici lève à la compilation
-  // au lieu de planter à l'affichage.
+  // Une catégorie ajoutée en base sans libellé ici lève à la compilation au
+  // lieu de planter à l'affichage.
   const libellesCategorie: Record<string, string> = {
     impression: t('cat_impression'),
     laser: t('cat_laser'),
@@ -138,7 +148,7 @@ export default async function TableauDeBordPage({ params }: Props) {
   }
 
   const parCategorie = Object.entries(
-    produits.reduce<Record<string, number>>((acc, p) => {
+    produitsCatalogue.reduce<Record<string, number>>((acc, p) => {
       acc[p.categorie] = (acc[p.categorie] ?? 0) + 1
       return acc
     }, {}),
@@ -152,12 +162,12 @@ export default async function TableauDeBordPage({ params }: Props) {
    * Calculés sur l'état RÉEL du projet, pas sur un stock qui n'existe pas.
    * Chacun correspond à quelque chose qu'on peut aller corriger aujourd'hui.
    */
-  const produitsEnAttention = (stock.data ?? []).filter((p) =>
+  const produitsEnAttention = produitsCatalogue.filter((p) =>
     stockEnAttention(p.statut_stock, p.quantite),
   ).length
 
   const alertes = [
-    produits.filter((p) => p.prixIndicatif === null).length > 0
+    produitsPublics.filter((p) => p.prixIndicatif === null).length > 0
       ? t('alerte_prix_absents')
       : null,
     // Trois prix restent provisoires : X1-Carbon, xTool P2, xTool F1 (voir
@@ -224,8 +234,8 @@ export default async function TableauDeBordPage({ params }: Props) {
           <TuileStat libelle={t('nav_utilisateurs')} valeur={comptes ?? 0} Icone={IconeProfil} />
           <TuileStat
             libelle={t('nav_catalogue')}
-            valeur={produits.length}
-            precision={t('stat_catalogue_precision')}
+            valeur={produitsCatalogue.length}
+            precision={t('stat_catalogue_precision', { n: produitsPublies })}
             Icone={IconeBadgeStock}
           />
         </GrilleStats>

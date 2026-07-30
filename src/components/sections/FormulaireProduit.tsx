@@ -148,6 +148,19 @@ export function FormulaireProduit({
     en_livraison: libelles.statutEnLivraison,
   }
 
+  /**
+   * Statut EFFECTIF, recalculé au rendu — pas seulement à la frappe.
+   *
+   * Sans ça, ouvrir la fiche d'un produit déjà en base (quantité tombée à 0
+   * SANS que quelqu'un ait retouché le menu déroulant depuis) afficherait
+   * encore l'aperçu « En stock » au premier rendu : `statutStock` démarre à
+   * la valeur brute de `produit`, et seul `surChangementQuantite` la
+   * recalcule — jamais le montage initial. Recalculer ici, à chaque rendu,
+   * couvre aussi ce cas sans toucher à la valeur réellement sélectionnée
+   * dans le menu (donc à ce qui sera enregistré si on ne touche à rien).
+   */
+  const statutAffiche = statutSuggere(statutStock, quantite)
+
   const messages: Record<string, string> = {
     donnees: libelles.erreurDonnees,
     photo: libelles.erreurPhoto,
@@ -235,12 +248,12 @@ export function FormulaireProduit({
               changement ici, sans attendre l'enregistrement. */}
           <p className="mt-2">
             <EtiquetteStock
-              statut={statutStock}
+              statut={statutAffiche}
               quantite={quantite}
               texte={
-                statutStock === 'en_stock'
+                statutAffiche === 'en_stock'
                   ? `${quantite} ${libelles.quantite.toLowerCase()}`
-                  : (libellesStatutStock[statutStock] ?? statutStock)
+                  : (libellesStatutStock[statutAffiche] ?? statutAffiche)
               }
               className="label-mono"
             />

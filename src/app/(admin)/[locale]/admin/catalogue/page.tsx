@@ -127,6 +127,10 @@ export default async function CataloguePage({ params }: Props) {
           pageGabarit: t('page_gabarit'),
           pagePrecedente: t('page_precedente'),
           pageSuivante: t('page_suivante'),
+          rechercheLabel: t('catalogue_recherche_label'),
+          recherchePlaceholder: t('catalogue_recherche_placeholder'),
+          toutesCategories: t('catalogue_toutes_categories'),
+          videFiltre: t('catalogue_aucun_resultat_filtre'),
         }}
       />
     </>
