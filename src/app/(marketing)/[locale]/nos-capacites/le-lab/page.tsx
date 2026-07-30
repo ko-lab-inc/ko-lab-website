@@ -6,7 +6,7 @@ import { PageCapacite } from '@/components/sections/PageCapacite'
 import { routing } from '@/i18n/routing'
 import { IMAGES } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
-import { VIDEOS_LAB } from '@/lib/videos'
+import { lireVideosPubliees } from '@/lib/videos'
 
 import type { Metadata } from 'next'
 
@@ -35,6 +35,7 @@ export default async function LeLabPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Capacites.lab')
+  const videos = await lireVideosPubliees()
 
   return (
     <PageCapacite
@@ -58,10 +59,10 @@ export default async function LeLabPage({ params }: Props) {
       // distincts plutôt que la même image deux fois dans le parcours.
       src={IMAGES.labImpression3d}
       cadrage="object-center"
-      // Bande de vidéos façon bambulab.com (demande de Christian). VIDE
-      // aujourd'hui : la section ne s'affiche pas tant que les liens et les
-      // vignettes ne sont pas fournis — voir lib/videos.ts.
-      videos={VIDEOS_LAB}
+      // Bande de vidéos façon bambulab.com, alimentée depuis /admin/videos
+      // (migration 0016). Tableau vide = quatre emplacements « Vidéo à
+      // venir », jamais une section masquée — voir BandeauVideos.tsx.
+      videos={videos}
     />
   )
 }

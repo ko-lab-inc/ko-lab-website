@@ -254,6 +254,39 @@ export type Database = {
         Relationships: []
       }
 
+      /** Migration 0016 — bande de vidéos de la page Le LAB. */
+      videos: {
+        Row: {
+          id: string
+          titre: string
+          url: string
+          /** NULL = miniature déduite de l'URL (voir lib/utils/youtube.ts). */
+          vignette: string | null
+          actif: boolean
+          ordre: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          titre: string
+          url: string
+          vignette?: string | null
+          actif?: boolean
+          ordre?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          titre?: string
+          url?: string
+          vignette?: string | null
+          actif?: boolean
+          ordre?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+
       reglages: {
         Row: {
           cle: string

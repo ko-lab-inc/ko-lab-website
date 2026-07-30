@@ -1,52 +1,72 @@
+import 'server-only'
+
+import { unstable_cache } from 'next/cache'
+
+import { createStaticClient } from '@/lib/supabase/static'
+import { vignetteVideo } from '@/lib/utils/youtube'
+
 import type { VignetteVideo } from '@/components/ui/BandeauVideos'
 
 /**
- * Vidéos affichées en bande sur les pages de capacités.
+ * Vidéos affichées en bande sur la page Le LAB — lecture publique, mise en
+ * cache, invalidée par l'écran /admin/videos.
  *
  * ---------------------------------------------------------------------------
- * ⚠️ VOLONTAIREMENT VIDE — NE PAS REMPLIR AVEC DES VIDÉOS DE TIERS
+ * CE QUE CE MODULE REMPLACE
  *
- * Christian a demandé la bande de vidéos de bambulab.com (« Check Out What
- * the Pros Are Saying ») pour la page Le LAB, et m'a demandé d'en trouver
- * les liens si possible. Recherche faite le 30 juillet 2026 : KO-LAB n'a
- * aucune vidéo publique trouvable — ni chaîne, ni vidéo indexée.
- *
- * Et il ne faut PAS combler avec autre chose. La page Le LAB décrit ce que
- * KO-LAB sait faire : conception 3D, impression, laser et CNC, petites
- * séries. Y poser la vidéo d'un tiers — même excellente, même sur le même
- * sujet — reviendrait à présenter le travail de quelqu'un d'autre comme le
- * nôtre. C'est la même règle que celle appliquée partout dans ce dépôt :
- * `badgeRibbon` laissé vide tant qu'aucun texte vrai n'est confirmé, les
- * quatre visuels produit écartés parce qu'ils montraient une autre machine
- * (voir lib/produits.ts et l'en-tête de lib/images.ts).
- *
- * Contrairement à ces deux cas, la bande de bambulab.com montre des vidéos
- * de TIERS assumées comme telles (des testeurs qui parlent de la marque).
- * Une transposition honnête existe donc, mais elle demande une décision de
- * Christian — reprendre des avis externes engage l'image de l'entreprise —
- * et pas seulement des liens.
+ * Une constante en dur (`VIDEOS_LAB`), volontairement vide faute de contenu
+ * réel. Décision de Christian : « je voudrais avoir un espace dans admin où
+ * je pourrai ajouter des liens ». Même trajectoire que le catalogue, les
+ * réalisations et les carrières.
  *
  * ---------------------------------------------------------------------------
- * CE QU'IL FAUT POUR REMPLIR
+ * TABLEAU VIDE PLUTÔT QUE `null`
  *
- *   1. Le lien de chaque vidéo (YouTube, Vimeo…).
- *   2. Une vignette par vidéo, hébergée par NOUS : déposée dans
- *      public/images/videos/ ou dans Supabase Storage. Pas l'URL de
- *      miniature de l'hébergeur — ce serait un domaine de plus à ouvrir
- *      dans la CSP, et une URL qu'on ne contrôle pas.
- *   3. Un titre court par vidéo.
- *
- * Tant que ce tableau est vide, la section s'affiche avec quatre EMPLACEMENTS
- * RÉSERVÉS (« Vidéo à venir ») — pas masquée. Le document de cadrage le
- * demande explicitement, et une section invisible empêchait Christian de
- * valider le format sur la page réelle. Dès qu'une entrée est ajoutée ici,
- * elle remplace un emplacement, sans autre changement de code et sans
- * décalage de mise en page (même format 16/9).
- *
- * ⚠️ Aucune ouverture de CSP n'est nécessaire tant qu'on s'en tient à ce
- * modèle (vignette locale + lien sortant). Elle le deviendrait seulement si
- * on voulait lire la vidéo SANS quitter le site — voir la note en tête de
- * BandeauVideos.tsx.
+ * Contrairement à réalisations et carrières, pas de contenu de repli ici :
+ * il n'y a rien à montrer à la place d'une vidéo. Un tableau vide fait
+ * afficher les quatre emplacements « Vidéo à venir » de BandeauVideos —
+ * c'est le comportement voulu tant que rien n'est publié, et c'est aussi ce
+ * qu'on veut si Supabase est injoignable : la page reste debout, la section
+ * garde sa place, rien n'est inventé.
  * ---------------------------------------------------------------------------
  */
-export const VIDEOS_LAB: readonly VignetteVideo[] = []
+
+/** Étiquette de cache — partagée avec les actions de /admin/videos. */
+export const ETIQUETTE_VIDEOS = 'videos'
+
+async function lireDepuisBase(): Promise<VignetteVideo[]> {
+  try {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase
+      .from('videos')
+      .select('titre, url, vignette')
+      .eq('actif', true)
+      .order('ordre')
+
+    if (error || !data) return []
+
+    return data
+      .map((v) => ({
+        url: v.url,
+        titre: v.titre,
+        vignette: vignetteVideo(v.url, v.vignette),
+      }))
+      // Une vidéo dont on ne sait pas fabriquer la vignette (hébergeur non
+      // reconnu, sans image imposée) est écartée : la carte n'afficherait
+      // qu'un cadre vide. L'écran d'administration prévient à la saisie.
+      .filter((v): v is VignetteVideo => v.vignette !== null)
+  } catch {
+    // Supabase injoignable au moment du rendu : les emplacements réservés
+    // s'affichent, la page reste debout.
+    return []
+  }
+}
+
+/**
+ * ⚠️ Ne JAMAIS appeler depuis un composant client — le module importe
+ * `server-only`, l'erreur arrive à la compilation plutôt qu'en production.
+ */
+export const lireVideosPubliees = unstable_cache(lireDepuisBase, ['videos-publiees'], {
+  tags: [ETIQUETTE_VIDEOS],
+  revalidate: 3600,
+})

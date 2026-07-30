@@ -12,6 +12,7 @@ import {
   IconeEquipe,
   IconeEtiquette,
   IconeGalerie,
+  IconeLecture,
   IconeMallette,
   IconeReglages,
   IconeTableauBord,
@@ -119,6 +120,11 @@ export default async function AdminLayout({ children, params }: Props) {
           href: `/${locale}/admin/realisations`,
           label: t('nav_realisations'),
           icone: <IconeGalerie taille={17} />,
+        },
+        {
+          href: `/${locale}/admin/videos`,
+          label: t('nav_videos'),
+          icone: <IconeLecture taille={17} />,
         },
         {
           href: `/${locale}/admin/carrieres`,

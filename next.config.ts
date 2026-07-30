@@ -68,7 +68,15 @@ const contentSecurityPolicy = [
   // ⚠️ TEMPORAIRE — images.unsplash.com sert les photos de développement.
   // À RETIRER quand les vraies photos KO-LAB seront dans Supabase Storage
   // (voir skill 22, section « Images temporaires à remplacer »).
-  `img-src 'self' data: blob: ${supabaseImgSrc} https://images.unsplash.com ${CRISP_IMG}`,
+  //
+  // i.ytimg.com — miniatures des vidéos gérées depuis /admin/videos
+  // (migration 0016). Christian colle un lien, la vignette se déduit de
+  // l'identifiant (lib/utils/youtube.ts) plutôt que d'exiger un
+  // téléversement. Des IMAGES uniquement : `frame-src` reste absent de
+  // cette CSP, donc aucune iframe YouTube, aucun script tiers et aucun
+  // cookie de suivi — la lecture se fait chez l'hébergeur, dans un
+  // nouvel onglet (voir BandeauVideos.tsx).
+  `img-src 'self' data: blob: ${supabaseImgSrc} https://images.unsplash.com https://i.ytimg.com ${CRISP_IMG}`,
   `connect-src 'self' ${supabaseConnectSrc} ${CRISP_CONNECT}${isDev ? ' ws://localhost:* http://localhost:*' : ''}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
@@ -132,6 +140,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
         pathname: '/**',
+      },
+      {
+        // Miniatures YouTube des vidéos gérées depuis /admin/videos.
+        // Chemin restreint à /vi/** : c'est la seule forme d'URL que
+        // lib/utils/youtube.ts fabrique, inutile d'ouvrir tout l'hôte.
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+        pathname: '/vi/**',
       },
     ],
   },
