@@ -292,6 +292,19 @@
         "titre": "Fabrication sur mesure",
         "description": "Conception, prototypage et production de pièces développées pour les besoins réels du projet."
       }
+    },
+    "voir_serie": "Voir les images",
+    "slide_fermer": "Fermer les images",
+    "slide_precedent": "Image précédente",
+    "slide_suivant": "Image suivante",
+    "slide_position": "{n} sur {total}",
+    "serie_compte": "{n, plural, one {# image} other {# images}}",
+    "alt": {
+      "terrain_nuit": "Chantier de nuit : trois personnes sous des lampes de travail, pelleteuse à l'arrêt, asphalte mouillé.",
+      "terrain_logistique": "Semi-remorque de nuit, feux de gabarit allumés devant un dépôt.",
+      "installation_echafaudage": "Deux personnes en silhouette sur un échafaudage tubulaire, à contre-jour.",
+      "lab_soudure": "Poste de soudure au masque, arc blanc-bleu, atelier dans la pénombre.",
+      "lab_meuleuse": "Gerbe d'étincelles de meuleuse sur fond noir."
     }
   },
   "Boutique": {

@@ -292,6 +292,19 @@
         "titre": "Custom fabrication",
         "description": "Design, prototyping and production of parts developed for the project's real needs."
       }
+    },
+    "voir_serie": "View images",
+    "slide_fermer": "Close images",
+    "slide_precedent": "Previous image",
+    "slide_suivant": "Next image",
+    "slide_position": "{n} of {total}",
+    "serie_compte": "{n, plural, one {# image} other {# images}}",
+    "alt": {
+      "terrain_nuit": "Night worksite: three people under work lights, idle excavator, wet asphalt.",
+      "terrain_logistique": "Semi-trailer at night, marker lights on, outside a depot.",
+      "installation_echafaudage": "Two silhouetted workers on tubular scaffolding, backlit.",
+      "lab_soudure": "Welding station, masked operator, blue-white arc in a dim workshop.",
+      "lab_meuleuse": "Shower of grinder sparks against a black background."
     }
   },
   "Boutique": {

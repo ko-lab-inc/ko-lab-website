@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 
+import { SlideImages, type ImageSlide } from '@/components/ui/SlideImages'
 import { FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD } from '@/lib/images'
 import { cn } from '@/lib/utils/cn'
 
@@ -36,6 +37,17 @@ export type RealisationCarte = {
   src: string
   cadrage: string
   desature: boolean
+  /**
+   * Images supplémentaires, montrées dans la visionneuse.
+   *
+   * La première image de la série est TOUJOURS `src` — celle de la carte —
+   * pour que le clic ouvre sur ce qu'on vient de regarder. Ce champ ne
+   * contient donc que la suite.
+   *
+   * Vide ou absent : la carte n'ouvre rien. Une visionneuse à une seule image
+   * ferait cliquer pour ne rien montrer de plus.
+   */
+  serie?: readonly ImageSlide[]
 }
 
 type Filtre = {
@@ -62,6 +74,25 @@ export function GalerieRealisations({
   const t = useTranslations('Realisations')
 
   const [categorie, setCategorie] = useState<CategorieRealisation | 'all'>('all')
+
+  /**
+   * Réalisation dont la série est ouverte, ou `null`.
+   *
+   * Une seule visionneuse pour toute la grille, montée à la fin. Une par carte
+   * mettrait autant de `<dialog>` dans le document, chacun avec ses images —
+   * pour n'en montrer qu'un à la fois.
+   */
+  const [ouverte, setOuverte] = useState<RealisationCarte | null>(null)
+
+  const libellesSlide = useMemo(
+    () => ({
+      fermer: t('slide_fermer'),
+      precedent: t('slide_precedent'),
+      suivant: t('slide_suivant'),
+      position: (n: number, total: number) => t('slide_position', { n, total }),
+    }),
+    [t],
+  )
 
   const visibles = useMemo(
     () => realisations.filter((r) => categorie === 'all' || r.categorie === categorie),
@@ -121,7 +152,10 @@ export function GalerieRealisations({
            Les rangées sont désormais implicites et chaque carte porte son
            propre ratio, donc une hauteur intrinsèque. */
         <div className="mt-14 grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
-          {visibles.map((r, i) => (
+          {visibles.map((r, i) => {
+            const serie = serieDe(r)
+
+            return (
             <article
               key={r.cle}
               className={cn(
@@ -174,7 +208,37 @@ export function GalerieRealisations({
                   {r.tag}
                 </span>
 
-                <div className="absolute inset-x-4 bottom-4">
+                {/* Ouverture de la série.
+
+                    Un BOUTON, pas un lien : la visionneuse n'a pas d'URL
+                    propre et rien n'est navigable derrière. Un lien vers
+                    « # » annoncerait une destination qui n'existe pas.
+
+                    Étendu à toute la carte par `absolute inset-0` : la cible
+                    est l'image entière, pas une petite zone à viser. Le
+                    libellé, lui, reste explicite pour le lecteur d'écran —
+                    « Voir les images » seul ne dirait pas de quoi.
+
+                    ⚠️ Placé AVANT le bloc de texte dans l'ordre du document,
+                    mais sans z-index : le texte qui suit passe donc au-dessus
+                    et reste sélectionnable. */}
+                {serie.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => setOuverte(r)}
+                    aria-label={`${t('voir_serie')} — ${r.titre}`}
+                    className="absolute inset-0 cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ko-blue"
+                  >
+                    {/* Compteur d'images, en haut à droite, en face du tag.
+                        C'est le seul indice qu'il y a plus à voir — sans lui,
+                        rien ne distingue une carte cliquable d'une autre. */}
+                    <span className="label-mono absolute right-4 top-4 rounded bg-ko-scrim/60 px-3 py-1.5 text-ko-frost/90 backdrop-blur-sm transition-colors duration-[400ms] group-hover:bg-ko-blue group-hover:text-ko-white">
+                      {t('serie_compte', { n: serie.length })}
+                    </span>
+                  </button>
+                )}
+
+                <div className="pointer-events-none absolute inset-x-4 bottom-4">
                   <h3
                     className={cn(
                       'font-serif leading-tight text-ko-white',
@@ -193,9 +257,47 @@ export function GalerieRealisations({
                 </div>
               </div>
             </article>
-          ))}
+            )
+          })}
         </div>
+      )}
+
+      {/* Une seule visionneuse pour toute la grille. `key` : force le
+          remontage d'une réalisation à l'autre, sinon l'index de l'image
+          resterait celui de la série précédente. */}
+      {ouverte && (
+        <SlideImages
+          key={ouverte.cle}
+          ouvert
+          onFermer={() => setOuverte(null)}
+          images={serieDe(ouverte)}
+          titre={ouverte.titre}
+          description={ouverte.description}
+          libelles={libellesSlide}
+        />
       )}
     </>
   )
+}
+
+/**
+ * Série complète d'une réalisation : sa photo de carte, puis les suivantes.
+ *
+ * Reconstruite ici plutôt que stockée en double dans les données — sinon la
+ * première image devrait être écrite deux fois, et les deux finiraient par
+ * diverger le jour où l'on change la photo de couverture.
+ */
+function serieDe(r: RealisationCarte): readonly ImageSlide[] {
+  return [
+    {
+      src: r.src,
+      // Vide : le titre et la description de la réalisation sont déjà lus
+      // dans l'entête de la visionneuse. Répéter ferait dire deux fois la
+      // même chose.
+      alt: '',
+      cadrage: r.cadrage,
+      style: r.desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN,
+    },
+    ...(r.serie ?? []),
+  ]
 }

@@ -50,6 +50,12 @@ export default async function RealisationsPage({ params }: Props) {
    * Les chaînes sont résolues ICI, côté serveur, puis passées à la galerie
    * cliente. Sans ça, il faudrait embarquer le catalogue de traductions dans
    * le bundle navigateur juste pour afficher trois titres.
+   *
+   * ⚠️ Les séries d'images réutilisent des photos déjà présentes ailleurs sur
+   * le site. C'est visible et assumé : ce sont les mêmes images de banque que
+   * partout, en attendant les vraies photos de chantier KO-LAB. La visionneuse,
+   * elle, est définitive — le jour où les photos arrivent, seule cette liste
+   * change.
    */
   const realisations: readonly RealisationCarte[] = [
     {
@@ -61,6 +67,10 @@ export default async function RealisationsPage({ params }: Props) {
       src: IMAGES.realisationTerrain,
       cadrage: CADRAGES.besoinDeployer,
       desature: true,
+      serie: [
+        { src: IMAGES.hero, alt: t('alt.terrain_nuit') },
+        { src: IMAGES.besoinLouer, alt: t('alt.terrain_logistique') },
+      ],
     },
     {
       cle: 'installation',
@@ -71,6 +81,13 @@ export default async function RealisationsPage({ params }: Props) {
       src: IMAGES.installationNacelle,
       cadrage: CADRAGES.installationNacelle,
       desature: false,
+      serie: [
+        {
+          src: IMAGES.besoinInstaller,
+          alt: t('alt.installation_echafaudage'),
+          cadrage: CADRAGES.besoinInstaller,
+        },
+      ],
     },
     {
       cle: 'lab',
@@ -81,6 +98,17 @@ export default async function RealisationsPage({ params }: Props) {
       src: IMAGES.labImpression3d,
       cadrage: 'object-center',
       desature: false,
+      /**
+       * ⚠️ IMAGES.lab (découpe laser CNC) est volontairement ABSENTE.
+       *
+       * Elle porte une signature de photographe incrustée en bas à droite —
+       * discrète sur une carte, criante en plein écran. La visionneuse affiche
+       * l'image entière : ce qui passait inaperçu devient le sujet.
+       */
+      serie: [
+        { src: IMAGES.soudeur, alt: t('alt.lab_soudure') },
+        { src: IMAGES.besoinFabriquer, alt: t('alt.lab_meuleuse') },
+      ],
     },
   ]
 
