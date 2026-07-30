@@ -79,6 +79,23 @@
     background-color: var(--ko-blue);
     color: var(--ko-white);
   }
+
+  /* Un champ autofillé par le navigateur (connexion, surtout) est teinté
+     d'un bleu pâle avec une spécificité qu'un simple `background-color` ne
+     bat pas — seule l'astuce du box-shadow inset l'emporte. Relevé par
+     Christian : ce bleu jurait avec le `bg-ko-white` du reste des champs.
+     Tous les champs du site partagent ce même fond (skill 02), d'où une
+     règle globale plutôt qu'une par formulaire. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--ko-ink);
+    -webkit-box-shadow: 0 0 0 1000px var(--ko-white) inset;
+    box-shadow: 0 0 0 1000px var(--ko-white) inset;
+    /* Retarde la transition native de Chrome plutôt que de la bloquer :
+       la couleur qu'elle vise à appliquer reste la nôtre, donc rien à voir. */
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }
 
 @layer components {

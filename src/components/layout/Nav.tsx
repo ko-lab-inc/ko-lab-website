@@ -78,6 +78,17 @@ export function Nav({
     { key: 'carrieres', href: ROUTES.carrieres },
   ] as const
 
+  /**
+   * Page courante — gras + bleu, demande de Christian.
+   *
+   * `pathname` (next-intl) est déjà sans préfixe de langue, donc comparable
+   * tel quel aux `href` de ROUTES. `startsWith(href + '/')` couvre les
+   * sous-pages (une fiche produit /boutique/xtool-p2 marque « Boutique »
+   * actif) sans faire matcher un chemin qui commence pareil par hasard.
+   */
+  const estActif = (href: string) => pathname === href || pathname.startsWith(`${href}/`)
+  const capacitesActif = estActif(ROUTES.capacites)
+
   return (
     <header
       className={cn(
@@ -108,7 +119,10 @@ export function Nav({
               type="button"
               aria-expanded={capacitesOuvert}
               onClick={() => setCapacitesOuvert((v) => !v)}
-              className="flex min-h-[44px] items-center gap-1.5 text-sm text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+              className={cn(
+                'flex min-h-[44px] items-center gap-1.5 text-sm transition-colors duration-200 hover:text-ko-blue',
+                capacitesActif ? 'font-medium text-ko-blue' : 'text-ko-ink',
+              )}
             >
               {t('capacites')}
               <span aria-hidden="true" className="text-[10px] text-ko-muted">
@@ -123,7 +137,11 @@ export function Nav({
                   <Link
                     key={key}
                     href={href}
-                    className="block px-5 py-3 text-sm text-ko-ink transition-[padding,background-color,color] duration-250 hover:bg-ko-cream hover:pl-7 hover:text-ko-blue"
+                    aria-current={estActif(href) ? 'page' : undefined}
+                    className={cn(
+                      'block px-5 py-3 text-sm transition-[padding,background-color,color] duration-250 hover:bg-ko-cream hover:pl-7 hover:text-ko-blue',
+                      estActif(href) ? 'font-medium text-ko-blue' : 'text-ko-ink',
+                    )}
                   >
                     {t(key)}
                   </Link>
@@ -136,7 +154,11 @@ export function Nav({
             <Link
               key={key}
               href={href}
-              className="flex min-h-[44px] items-center text-sm text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+              aria-current={estActif(href) ? 'page' : undefined}
+              className={cn(
+                'flex min-h-[44px] items-center text-sm transition-colors duration-200 hover:text-ko-blue',
+                estActif(href) ? 'font-medium text-ko-blue' : 'text-ko-ink',
+              )}
             >
               {t(key)}
             </Link>
@@ -225,13 +247,19 @@ export function Nav({
           aria-label={t('menuPrincipal')}
           className="max-h-[calc(100svh-73px)] overflow-y-auto border-t border-ko-line bg-ko-cream px-6 pb-10 pt-6 lg:hidden"
         >
-          <p className="label-mono mb-3">{t('capacites')}</p>
+          <p className={cn('label-mono mb-3', capacitesActif ? 'text-ko-blue' : undefined)}>
+            {t('capacites')}
+          </p>
           <ul className="mb-8 border-l border-ko-line">
             {ROUTES_CAPACITES.map(({ key, href }) => (
               <li key={key}>
                 <Link
                   href={href}
-                  className="flex min-h-[44px] items-center pl-5 text-base text-ko-ink"
+                  aria-current={estActif(href) ? 'page' : undefined}
+                  className={cn(
+                    'flex min-h-[44px] items-center pl-5 text-base',
+                    estActif(href) ? 'font-medium text-ko-blue' : 'text-ko-ink',
+                  )}
                 >
                   {t(key)}
                 </Link>
@@ -242,7 +270,14 @@ export function Nav({
           <ul className="mb-8 divide-y divide-ko-line border-y border-ko-line">
             {liensSecondaires.map(({ key, href }) => (
               <li key={key}>
-                <Link href={href} className="flex min-h-[52px] items-center text-base text-ko-ink">
+                <Link
+                  href={href}
+                  aria-current={estActif(href) ? 'page' : undefined}
+                  className={cn(
+                    'flex min-h-[52px] items-center text-base',
+                    estActif(href) ? 'font-medium text-ko-blue' : 'text-ko-ink',
+                  )}
+                >
                   {t(key)}
                 </Link>
               </li>
