@@ -6,6 +6,7 @@ import { Suspense } from 'react'
 import { FormulaireContact } from '@/components/sections/FormulaireContact'
 import { Reveal } from '@/components/ui/Reveal'
 import { routing } from '@/i18n/routing'
+import { lireReglages } from '@/lib/reglages'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -47,6 +48,10 @@ export default async function ContactPage({ params }: Props) {
   const tFooter = await getTranslations('Footer')
   const tNav = await getTranslations('Nav')
 
+  // Coordonnées pilotées depuis les réglages (0011), pas depuis les fichiers
+  // de traduction : elles changent sans déploiement.
+  const reglages = await lireReglages()
+
   return (
     <>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
@@ -82,15 +87,29 @@ export default async function ContactPage({ params }: Props) {
                 <address className="mt-6 space-y-5 not-italic">
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-ko-muted">
-                      {tFooter('region')}
+                      {reglages.contactRegion}
                     </p>
                     <a
-                      href={`mailto:${tFooter('courriel')}`}
+                      href={`mailto:${reglages.contactCourriel}`}
                       className="mt-2 inline-flex min-h-[44px] items-center border-b border-ko-line pb-0.5 font-serif text-[22px] text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue"
                     >
-                      {tFooter('courriel')}
+                      {reglages.contactCourriel}
                     </a>
                   </div>
+
+                  {reglages.contactTelephone && (
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-ko-muted">
+                        {t('form.telephone')}
+                      </p>
+                      <a
+                        href={`tel:${reglages.contactTelephone.replace(/[^+\d]/g, '')}`}
+                        className="mt-2 inline-flex min-h-[44px] items-center border-b border-ko-line pb-0.5 font-serif text-[22px] text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue"
+                      >
+                        {reglages.contactTelephone}
+                      </a>
+                    </div>
+                  )}
                 </address>
 
                 <p className="mt-8 max-w-[34ch] border-t border-ko-line pt-8 text-sm leading-relaxed text-ko-muted">

@@ -8,6 +8,7 @@ import { Nav } from '@/components/layout/Nav'
 import { ChatCrisp } from '@/components/ui/ChatCrisp'
 import { WidgetAide } from '@/components/ui/WidgetAide'
 import { PanierProvider } from '@/lib/panier/PanierContext'
+import { lireReglages } from '@/lib/reglages'
 import { routing } from '@/i18n/routing'
 
 import type { Metadata } from 'next'
@@ -145,6 +146,16 @@ export default async function MarketingLayout({ children, params }: Props) {
   // Sans cet appel, toute lecture de traduction bascule la page en dynamique.
   setRequestLocale(locale)
 
+  /**
+   * Réglages du site, lus une fois par rendu de layout.
+   *
+   * ⚠️ Passe par `lireReglages()`, qui utilise `createStaticClient()` et
+   * `unstable_cache` : aucun cookie n'est lu, le layout reste donc
+   * prégénérable et l'ISR du skill 12 tient. Un `createClient()` ici
+   * basculerait TOUT le site vitrine en rendu dynamique.
+   */
+  const reglages = await lireReglages()
+
   const t = await getTranslations('Commun')
 
   /**
@@ -226,7 +237,7 @@ export default async function MarketingLayout({ children, params }: Props) {
             {t('aller_au_contenu')}
           </a>
 
-          <Nav />
+          <Nav panierActif={reglages.panierActif} />
 
           <main id="contenu">{children}</main>
 

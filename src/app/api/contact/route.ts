@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { lireReglages } from '@/lib/reglages'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { schemaContact } from '@/lib/validation'
@@ -81,9 +82,20 @@ export async function POST(req: NextRequest) {
     try {
       const { Resend } = await import('resend')
 
+      /**
+       * Destination pilotée depuis les réglages (0011).
+       *
+       * ⚠️ L'expéditeur, lui, reste en dur. Il doit correspondre à un domaine
+       * VÉRIFIÉ chez Resend : le rendre modifiable depuis l'interface
+       * permettrait de saisir une adresse non vérifiée, et tous les envois
+       * échoueraient en silence. Changer d'expéditeur suppose de configurer
+       * le domaine côté Resend — ce n'est pas un réglage, c'est une opération.
+       */
+      const { contactCourriel } = await lireReglages()
+
       await new Resend(cleResend).emails.send({
         from: 'KO-LAB <site@ko-lab.ca>',
-        to: 'info@ko-lab.ca',
+        to: contactCourriel,
         replyTo: donnees.email,
         subject: `Nouvelle demande — ${donnees.type}`,
         text: [

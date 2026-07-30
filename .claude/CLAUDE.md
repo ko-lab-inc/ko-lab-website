@@ -33,6 +33,7 @@ ne pas les recopier telles quelles :
 | `params`, `searchParams` | 01, 10 | Devenus des `Promise` dans les pages et layouts → `const { locale } = await params` |
 | `images.domains` | 07, 12 | Supprimé. Utiliser `remotePatterns` (déjà le cas dans `next.config.ts`). |
 | `setAll(cookies)` Supabase | 03 | Reçoit un 2ᵉ argument `headers` (en-têtes anti-cache CDN). |
+| `revalidateTag(tag)` | 05, 12 | Exige un 2ᵉ argument (profil de durée de vie). Depuis une Server Action, utiliser `updateTag(tag)` — expiration immédiate. |
 
 `next.config.ts` est de nouveau un fichier TypeScript : Next 15+ le supporte
 nativement, contrairement à Next 14.

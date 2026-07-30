@@ -8,7 +8,6 @@ import { useScrolled } from '@/hooks/useScrolled'
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeProfil } from '@/components/ui/Icones'
 import { LienPanier } from '@/components/ui/LienPanier'
-import { PANIER_ACTIF } from '@/lib/config/features'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
 
@@ -22,7 +21,19 @@ import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
  * animé au survol, pas de barre de progression de scroll. Le seul effet est
  * l'apparition d'un filet de 1px au défilement (skill 20).
  */
-export function Nav() {
+export function Nav({
+  /**
+   * Panier ouvert ou non — vient des réglages, donc de la base.
+   *
+   * ⚠️ Reçu en PROP et non lu ici. Ce composant est client : un
+   * `process.env.NEXT_PUBLIC_*` y serait figé à la compilation, et changer le
+   * réglage depuis l'espace équipe n'aurait aucun effet avant un
+   * redéploiement. C'est exactement ce qu'on voulait supprimer.
+   */
+  panierActif,
+}: {
+  panierActif: boolean
+}) {
   const t = useTranslations('Nav')
   const locale = useLocale()
   const pathname = usePathname()
@@ -146,10 +157,9 @@ export function Nav() {
             {t('changerLangue')}
           </Link>
 
-          {/* Panier désactivé (PANIER_ACTIF) : le système de gestion et la
-              tarification réelle viendront dans un chantier séparé — voir
-              src/lib/config/features.ts. */}
-          {PANIER_ACTIF && <LienPanier />}
+          {/* Piloté depuis Réglages › Parties du site. Décoché, le panier
+              disparaît d'ici comme de la boutique. */}
+          {panierActif && <LienPanier />}
 
           {/*
             Compte — icône seule, comme le panier.
@@ -187,9 +197,9 @@ export function Nav() {
         {/* Le panier est DANS la barre, pas dans le menu déroulant : enfermé
             derrière le hamburger, il serait invisible tant qu'on n'ouvre pas le
             menu — or c'est un état en cours, il doit rester sous les yeux.
-            (Désactivé pour l'instant — voir PANIER_ACTIF plus haut.) */}
+            Même réglage que la barre du haut. */}
         <div className="flex items-center gap-2 lg:hidden">
-          {PANIER_ACTIF && <LienPanier />}
+          {panierActif && <LienPanier />}
 
           <button
           type="button"

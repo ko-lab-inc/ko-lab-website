@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 
 import { Link } from '@/i18n/navigation'
+import { lireReglages } from '@/lib/reglages'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
 
 /**
@@ -16,6 +17,12 @@ import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
 export async function Footer() {
   const t = await getTranslations('Footer')
   const tNav = await getTranslations('Nav')
+
+  // Coordonnées pilotées depuis l'espace équipe (réglages, 0011) plutôt que
+  // depuis les fichiers de traduction : changer un courriel ne doit pas
+  // demander un déploiement. `lireReglages()` est mis en cache, le pied de
+  // page reste donc statique.
+  const reglages = await lireReglages()
 
   const annee = new Date().getFullYear()
 
@@ -79,13 +86,23 @@ export async function Footer() {
           <div>
             <p className="label-mono label-mono-d mb-5">{t('contact_titre')}</p>
             <address className="space-y-3 not-italic">
-              <p className="text-sm text-ko-muted-d">{t('region')}</p>
+              <p className="text-sm text-ko-muted-d">{reglages.contactRegion}</p>
               <a
-                href={`mailto:${t('courriel')}`}
+                href={`mailto:${reglages.contactCourriel}`}
                 className="inline-flex min-h-[44px] items-center text-sm text-ko-white transition-colors duration-200 hover:text-ko-blue2"
               >
-                {t('courriel')}
+                {reglages.contactCourriel}
               </a>
+              {/* Le téléphone n'apparaît que s'il est renseigné : une ligne
+                  vide vaudrait mieux ne pas être là. */}
+              {reglages.contactTelephone && (
+                <a
+                  href={`tel:${reglages.contactTelephone.replace(/[^+\d]/g, '')}`}
+                  className="inline-flex min-h-[44px] items-center text-sm text-ko-white transition-colors duration-200 hover:text-ko-blue2"
+                >
+                  {reglages.contactTelephone}
+                </a>
+              )}
             </address>
 
             <Link

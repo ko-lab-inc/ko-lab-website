@@ -14,8 +14,8 @@ import {
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing, type AppLocale } from '@/i18n/routing'
-import { PANIER_ACTIF } from '@/lib/config/features'
 import { construireProduits, SLUGS_PRODUITS } from '@/lib/produits'
+import { lireReglages } from '@/lib/reglages'
 import { ROUTES, routeProduit } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
@@ -31,13 +31,18 @@ export const revalidate = 3600
  * produit atteinte directement par URL doit être bloquée exactement comme
  * la carte l'est dans la grille — sinon le drapeau ne protège rien.
  */
-const CONTENEURS_ACTIFS = process.env.NEXT_PUBLIC_SOLUTIONS_MODULAIRES === 'true'
+
 
 async function chargerProduit(locale: AppLocale, slug: string) {
   const t = await getTranslations({ locale, namespace: 'Boutique' })
   const produit = construireProduits(t).find((p) => p.slug === slug)
   if (!produit) return null
-  if (produit.categorie === 'conteneurs' && !CONTENEURS_ACTIFS) return null
+
+  // Le réglage est relu ici plutôt que reçu en argument : cette fonction sert
+  // aussi à `generateMetadata`, qui n'a pas d'autre contexte. La lecture est
+  // mise en cache, la répéter ne coûte rien.
+  const { solutionsModulaires } = await lireReglages()
+  if (produit.categorie === 'conteneurs' && !solutionsModulaires) return null
   return { produit, t }
 }
 
@@ -76,8 +81,9 @@ export default async function FicheProduitPage({ params }: Props) {
   const tCommun = await getTranslations('Commun')
   const format = await getFormatter({ locale })
 
+  const reglages = await lireReglages()
   const produit = construireProduits(t).find((p) => p.slug === slug)
-  if (!produit || (produit.categorie === 'conteneurs' && !CONTENEURS_ACTIFS)) notFound()
+  if (!produit || (produit.categorie === 'conteneurs' && !reglages.solutionsModulaires)) notFound()
 
   // Même table que les filtres de la grille (boutique/page.tsx) — dupliquée
   // ici en 4 lignes plutôt qu'extraite : elle n'est lue qu'à ces deux
@@ -243,7 +249,7 @@ export default async function FicheProduitPage({ params }: Props) {
                     <p className="font-mono text-lg text-ko-ink">{prixFormate}</p>
 
                     <div className="mt-6">
-                      {PANIER_ACTIF ? (
+                      {reglages.panierActif ? (
                         <BoutonAjouter slug={produit.slug} nom={produit.nom} categorie={nomCategorie} />
                       ) : (
                         <Link
@@ -311,7 +317,7 @@ export default async function FicheProduitPage({ params }: Props) {
       >
         <div className="mx-auto flex max-w-container items-center justify-between gap-4">
           <p className="font-mono text-sm text-ko-ink">{prixFormate}</p>
-          {PANIER_ACTIF ? (
+          {reglages.panierActif ? (
             <BoutonAjouter slug={produit.slug} nom={produit.nom} categorie={nomCategorie} />
           ) : (
             <Link

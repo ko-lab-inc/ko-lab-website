@@ -6,6 +6,7 @@ import { CatalogueBoutique } from '@/components/sections/CatalogueBoutique'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
+import { lireReglages } from '@/lib/reglages'
 import { construireProduits } from '@/lib/produits'
 import { ROUTES } from '@/lib/routes'
 
@@ -21,10 +22,12 @@ export const revalidate = 3600
  * être publié avant la confirmation de l'entente commerciale (skill 21).
  *
  * La catégorie existe donc entièrement dans le code — traductions, produits,
- * filtre — mais reste invisible tant que la variable ne vaut pas exactement
- * 'true'. Comparaison stricte : une variable absente ou vide n'active rien.
+ * filtre — mais reste invisible tant que le réglage « Conteneurs et solutions
+ * modulaires » n'est pas activé dans l'espace équipe. Avant, c'était une
+ * variable d'environnement Vercel : il fallait un redéploiement pour la
+ * changer, et seul Moussa pouvait le faire.
  */
-const CONTENEURS_ACTIFS = process.env.NEXT_PUBLIC_SOLUTIONS_MODULAIRES === 'true'
+
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
@@ -56,12 +59,13 @@ export default async function BoutiquePage({ params }: Props) {
 
   // Données partagées avec la fiche produit (src/lib/produits.ts) — un
   // produit ajouté là apparaît automatiquement dans les deux pages.
+  const reglages = await lireReglages()
   const produits = construireProduits(t)
 
   // Le retrait se fait CÔTÉ SERVEUR : masquer en CSS aurait laissé les trois
   // conteneurs dans le HTML, donc lisibles par n'importe qui — ce qui revient
   // à les publier.
-  const produitsVisibles = CONTENEURS_ACTIFS
+  const produitsVisibles = reglages.solutionsModulaires
     ? produits
     : produits.filter((p) => p.categorie !== 'conteneurs')
 
@@ -69,7 +73,7 @@ export default async function BoutiquePage({ params }: Props) {
     { valeur: 'all', label: t('cat_tout') },
     { valeur: 'impression', label: t('cat_impression') },
     { valeur: 'laser', label: t('cat_laser') },
-    ...(CONTENEURS_ACTIFS ? [{ valeur: 'conteneurs', label: t('cat_conteneurs') }] : []),
+    ...(reglages.solutionsModulaires ? [{ valeur: 'conteneurs', label: t('cat_conteneurs') }] : []),
     { valeur: 'equipements', label: t('cat_equipements') },
   ]
 
@@ -91,6 +95,7 @@ export default async function BoutiquePage({ params }: Props) {
         <div className="mx-auto max-w-container px-6 lg:px-12">
           <Reveal>
             <CatalogueBoutique
+              panierActif={reglages.panierActif}
               produits={produitsVisibles}
               filtres={filtres}
               labelFiltres={t('filtre_categorie')}

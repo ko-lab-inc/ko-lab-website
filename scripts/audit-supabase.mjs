@@ -301,6 +301,68 @@ async function seedDev() {
   )
 }
 
+/* -- 6. réglages ------------------------------------------------------------- */
+
+/**
+ * La table des réglages est un cas particulier : elle est LUE publiquement
+ * — le site rend le pied de page avec la clé anon — mais ne doit jamais être
+ * ÉCRITE que par un admin. Une politique d'écriture trop large donnerait à
+ * n'importe qui l'adresse qui reçoit les demandes de devis.
+ */
+async function reglages() {
+  console.log('\n6 · Réglages du site')
+
+  const lecture = await rest('reglages?select=cle,valeur,publique')
+  if (lecture.statut === 404 || lecture.code === '42P01') {
+    note('table absente', 'migration 0011 non exécutée — le site tourne sur ses valeurs de repli')
+    return
+  }
+  if (lecture.statut !== 200) {
+    note('lecture impossible', `statut ${lecture.statut} ${lecture.message ?? ''}`)
+    return
+  }
+
+  verdict(lecture.charge.length > 0, `${lecture.charge.length} réglage(s) lisible(s) publiquement`)
+  verdict(
+    lecture.charge.every((r) => r.publique === true),
+    'aucun réglage non public n’est exposé',
+    'la politique de lecture publique filtre bien sur `publique`',
+  )
+
+  // Écriture anonyme : doit être filtrée. PostgREST ne renvoie PAS d'erreur
+  // quand le RLS filtre un UPDATE — il en modifie zéro. On compte donc les
+  // lignes renvoyées plutôt que de se fier au statut.
+  const r = await fetch(
+    `${URL_BASE}/rest/v1/reglages?cle=eq.contact_courriel&select=cle`,
+    {
+      method: 'PATCH',
+      headers: {
+        apikey: CLE_PUBLIQUE,
+        Authorization: `Bearer ${CLE_PUBLIQUE}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify({ valeur: 'audit@example.invalid' }),
+    },
+  )
+  const touchees = r.status === 200 ? ((await r.json()) ?? []).length : 0
+  verdict(
+    touchees === 0,
+    `écriture anonyme ${touchees === 0 ? 'sans effet' : 'ACCEPTÉE — ' + touchees + ' ligne(s)'}`,
+    `statut ${r.status}`,
+  )
+
+  // Contrôle de non-régression : si la ligne AVAIT été modifiée, on le voit.
+  const apres = await rest('reglages?select=valeur&cle=eq.contact_courriel')
+  if (apres.statut === 200 && apres.charge[0]) {
+    verdict(
+      apres.charge[0].valeur !== 'audit@example.invalid',
+      'le courriel de contact est intact',
+      apres.charge[0].valeur,
+    )
+  }
+}
+
 /* -- exécution --------------------------------------------------------------- */
 
 console.log(`Audit de ${URL_BASE}`)
@@ -309,6 +371,7 @@ await ecritures()
 await contrainteRole()
 await stockage()
 await seedDev()
+await reglages()
 
 console.log(
   alertes === 0

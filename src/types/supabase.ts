@@ -244,6 +244,31 @@ export type Database = {
         Relationships: []
       }
 
+      reglages: {
+        Row: {
+          cle: string
+          valeur: string
+          description: string | null
+          publique: boolean
+          modifie_le: string
+        }
+        Insert: {
+          cle: string
+          valeur?: string
+          description?: string | null
+          publique?: boolean
+          modifie_le?: string
+        }
+        Update: {
+          cle?: string
+          valeur?: string
+          description?: string | null
+          publique?: boolean
+          modifie_le?: string
+        }
+        Relationships: []
+      }
+
       profils: {
         Row: {
           id: string

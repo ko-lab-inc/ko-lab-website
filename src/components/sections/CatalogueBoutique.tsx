@@ -8,7 +8,6 @@ import { BoutonAjouter } from '@/components/ui/BoutonAjouter'
 import { buttonVariants } from '@/components/ui/Button'
 import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Link } from '@/i18n/navigation'
-import { PANIER_ACTIF } from '@/lib/config/features'
 import type { ProduitCarte } from '@/lib/produits'
 import { ROUTES, routeProduit } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
@@ -31,6 +30,7 @@ type Filtre = { valeur: string; label: string }
 
 type Props = {
   produits: readonly ProduitCarte[]
+  panierActif: boolean
   filtres: readonly Filtre[]
   labelFiltres: string
   prixSurDemande: string
@@ -41,6 +41,12 @@ type Props = {
 
 export function CatalogueBoutique({
   produits,
+  /**
+   * Panier ouvert ou non. Reçu en prop : ce composant est client, une variable
+   * d'environnement y serait figée à la compilation et le réglage saisi dans
+   * l'espace équipe n'aurait aucun effet.
+   */
+  panierActif,
   filtres,
   labelFiltres,
   prixSurDemande,
@@ -268,7 +274,7 @@ export function CatalogueBoutique({
                       structuré : un vrai prix Supabase le remplacera sans
                       toucher au format d'affichage. `null` retombe sur
                       l'ancien "Prix sur demande", pour le cas où le panier
-                      est désactivé (PANIER_ACTIF) et où aucun CTA de
+                      est désactivé (réglage « Panier ») et où aucun CTA de
                       rechange n'existe encore sur cette carte précise.
 
                       `mt-auto` : le bloc prix + bouton est plaqué au bas de la
@@ -292,12 +298,12 @@ export function CatalogueBoutique({
                       Panier actif : l'action principale devient l'ajout au
                       panier, prix déjà visible plus haut — plus de « Demander
                       un prix » isolé sur la carte (décision de Christian).
-                      Panier désactivé (PANIER_ACTIF=false, voir
-                      src/lib/config/features.ts) : on retombe sur l'ancien CTA
+                      Panier désactivé (Réglages › Parties du site, voir
+                      espace équipe) : on retombe sur l'ancien CTA
                       de contact, pour qu'un simple retour en arrière du drapeau
                       ne laisse jamais une carte sans action.
                     */}
-                    {PANIER_ACTIF ? (
+                    {panierActif ? (
                       // `compact` : bouton seul, sans sélecteur de quantité.
                       // À quatre colonnes la carte fait ~210 px ; le sélecteur
                       // en mangeait 130 et « Ajouter au panier » se cassait sur

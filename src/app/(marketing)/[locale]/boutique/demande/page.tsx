@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation'
 
 import { PagePanier } from '@/components/sections/PagePanier'
 import { routing } from '@/i18n/routing'
-import { PANIER_ACTIF } from '@/lib/config/features'
+import { lireReglages } from '@/lib/reglages'
 import { construireFichesPanier } from '@/lib/produits'
 import { ROUTES } from '@/lib/routes'
 
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * ⚠️ Panier désactivé — voir src/lib/config/features.ts.
+ * ⚠️ Panier désactivé — réglage « Panier de demande groupée », espace équipe.
  *
  * PagePanier, son Context et ses traductions restent intacts ; seule cette
  * route redirige. Un visiteur ayant gardé /boutique/demande en favori doit
@@ -50,7 +50,8 @@ export default async function DemandePrixPage({ params }: Props) {
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
-  if (!PANIER_ACTIF) {
+  const reglages = await lireReglages()
+  if (!reglages.panierActif) {
     redirect(`/${locale}${ROUTES.boutique}`)
   }
 
