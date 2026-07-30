@@ -47,12 +47,31 @@ import { cn } from '@/lib/utils/cn'
 
 type ProduitAvecImages = Produit & { images: unknown }
 
-/** Première image du tableau jsonb, ou null. Le contenu vient de la base : on ne
- *  suppose ni sa forme ni son type. */
-function premiereImage(images: unknown): string | null {
+/**
+ * Première image du tableau jsonb, ou null.
+ *
+ * Le contenu vient de la base : on ne suppose ni sa forme ni son type.
+ *
+ * ⚠️ Deux origines légitimes, et deux seulement. Les douze produits d'origine
+ * portent un chemin local (`/images/...`) ; ceux téléversés depuis cet écran
+ * portent l'URL publique du bucket Supabase. Une version antérieure n'acceptait
+ * que le chemin local : toute photo téléversée depuis l'administration
+ * disparaissait silencieusement de la vignette.
+ *
+ * Ce qui n'est ni l'un ni l'autre est écarté. `next/image` refuserait de toute
+ * façon un hôte absent de `remotePatterns`, mais l'échec arriverait au rendu,
+ * en cassant la ligne entière plutôt qu'une seule vignette.
+ */
+function premiereImage(images: unknown, hoteStockage: string): string | null {
   if (!Array.isArray(images)) return null
   const premiere = images[0]
-  return typeof premiere === 'string' && premiere.startsWith('/') ? premiere : null
+  if (typeof premiere !== 'string') return null
+
+  if (premiere.startsWith('/')) return premiere
+  if (hoteStockage && premiere.startsWith(`${hoteStockage}/storage/v1/object/public/`)) {
+    return premiere
+  }
+  return null
 }
 
 export function TableauProduits({
@@ -83,6 +102,10 @@ export function TableauProduits({
     sansImage: string
   }
 }) {
+  // Lu une fois : NEXT_PUBLIC_* est figé à la compilation, et refaire le
+  // découpage d'URL à chaque ligne du tableau n'apporte rien.
+  const hoteStockage = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '')
+
   const boite = useRef<HTMLDialogElement>(null)
   // `null` = création, un produit = édition, `undefined` = fermé.
   const [edite, setEdite] = useState<ProduitAvecImages | null | undefined>(undefined)
@@ -123,7 +146,7 @@ export function TableauProduits({
         ) : (
           <ul className="divide-y divide-ko-line">
             {produits.map((p) => {
-              const image = premiereImage(p.images)
+              const image = premiereImage(p.images, hoteStockage)
 
               return (
                 <li

@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase/server'
 import { schemaInscription, schemaMotDePasse } from '@/lib/validation'
+import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
 
 /**
@@ -41,10 +42,7 @@ export type EtatInscription = {
 export type EtatMotDePasse = { erreur?: 'donnees' | 'trop_de_tentatives' | 'serveur'; succes?: boolean }
 
 async function adresse(): Promise<string> {
-  const e = await headers()
-  return (
-    e.get('cf-connecting-ip') ?? e.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'inconnue'
-  )
+  return adresseDepuis(await headers())
 }
 
 /** URL de base pour les liens envoyés par courriel. */

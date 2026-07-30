@@ -127,14 +127,40 @@ export function PanierProvider({ children }: { children: ReactNode }) {
 
     const identifier = async () => {
       let userId: string | null = null
+      let identiteConnue = false
+
       try {
         const r = await fetch('/api/session')
-        if (r.ok) userId = ((await r.json()) as { userId: string | null }).userId
+        if (r.ok) {
+          userId = ((await r.json()) as { userId: string | null }).userId
+          identiteConnue = true
+        }
       } catch {
-        // Réseau coupé : on retombe sur le panier anonyme plutôt que de
-        // laisser la boutique sans panier du tout.
+        // Réseau coupé : traité comme une réponse en échec, ci-dessous.
       }
       if (!vivant) return
+
+      /**
+       * Identité inconnue : le panier fonctionne, mais n'est PAS enregistré.
+       *
+       * ⚠️ Le réflexe serait de retomber sur le panier anonyme. C'est
+       * précisément ce qu'il ne faut pas faire. Un échec de la route — réseau
+       * coupé, limite de débit atteinte depuis un bureau partagé — ne veut pas
+       * dire « personne n'est connecté » : il veut dire « on ne sait pas ». En
+       * écrivant sous la clé anonyme, on déposerait la sélection d'une
+       * personne identifiée dans le seau commun du navigateur, où la suivante
+       * la retrouverait. C'est exactement la fuite que la séparation par
+       * compte a corrigée.
+       *
+       * Sans clé, l'effet d'écriture plus bas ne s'exécute pas : la sélection
+       * vit en mémoire pour la visite et disparaît au rechargement. Une
+       * sélection perdue est un désagrément ; la sélection de quelqu'un
+       * d'autre affichée sous son nom, non.
+       */
+      if (!identiteConnue) {
+        setPret(true)
+        return
+      }
 
       const k = cleDe(userId)
 

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
+import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { schemaContact } from '@/lib/validation'
 
@@ -15,23 +16,6 @@ import { schemaContact } from '@/lib/validation'
 /** Cette route écrit en base : elle ne doit jamais être mise en cache. */
 export const dynamic = 'force-dynamic'
 
-/**
- * Adresse du client.
- *
- * `x-forwarded-for` est une LISTE (`client, proxy1, proxy2`) : n'en prendre
- * que la première entrée. Derrière Cloudflare, `cf-connecting-ip` est plus
- * fiable — c'est le seul en-tête que le proxy réécrit systématiquement.
- */
-function adresseClient(req: NextRequest): string {
-  const cf = req.headers.get('cf-connecting-ip')
-  if (cf) return cf.trim()
-
-  const xff = req.headers.get('x-forwarded-for')
-  const premier = xff?.split(',')[0]?.trim()
-
-  return premier && premier.length > 0 ? premier : 'inconnue'
-}
-
 export async function POST(req: NextRequest) {
   // Un formulaire légitime envoie du JSON. Refuser autre chose élimine
   // d'emblée les soumissions cross-origin en form-encoded.
@@ -41,7 +25,7 @@ export async function POST(req: NextRequest) {
 
   // Clé préfixée par la route : sans ça, toutes les routes partageraient
   // le même compteur et le budget de la boutique serait vidé par le contact.
-  if (rateLimit(`contact:${adresseClient(req)}`, { max: 5, windowMs: 60_000 })) {
+  if (rateLimit(`contact:${adresseDepuis(req.headers)}`, { max: 5, windowMs: 60_000 })) {
     return NextResponse.json({ erreur: 'trop_de_requetes' }, { status: 429 })
   }
 

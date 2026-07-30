@@ -1,9 +1,12 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { z } from 'zod'
 
 import { createClient } from '@/lib/supabase/server'
+import { adresseDepuis } from '@/lib/utils/adresseClient'
+import { rateLimit } from '@/lib/utils/rateLimit'
 
 /**
  * CRUD du catalogue — table produits_boutique.
@@ -130,11 +133,28 @@ async function televerserPhoto(
   supabase: Awaited<ReturnType<typeof createClient>>,
   fichier: FormDataEntryValue | null,
   slug: string,
-): Promise<string | null | undefined> {
+): Promise<Photo | null | undefined> {
   if (!(fichier instanceof File) || fichier.size === 0) return null
 
   if (fichier.size > TAILLE_MAX || !TYPES_IMAGE.includes(fichier.type)) {
     console.error('[catalogue] photo refusée —', fichier.type, fichier.size)
+    return undefined
+  }
+
+  /**
+   * Plafond sur les téléversements.
+   *
+   * L'écriture dans le bucket est déjà réservée à l'équipe (politiques de
+   * 0010), le risque n'est donc pas l'inconnu qui remplit le stockage. C'est
+   * la boucle involontaire — un script de reprise mal réglé, un double clic
+   * répété — et le compte d'équipe compromis, qui aurait sinon un stockage
+   * sans fond à disposition.
+   *
+   * Trente fichiers par dix minutes : très au-delà d'une saisie manuelle, où
+   * l'on téléverse une photo à la fois.
+   */
+  if (rateLimit(`photo:${adresseDepuis(await headers())}`, { max: 30, windowMs: 600_000 })) {
+    console.warn('[catalogue] téléversement limité — trop de fichiers en peu de temps')
     return undefined
   }
 
@@ -151,7 +171,29 @@ async function televerserPhoto(
   }
 
   const { data } = supabase.storage.from('produits').getPublicUrl(chemin)
-  return data.publicUrl
+  return { url: data.publicUrl, chemin }
+}
+
+/**
+ * Le chemin accompagne l'URL parce qu'il faut pouvoir revenir en arrière.
+ *
+ * Si l'enregistrement échoue APRÈS le téléversement — slug déjà pris, c'est le
+ * cas courant — le fichier reste dans le bucket sans qu'aucune ligne n'y
+ * renvoie. On corrige le slug, on renvoie le formulaire, et un orphelin
+ * s'accumule à chaque essai. Personne ne les voit, ils ne se nettoient jamais.
+ */
+type Photo = { url: string; chemin: string }
+
+/** Retire un fichier téléversé dont l'enregistrement a échoué. */
+async function retirerPhoto(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  photo: Photo | null,
+): Promise<void> {
+  if (!photo) return
+  const { error } = await supabase.storage.from('produits').remove([photo.chemin])
+  // Un orphelin est un désagrément, pas une panne : on le signale et on laisse
+  // l'erreur d'origine remonter à l'utilisateur.
+  if (error) console.error('[catalogue] orphelin non nettoyé', photo.chemin, error.message)
 }
 
 export async function creerProduit(
@@ -165,17 +207,21 @@ export async function creerProduit(
   try {
     const supabase = await createClient()
 
-    const url = await televerserPhoto(supabase, donnees.get('photo'), analyse.data.slug)
-    if (url === undefined) return { erreur: 'photo' }
+    const photo = await televerserPhoto(supabase, donnees.get('photo'), analyse.data.slug)
+    if (photo === undefined) return { erreur: 'photo' }
 
     // `publie: false` à la création, toujours. Un produit incomplet — sans
     // photo, sans prix confirmé — ne doit pas apparaître en boutique parce
     // qu'on a cliqué « Créer ». La publication est un geste séparé.
     const { error } = await supabase
       .from('produits_boutique')
-      .insert({ ...analyse.data, images: url ? [url] : [], publie: false })
+      .insert({ ...analyse.data, images: photo ? [photo.url] : [], publie: false })
 
     if (error) {
+      // Le fichier est déjà dans le bucket : sans ce retrait, chaque tentative
+      // sur un slug déjà pris y laisserait une image que plus rien ne
+      // référence.
+      await retirerPhoto(supabase, photo)
       if (slugDejaPris(error.code)) return { erreur: 'slug_pris' }
       console.error('[catalogue] création refusée', error.message)
       return { erreur: 'refuse' }
@@ -203,18 +249,19 @@ export async function modifierProduit(
   try {
     const supabase = await createClient()
 
-    const url = await televerserPhoto(supabase, donnees.get('photo'), analyse.data.slug)
-    if (url === undefined) return { erreur: 'photo' }
+    const photo = await televerserPhoto(supabase, donnees.get('photo'), analyse.data.slug)
+    if (photo === undefined) return { erreur: 'photo' }
 
     // `images` n'est touché QUE si une nouvelle photo a été fournie. Sans
     // cette condition, enregistrer une correction de prix effacerait l'image
     // du produit — le champ de fichier est vide à chaque réouverture.
     const { error } = await supabase
       .from('produits_boutique')
-      .update(url ? { ...analyse.data, images: [url] } : analyse.data)
+      .update(photo ? { ...analyse.data, images: [photo.url] } : analyse.data)
       .eq('id', id)
 
     if (error) {
+      await retirerPhoto(supabase, photo)
       if (slugDejaPris(error.code)) return { erreur: 'slug_pris' }
       console.error('[catalogue] mise à jour refusée', error.message)
       return { erreur: 'refuse' }

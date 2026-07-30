@@ -6,6 +6,7 @@ import { z } from 'zod'
 
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
+import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { ROLES_EQUIPE } from '@/types'
 
@@ -57,11 +58,7 @@ export async function connecter(
   // Une page de connexion est la cible classique du bourrage d'identifiants.
   // Supabase applique ses propres limites, mais elles sont globales au projet :
   // celle-ci coupe par adresse, avant même d'atteindre le réseau.
-  const entetes = await headers()
-  const ip =
-    entetes.get('cf-connecting-ip') ??
-    entetes.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    'inconnue'
+  const ip = adresseDepuis(await headers())
 
   if (rateLimit(`connexion:${ip}`, { max: 8, windowMs: 300_000 })) {
     return { erreur: 'trop_de_tentatives' }

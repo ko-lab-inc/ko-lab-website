@@ -248,6 +248,32 @@ test.describe('Panier — un état par profil', () => {
     expect(await panierDe(page, COMPTE_A)).toHaveLength(1)
   })
 
+  test('identité inconnue — rien n’est écrit sous la clé anonyme', async ({ page }) => {
+    /**
+     * Le cas qui compte le plus de cette suite.
+     *
+     * Si /api/session échoue — réseau coupé, limite de débit atteinte depuis
+     * un bureau partagé — on ne sait pas qui est là. Retomber sur le panier
+     * anonyme déposerait la sélection d'une personne identifiée dans le seau
+     * commun du navigateur, où la suivante la retrouverait : la fuite même que
+     * la séparation par compte devait fermer.
+     */
+    await page.route('**/api/session', (route) => route.fulfill({ status: 429, body: '{}' }))
+
+    await page.goto('/fr/boutique')
+    await page.getByRole('button', { name: /Ajouter au panier/ }).first().click()
+
+    // La sélection fonctionne pour la visite…
+    await expect(page.getByRole('link', { name: /Voir ma sélection/ }).first()).toContainText('1')
+
+    // …mais rien n'est déposé, sous aucune clé.
+    const cles = await page.evaluate(
+      (p) => Object.keys(window.localStorage).filter((c) => c.startsWith(p)),
+      PREFIXE,
+    )
+    expect(cles, `clés écrites : ${cles.join(', ')}`).toEqual([])
+  })
+
   test('rien ne s’affiche avant que l’identité soit connue', async ({ page }) => {
     // Session lente : tant qu'on ne sait pas qui est là, montrer un panier
     // reviendrait à risquer d'afficher celui d'un autre pendant un instant.

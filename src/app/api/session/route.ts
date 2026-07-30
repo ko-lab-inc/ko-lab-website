@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server'
 
 import { createClient } from '@/lib/supabase/server'
+import { adresseDepuis } from '@/lib/utils/adresseClient'
+import { rateLimit } from '@/lib/utils/rateLimit'
+
+import type { NextRequest } from 'next/server'
 
 /**
  * Identifiant de la personne connectée, et rien d'autre.
@@ -35,7 +39,34 @@ import { createClient } from '@/lib/supabase/server'
 /** Lit un cookie de session : jamais mise en cache, ni par Next ni par le CDN. */
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  /**
+   * Plafond très large, et c'est délibéré.
+   *
+   * Ce qu'on arrête : la boucle. Avec un cookie forgé, getUser() sort sur le
+   * réseau pour faire valider le jeton par le serveur d'authentification — et
+   * ce quota-là est facturé au projet KO-LAB.
+   *
+   * ⚠️ POURQUOI PAS PLUS SERRÉ. Le compteur est indexé par adresse IP, et un
+   * bureau entier sort derrière une seule adresse publique. Une limite de 60
+   * par minute — un premier réglage, mesuré comme trop bas — aurait refusé la
+   * route à des collègues d'un même chantier partageant une connexion. Or un
+   * refus n'est pas neutre ici : le panier ne sait plus qui est là.
+   *
+   * 240 par minute reste dérisoire face à une boucle automatisée, tout en
+   * laissant largement de la place à une dizaine de personnes qui naviguent
+   * ensemble.
+   *
+   * ⚠️ Compteur en mémoire de processus : voir la portée réelle en tête de
+   * rateLimit.ts. C'est un ralentisseur, pas une barrière.
+   */
+  if (rateLimit(`session:${adresseDepuis(req.headers)}`, { max: 240, windowMs: 60_000 })) {
+    return NextResponse.json(
+      { userId: null },
+      { status: 429, headers: { 'Cache-Control': 'private, no-store' } },
+    )
+  }
+
   try {
     const supabase = await createClient()
     const {
