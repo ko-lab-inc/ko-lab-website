@@ -91,7 +91,15 @@ export default async function RealisationsAdminPage({ params }: Props) {
   // `images` arrive en jsonb non typé : validé ici pour la même raison que
   // dans lib/realisations.ts — un UPDATE fait à la main dans l'éditeur SQL
   // pourrait y avoir laissé n'importe quoi.
-  const donnees = (realisations ?? []).map((r) => ({ ...r, images: validerImages(r.images) }))
+  //
+  // `imagesCompteTexte` est calculé ICI, pas dans le composant client : une
+  // fonction (le pluriel ICU a besoin de `t`, qui ne vit que côté serveur) ne
+  // traverse pas la frontière RSC. Voir TableauRealisations.tsx pour le détail
+  // du plantage que ça causait.
+  const donnees = (realisations ?? []).map((r) => {
+    const images = validerImages(r.images)
+    return { ...r, images, imagesCompteTexte: t('images_compte', { n: images.length }) }
+  })
 
   return (
     <>
@@ -118,7 +126,6 @@ export default async function RealisationsAdminPage({ params }: Props) {
           titreCreation: t('nouvelle_realisation'),
           titreDetail: t('titre_detail_realisation'),
           sansImage: t('sans_image'),
-          imagesCompte: (n: number) => t('images_compte', { n }),
         }}
       />
     </>

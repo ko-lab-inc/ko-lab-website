@@ -38,6 +38,20 @@ import { cn } from '@/lib/utils/cn'
  * ---------------------------------------------------------------------------
  */
 
+/**
+ * Une réalisation, augmentée du texte « N photos » déjà mis en forme.
+ *
+ * ⚠️ PAS UNE FONCTION EN PROP. `textes.imagesCompte` était une fermeture
+ * fabriquée côté serveur (`(n) => t('images_compte', { n })`) et passée à ce
+ * composant CLIENT — une fonction ne traverse pas la frontière RSC, elle n'a
+ * rien de sérialisable. Le rendu plantait dès l'arrivée sur cet écran
+ * (« A server error occurred »), corrigé en calculant le texte UNE FOIS, côté
+ * serveur, pour chaque réalisation — une chaîne, elle, se sérialise sans
+ * problème. Même bug, même famille que celui déjà rencontré en passant un
+ * composant plutôt qu'un élément rendu à un Client Component.
+ */
+type RealisationListe = RealisationAdmin & { imagesCompteTexte: string }
+
 export function TableauRealisations({
   locale,
   realisations,
@@ -46,7 +60,7 @@ export function TableauRealisations({
   textes,
 }: {
   locale: string
-  realisations: RealisationAdmin[]
+  realisations: RealisationListe[]
   estAdmin: boolean
   libelles: LibellesRealisation
   textes: {
@@ -65,12 +79,11 @@ export function TableauRealisations({
     titreCreation: string
     titreDetail: string
     sansImage: string
-    imagesCompte: (n: number) => string
   }
 }) {
   const boite = useRef<HTMLDialogElement>(null)
   // `null` = création, une réalisation = édition, `undefined` = fermé.
-  const [edite, setEdite] = useState<RealisationAdmin | null | undefined>(undefined)
+  const [edite, setEdite] = useState<RealisationListe | null | undefined>(undefined)
 
   useEffect(() => {
     const el = boite.current
@@ -88,7 +101,7 @@ export function TableauRealisations({
   }, [])
 
   const boiteDetail = useRef<HTMLDialogElement>(null)
-  const [voir, setVoir] = useState<RealisationAdmin | undefined>(undefined)
+  const [voir, setVoir] = useState<RealisationListe | undefined>(undefined)
 
   useEffect(() => {
     const el = boiteDetail.current
@@ -151,7 +164,7 @@ export function TableauRealisations({
                   </span>
 
                   <span className="w-20 shrink-0 text-right font-mono text-xs text-ko-muted">
-                    {textes.imagesCompte(r.images.length)}
+                    {r.imagesCompteTexte}
                   </span>
 
                   <form action={basculerPublicationRealisation} className="w-28 shrink-0 text-right">
@@ -309,7 +322,7 @@ export function TableauRealisations({
                   images et leur texte alternatif, avant de publier. */}
               <div>
                 <p className="label-mono mb-2 text-ko-muted">
-                  {textes.imagesCompte(voir.images.length)}
+                  {voir.imagesCompteTexte}
                 </p>
 
                 {voir.images.length === 0 ? (
