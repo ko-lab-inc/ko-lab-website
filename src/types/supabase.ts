@@ -93,6 +93,20 @@ export type Database = {
           description_en: string | null
           /** NULL = « sur demande » — voir skills 03 et 21. */
           prix: number | null
+          /**
+           * Ajoutées par la migration 0007.
+           *
+           * ⚠️ Ce fichier est GÉNÉRÉ par la CLI Supabase. Ces deux champs ont
+           * été ajoutés à la main faute de CLI installée sur ce poste — les
+           * types ignoraient `cadrage`, et TypeScript refusait toute lecture
+           * du catalogue avec un message trompeur sur la requête. À la
+           * prochaine régénération, vérifier qu'ils y sont toujours.
+           *
+           * cadrage  — 'contain' (visuel détouré) ou 'cover' (photo de scène)
+           * couleurs — coloris disponibles, une photo par coloris
+           */
+          cadrage: string
+          couleurs: Json
           images: Json
           specs: Json
           url_externe: string | null
@@ -110,6 +124,8 @@ export type Database = {
           description_fr?: string | null
           description_en?: string | null
           prix?: number | null
+          cadrage?: string
+          couleurs?: Json
           images?: Json
           specs?: Json
           url_externe?: string | null
@@ -127,6 +143,8 @@ export type Database = {
           description_fr?: string | null
           description_en?: string | null
           prix?: number | null
+          cadrage?: string
+          couleurs?: Json
           images?: Json
           specs?: Json
           url_externe?: string | null
