@@ -14,7 +14,7 @@ import {
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing, type AppLocale } from '@/i18n/routing'
-import { construireProduits, SLUGS_PRODUITS } from '@/lib/produits'
+import { lireProduitsPublies } from '@/lib/produits'
 import { lireReglages } from '@/lib/reglages'
 import { ROUTES, routeProduit } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
@@ -35,7 +35,8 @@ export const revalidate = 3600
 
 async function chargerProduit(locale: AppLocale, slug: string) {
   const t = await getTranslations({ locale, namespace: 'Boutique' })
-  const produit = construireProduits(t).find((p) => p.slug === slug)
+  const produits = await lireProduitsPublies()
+  const produit = produits.find((p) => p.slug === slug)
   if (!produit) return null
 
   // Le réglage est relu ici plutôt que reçu en argument : cette fonction sert
@@ -46,8 +47,21 @@ async function chargerProduit(locale: AppLocale, slug: string) {
   return { produit, t }
 }
 
-export function generateStaticParams() {
-  return routing.locales.flatMap((locale) => SLUGS_PRODUITS.map((slug) => ({ locale, slug })))
+/**
+ * Chemins pré-générés au build, à partir du catalogue RÉEL à cet instant.
+ *
+ * Un produit ajouté depuis /admin/catalogue APRÈS ce build n'est pas dans
+ * cette liste — `dynamicParams` reste à sa valeur par défaut (true, non
+ * déclaré ici), donc Next le rend à la demande au premier visiteur et met le
+ * résultat en cache comme n'importe quelle page ISR. C'est précisément ce qui
+ * manquait : avant, la liste venait de SLUGS_PRODUITS, une constante codée en
+ * dur qu'un produit ajouté en base ne pouvait jamais rejoindre.
+ */
+export async function generateStaticParams() {
+  const produits = await lireProduitsPublies()
+  return routing.locales.flatMap((locale) =>
+    produits.map((p) => ({ locale, slug: p.slug })),
+  )
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -77,7 +91,8 @@ export default async function FicheProduitPage({ params }: Props) {
   const format = await getFormatter({ locale })
 
   const reglages = await lireReglages()
-  const produit = construireProduits(t).find((p) => p.slug === slug)
+  const produits = await lireProduitsPublies()
+  const produit = produits.find((p) => p.slug === slug)
   if (!produit || (produit.categorie === 'conteneurs' && !reglages.solutionsModulaires)) notFound()
 
   // Même table que les filtres de la grille (boutique/page.tsx) — dupliquée

@@ -1,9 +1,10 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { headers } from 'next/headers'
 import { z } from 'zod'
 
+import { ETIQUETTE_PRODUITS } from '@/lib/produits'
 import { createClient } from '@/lib/supabase/server'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
@@ -273,6 +274,7 @@ export async function creerProduit(
     return { erreur: 'serveur' }
   }
 
+  updateTag(ETIQUETTE_PRODUITS)
   revalidatePath(`/${locale}/admin/catalogue`)
   return { succes: true }
 }
@@ -316,6 +318,7 @@ export async function modifierProduit(
     return { erreur: 'serveur' }
   }
 
+  updateTag(ETIQUETTE_PRODUITS)
   revalidatePath(`/${locale}/admin/catalogue`)
   return { succes: true }
 }
@@ -345,6 +348,7 @@ export async function basculerPublication(donnees: FormData): Promise<void> {
     console.error('[catalogue] échec bascule', err)
   }
 
+  updateTag(ETIQUETTE_PRODUITS)
   revalidatePath(`/${locale}/admin/catalogue`)
 }
 
@@ -376,5 +380,6 @@ export async function supprimerProduit(donnees: FormData): Promise<void> {
     console.error('[catalogue] échec suppression', err)
   }
 
+  updateTag(ETIQUETTE_PRODUITS)
   revalidatePath(`/${locale}/admin/catalogue`)
 }

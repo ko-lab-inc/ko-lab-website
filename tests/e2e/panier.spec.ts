@@ -18,11 +18,21 @@ import { expect, test, type Page } from '@playwright/test'
 const CLE = 'kolab_panier:anonyme'
 
 /**
- * Ajoute le n-ième produit du catalogue à la demande.
+ * Ajoute UN PRODUIT NOMMÉ (pas « le n-ième ») à la demande.
  *
  * L'attente porte sur le badge, pas sur un délai fixe : l'écriture dans
  * localStorage puis le re-rendu prennent un temps variable, et le test
  * devenait intermittent en émulation mobile.
+ *
+ * ---------------------------------------------------------------------------
+ * ⚠️ PAR NOM, PAS PAR POSITION — corrigé après l'ajout d'un vrai conteneur
+ * depuis /admin/catalogue pendant les tests.
+ *
+ * Cibler « le 1ᵉʳ bouton Ajouter au panier » supposait un catalogue figé :
+ * l'ordre d'affichage recale les produits récents en tête (voir lib/stock.ts
+ * et actions.ts, ordre = min - 10), donc un produit ajouté par l'équipe
+ * décale silencieusement TOUS les index suivants. La recherche isole le
+ * produit visé, quel que soit son rang dans la grille.
  *
  * ---------------------------------------------------------------------------
  * POURQUOI LE CLIC EST REJOUÉ
@@ -32,20 +42,18 @@ const CLE = 'kolab_panier:anonyme'
  * gestionnaire. Sous exécution parallèle (deux projets, plusieurs workers),
  * l'hydratation prend assez de temps pour que ça se produise — d'où des échecs
  * d'environ une exécution sur trois, sur un test différent à chaque fois.
- *
- * ⚠️ Le clic n'est PAS rejoué à l'aveugle. Après un ajout réussi, le bouton du
- * produit passe à « Ajouté » et sort de la liste : `nth(index)` désignerait
- * alors un AUTRE produit, et la relance en ajouterait un de plus. On ne clique
- * donc que si le compte attendu n'est pas déjà atteint.
  * ---------------------------------------------------------------------------
  */
-async function ajouterProduit(page: Page, index: number, attendu: number) {
+async function ajouterProduit(page: Page, nom: string, attendu: number) {
   const badge = page.getByRole('link', { name: /Voir ma sélection/ }).first()
+  const champRecherche = page.getByPlaceholder('Rechercher un produit…')
 
   await expect(async () => {
     const dejaFait = (await badge.count()) > 0 && (await badge.innerText()).includes(String(attendu))
     if (!dejaFait) {
-      await page.getByRole('button', { name: /Ajouter au panier/ }).nth(index).click()
+      await champRecherche.fill(nom)
+      await page.getByRole('button', { name: /Ajouter au panier/ }).first().click()
+      await champRecherche.fill('')
     }
     await expect(badge).toContainText(String(attendu), { timeout: 3_000 })
   }).toPass({ timeout: 15_000 })
@@ -72,14 +80,14 @@ test.describe('Panier / sélection', () => {
     // élément décoratif sans information (skill 08).
     await expect(lien).toHaveCount(0)
 
-    await ajouterProduit(page, 0, 1)
+    await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
     await expect(lien.first()).toBeVisible()
 
-    await ajouterProduit(page, 1, 2)
+    await ajouterProduit(page, 'Bambu Lab P1S', 2)
   })
 
   test('2 · le bouton passe en « Ajouté » et se désactive', async ({ page }) => {
-    await ajouterProduit(page, 0, 1)
+    await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
 
     // Un bouton laissé actif mais inopérant serait annoncé comme cliquable
     // par un lecteur d'écran.
@@ -87,8 +95,8 @@ test.describe('Panier / sélection', () => {
   })
 
   test('3 · persistance après rechargement', async ({ page }) => {
-    await ajouterProduit(page, 0, 1)
-    await ajouterProduit(page, 1, 2)
+    await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
+    await ajouterProduit(page, 'Bambu Lab P1S', 2)
 
     await page.reload()
 
@@ -99,8 +107,8 @@ test.describe('Panier / sélection', () => {
   })
 
   test('4 · page de demande — quantité modifiable et retrait', async ({ page }) => {
-    await ajouterProduit(page, 0, 1)
-    await ajouterProduit(page, 1, 2)
+    await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
+    await ajouterProduit(page, 'Bambu Lab P1S', 2)
     await page.goto('/fr/boutique/demande')
 
     // Portée à la liste du panier : `li` seul capterait aussi les listes de
@@ -123,14 +131,12 @@ test.describe('Panier / sélection', () => {
   })
 
   test('5 · prix par article ET total, tous indicatifs', async ({ page }) => {
-    // ⚠️ `.nth(1)` après un premier ajout NE cible PAS le 2ᵉ produit du
-    // catalogue : le bouton du 1ᵉʳ passe en « Ajouté » et sort du sélecteur
-    // /Ajouter au panier/, donc tous les index suivants se décalent d'un cran
-    // (X1-Carbon 1800 $ puis AMS 449 $, pas X1-Carbon puis P1S). Total
-    // attendu ci-dessous vérifié en conséquence, pas dans l'ordre du
-    // catalogue. Prix AMS relevé sur ca.store.bambulab.com (voir produits.ts).
-    await ajouterProduit(page, 0, 1)
-    await ajouterProduit(page, 1, 2)
+    // Deux produits nommés explicitement (pas « le 1er et le 2e du
+    // catalogue ») : le total attendu (2249 $) dépend des DEUX prix exacts,
+    // et l'ordre d'affichage du catalogue n'a aucune raison de rester stable
+    // d'une exécution à l'autre (voir la docstring de ajouterProduit).
+    await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
+    await ajouterProduit(page, 'Bambu Lab AMS', 2)
     await page.goto('/fr/boutique/demande')
     await page.waitForTimeout(500)
 
@@ -155,8 +161,8 @@ test.describe('Panier / sélection', () => {
   })
 
   test('6 · envoi groupé — le message est pré-rempli avec la liste', async ({ page }) => {
-    await ajouterProduit(page, 0, 1)
-    await ajouterProduit(page, 1, 2)
+    await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
+    await ajouterProduit(page, 'Bambu Lab P1S', 2)
     await page.goto('/fr/boutique/demande')
 
     await page.getByRole('link', { name: /Confirmer ma sélection/ }).click()
@@ -170,7 +176,7 @@ test.describe('Panier / sélection', () => {
   })
 
   test('7 · le panier n’est PAS pré-rempli hors demande boutique', async ({ page }) => {
-    await ajouterProduit(page, 0, 1)
+    await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
 
     // Sans ?type=boutique, la liste ne doit pas polluer une demande de mandat.
     await page.goto('/fr/contact')
@@ -184,9 +190,14 @@ test.describe('Recherche boutique', () => {
   test('8 · la recherche et le filtre de catégorie se cumulent', async ({ page }) => {
     await page.goto('/fr/boutique')
     const cartes = page.locator('article')
-    // 12 avec la catégorie Conteneurs active (NEXT_PUBLIC_SOLUTIONS_MODULAIRES,
-    // entente commerciale confirmée le 28 juillet 2026) — 9 sans elle.
-    await expect(cartes).toHaveCount(12)
+    // Total réel du catalogue à cet instant, PAS un nombre figé : le
+    // catalogue est géré depuis /admin/catalogue et grandit avec le temps —
+    // un compte codé en dur ici a déjà cassé ce test le jour où un vrai
+    // produit a été ajouté (voir lib/produits.ts). Sert uniquement à
+    // vérifier plus bas que « Tout voir » restaure la liste complète.
+    await expect(cartes.first()).toBeVisible()
+    const total = await cartes.count()
+    expect(total).toBeGreaterThan(0)
 
     const champ = page.getByPlaceholder('Rechercher un produit…')
 
@@ -207,8 +218,6 @@ test.describe('Recherche boutique', () => {
     // Retour à l'état complet.
     await champ.fill('')
     await page.getByRole('button', { name: 'Tout voir', exact: true }).click()
-    // 12 avec la catégorie Conteneurs active (NEXT_PUBLIC_SOLUTIONS_MODULAIRES,
-    // entente commerciale confirmée le 28 juillet 2026) — 9 sans elle.
-    await expect(cartes).toHaveCount(12)
+    await expect(cartes).toHaveCount(total)
   })
 })

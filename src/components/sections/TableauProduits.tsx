@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/Icones'
 import { statutSuggere } from '@/lib/stock'
 import { cn } from '@/lib/utils/cn'
+import { premiereImage } from '@/lib/utils/premiereImage'
 
 /**
  * Tableau du catalogue — vignette, informations, actions, formulaire en
@@ -41,18 +42,12 @@ import { cn } from '@/lib/utils/cn'
  * L'œil ouvre un aperçu EN LECTURE SEULE, ici même — pas la fiche publique
  * dans un nouvel onglet. C'était le choix initial, corrigé par Christian.
  *
- * ⚠️ Ce choix corrige aussi un défaut réel, pas seulement une préférence :
- * /boutique/[slug] lit encore `construireProduits()` (le fichier produits.ts),
- * PAS cette table. Le lien ne montrait donc jamais ce produit-ci — pour les
- * douze produits d'origine il tombait sur une fiche qui ignore les
- * modifications faites ici, et pour un produit créé depuis cet écran il
- * menait à un 404 pur et simple, puisque son slug n'existe nulle part dans
- * produits.ts.
- *
- * Pas de lien de secours vers cette même URL dans l'aperçu : ce serait
- * proposer, pour la plupart des produits, un bouton qui mène soit à un 404
- * soit à des informations obsolètes. Le jour où /boutique/[slug] lira cette
- * table, ce lien redeviendra pertinent partout — pas avant.
+ * ⚠️ Ce choix corrigeait aussi un défaut réel, pas seulement une préférence :
+ * au moment de la décision, /boutique/[slug] lisait encore `construireProduits()`
+ * (le fichier produits.ts), pas cette table — un produit créé ici menait à un
+ * 404 pur et simple. Depuis, lib/produits.ts lit directement produits_boutique
+ * (lireProduitsPublies()) : le défaut a disparu, mais l'aperçu inline reste le
+ * bon choix — pas de navigation qui ferme le tableau pour un simple coup d'œil.
  *
  * Le crayon ouvre le formulaire. La corbeille supprime, après confirmation, et
  * n'apparaît que pour un admin (politique produits_suppression_admin de 0002 —
@@ -61,33 +56,6 @@ import { cn } from '@/lib/utils/cn'
  */
 
 type ProduitAvecImages = Produit & { images: unknown }
-
-/**
- * Première image du tableau jsonb, ou null.
- *
- * Le contenu vient de la base : on ne suppose ni sa forme ni son type.
- *
- * ⚠️ Deux origines légitimes, et deux seulement. Les douze produits d'origine
- * portent un chemin local (`/images/...`) ; ceux téléversés depuis cet écran
- * portent l'URL publique du bucket Supabase. Une version antérieure n'acceptait
- * que le chemin local : toute photo téléversée depuis l'administration
- * disparaissait silencieusement de la vignette.
- *
- * Ce qui n'est ni l'un ni l'autre est écarté. `next/image` refuserait de toute
- * façon un hôte absent de `remotePatterns`, mais l'échec arriverait au rendu,
- * en cassant la ligne entière plutôt qu'une seule vignette.
- */
-function premiereImage(images: unknown, hoteStockage: string): string | null {
-  if (!Array.isArray(images)) return null
-  const premiere = images[0]
-  if (typeof premiere !== 'string') return null
-
-  if (premiere.startsWith('/')) return premiere
-  if (hoteStockage && premiere.startsWith(`${hoteStockage}/storage/v1/object/public/`)) {
-    return premiere
-  }
-  return null
-}
 
 export function TableauProduits({
   locale,

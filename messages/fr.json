@@ -529,6 +529,7 @@
   },
   "Admin": {
     "espace": "Espace équipe",
+    "voir_site": "Voir le site",
     "deconnexion": "Se déconnecter",
     "role_admin": "Administrateur",
     "role_editor": "Éditeur",

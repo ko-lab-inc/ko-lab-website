@@ -22,7 +22,6 @@ import {
 } from '@/components/ui/Icones'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
-import { construireProduits } from '@/lib/produits'
 import { stockEnAttention } from '@/lib/stock'
 import { TYPES_DEMANDE } from '@/types'
 
@@ -38,14 +37,17 @@ const JOURS = 30
  * CE QU'IL N'AFFICHE PAS, ET POURQUOI
  *
  * La maquette de référence (tableau de bord e-commerce) montre Total Revenue,
- * Orders, Conversion Rate et Inventory Alerts. Aucune de ces quatre données
- * n'existe ici, et il ne faut pas les inventer :
+ * Orders, Conversion Rate et Inventory Alerts. Les trois premières n'existent
+ * toujours pas ici, et il ne faut pas les inventer :
  *
  *   - aucun paiement n'a jamais transité par ce site ;
  *   - il n'existe pas de table `commandes` — la boutique fonctionne en demande
  *     de prix, pas en achat ;
- *   - rien ne mesure les visites, donc aucun taux de conversion n'est calculable ;
- *   - aucun stock n'est suivi.
+ *   - rien ne mesure les visites, donc aucun taux de conversion n'est calculable.
+ *
+ * Inventory Alerts, elle, a une vraie contrepartie depuis la migration 0013 :
+ * le panneau « Points d'attention » plus bas signale les produits en rupture
+ * ou en stock faible, calculés sur `produits_boutique` (voir lib/stock.ts).
  *
  * Afficher « 128 430 $ · +18,6 % » sur un écran de gestion, c'est fabriquer un
  * chiffre d'affaires. Montré à un partenaire ou à un prêteur, il serait lu
@@ -72,7 +74,6 @@ export default async function TableauDeBordPage({ params }: Props) {
   if (!hasLocale(routing.locales, locale)) notFound()
 
   const t = await getTranslations('Admin')
-  const tBoutique = await getTranslations('Boutique')
   const format = await getFormatter({ locale })
   const supabase = await createClient()
 
@@ -103,8 +104,9 @@ export default async function TableauDeBordPage({ params }: Props) {
         .limit(8),
       // Catalogue réel (migration 0013) — une douzaine de lignes, agrégées
       // ici même plutôt qu'en SQL : sert le compte, la répartition par
-      // catégorie ET l'alerte de stock, sans trois requêtes séparées.
-      supabase.from('produits_boutique').select('categorie, quantite, statut_stock, publie'),
+      // catégorie, l'alerte de stock ET l'alerte de prix manquants, sans
+      // quatre requêtes séparées.
+      supabase.from('produits_boutique').select('categorie, prix, quantite, statut_stock, publie'),
     ])
 
   const lignes = fenetre.data ?? []
@@ -121,17 +123,6 @@ export default async function TableauDeBordPage({ params }: Props) {
     libelle: t(`type_${type}`),
     valeur: lignes.filter((l) => l.type === type).length,
   })).sort((a, b) => b.valeur - a.valeur)
-
-  /**
-   * Contenu du catalogue PUBLIC — encore codé en dur dans lib/produits.ts,
-   * /boutique/[slug] ne lit pas produits_boutique (voir la docstring de ce
-   * fichier). Sert uniquement les deux alertes de prix ci-dessous, qui
-   * parlent justement de CE contenu-là — pas le compte, la répartition par
-   * catégorie ni le stock, qui viennent maintenant de `catalogue` (la vraie
-   * table, lue plus haut) : Christian a signalé que le tableau de bord ne
-   * reflétait pas le vrai statut des produits gérés depuis /admin/catalogue.
-   */
-  const produitsPublics = construireProduits(tBoutique)
 
   const produitsCatalogue = catalogue.data ?? []
   const produitsPublies = produitsCatalogue.filter((p) => p.publie).length
@@ -167,11 +158,9 @@ export default async function TableauDeBordPage({ params }: Props) {
   ).length
 
   const alertes = [
-    produitsPublics.filter((p) => p.prixIndicatif === null).length > 0
-      ? t('alerte_prix_absents')
-      : null,
-    // Trois prix restent provisoires : X1-Carbon, xTool P2, xTool F1 (voir
-    // les commentaires de src/lib/produits.ts).
+    produitsCatalogue.filter((p) => p.prix === null).length > 0 ? t('alerte_prix_absents') : null,
+    // Trois prix restent provisoires : X1-Carbon, xTool P2, xTool F1 — jamais
+    // confirmés sur une source officielle (voir 0007_catalogue_en_base.sql).
     t('alerte_prix_provisoires'),
     process.env.RESEND_API_KEY ? null : t('alerte_smtp'),
     (nouvelles ?? 0) > 0 ? t('alerte_demandes', { n: nouvelles ?? 0 }) : null,

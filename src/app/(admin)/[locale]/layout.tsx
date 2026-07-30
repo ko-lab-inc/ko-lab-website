@@ -1,6 +1,7 @@
 import { hasLocale } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 import { Fraunces, Instrument_Sans, JetBrains_Mono } from 'next/font/google'
+import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 
 import { NavAdmin } from '@/components/layout/NavAdmin'
@@ -192,7 +193,24 @@ export default async function AdminLayout({ children, params }: Props) {
 
         <div className="flex min-w-0 flex-1 flex-col lg:h-svh lg:overflow-hidden">
           <header className="shrink-0 border-b border-ko-line bg-ko-white">
-            <div className="flex items-center justify-end gap-6 px-6 py-4 lg:px-8">
+            <div className="flex items-center justify-between gap-6 px-6 py-4 lg:px-8">
+              {/* Nouvel onglet, pas la même fenêtre : la session reste ouverte
+                  et le travail en cours dans l'espace équipe (un formulaire à
+                  moitié rempli, par exemple) n'est jamais perdu — Christian a
+                  demandé à pouvoir revenir sur le site vitrine sans avoir à se
+                  déconnecter, ce qui n'a d'ailleurs jamais été nécessaire :
+                  la session équipe et la navigation publique sont
+                  indépendantes, seul manquait un lien pratique pour y aller. */}
+              <Link
+                href={`/${locale}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
+              >
+                {t('voir_site')}
+              </Link>
+
+              <div className="flex items-center gap-6">
               {/* Le rôle est affiché : un editor qui ne comprend pas pourquoi
                   un bouton de suppression lui est refusé doit pouvoir le
                   constater sans ouvrir la base. Sur deux lignes plutôt qu'une
@@ -222,6 +240,7 @@ export default async function AdminLayout({ children, params }: Props) {
                   {t('deconnexion')}
                 </button>
               </form>
+              </div>
             </div>
           </header>
 

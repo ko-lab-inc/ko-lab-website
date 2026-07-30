@@ -5,7 +5,7 @@ import { notFound, redirect } from 'next/navigation'
 import { PagePanier } from '@/components/sections/PagePanier'
 import { routing } from '@/i18n/routing'
 import { lireReglages } from '@/lib/reglages'
-import { construireFichesPanier } from '@/lib/produits'
+import { lireFichesPanier } from '@/lib/produits'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -55,8 +55,7 @@ export default async function DemandePrixPage({ params }: Props) {
   // Prix ET visuel, relus depuis la même source que la boutique (jamais
   // stockés dans le panier lui-même) : le récapitulatif reflète ainsi toujours
   // ce qui est affiché aujourd'hui, pas ce qui l'était le jour de l'ajout.
-  const tBoutique = await getTranslations('Boutique')
-  const fiches = construireFichesPanier(tBoutique)
+  const fiches = await lireFichesPanier()
 
   return (
     <>

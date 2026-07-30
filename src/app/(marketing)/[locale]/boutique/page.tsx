@@ -7,7 +7,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireReglages } from '@/lib/reglages'
-import { construireProduits } from '@/lib/produits'
+import { lireProduitsPublies } from '@/lib/produits'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -52,10 +52,10 @@ export default async function BoutiquePage({ params }: Props) {
   const t = await getTranslations('Boutique')
   const tCommun = await getTranslations('Commun')
 
-  // Données partagées avec la fiche produit (src/lib/produits.ts) — un
-  // produit ajouté là apparaît automatiquement dans les deux pages.
+  // Lu depuis produits_boutique (lib/produits.ts) — un produit créé et publié
+  // depuis /admin/catalogue apparaît ici sans redéploiement.
   const reglages = await lireReglages()
-  const produits = construireProduits(t)
+  const produits = await lireProduitsPublies()
 
   // Le retrait se fait CÔTÉ SERVEUR : masquer en CSS aurait laissé les trois
   // conteneurs dans le HTML, donc lisibles par n'importe qui — ce qui revient
