@@ -109,6 +109,15 @@ export type ProduitCarte = {
    * pas seulement l'équipe.
    */
   enRupture: boolean
+  /**
+   * Quantité qu'on peut réellement ajouter au panier — 0 si `enRupture`
+   * (même en rupture EXPLICITE avec une `quantite` restée à une vieille
+   * valeur non nulle), sinon la quantité réelle en stock. Demande de
+   * Christian : « on ne peut mettre que la quantité qui existe en stock » —
+   * calculé une fois ici pour que BoutonAjouter et PagePanier appliquent
+   * exactement la même règle sans la reconstruire chacun de leur côté.
+   */
+  quantiteDisponible: number
 }
 
 /**
@@ -119,6 +128,7 @@ export type FichePanier = {
   prix: number | null
   src: string | null
   cadrage?: 'contain' | 'cover'
+  quantiteDisponible: number
 }
 
 /** Étiquette de cache — partagée avec les actions d'administration du catalogue. */
@@ -168,17 +178,22 @@ async function lireDepuisBase(): Promise<ProduitCarte[]> {
 
     return data
       .filter((p) => CATEGORIES_VALIDES.some((c) => c === p.categorie))
-      .map((p) => ({
-        slug: p.slug,
-        categorie: p.categorie,
-        nom: p.nom_fr,
-        texte: p.description_fr ?? '',
-        src: premiereImage(p.images, hoteStockage),
-        cadrage: p.cadrage === 'cover' ? ('cover' as const) : ('contain' as const),
-        couleurs: validerCouleurs(p.couleurs),
-        prixIndicatif: p.prix,
-        enRupture: statutSuggere(p.statut_stock, p.quantite) === 'rupture',
-      }))
+      .map((p) => {
+        const enRupture = statutSuggere(p.statut_stock, p.quantite) === 'rupture'
+
+        return {
+          slug: p.slug,
+          categorie: p.categorie,
+          nom: p.nom_fr,
+          texte: p.description_fr ?? '',
+          src: premiereImage(p.images, hoteStockage),
+          cadrage: p.cadrage === 'cover' ? ('cover' as const) : ('contain' as const),
+          couleurs: validerCouleurs(p.couleurs),
+          prixIndicatif: p.prix,
+          enRupture,
+          quantiteDisponible: enRupture ? 0 : p.quantite,
+        }
+      })
   } catch {
     // Supabase injoignable au moment du rendu : tableau vide, le site reste
     // debout — voir la note en tête de fichier sur l'absence de repli en dur.
@@ -209,6 +224,9 @@ export const lireProduitsPublies = unstable_cache(lireDepuisBase, ['produits-pub
 export async function lireFichesPanier(): Promise<Record<string, FichePanier>> {
   const produits = await lireProduitsPublies()
   return Object.fromEntries(
-    produits.map((p) => [p.slug, { prix: p.prixIndicatif, src: p.src, cadrage: p.cadrage }]),
+    produits.map((p) => [
+      p.slug,
+      { prix: p.prixIndicatif, src: p.src, cadrage: p.cadrage, quantiteDisponible: p.quantiteDisponible },
+    ]),
   )
 }

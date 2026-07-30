@@ -83,7 +83,7 @@ test.describe('Panier / sélection', () => {
     await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
     await expect(lien.first()).toBeVisible()
 
-    await ajouterProduit(page, 'Bambu Lab P1S', 2)
+    await ajouterProduit(page, 'Conteneur 2 pieds', 2)
   })
 
   test('2 · le bouton passe en « Ajouté » et se désactive', async ({ page }) => {
@@ -96,7 +96,7 @@ test.describe('Panier / sélection', () => {
 
   test('3 · persistance après rechargement', async ({ page }) => {
     await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
-    await ajouterProduit(page, 'Bambu Lab P1S', 2)
+    await ajouterProduit(page, 'Conteneur 2 pieds', 2)
 
     await page.reload()
 
@@ -108,7 +108,7 @@ test.describe('Panier / sélection', () => {
 
   test('4 · page de demande — quantité modifiable et retrait', async ({ page }) => {
     await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
-    await ajouterProduit(page, 'Bambu Lab P1S', 2)
+    await ajouterProduit(page, 'Conteneur 2 pieds', 2)
     await page.goto('/fr/boutique/demande')
 
     // Portée à la liste du panier : `li` seul capterait aussi les listes de
@@ -132,11 +132,18 @@ test.describe('Panier / sélection', () => {
 
   test('5 · prix par article ET total, tous indicatifs', async ({ page }) => {
     // Deux produits nommés explicitement (pas « le 1er et le 2e du
-    // catalogue ») : le total attendu (2249 $) dépend des DEUX prix exacts,
+    // catalogue ») : le total attendu (3800 $) dépend des DEUX prix exacts,
     // et l'ordre d'affichage du catalogue n'a aucune raison de rester stable
     // d'une exécution à l'autre (voir la docstring de ajouterProduit).
+    //
+    // ⚠️ Choisis parce qu'ils sont EN STOCK (≥ 5 unités) au moment d'écrire ce
+    // test — BoutonAjouter refuse maintenant d'ajouter un produit en rupture
+    // (quantité < 5, même règle que le badge public, lib/produits.ts). Si
+    // l'un des deux tombe sous ce seuil depuis /admin/catalogue, ce test
+    // échouera sur l'AJOUT lui-même (timeout dans ajouterProduit), pas sur
+    // les montants — signe qu'il faut choisir deux autres produits en stock.
     await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
-    await ajouterProduit(page, 'Bambu Lab AMS', 2)
+    await ajouterProduit(page, 'Conteneur 2 pieds', 2)
     await page.goto('/fr/boutique/demande')
     await page.waitForTimeout(500)
 
@@ -153,16 +160,16 @@ test.describe('Panier / sélection', () => {
     for (const interdit of ['commande', 'achat', 'checkout', 'panier']) {
       expect(texte, `mot interdit trouvé : ${interdit}`).not.toContain(interdit)
     }
-    // Les deux prix indicatifs individuels, et leur somme (2249 $).
+    // Les deux prix indicatifs individuels, et leur somme (3800 $).
     expect(texte).toContain('1 800')
-    expect(texte).toContain('449')
+    expect(texte).toContain('2 000')
     expect(texte).toContain('total indicatif')
-    expect(texte).toContain('2 249')
+    expect(texte).toContain('3 800')
   })
 
   test('6 · envoi groupé — le message est pré-rempli avec la liste', async ({ page }) => {
     await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
-    await ajouterProduit(page, 'Bambu Lab P1S', 2)
+    await ajouterProduit(page, 'Conteneur 2 pieds', 2)
     await page.goto('/fr/boutique/demande')
 
     await page.getByRole('link', { name: /Confirmer ma sélection/ }).click()

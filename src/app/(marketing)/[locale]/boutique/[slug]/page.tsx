@@ -268,7 +268,7 @@ export default async function FicheProduitPage({ params }: Props) {
 
                     <div className="mt-6">
                       {reglages.panierActif ? (
-                        <BoutonAjouter slug={produit.slug} nom={produit.nom} categorie={nomCategorie} />
+                        <BoutonAjouter slug={produit.slug} nom={produit.nom} categorie={nomCategorie} quantiteDisponible={produit.quantiteDisponible} />
                       ) : (
                         <Link
                           href={`${ROUTES.contact}?type=boutique&produit=${produit.slug}`}
@@ -340,7 +340,7 @@ export default async function FicheProduitPage({ params }: Props) {
         <div className="mx-auto flex max-w-container items-center justify-between gap-4">
           <p className="font-mono text-sm text-ko-ink">{prixFormate}</p>
           {reglages.panierActif ? (
-            <BoutonAjouter slug={produit.slug} nom={produit.nom} categorie={nomCategorie} />
+            <BoutonAjouter slug={produit.slug} nom={produit.nom} categorie={nomCategorie} quantiteDisponible={produit.quantiteDisponible} />
           ) : (
             <Link
               href={`${ROUTES.contact}?type=boutique&produit=${produit.slug}`}

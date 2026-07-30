@@ -337,6 +337,7 @@ export function CatalogueBoutique({
                         slug={produit.slug}
                         nom={produit.nom}
                         categorie={nomCategorie}
+                        quantiteDisponible={produit.quantiteDisponible}
                         compact
                         className="relative z-10 mt-4"
                       />

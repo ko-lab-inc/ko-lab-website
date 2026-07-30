@@ -22,12 +22,24 @@ export function BoutonAjouter({
   slug,
   nom,
   categorie,
+  quantiteDisponible,
   className,
   compact = false,
 }: {
   slug: string
   nom: string
   categorie: string
+  /**
+   * Quantité qu'on peut réellement ajouter — 0 désactive le bouton entier
+   * (rupture de stock, voir lib/produits.ts), sinon plafonne le sélecteur.
+   *
+   * ⚠️ Avant, aucun maximum n'était imposé (« ce sont des demandes de prix,
+   * pas des stocks ») — dépassé par la demande explicite de Christian une
+   * fois le vrai suivi de stock en place (migration 0013) : un visiteur a pu
+   * ajouter un produit affiché « rupture de stock » sans que rien ne
+   * l'empêche.
+   */
+  quantiteDisponible: number
   className?: string
   /**
    * Bouton seul, sans sélecteur de quantité — pour la grille du catalogue,
@@ -43,15 +55,15 @@ export function BoutonAjouter({
   const { ajouter, changerQuantite, articles, pret } = usePanier()
 
   const dansPanier = pret ? articles.find((a) => a.slug === slug) : undefined
+  const enRupture = quantiteDisponible <= 0
 
   // Quantité locale tant que le produit n'est pas retenu ; une fois dedans,
-  // le contrôle reflète et pilote la quantité du panier. Pas de maximum
-  // arbitraire — ce sont des demandes de prix, pas des stocks.
+  // le contrôle reflète et pilote la quantité du panier.
   const [quantiteLocale, setQuantiteLocale] = useState(1)
   const quantite = dansPanier?.quantite ?? quantiteLocale
 
   const regler = (valeur: number) => {
-    const bornee = Math.max(1, valeur)
+    const bornee = Math.min(quantiteDisponible, Math.max(1, valeur))
     if (dansPanier) changerQuantite(slug, bornee)
     else setQuantiteLocale(bornee)
   }
@@ -62,8 +74,9 @@ export function BoutonAjouter({
           Non rendu en mode compact plutôt que masqué en CSS : `hidden`
           laisserait deux boutons vivants dans le DOM de chacune des douze
           cartes, invisibles mais bien présents pour un lecteur d'écran qui
-          parcourt le document autrement que par la navigation au clavier. */}
-      {!compact && (
+          parcourt le document autrement que par la navigation au clavier.
+          Absent aussi en rupture : rien à régler si on ne peut rien ajouter. */}
+      {!compact && !enRupture && (
         <div className="flex items-center border border-ko-line">
           <button
             type="button"
@@ -85,8 +98,9 @@ export function BoutonAjouter({
           <button
             type="button"
             onClick={() => regler(quantite + 1)}
+            disabled={quantite >= quantiteDisponible}
             aria-label={`${t('quantite')} +`}
-            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
           >
             <IconePlus taille={14} />
           </button>
@@ -96,7 +110,7 @@ export function BoutonAjouter({
       <button
         type="button"
         onClick={() => {
-          if (dansPanier) return
+          if (dansPanier || enRupture) return
           ajouter({ slug, nom, categorie })
           // La quantité choisie avant l'ajout est reportée dans le panier.
           if (quantiteLocale > 1) changerQuantite(slug, quantiteLocale)
@@ -104,10 +118,10 @@ export function BoutonAjouter({
         // `disabled` et non `pointer-events-none` : ce dernier laisse le
         // bouton focusable et activable au clavier, donc annonçable comme
         // cliquable par un lecteur d'écran alors qu'il ne fait rien.
-        disabled={!!dansPanier}
+        disabled={!!dansPanier || enRupture}
         className={cn(buttonVariants({ variant: 'primary', size: 'sm' }), 'flex-1')}
       >
-        {dansPanier ? t('ajoute') : t('ajouter')}
+        {enRupture ? t('rupture_stock') : dansPanier ? t('ajoute') : t('ajouter')}
       </button>
     </div>
   )

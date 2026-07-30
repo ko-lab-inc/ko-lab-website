@@ -155,8 +155,14 @@ export function PagePanier({ fiches }: { fiches: Record<string, FichePanier> }) 
                   <button
                     type="button"
                     onClick={() => changerQuantite(article.slug, article.quantite + 1)}
+                    // Plafonné au stock réel — même règle que BoutonAjouter
+                    // (lib/produits.ts, quantiteDisponible). `?? Infinity` :
+                    // un slug retiré du catalogue depuis n'a plus de fiche,
+                    // mieux vaut ne rien bloquer qu'empêcher silencieusement
+                    // toute modification d'une ligne déjà obsolète.
+                    disabled={article.quantite >= (fiche?.quantiteDisponible ?? Infinity)}
                     aria-label={`${t('quantite')} +`}
-                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
                   >
                     <IconePlus taille={14} />
                   </button>
