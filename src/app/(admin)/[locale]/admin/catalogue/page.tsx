@@ -122,6 +122,7 @@ export default async function CataloguePage({ params }: Props) {
           fermer: t('fermer'),
           titreEdition: t('titre_edition'),
           titreCreation: t('nouveau_produit'),
+          titreDetail: t('titre_detail'),
           sansImage: t('sans_image'),
         }}
       />

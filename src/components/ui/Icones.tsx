@@ -164,6 +164,17 @@ export function IconeBadgeStock(props: IconeProps) {
   )
 }
 
+/** Galerie / photo. Cadre, soleil, montagne — nav admin des réalisations. */
+export function IconeGalerie(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <rect x="3" y="4.5" width="18" height="15" rx="1.5" />
+      <circle cx="8.3" cy="9.3" r="1.6" />
+      <path d="M3 16.5 8.5 11l4 4 2.5-2.5L21 16" />
+    </Icone>
+  )
+}
+
 /* =============================================================================
  * Réassurance — fiche produit
  *

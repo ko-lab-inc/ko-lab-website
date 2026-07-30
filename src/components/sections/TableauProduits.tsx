@@ -36,12 +36,25 @@ import { cn } from '@/lib/utils/cn'
  * ---------------------------------------------------------------------------
  * LES TROIS ACTIONS
  *
- * L'œil ouvre la fiche PUBLIQUE dans un nouvel onglet — voir le produit tel
- * que le visiteur le voit vaut mieux qu'un aperçu reconstitué qui finirait par
- * diverger de la vraie page. Le crayon ouvre le formulaire. La corbeille
- * supprime, après confirmation, et n'apparaît que pour un admin (politique
- * produits_suppression_admin de 0002 — le masquage est du confort, la garantie
- * est côté base).
+ * L'œil ouvre un aperçu EN LECTURE SEULE, ici même — pas la fiche publique
+ * dans un nouvel onglet. C'était le choix initial, corrigé par Christian.
+ *
+ * ⚠️ Ce choix corrige aussi un défaut réel, pas seulement une préférence :
+ * /boutique/[slug] lit encore `construireProduits()` (le fichier produits.ts),
+ * PAS cette table. Le lien ne montrait donc jamais ce produit-ci — pour les
+ * douze produits d'origine il tombait sur une fiche qui ignore les
+ * modifications faites ici, et pour un produit créé depuis cet écran il
+ * menait à un 404 pur et simple, puisque son slug n'existe nulle part dans
+ * produits.ts.
+ *
+ * Pas de lien de secours vers cette même URL dans l'aperçu : ce serait
+ * proposer, pour la plupart des produits, un bouton qui mène soit à un 404
+ * soit à des informations obsolètes. Le jour où /boutique/[slug] lira cette
+ * table, ce lien redeviendra pertinent partout — pas avant.
+ *
+ * Le crayon ouvre le formulaire. La corbeille supprime, après confirmation, et
+ * n'apparaît que pour un admin (politique produits_suppression_admin de 0002 —
+ * le masquage est du confort, la garantie est côté base).
  * ---------------------------------------------------------------------------
  */
 
@@ -99,6 +112,7 @@ export function TableauProduits({
     fermer: string
     titreEdition: string
     titreCreation: string
+    titreDetail: string
     sansImage: string
   }
 }) {
@@ -123,6 +137,32 @@ export function TableauProduits({
     const el = boite.current
     if (!el) return
     const fermer = () => setEdite(undefined)
+    el.addEventListener('close', fermer)
+    return () => el.removeEventListener('close', fermer)
+  }, [])
+
+  /**
+   * Aperçu en lecture seule — dialogue SÉPARÉ de celui d'édition.
+   *
+   * Un seul état à trois positions (fermé / création / édition d'un produit
+   * précis) aurait dû en accueillir une quatrième pour l'aperçu, avec un
+   * risque de confondre « éditer ce produit » et « regarder ce produit » dans
+   * le même type. Deux dialogues, deux états, chacun ne fait qu'une chose.
+   */
+  const boiteDetail = useRef<HTMLDialogElement>(null)
+  const [voir, setVoir] = useState<ProduitAvecImages | undefined>(undefined)
+
+  useEffect(() => {
+    const el = boiteDetail.current
+    if (!el) return
+    if (voir !== undefined && !el.open) el.showModal()
+    if (voir === undefined && el.open) el.close()
+  }, [voir])
+
+  useEffect(() => {
+    const el = boiteDetail.current
+    if (!el) return
+    const fermer = () => setVoir(undefined)
     el.addEventListener('close', fermer)
     return () => el.removeEventListener('close', fermer)
   }, [])
@@ -213,16 +253,15 @@ export function TableauProduits({
                     {/* Icônes seules : `aria-label` pour le lecteur d'écran,
                         `title` pour la souris. Sans les deux, l'action est
                         indevinable. */}
-                    <a
-                      href={`/${locale}/boutique/${p.slug}`}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
+                      type="button"
+                      onClick={() => setVoir(p)}
                       aria-label={`${textes.voir} — ${p.nom_fr}`}
                       title={textes.voir}
                       className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue"
                     >
                       <IconeOeil taille={17} />
-                    </a>
+                    </button>
 
                     <button
                       type="button"
@@ -296,6 +335,111 @@ export function TableauProduits({
               produit={edite ?? undefined}
               libelles={libelles}
             />
+          )}
+        </div>
+      </dialog>
+
+      {/*
+        Aperçu en lecture seule.
+
+        Même gabarit que le dialogue d'édition — filet 1px, en-tête avec titre
+        et croix — pour que passer de l'un à l'autre ne dépayse pas. Le corps,
+        lui, n'a aucun champ : uniquement du texte, à l'image de ce qu'un
+        visiteur verrait sur une fiche produit.
+
+        ⚠️ Les deux mêmes replis qu'ailleurs dans ce fichier : `nom_en ??
+        nom_fr` et `description_en ?? description_fr` retrouvent le texte
+        entré quelle qu'ait été la langue choisie au formulaire — c'est
+        exactement le calcul que FormulaireProduit fait pour pré-remplir ses
+        propres champs, reproduit ici pour que l'aperçu affiche la même chose
+        que ce que l'édition montrerait.
+      */}
+      <dialog
+        ref={boiteDetail}
+        aria-labelledby="titre-detail-produit"
+        onClick={(e) => {
+          if (e.target === boiteDetail.current) boiteDetail.current?.close()
+        }}
+        className="w-[calc(100vw-2rem)] max-w-[560px] border border-ko-line bg-ko-white p-0 text-ko-ink shadow-card backdrop:bg-ko-scrim/60"
+      >
+        <div className="max-h-[85svh] overflow-y-auto p-6 lg:p-8">
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <h2 id="titre-detail-produit" className="ko-h3 text-[22px] text-ko-ink">
+              {textes.titreDetail}
+            </h2>
+            <button
+              type="button"
+              onClick={() => boiteDetail.current?.close()}
+              aria-label={textes.fermer}
+              className="-mr-2 -mt-1 flex h-9 w-9 shrink-0 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
+            >
+              <IconeFermer taille={18} />
+            </button>
+          </div>
+
+          {voir && (
+            <div className="space-y-6">
+              <div className="relative mx-auto h-64 w-full max-w-[320px] overflow-hidden border border-ko-line bg-ko-photo">
+                {(() => {
+                  const image = premiereImage(voir.images, hoteStockage)
+                  return image ? (
+                    <Image
+                      src={image}
+                      alt=""
+                      fill
+                      sizes="320px"
+                      className={cn(
+                        voir.cadrage === 'cover' ? 'object-cover' : 'object-contain p-5',
+                      )}
+                    />
+                  ) : (
+                    <span className="sr-only">{textes.sansImage}</span>
+                  )
+                })()}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                <span className="label-mono text-ko-blue">
+                  {libelles.categories[voir.categorie] ?? voir.categorie}
+                </span>
+                <span
+                  className={cn(
+                    'label-mono',
+                    voir.publie ? 'text-ko-blue' : 'text-ko-muted',
+                  )}
+                >
+                  {voir.publie ? textes.publie : textes.horsLigne}
+                </span>
+              </div>
+
+              <div>
+                <h3 className="ko-h3 text-[22px] text-ko-ink">{voir.nom_en ?? voir.nom_fr}</h3>
+                <p className="mt-1.5 font-mono text-base text-ko-ink">
+                  {voir.prix === null ? '—' : `${voir.prix} $`}
+                </p>
+              </div>
+
+              {(voir.description_en ?? voir.description_fr) && (
+                <p className="whitespace-pre-line text-sm leading-relaxed text-ko-ink">
+                  {voir.description_en ?? voir.description_fr}
+                </p>
+              )}
+
+              <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-ko-line pt-5 sm:grid-cols-3">
+                <div>
+                  <dt className="label-mono text-ko-muted">{libelles.marque}</dt>
+                  <dd className="mt-1 text-sm text-ko-ink">{voir.marque}</dd>
+                </div>
+                <div className="min-w-0">
+                  <dt className="label-mono text-ko-muted">{libelles.slug}</dt>
+                  <dd className="mt-1 truncate font-mono text-sm text-ko-ink">{voir.slug}</dd>
+                </div>
+                <div>
+                  <dt className="label-mono text-ko-muted">{libelles.ordre}</dt>
+                  <dd className="mt-1 text-sm text-ko-ink">{voir.ordre}</dd>
+                </div>
+              </dl>
+            </div>
           )}
         </div>
       </dialog>
