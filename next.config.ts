@@ -78,6 +78,19 @@ const contentSecurityPolicy = [
   // nouvel onglet (voir BandeauVideos.tsx).
   `img-src 'self' data: blob: ${supabaseImgSrc} https://images.unsplash.com https://i.ytimg.com ${CRISP_IMG}`,
   `connect-src 'self' ${supabaseConnectSrc} ${CRISP_CONNECT}${isDev ? ' ws://localhost:* http://localhost:*' : ''}`,
+  // Lecture des vidéos EN SURIMPRESSION, sans quitter le site — demandé par
+  // Christian, exemple bambulab.com à l'appui.
+  //
+  // ⚠️ `youtube-nocookie.com` et NON `youtube.com` : le domaine sans cookie
+  // ne dépose rien tant que la vidéo n'est pas lancée. Et l'iframe n'est
+  // créée QU'AU CLIC (motif « facade », voir BandeauVideos.tsx) — au
+  // chargement de la page il n'y a ni iframe, ni script YouTube, ni requête
+  // vers Google. Le coût de cette ouverture est donc payé par la personne
+  // qui décide de regarder une vidéo, pas par chaque visiteur.
+  //
+  // `script-src` reste fermé à YouTube : l'iframe charge ses propres scripts
+  // dans SON contexte, pas dans le nôtre.
+  "frame-src https://www.youtube-nocookie.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

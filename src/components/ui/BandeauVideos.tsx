@@ -1,10 +1,11 @@
 'use client'
 
 import Image from 'next/image'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-import { IconeLecture } from '@/components/ui/Icones'
+import { IconeFermer, IconeLecture } from '@/components/ui/Icones'
 import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
+import { identifiantYoutube } from '@/lib/utils/youtube'
 
 /**
  * Bande continue de vidéos — quatre visibles, défilement horizontal.
@@ -25,22 +26,23 @@ import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
  * composant à deux modes qui ne partagent que le défilement.
  *
  * ---------------------------------------------------------------------------
- * ⚠️ PAS D'IFRAME, PAS DE SCRIPT TIERS — ET C'EST DÉLIBÉRÉ
+ * ⚠️ LECTURE EN SURIMPRESSION, IFRAME CRÉÉE AU CLIC SEULEMENT
  *
- * La vignette est hébergée par nous, et le clic ouvre la vidéo chez
- * l'hébergeur dans un nouvel onglet. Conséquences, toutes voulues :
+ * Christian a demandé la lecture sans quitter le site, comme bambulab.com.
+ * L'iframe n'existe donc QUE pendant la lecture — motif dit « facade » :
  *
- *   - la CSP reste fermée. Aucun `frame-src`, aucun domaine vidéo à
- *     autoriser — l'audit de sécurité de cette session avait justement
- *     resserré ces directives ;
- *   - aucun script YouTube au chargement de la page, donc aucun cookie
- *     tiers et aucun poids ajouté (le contraire de ce que Christian a
- *     demandé en faisant retirer ce qui ralentit le site) ;
- *   - la page reste statique (ISR), rien n'est chargé côté client.
+ *   - au chargement de la page il n'y a ni iframe, ni script YouTube, ni
+ *     la moindre requête vers Google. Seule la vignette est chargée ;
+ *   - `youtube-nocookie.com` et non `youtube.com` : rien n'est déposé tant
+ *     que la vidéo n'est pas lancée ;
+ *   - à la fermeture, l'iframe est DÉTRUITE (état remis à `undefined`), pas
+ *     seulement masquée — sinon le son continue derrière la fenêtre fermée ;
+ *   - `frame-src` est la seule directive ouverte (next.config.ts).
+ *     `script-src` reste fermé à YouTube : l'iframe charge ses scripts dans
+ *     SON contexte, pas dans le nôtre.
  *
- * Le jour où une lecture SANS quitter le site devient nécessaire, il faudra
- * ouvrir `frame-src` vers youtube-nocookie.com et charger l'iframe seulement
- * au clic (motif « facade ») — jamais au chargement de la page.
+ * Une vidéo dont on ne sait pas extraire d'identifiant YouTube n'ouvre pas
+ * la surimpression : sa carte reste un lien sortant classique.
  * ---------------------------------------------------------------------------
  */
 
@@ -73,6 +75,7 @@ export function BandeauVideos({
     suivant: string
     /** Étiquette des emplacements réservés — ex. « Vidéo à venir ». */
     aVenir: string
+    fermer: string
   }
 }) {
   const piste = useRef<HTMLDivElement>(null)
@@ -85,6 +88,31 @@ export function BandeauVideos({
     // plutôt que sauté à un endroit arbitraire. Même réglage que BandeauImages.
     el.scrollBy({ left: sens * el.clientWidth * 0.85, behavior: 'smooth' })
   }
+
+  /**
+   * Vidéo en cours de lecture. `undefined` = aucune, et surtout AUCUNE
+   * iframe dans le document — c'est ce qui fait de ce motif une « facade ».
+   */
+  const boite = useRef<HTMLDialogElement>(null)
+  const [lecture, setLecture] = useState<{ id: string; titre: string } | undefined>(undefined)
+
+  useEffect(() => {
+    const el = boite.current
+    if (!el) return
+    if (lecture !== undefined && !el.open) el.showModal()
+    if (lecture === undefined && el.open) el.close()
+  }, [lecture])
+
+  // Échap et le clic sur le fond passent par `close` : sans cette
+  // synchronisation l'état resterait rempli — donc l'iframe vivante, donc le
+  // son toujours audible fenêtre fermée.
+  useEffect(() => {
+    const el = boite.current
+    if (!el) return
+    const fermer = () => setLecture(undefined)
+    el.addEventListener('close', fermer)
+    return () => el.removeEventListener('close', fermer)
+  }, [])
 
   /**
    * Aucune vidéo fournie : quatre emplacements réservés, PAS une section
@@ -124,47 +152,78 @@ export function BandeauVideos({
         aria-label={libelles.groupe}
         className="scrollbar-none flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth"
       >
-        {videos.map((v) => (
-          <a
-            key={v.url}
-            href={v.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group shrink-0 snap-start basis-[78%] sm:basis-[46%] lg:basis-[calc((100%-3.75rem)/4)]"
-          >
-            {/* 16/9 : le format natif d'une vidéo. Un carré comme les photos
-                produit rognerait le cadrage voulu par la personne qui filme. */}
-            <div className="relative aspect-video overflow-hidden rounded-md bg-ko-photo">
-              <Image
-                src={v.vignette}
-                alt=""
-                fill
-                sizes="(max-width: 640px) 78vw, (max-width: 1024px) 46vw, 320px"
-                className="object-cover transition-transform duration-[400ms] group-hover:scale-[1.04]"
-              />
+        {videos.map((v) => {
+          const id = identifiantYoutube(v.url)
 
-              {/* Pastille de lecture — pleine et opaque, jamais un simple
-                  contour : une vignette de vidéo est souvent sombre et
-                  contrastée, un trait fin s'y perdrait. Même raisonnement que
-                  les flèches de SlideImages. */}
-              <span
-                aria-hidden="true"
-                className="absolute inset-0 flex items-center justify-center"
-              >
-                <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ko-scrim/70 text-ko-white transition-colors duration-200 group-hover:bg-ko-blue">
-                  <IconeLecture taille={20} />
+          /* Vignette + titre : identiques que la carte ouvre la surimpression
+             ou sorte vers l'hébergeur. Extraits pour ne pas les écrire deux
+             fois — c'est le CONTENEUR qui change, pas le contenu. */
+          const contenu = (
+            <>
+              {/* 16/9 : le format natif d'une vidéo. Un carré comme les photos
+                  produit rognerait le cadrage voulu par la personne qui filme. */}
+              <div className="relative aspect-video overflow-hidden rounded-md bg-ko-photo">
+                <Image
+                  src={v.vignette}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 78vw, (max-width: 1024px) 46vw, 320px"
+                  className="object-cover transition-transform duration-[400ms] group-hover:scale-[1.04]"
+                />
+
+                {/* Pastille de lecture — pleine et opaque, jamais un simple
+                    contour : une vignette de vidéo est souvent sombre et
+                    contrastée, un trait fin s'y perdrait. Même raisonnement que
+                    les flèches de SlideImages. */}
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-0 flex items-center justify-center"
+                >
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ko-scrim/70 text-ko-white transition-colors duration-200 group-hover:bg-ko-blue">
+                    <IconeLecture taille={20} />
+                  </span>
                 </span>
-              </span>
-            </div>
+              </div>
 
-            {/* Le titre EST le nom accessible du lien : pas de `aria-label` en
-                plus, qui ferait doublon au lecteur d'écran. */}
-            <p className="mt-3 text-sm leading-snug text-ko-ink transition-colors duration-200 group-hover:text-ko-blue">
-              {v.titre}
-            </p>
-            <p className="label-mono mt-1.5 text-ko-muted">{libelles.lire}</p>
-          </a>
-        ))}
+              {/* Le titre EST le nom accessible de la carte : pas de
+                  `aria-label` en plus, qui ferait doublon au lecteur d'écran. */}
+              <p className="mt-3 text-sm leading-snug text-ko-ink transition-colors duration-200 group-hover:text-ko-blue">
+                {v.titre}
+              </p>
+              <p className="label-mono mt-1.5 text-ko-muted">{libelles.lire}</p>
+            </>
+          )
+
+          const classes =
+            'group shrink-0 snap-start basis-[78%] text-left sm:basis-[46%] lg:basis-[calc((100%-3.75rem)/4)]'
+
+          // Pas d'identifiant YouTube (autre hébergeur) : on ne sait pas
+          // l'encadrer, la carte reste un lien sortant classique.
+          if (!id) {
+            return (
+              <a
+                key={v.url}
+                href={v.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={classes}
+              >
+                {contenu}
+              </a>
+            )
+          }
+
+          return (
+            <button
+              key={v.url}
+              type="button"
+              onClick={() => setLecture({ id, titre: v.titre })}
+              className={classes}
+            >
+              {contenu}
+            </button>
+          )
+        })}
       </div>
 
       {videos.length > 1 && (
@@ -199,6 +258,58 @@ export function BandeauVideos({
           </button>
         </div>
       )}
+
+      {/* --------------------------- Lecture --------------------------- */}
+      {/* Même vocabulaire que la visionneuse de photos (SlideImages) : fond
+          noir, bouton de fermeture en pastille pleine, fermeture par Échap ou
+          par clic sur le fond. */}
+      <dialog
+        ref={boite}
+        aria-label={lecture?.titre ?? libelles.groupe}
+        onClick={(e) => {
+          if (e.target === boite.current) boite.current?.close()
+        }}
+        className="h-svh max-h-none w-svw max-w-none overflow-hidden border-0 bg-ko-scrim/95 p-0 text-ko-white backdrop:bg-ko-scrim/80"
+      >
+        {/* ⚠️ Rendu conditionnel, pas seulement masqué : `lecture` à
+            `undefined` retire l'iframe du document, ce qui coupe le son. Une
+            iframe cachée continue de jouer. */}
+        {lecture && (
+          <div className="flex h-full flex-col">
+            <div className="flex shrink-0 items-start justify-between gap-4 px-5 py-4 lg:px-8 lg:py-6">
+              <h2 className="min-w-0 truncate font-serif text-[20px] font-normal leading-tight text-ko-white lg:text-[26px]">
+                {lecture.titre}
+              </h2>
+              <button
+                type="button"
+                onClick={() => boite.current?.close()}
+                aria-label={libelles.fermer}
+                title={libelles.fermer}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ko-scrim/55 text-ko-white transition-colors duration-200 hover:bg-ko-blue"
+              >
+                <IconeFermer taille={20} />
+              </button>
+            </div>
+
+            <div className="flex min-h-0 flex-1 items-center justify-center px-4 pb-6 lg:px-8">
+              {/* `aspect-video` + `max-h-full` : la vidéo garde son format
+                  quelle que soit la fenêtre, sans jamais déborder. */}
+              <div className="aspect-video max-h-full w-full max-w-[1100px]">
+                <iframe
+                  // `youtube-nocookie.com` : rien n'est déposé avant lecture.
+                  // `autoplay=1` est légitime ici — la lecture répond à un
+                  // clic explicite, ce n'est pas une vidéo qui démarre seule.
+                  src={`https://www.youtube-nocookie.com/embed/${lecture.id}?autoplay=1&rel=0`}
+                  title={lecture.titre}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="h-full w-full border-0"
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </dialog>
     </div>
   )
 }

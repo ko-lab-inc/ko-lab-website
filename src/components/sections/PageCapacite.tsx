@@ -215,6 +215,7 @@ export async function PageCapacite({
                     precedent: t('videos_precedent'),
                     suivant: t('videos_suivant'),
                     aVenir: t('videos_a_venir'),
+                    fermer: t('videos_fermer'),
                   }}
                 />
               </div>

@@ -215,7 +215,8 @@
       "videos_lire": "Regarder",
       "videos_precedent": "Vidéos précédentes",
       "videos_suivant": "Vidéos suivantes",
-      "videos_a_venir": "Vidéo à venir"
+      "videos_a_venir": "Vidéo à venir",
+      "videos_fermer": "Fermer la vidéo"
     },
     "operations": {
       "label": "Opérations terrain",
@@ -745,6 +746,7 @@
     "erreur_refuse_video": "Cette action a été refusée. Réessayez, ou prévenez Moussa si ça persiste.",
     "erreur_serveur_video": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste.",
     "erreur_lecture_videos": "La lecture des vidéos a échoué. Prévenez Moussa.",
+    "erreur_migration_videos": "La table des vidéos n'existe pas encore. Exécutez la migration 0016_videos.sql dans le SQL Editor de Supabase (projet ko-lab-site), puis rechargez cette page.",
     "confirmer_suppression_video": "Supprimer cette vidéo définitivement ?",
     "action_monter": "Monter dans la bande",
     "action_descendre": "Descendre dans la bande",

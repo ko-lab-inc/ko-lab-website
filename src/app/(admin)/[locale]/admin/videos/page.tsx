@@ -53,11 +53,24 @@ export default async function VideosAdminPage({ params }: Props) {
   }
 
   if (error) {
+    /**
+     * ⚠️ « Table absente » n'est PAS une panne — c'est une migration en
+     * attente, et ça se répare en une minute.
+     *
+     * Le message générique (« prévenez Moussa ») envoyait Moussa se prévenir
+     * lui-même, sans dire quoi faire : Christian est resté bloqué dessus
+     * sans pouvoir coller son lien. PostgREST distingue précisément ce cas
+     * — PGRST205, « Could not find the table » — alors autant le dire.
+     */
+    const migrationManquante = error.code === 'PGRST205'
+
     return (
       <>
         <EnteteAdmin titre={t('videos_titre')} />
         <PanneauAdmin>
-          <p className="text-base text-ko-ink">{t('erreur_lecture_videos')}</p>
+          <p className="text-base leading-relaxed text-ko-ink">
+            {migrationManquante ? t('erreur_migration_videos') : t('erreur_lecture_videos')}
+          </p>
         </PanneauAdmin>
       </>
     )
