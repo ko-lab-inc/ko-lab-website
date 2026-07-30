@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
+import { BandeauVideos, type VignetteVideo } from '@/components/ui/BandeauVideos'
 import { buttonVariants } from '@/components/ui/Button'
 import { Parallax } from '@/components/ui/Parallax'
 import { Reveal } from '@/components/ui/Reveal'
@@ -35,6 +36,15 @@ type PageCapaciteProps = {
   cadrage: string
   /** Désature les contre-jours ambrés, trop saturés pour la palette. */
   desature?: boolean
+  /**
+   * Bande de vidéos, entre la liste des capacités et le CTA.
+   *
+   * Optionnelle et VIDE par défaut : seule la page Le LAB en prévoit une
+   * aujourd'hui (demande de Christian), et tant que `lib/videos.ts` ne
+   * contient rien, la section entière ne s'affiche pas — voir ce fichier
+   * pour ce qu'il faut fournir.
+   */
+  videos?: readonly VignetteVideo[]
 }
 
 export async function PageCapacite({
@@ -47,6 +57,7 @@ export async function PageCapacite({
   src,
   cadrage,
   desature = false,
+  videos = [],
 }: PageCapaciteProps) {
   const t = await getTranslations('Capacites.cta')
 
@@ -180,6 +191,34 @@ export async function PageCapacite({
           </Reveal>
         </div>
       </section>
+
+      {/* ------------------------------ Vidéos ------------------------------ */}
+      {/* Rendue seulement s'il y a des vidéos : pas de titre suivi d'un trou.
+          Placée APRÈS la liste des capacités et AVANT le CTA — on montre le
+          savoir-faire en images une fois qu'il a été énoncé, et juste avant
+          de proposer de démarrer un projet. */}
+      {videos.length > 0 && (
+        <section className="border-t border-ko-line bg-ko-white pb-16 lg:pb-24">
+          <div className="mx-auto max-w-container px-6 lg:px-12">
+            <Reveal>
+              <p className="label-mono pt-16 lg:pt-24">{t('videos_label')}</p>
+              <h2 className="ko-h3 mt-5 max-w-[28ch] text-ko-ink">{t('videos_titre')}</h2>
+
+              <div className="mt-10">
+                <BandeauVideos
+                  videos={videos}
+                  libelles={{
+                    groupe: t('videos_titre'),
+                    lire: t('videos_lire'),
+                    precedent: t('videos_precedent'),
+                    suivant: t('videos_suivant'),
+                  }}
+                />
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {/* ------------------------------- CTA ------------------------------- */}
       <section className="bg-ko-cream py-20 lg:py-28">

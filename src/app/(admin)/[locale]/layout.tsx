@@ -184,16 +184,16 @@ export default async function AdminLayout({ children, params }: Props) {
         240 px sur un téléphone ne laisserait rien à lire.
       */}
       {/*
-        ⚠️ SOMBRE SUR LA STRUCTURE, CLAIR SUR LES DONNÉES — demande de
-        Christian, « je trouve que c'est trop clair l'espace admin ».
+        ⚠️ SEULE LA BARRE LATÉRALE EST SOMBRE — demande de Christian, « je
+        trouve que c'est trop clair l'espace admin », puis, après un premier
+        essai qui assombrissait aussi l'en-tête : « juste le menu doit être
+        noir ».
 
-        La barre latérale et l'en-tête passent en ko-black ; le contenu
-        (tableaux, formulaires, fenêtres) reste sur fond clair. C'est
-        l'alternance clair/sombre que le site public applique déjà d'une
-        section à l'autre (CLAUDE.md), transposée à un outil de gestion : la
-        structure porte le contraste, et de longs tableaux de données
-        restent lisibles sur la durée — ce qu'un fond noir intégral rend
-        pénible.
+        La colonne de gauche passe en ko-black ; l'en-tête et tout le contenu
+        (tableaux, formulaires, fenêtres) restent clairs. Un seul bloc sombre
+        vertical suffit à porter la structure — le bandeau horizontal en plus
+        écrasait le contenu, et de longs tableaux de données restent lisibles
+        sur la durée, ce qu'un fond sombre généralisé rend pénible.
 
         Les tokens `-d` existent déjà pour ça (ko-line-d, ko-muted-d,
         label-mono-d, ko-blue2) : aucune couleur nouvelle n'entre dans la
@@ -223,11 +223,13 @@ export default async function AdminLayout({ children, params }: Props) {
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col lg:h-svh lg:overflow-hidden">
-          {/* `ko-black2` (#0e1116), pas `ko-black` : deux surfaces sombres
-              adjacentes ont besoin d'être distinguées, et c'est exactement
-              ce à quoi sert ce second noir plus froid (globals.css). Sans
-              lui, la barre et l'en-tête fusionneraient en un seul bloc. */}
-          <header className="shrink-0 border-b border-ko-line-d bg-ko-black2">
+          {/* ⚠️ L'en-tête reste CLAIRE — seule la barre latérale est sombre.
+              Elle est passée en ko-black2 un temps ; Christian a tranché :
+              « enlève le sombre au niveau de la barre d'en haut, juste le
+              menu doit être noir ». Le bandeau sombre pleine largeur écrasait
+              le contenu, alors que la seule colonne de gauche suffit à porter
+              la structure. */}
+          <header className="shrink-0 border-b border-ko-line bg-ko-white">
             <div className="flex items-center justify-between gap-6 px-6 py-4 lg:px-8">
               {/* Onglet séparé, mais TOUJOURS LE MÊME : la session équipe reste
                   ouverte et le travail en cours (un formulaire à moitié
@@ -241,7 +243,7 @@ export default async function AdminLayout({ children, params }: Props) {
                 href={`/${locale}`}
                 target="ko-lab-site"
                 rel="noopener noreferrer"
-                className="text-sm text-ko-muted-d transition-colors duration-200 hover:text-ko-white"
+                className="text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
               >
                 {t('voir_site')}
               </Link>
@@ -253,8 +255,8 @@ export default async function AdminLayout({ children, params }: Props) {
                   suite séparée par un point médian — une adresse longue et un
                   rôle collés se lisaient comme une seule chaîne. */}
               <span className="hidden text-right leading-tight sm:block">
-                <span className="block text-sm text-ko-white">{profil.email}</span>
-                <span className="label-mono label-mono-d">
+                <span className="block text-sm text-ko-ink">{profil.email}</span>
+                <span className="label-mono text-ko-blue">
                   {t(`role_${profil.role === 'admin' ? 'admin' : 'editor'}`)}
                 </span>
               </span>
@@ -271,7 +273,7 @@ export default async function AdminLayout({ children, params }: Props) {
               >
                 <button
                   type="submit"
-                  className="min-h-[44px] border-b border-ko-line-d pb-0.5 text-sm text-ko-muted-d transition-colors duration-200 hover:border-ko-white hover:text-ko-white"
+                  className="min-h-[44px] border-b border-ko-line pb-0.5 text-sm text-ko-muted transition-colors duration-200 hover:border-ko-ink hover:text-ko-ink"
                 >
                   {t('deconnexion')}
                 </button>

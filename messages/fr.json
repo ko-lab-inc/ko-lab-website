@@ -209,7 +209,12 @@
       "title": "Un mandat en tête?",
       "texte": "Décrivez-nous le projet — les dates, le lieu, ce qu'il faut mettre sur le terrain. On revient vers vous dans les 48 heures.",
       "bouton": "Démarrer un projet",
-      "retour": "Toutes nos capacités"
+      "retour": "Toutes nos capacités",
+      "videos_label": "En vidéo",
+      "videos_titre": "Le LAB en action",
+      "videos_lire": "Regarder",
+      "videos_precedent": "Vidéos précédentes",
+      "videos_suivant": "Vidéos suivantes"
     },
     "operations": {
       "label": "Opérations terrain",

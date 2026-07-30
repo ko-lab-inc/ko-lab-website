@@ -462,6 +462,21 @@ export function IconeCle(props: IconeProps) {
   )
 }
 
+/**
+ * Lecture — pastille des vignettes vidéo (BandeauVideos).
+ *
+ * Triangle PLEIN, seule exception au « stroke uniquement » de ce fichier
+ * avec les boutons de la manette : à 20px, un triangle en trait se lit comme
+ * un chevron, pas comme un bouton de lecture.
+ */
+export function IconeLecture(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M8 5.6v12.8l10.4-6.4z" fill="currentColor" stroke="none" />
+    </Icone>
+  )
+}
+
 /** Carrières — nav admin. Mallette : poignée et ligne de fermeture. */
 export function IconeMallette(props: IconeProps) {
   return (
