@@ -15,7 +15,10 @@ import {
   IconeAlerte,
   IconeBadgeStock,
   IconeHorloge,
+  IconeMonnaie,
+  IconePanier,
   IconeProfil,
+  IconeTendance,
 } from '@/components/ui/Icones'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
@@ -160,26 +163,64 @@ export default async function TableauDeBordPage({ params }: Props) {
     <>
       <EnteteAdmin titre={t('titre')} intro={t('intro_tableau')} />
 
+      {/*
+        Les quatre tuiles de la référence, avec leurs libellés — chiffre
+        d'affaires, commandes, clients, taux de conversion — et leurs VRAIES
+        valeurs.
+
+        Trois sont à zéro et la quatrième n'est pas mesurable, parce qu'aucune
+        commande n'a jamais été passée : la boutique fonctionne en demande de
+        prix, il n'y a ni paiement, ni table `commandes`, ni suivi de visites.
+        Un zéro n'est pas un écran vide, c'est le chiffre exact — et le jour où
+        le module de commandes existe, ces mêmes tuiles se remplissent sans
+        toucher à cette page.
+
+        Ce qui est refusé, c'est d'écrire 128 430 $. Montré à un partenaire ou
+        à un prêteur, ce nombre serait lu comme réel.
+      */}
       <GrilleStats>
         <TuileStat
-          libelle={t('total_demandes')}
-          valeur={total ?? 0}
-          Icone={IconeAccompagnement}
+          libelle={t('chiffre_affaires')}
+          valeur={format.number(0, { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })}
+          precision={t('des_commandes')}
+          Icone={IconeMonnaie}
         />
+        <TuileStat libelle={t('commandes')} valeur={0} precision={t('des_commandes')} Icone={IconePanier} />
+        <TuileStat libelle={t('clients')} valeur={comptes ?? 0} Icone={IconeProfil} />
         <TuileStat
-          libelle={t('nouvelles')}
-          valeur={nouvelles ?? 0}
-          Icone={IconeHorloge}
-          accent
-        />
-        <TuileStat libelle={t('nav_utilisateurs')} valeur={comptes ?? 0} Icone={IconeProfil} />
-        <TuileStat
-          libelle={t('nav_catalogue')}
-          valeur={produits.length}
-          precision={t('stat_catalogue_precision')}
-          Icone={IconeBadgeStock}
+          libelle={t('conversion')}
+          // Un tiret et non « 0 % » : zéro pour cent serait un taux mesuré,
+          // alors que rien ne mesure les visites. L'absence de mesure et une
+          // mesure nulle ne disent pas la même chose.
+          valeur="—"
+          precision={t('sans_mesure')}
+          Icone={IconeTendance}
         />
       </GrilleStats>
+
+      {/* Deuxième rangée : ce que le site produit RÉELLEMENT aujourd'hui. */}
+      <div className="mt-6">
+        <GrilleStats>
+          <TuileStat
+            libelle={t('total_demandes')}
+            valeur={total ?? 0}
+            Icone={IconeAccompagnement}
+          />
+          <TuileStat
+            libelle={t('nouvelles')}
+            valeur={nouvelles ?? 0}
+            Icone={IconeHorloge}
+            accent
+          />
+          <TuileStat libelle={t('nav_utilisateurs')} valeur={comptes ?? 0} Icone={IconeProfil} />
+          <TuileStat
+            libelle={t('nav_catalogue')}
+            valeur={produits.length}
+            precision={t('stat_catalogue_precision')}
+            Icone={IconeBadgeStock}
+          />
+        </GrilleStats>
+      </div>
 
       {/* Deux tiers / un tiers, comme la référence : la courbe a besoin de
           largeur, l'anneau non. */}

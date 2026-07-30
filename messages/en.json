@@ -597,7 +597,13 @@
     "alerte_prix_absents": "Some products have no indicative price.",
     "alerte_prix_provisoires": "Three prices are still provisional: X1-Carbon, xTool P2, xTool F1.",
     "alerte_smtp": "No email service configured: address validations, password resets and contact notifications are not being sent.",
-    "alerte_demandes": "{n, plural, one {# unhandled request} other {# unhandled requests}}."
+    "alerte_demandes": "{n, plural, one {# unhandled request} other {# unhandled requests}}.",
+    "chiffre_affaires": "Revenue",
+    "commandes": "Orders",
+    "clients": "Customers",
+    "conversion": "Conversion rate",
+    "des_commandes": "From the first orders",
+    "sans_mesure": "No visit tracking"
   },
   "Aide": {
     "ouvrir": "Ask a question",

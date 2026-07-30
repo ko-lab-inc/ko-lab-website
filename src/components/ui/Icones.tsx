@@ -207,6 +207,70 @@ export function IconeProfil(props: IconeProps) {
   )
 }
 
+/* =============================================================================
+ * Menu de l'espace équipe
+ *
+ * Les autres entrées réutilisent des icônes existantes : IconeBadgeStock pour
+ * le catalogue, IconeEquipe pour les utilisateurs, IconeEtiquette pour les
+ * vendeurs, IconeCamion pour les livreurs.
+ * ========================================================================== */
+
+/** Tableau de bord — quatre tuiles, comme la grille de chiffres qu'il ouvre. */
+export function IconeTableauBord(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <rect x="3" y="3" width="7.5" height="7.5" rx="1" />
+      <rect x="13.5" y="3" width="7.5" height="7.5" rx="1" />
+      <rect x="3" y="13.5" width="7.5" height="7.5" rx="1" />
+      <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1" />
+    </Icone>
+  )
+}
+
+/** Réglages — curseurs, plutôt que l'engrenage vu partout. */
+export function IconeReglages(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+      <circle cx="16" cy="7" r="2.2" />
+      <circle cx="10" cy="17" r="2.2" />
+    </Icone>
+  )
+}
+
+/** Chiffre d'affaires — pièce et symbole monétaire. */
+export function IconeMonnaie(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 6.8v10.4" />
+      <path d="M14.6 9.4a2.6 2.6 0 0 0-2.6-1.4h-.4a2.2 2.2 0 0 0 0 4.4h.8a2.2 2.2 0 0 1 0 4.4h-.4a2.6 2.6 0 0 1-2.6-1.4" />
+    </Icone>
+  )
+}
+
+/** Commandes — panier, comme dans la nav publique. */
+export function IconePanier(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M2.5 3.5h2.6l2.3 11.2h10.2" />
+      <path d="M6.6 6.8h14.3l-1.6 6.4H7.9" />
+      <circle cx="9" cy="19.4" r="1.5" />
+      <circle cx="17.4" cy="19.4" r="1.5" />
+    </Icone>
+  )
+}
+
+/** Taux de conversion — courbe ascendante. */
+export function IconeTendance(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M3 17.5 9 11l4 3.6 7.5-8.1" />
+      <path d="M15.4 6.5h5.1v5.1" />
+    </Icone>
+  )
+}
+
 /** Point d'attention — triangle et barre. Jamais seul : un libellé l'accompagne. */
 export function IconeAlerte(props: IconeProps) {
   return (

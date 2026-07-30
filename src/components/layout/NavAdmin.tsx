@@ -5,6 +5,8 @@ import { usePathname } from 'next/navigation'
 
 import { cn } from '@/lib/utils/cn'
 
+import type { ReactNode } from 'react'
+
 /**
  * Menu latéral de l'espace équipe.
  *
@@ -27,7 +29,20 @@ import { cn } from '@/lib/utils/cn'
  * ---------------------------------------------------------------------------
  */
 
-export type EntreeAdmin = { href: string; label: string }
+export type EntreeAdmin = {
+  href: string
+  label: string
+  /**
+   * Icône DÉJÀ RENDUE, pas le composant.
+   *
+   * ⚠️ Passer `Icone: IconeTableauBord` depuis le layout faisait échouer tout
+   * l'espace admin : « Functions cannot be passed directly to Client
+   * Components ». Une fonction ne traverse pas la frontière serveur/client,
+   * un élément React si. TuileStat, lui, accepte le composant — parce que
+   * CadreAdmin est un composant SERVEUR, pas client.
+   */
+  icone: ReactNode
+}
 export type GroupeAdmin = { titre: string; entrees: EntreeAdmin[] }
 
 export function NavAdmin({ groupes, racine }: { groupes: GroupeAdmin[]; racine: string }) {
@@ -40,7 +55,7 @@ export function NavAdmin({ groupes, racine }: { groupes: GroupeAdmin[]; racine: 
           <p className="label-mono mb-3 text-ko-muted">{groupe.titre}</p>
 
           <ul className="flex flex-col items-stretch gap-0.5">
-            {groupe.entrees.map(({ href, label }) => {
+            {groupe.entrees.map(({ href, label, icone }) => {
               // Égalité stricte pour la racine (/fr/admin), qui est le préfixe
               // de toutes les autres entrées : un simple startsWith la
               // laisserait active en permanence.
@@ -52,12 +67,15 @@ export function NavAdmin({ groupes, racine }: { groupes: GroupeAdmin[]; racine: 
                     href={href}
                     aria-current={actif ? 'page' : undefined}
                     className={cn(
-                      'flex min-h-[40px] items-center border-l-2 py-1.5 pl-3 text-sm transition-colors duration-200',
+                      'flex min-h-[40px] items-center gap-3 border-l-2 py-1.5 pl-3 text-sm transition-colors duration-200',
                       actif
                         ? 'border-ko-blue font-medium text-ko-blue'
                         : 'border-transparent text-ko-ink hover:border-ko-line hover:text-ko-blue',
                     )}
                   >
+                    {/* L'icône hérite de la couleur du lien via currentColor :
+                        elle passe au bleu avec le libellé, sans règle en plus. */}
+                    {icone}
                     {label}
                   </Link>
                 </li>

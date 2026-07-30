@@ -4,6 +4,14 @@ import { Fraunces, Instrument_Sans, JetBrains_Mono } from 'next/font/google'
 import { notFound, redirect } from 'next/navigation'
 
 import { NavAdmin } from '@/components/layout/NavAdmin'
+import {
+  IconeBadgeStock,
+  IconeCamion,
+  IconeEquipe,
+  IconeEtiquette,
+  IconeReglages,
+  IconeTableauBord,
+} from '@/components/ui/Icones'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import { ROLES_EQUIPE } from '@/types'
@@ -149,21 +157,47 @@ export default async function AdminLayout({ children, params }: Props) {
                 {
                   titre: t('section_gestion'),
                   entrees: [
-                    { href: `/${locale}/admin`, label: t('nav_tableau') },
-                    { href: `/${locale}/admin/catalogue`, label: t('nav_catalogue') },
+                    {
+                      href: `/${locale}/admin`,
+                      label: t('nav_tableau'),
+                      icone: <IconeTableauBord taille={17} />,
+                    },
+                    {
+                      href: `/${locale}/admin/catalogue`,
+                      label: t('nav_catalogue'),
+                      icone: <IconeBadgeStock taille={17} />,
+                    },
                   ],
                 },
                 {
                   titre: t('section_equipe'),
                   entrees: [
-                    { href: `/${locale}/admin/utilisateurs`, label: t('nav_utilisateurs') },
-                    { href: `/${locale}/admin/vendeurs`, label: t('nav_vendeurs') },
-                    { href: `/${locale}/admin/livreurs`, label: t('nav_livreurs') },
+                    {
+                      href: `/${locale}/admin/utilisateurs`,
+                      label: t('nav_utilisateurs'),
+                      icone: <IconeEquipe taille={17} />,
+                    },
+                    {
+                      href: `/${locale}/admin/vendeurs`,
+                      label: t('nav_vendeurs'),
+                      icone: <IconeEtiquette taille={17} />,
+                    },
+                    {
+                      href: `/${locale}/admin/livreurs`,
+                      label: t('nav_livreurs'),
+                      icone: <IconeCamion taille={17} />,
+                    },
                   ],
                 },
                 {
                   titre: t('section_compte'),
-                  entrees: [{ href: `/${locale}/admin/reglages`, label: t('nav_reglages') }],
+                  entrees: [
+                    {
+                      href: `/${locale}/admin/reglages`,
+                      label: t('nav_reglages'),
+                      icone: <IconeReglages taille={17} />,
+                    },
+                  ],
                 },
               ]}
             />
