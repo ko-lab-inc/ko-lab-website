@@ -194,6 +194,20 @@ export function CatalogueBoutique({
                       </span>
                     )}
 
+                    {/* Rupture de stock — bandeau noir plein, pas rouge : la
+                        palette du site se limite à trois couleurs plus UN
+                        accent bleu (CLAUDE.md), déjà utilisé par « Ajouter au
+                        panier » juste en dessous. Un rouge romprait cette
+                        règle pour ce seul badge ; le noir dit « indisponible »
+                        sans en sortir. Centré en bas de la photo — jamais au
+                        même endroit qu'un ruban ou un badge secondaire, les
+                        trois pourraient coexister un jour. */}
+                    {produit.enRupture && (
+                      <span className="absolute inset-x-0 bottom-0 z-10 bg-ko-black py-1.5 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-ko-white">
+                        {t('rupture_stock')}
+                      </span>
+                    )}
+
                     {produit.src ? (
                       <Image
                         src={produit.src}
@@ -210,6 +224,12 @@ export function CatalogueBoutique({
                           produit.cadrage === 'cover'
                             ? 'object-cover'
                             : 'object-contain p-5',
+                          // Grisé automatiquement en rupture — demande de
+                          // Christian. `grayscale` seul aurait suffi côté
+                          // silhouette, mais deux photos très contrastées
+                          // restaient presque aussi lisibles qu'en couleur ;
+                          // l'opacité réduite complète le signal.
+                          produit.enRupture && 'opacity-50 grayscale',
                         )}
                       />
                     ) : (

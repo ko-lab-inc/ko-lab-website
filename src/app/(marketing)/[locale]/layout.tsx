@@ -212,6 +212,7 @@ export default async function MarketingLayout({ children, params }: Props) {
       recherche_label: boutique.recherche_label,
       aucun_resultat_recherche: boutique.aucun_resultat_recherche,
       voir_produit: boutique.voir_produit,
+      rupture_stock: boutique.rupture_stock,
     },
   }
 

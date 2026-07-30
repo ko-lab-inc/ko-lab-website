@@ -178,6 +178,7 @@ export default async function FicheProduitPage({ params }: Props) {
                   couleurs={produit.couleurs}
                   labelColoris={t('coloris')}
                   labelPlaceholder={tCommun('photo_placeholder')}
+                  enRupture={produit.enRupture}
                 >
                   {produit.badgeRibbon && (
                     <span className="absolute left-0 top-4 z-10 flex items-center gap-1.5 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-white [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]">
@@ -189,6 +190,13 @@ export default async function FicheProduitPage({ params }: Props) {
                     <span className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-sm bg-ko-black px-2.5 py-1 font-mono text-[9px] uppercase tracking-[0.12em] text-ko-white">
                       {produit.badgeSecondaireIcone && <produit.badgeSecondaireIcone taille={12} />}
                       {produit.badgeSecondaire}
+                    </span>
+                  )}
+                  {/* Même bandeau que la grille du catalogue — voir la note
+                      sur la couleur dans CatalogueBoutique.tsx. */}
+                  {produit.enRupture && (
+                    <span className="absolute inset-x-0 bottom-0 z-10 bg-ko-black py-1.5 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-ko-white">
+                      {t('rupture_stock')}
                     </span>
                   )}
                 </GalerieProduit>

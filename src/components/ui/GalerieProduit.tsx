@@ -32,6 +32,7 @@ export function GalerieProduit({
   couleurs,
   labelColoris,
   labelPlaceholder,
+  enRupture,
   children,
 }: {
   src: string | null
@@ -40,6 +41,8 @@ export function GalerieProduit({
   /** Intitulé du sélecteur, p. ex. « Coloris ». */
   labelColoris: string
   labelPlaceholder: string
+  /** Même traitement que la grille du catalogue — voir CatalogueBoutique.tsx. */
+  enRupture?: boolean
   /** Rubans et badges posés en absolu sur le cadre. */
   children?: ReactNode
 }) {
@@ -77,7 +80,10 @@ export function GalerieProduit({
             priority
             quality={85}
             sizes="(max-width: 1024px) 100vw, 50vw"
-            className={cn(cadrage === 'cover' ? 'object-cover' : 'object-contain p-8')}
+            className={cn(
+              cadrage === 'cover' ? 'object-cover' : 'object-contain p-8',
+              enRupture && 'opacity-50 grayscale',
+            )}
           />
         ) : (
           // ⚠️ Une seule photo par produit dans le modèle actuel — pas de

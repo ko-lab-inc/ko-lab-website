@@ -194,16 +194,17 @@ export default async function AdminLayout({ children, params }: Props) {
         <div className="flex min-w-0 flex-1 flex-col lg:h-svh lg:overflow-hidden">
           <header className="shrink-0 border-b border-ko-line bg-ko-white">
             <div className="flex items-center justify-between gap-6 px-6 py-4 lg:px-8">
-              {/* Nouvel onglet, pas la même fenêtre : la session reste ouverte
-                  et le travail en cours dans l'espace équipe (un formulaire à
-                  moitié rempli, par exemple) n'est jamais perdu — Christian a
-                  demandé à pouvoir revenir sur le site vitrine sans avoir à se
-                  déconnecter, ce qui n'a d'ailleurs jamais été nécessaire :
-                  la session équipe et la navigation publique sont
-                  indépendantes, seul manquait un lien pratique pour y aller. */}
+              {/* Onglet séparé, mais TOUJOURS LE MÊME : la session équipe reste
+                  ouverte et le travail en cours (un formulaire à moitié
+                  rempli, par exemple) n'est jamais perdu. `target="_blank"`
+                  seul rouvrait un nouvel onglet à CHAQUE clic — relevé par
+                  Christian, trois onglets après trois clics. Un nom de cible
+                  fixe fait que le navigateur réutilise le même onglet nommé
+                  s'il existe déjà, exactement comme un lien HTML classique
+                  vers une fenêtre nommée. */}
               <Link
                 href={`/${locale}`}
-                target="_blank"
+                target="ko-lab-site"
                 rel="noopener noreferrer"
                 className="text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
               >

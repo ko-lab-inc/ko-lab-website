@@ -3,6 +3,7 @@ import 'server-only'
 import { unstable_cache } from 'next/cache'
 
 import { createStaticClient } from '@/lib/supabase/static'
+import { statutSuggere } from '@/lib/stock'
 import { premiereImage } from '@/lib/utils/premiereImage'
 
 import type { IconeProps } from '@/components/ui/Icones'
@@ -100,6 +101,14 @@ export type ProduitCarte = {
   badgeRibbonIcone?: ComponentType<IconeProps>
   badgeSecondaire?: string
   badgeSecondaireIcone?: ComponentType<IconeProps>
+  /**
+   * Rupture de stock — calculé depuis `quantite`/`statut_stock` (migration
+   * 0013) via `statutSuggere` de lib/stock.ts, même règle que /admin/catalogue :
+   * un produit à quantité 0 compte comme rupture même si `statut_stock` est
+   * resté à sa valeur par défaut. Demande de Christian : avertir le visiteur,
+   * pas seulement l'équipe.
+   */
+  enRupture: boolean
 }
 
 /**
@@ -149,7 +158,9 @@ async function lireDepuisBase(): Promise<ProduitCarte[]> {
     const supabase = createStaticClient()
     const { data, error } = await supabase
       .from('produits_boutique')
-      .select('slug, categorie, nom_fr, description_fr, prix, images, cadrage, couleurs')
+      .select(
+        'slug, categorie, nom_fr, description_fr, prix, images, cadrage, couleurs, quantite, statut_stock',
+      )
       .eq('publie', true)
       .order('ordre')
 
@@ -166,6 +177,7 @@ async function lireDepuisBase(): Promise<ProduitCarte[]> {
         cadrage: p.cadrage === 'cover' ? ('cover' as const) : ('contain' as const),
         couleurs: validerCouleurs(p.couleurs),
         prixIndicatif: p.prix,
+        enRupture: statutSuggere(p.statut_stock, p.quantite) === 'rupture',
       }))
   } catch {
     // Supabase injoignable au moment du rendu : tableau vide, le site reste
