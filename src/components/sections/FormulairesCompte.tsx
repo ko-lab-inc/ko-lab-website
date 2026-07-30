@@ -11,6 +11,7 @@ import {
 } from '@/app/(marketing)/[locale]/connexion/actions-compte'
 import { buttonVariants } from '@/components/ui/Button'
 import { ChampAuth } from '@/components/ui/ChampAuth'
+import { ChampMotDePasse } from '@/components/ui/ChampMotDePasse'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -41,18 +42,15 @@ function Erreur({ message }: { message: string | null }) {
 export function FormulaireInscription({
   locale,
   libelles,
-  prefixe = '',
 }: {
   locale: string
-  /** Préfixe des `id` — obligatoire quand le formulaire coexiste avec un
-   *  autre dans le même document (modal par-dessus une page). Voir
-   *  FormulaireConnexion pour le détail du problème d'association. */
-  prefixe?: string
   libelles: {
     courriel: string
     motDePasse: string
     aideMotDePasse: string
     confirmation: string
+    afficher: string
+    masquer: string
     creer: string
     enCours: string
     succesTitre: string
@@ -93,7 +91,7 @@ export function FormulaireInscription({
     <form action={action} className="mt-8 space-y-4">
       <input type="hidden" name="locale" value={locale} />
       <ChampAuth
-        id={`${prefixe}email`}
+        id="email"
         name="email"
         type="email"
         required
@@ -101,10 +99,9 @@ export function FormulaireInscription({
         maxLength={200}
         libelle={libelles.courriel}
       />
-      <ChampAuth
-        id={`${prefixe}motDePasse`}
+      <ChampMotDePasse
+        id="motDePasse"
         name="motDePasse"
-        type="password"
         required
         minLength={8}
         maxLength={200}
@@ -113,15 +110,18 @@ export function FormulaireInscription({
         autoComplete="new-password"
         libelle={libelles.motDePasse}
         aide={libelles.aideMotDePasse}
+        libelleAfficher={libelles.afficher}
+        libelleMasquer={libelles.masquer}
       />
-      <ChampAuth
-        id={`${prefixe}confirmation`}
+      <ChampMotDePasse
+        id="confirmation"
         name="confirmation"
-        type="password"
         required
         maxLength={200}
         autoComplete="new-password"
         libelle={libelles.confirmation}
+        libelleAfficher={libelles.afficher}
+        libelleMasquer={libelles.masquer}
       />
       <Erreur message={message} />
       <button
@@ -209,6 +209,8 @@ export function FormulaireNouveauMotDePasse({
     motDePasse: string
     aideMotDePasse: string
     confirmation: string
+    afficher: string
+    masquer: string
     enregistrer: string
     enCours: string
     erreurDonnees: string
@@ -220,25 +222,27 @@ export function FormulaireNouveauMotDePasse({
   return (
     <form action={action} className="mt-8 space-y-4">
       <input type="hidden" name="locale" value={locale} />
-      <ChampAuth
+      <ChampMotDePasse
         id="motDePasse"
         name="motDePasse"
-        type="password"
         required
         minLength={8}
         maxLength={200}
         autoComplete="new-password"
         libelle={libelles.motDePasse}
         aide={libelles.aideMotDePasse}
+        libelleAfficher={libelles.afficher}
+        libelleMasquer={libelles.masquer}
       />
-      <ChampAuth
+      <ChampMotDePasse
         id="confirmation"
         name="confirmation"
-        type="password"
         required
         maxLength={200}
         autoComplete="new-password"
         libelle={libelles.confirmation}
+        libelleAfficher={libelles.afficher}
+        libelleMasquer={libelles.masquer}
       />
       <Erreur
         message={

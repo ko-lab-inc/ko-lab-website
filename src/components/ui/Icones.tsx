@@ -290,6 +290,18 @@ export function IconeOeil(props: IconeProps) {
   )
 }
 
+/** Masquer — œil barré. Pendant du révélateur de mot de passe. */
+export function IconeOeilBarre(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M10.6 6a9.6 9.6 0 0 1 1.4-.1c6.4 0 10 6.1 10 6.1a17 17 0 0 1-2.6 3.4" />
+      <path d="M6.5 7.9A16.6 16.6 0 0 0 2 12s3.6 6.1 10 6.1a9.7 9.7 0 0 0 4-.8" />
+      <path d="M9.9 9.9a2.9 2.9 0 0 0 4.1 4.1" />
+      <path d="M3 3l18 18" />
+    </Icone>
+  )
+}
+
 /** Modifier — crayon. */
 export function IconeCrayon(props: IconeProps) {
   return (

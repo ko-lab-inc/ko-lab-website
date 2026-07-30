@@ -4,6 +4,7 @@ import { useActionState } from 'react'
 
 import { connecter, type EtatConnexion } from '@/app/(marketing)/[locale]/connexion/actions'
 import { buttonVariants } from '@/components/ui/Button'
+import { ChampMotDePasse } from '@/components/ui/ChampMotDePasse'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -14,15 +15,17 @@ import { cn } from '@/lib/utils/cn'
  * ça évite d'élargir la liste blanche de messages envoyée au navigateur pour
  * une page que presque personne n'ouvre.
  *
- * ⚠️ Pas de bouton « Créer un compte », et c'est délibéré : l'inscription
- * publique est fermée sur le projet Supabase, et un compte créé librement
- * arriverait de toute façon en 'client', sans aucun droit (0004 et 0009).
- * Les comptes se créent par invitation depuis l'espace admin.
+ * ⚠️ Se connecter n'ouvre AUCUN droit de gestion. Un compte créé depuis le
+ * site arrive en 'client' (défaut posé par 0004) : il sert au panier et au
+ * suivi de ses demandes, rien d'autre. Les rôles admin, editor, vendeur et
+ * livreur ne s'attribuent qu'en base, jamais par l'inscription.
  */
 
 type Libelles = {
   courriel: string
   motDePasse: string
+  afficherMotDePasse: string
+  masquerMotDePasse: string
   seConnecter: string
   enCours: string
   erreurIdentifiants: string
@@ -34,25 +37,14 @@ export function FormulaireConnexion({
   locale,
   suivant,
   libelles,
-  prefixe = '',
 }: {
   locale: string
   suivant?: string
   libelles: Libelles
-  /**
-   * Préfixe des `id` de champs.
-   *
-   * ⚠️ Obligatoire dès qu'un second exemplaire de ce formulaire peut coexister
-   * dans le même document — c'est le cas du modal ouvert par-dessus une page.
-   * Deux `id="email"` dans une même page, et `<label for="email">` s'associe
-   * au PREMIER dans l'ordre du document : cliquer le libellé du modal donnait
-   * le focus au champ de la page, derrière le fond assombri.
-   */
-  prefixe?: string
 }) {
   const [etat, action, enCours] = useActionState<EtatConnexion, FormData>(connecter, {})
-  const idEmail = `${prefixe}email`
-  const idMotDePasse = `${prefixe}motDePasse`
+  const idEmail = 'email'
+  const idMotDePasse = 'motDePasse'
 
   const message =
     etat.erreur === 'identifiants'
@@ -85,22 +77,18 @@ export function FormulaireConnexion({
         />
       </div>
 
-      <div>
-        <label htmlFor={idMotDePasse} className="label-mono mb-2 block text-ko-muted">
-          {libelles.motDePasse}
-        </label>
-        <input
-          id={idMotDePasse}
-          name="motDePasse"
-          type="password"
-          required
-          // `current-password` : indique aux gestionnaires de mots de passe
-          // qu'il s'agit d'une connexion, pas d'une création de compte.
-          autoComplete="current-password"
-          maxLength={200}
-          className="min-h-[44px] w-full border border-ko-line bg-ko-white px-4 py-3 text-base text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none"
-        />
-      </div>
+      <ChampMotDePasse
+        id={idMotDePasse}
+        name="motDePasse"
+        required
+        // `current-password` : indique aux gestionnaires de mots de passe
+        // qu'il s'agit d'une connexion, pas d'une création de compte.
+        autoComplete="current-password"
+        maxLength={200}
+        libelle={libelles.motDePasse}
+        libelleAfficher={libelles.afficherMotDePasse}
+        libelleMasquer={libelles.masquerMotDePasse}
+      />
 
       {message && (
         // role=alert : l'erreur apparaît après coup, un lecteur d'écran ne la

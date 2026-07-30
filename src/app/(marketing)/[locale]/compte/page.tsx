@@ -83,14 +83,6 @@ export default async function ComptePage({ params }: Props) {
           </button>
         </form>
       </div>
-
-      <Link
-        href={ROUTES.accueil}
-        className="mt-8 inline-flex min-h-[44px] items-center gap-2 text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
-      >
-        {t('retour')}
-        <span aria-hidden="true">→</span>
-      </Link>
     </CadreAuth>
   )
 }

@@ -75,6 +75,8 @@ export default async function ConnexionPage({ params, searchParams }: Props) {
         libelles={{
           courriel: t('courriel'),
           motDePasse: t('mot_de_passe'),
+            afficherMotDePasse: t('afficher_mot_de_passe'),
+            masquerMotDePasse: t('masquer_mot_de_passe'),
           seConnecter: t('se_connecter'),
           enCours: t('en_cours'),
           erreurIdentifiants: t('erreur_identifiants'),
@@ -100,14 +102,6 @@ export default async function ConnexionPage({ params, searchParams }: Props) {
           </Link>
         </p>
       </div>
-
-      <Link
-        href={ROUTES.accueil}
-        className="mt-8 inline-flex min-h-[44px] items-center gap-2 text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
-      >
-        {t('retour')}
-        <span aria-hidden="true">→</span>
-      </Link>
     </CadreAuth>
   )
 }

@@ -9,7 +9,13 @@ import { expect, test, type Page } from '@playwright/test'
  * les assertions vérifient ça.
  */
 
-const CLE = 'kolab_panier'
+/**
+ * ⚠️ La clé porte l'identité depuis la séparation des paniers par compte
+ * (PanierContext, `cleDe()`). Ces tests naviguent sans session : le suffixe est
+ * donc `anonyme`. Le cloisonnement entre comptes est vérifié à part, dans
+ * `compte.spec.ts`.
+ */
+const CLE = 'kolab_panier:anonyme'
 
 /**
  * Ajoute le n-ième produit du catalogue à la demande.
@@ -17,12 +23,32 @@ const CLE = 'kolab_panier'
  * L'attente porte sur le badge, pas sur un délai fixe : l'écriture dans
  * localStorage puis le re-rendu prennent un temps variable, et le test
  * devenait intermittent en émulation mobile.
+ *
+ * ---------------------------------------------------------------------------
+ * POURQUOI LE CLIC EST REJOUÉ
+ *
+ * Un clic qui arrive avant la fin de l'hydratation ne déclenche rien : le
+ * bouton est dans le document, mais React n'y a pas encore attaché son
+ * gestionnaire. Sous exécution parallèle (deux projets, plusieurs workers),
+ * l'hydratation prend assez de temps pour que ça se produise — d'où des échecs
+ * d'environ une exécution sur trois, sur un test différent à chaque fois.
+ *
+ * ⚠️ Le clic n'est PAS rejoué à l'aveugle. Après un ajout réussi, le bouton du
+ * produit passe à « Ajouté » et sort de la liste : `nth(index)` désignerait
+ * alors un AUTRE produit, et la relance en ajouterait un de plus. On ne clique
+ * donc que si le compte attendu n'est pas déjà atteint.
+ * ---------------------------------------------------------------------------
  */
 async function ajouterProduit(page: Page, index: number, attendu: number) {
-  await page.getByRole('button', { name: /Ajouter au panier/ }).nth(index).click()
-  await expect(page.getByRole('link', { name: /Voir ma sélection/ }).first()).toContainText(
-    String(attendu),
-  )
+  const badge = page.getByRole('link', { name: /Voir ma sélection/ }).first()
+
+  await expect(async () => {
+    const dejaFait = (await badge.count()) > 0 && (await badge.innerText()).includes(String(attendu))
+    if (!dejaFait) {
+      await page.getByRole('button', { name: /Ajouter au panier/ }).nth(index).click()
+    }
+    await expect(badge).toContainText(String(attendu), { timeout: 3_000 })
+  }).toPass({ timeout: 15_000 })
 }
 
 /**

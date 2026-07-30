@@ -683,7 +683,9 @@
     "erreur_courriel": "Le courriel de validation n'a pas pu être envoyé. Ce n'est pas vous : réessayez plus tard, ou écrivez à info@ko-lab.ca.",
     "erreur_serveur": "La création a échoué. Réessayez plus tard.",
     "deja_compte": "Vous avez déjà un compte ?",
-    "se_connecter": "Se connecter"
+    "se_connecter": "Se connecter",
+    "afficher_mot_de_passe": "Afficher le mot de passe",
+    "masquer_mot_de_passe": "Masquer le mot de passe"
   },
   "MotDePasse": {
     "oubli_titre": "Mot de passe oublié",
@@ -706,7 +708,9 @@
     "erreur_serveur": "L'opération a échoué. Réessayez.",
     "lien_invalide_titre": "Lien expiré ou déjà utilisé",
     "lien_invalide_texte": "Demandez-en un nouveau, et ouvrez-le dans le même navigateur que celui de la demande.",
-    "retour_connexion": "Retour à la connexion"
+    "retour_connexion": "Retour à la connexion",
+    "afficher_mot_de_passe": "Afficher le mot de passe",
+    "masquer_mot_de_passe": "Masquer le mot de passe"
   },
   "Connexion": {
     "titre": "Connexion",
@@ -725,6 +729,8 @@
     "erreur_serveur": "La connexion a échoué. Réessayez, ou prévenez Moussa si ça persiste.",
     "refus_role_titre": "Accès non ouvert",
     "refus_role_texte": "Votre compte fonctionne, mais l'espace de gestion n'est pas encore ouvert pour lui. Écrivez à info@ko-lab.ca si c'est une erreur.",
-    "retour": "Retour au site"
+    "retour": "Retour au site",
+    "afficher_mot_de_passe": "Afficher le mot de passe",
+    "masquer_mot_de_passe": "Masquer le mot de passe"
   }
 }

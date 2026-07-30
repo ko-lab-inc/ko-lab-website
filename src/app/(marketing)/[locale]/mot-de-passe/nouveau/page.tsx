@@ -61,6 +61,8 @@ export default async function NouveauMotDePassePage({ params }: Props) {
         libelles={{
           motDePasse: t('mot_de_passe'),
           aideMotDePasse: t('aide_mot_de_passe'),
+            afficher: t('afficher_mot_de_passe'),
+            masquer: t('masquer_mot_de_passe'),
           confirmation: t('confirmation'),
           enregistrer: t('enregistrer'),
           enCours: t('enregistrement'),

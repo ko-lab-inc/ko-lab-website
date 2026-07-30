@@ -44,6 +44,8 @@ export default async function InscriptionPage({ params }: Props) {
           courriel: t('courriel'),
           motDePasse: t('mot_de_passe'),
           aideMotDePasse: t('aide_mot_de_passe'),
+            afficher: t('afficher_mot_de_passe'),
+            masquer: t('masquer_mot_de_passe'),
           confirmation: t('confirmation'),
           creer: t('creer'),
           enCours: t('en_cours'),
