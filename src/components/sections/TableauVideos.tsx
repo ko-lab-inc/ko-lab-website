@@ -68,8 +68,30 @@ export function TableauVideos({
     monter: string
     descendre: string
     apercu: string
+    /** Gabarit, ex. « Page {page} sur {total} » — jamais une fonction en prop. */
+    pageGabarit: string
+    pagePrecedente: string
+    pageSuivante: string
   }
 }) {
+  /**
+   * Pagination — 8 par page, comme le catalogue.
+   *
+   * Demande de Christian une fois sa huitième vidéo ajoutée : « à partir de
+   * 7 ou 8 vidéos ça suffit ». Au-delà, la liste poussait le contenu bien
+   * au-delà de l'écran et obligeait à faire défiler tout l'espace équipe.
+   *
+   * ⚠️ Le déplacement (flèches ↑↓) agit sur l'ordre GLOBAL, pas sur la page
+   * affichée : une vidéo peut donc passer d'une page à l'autre. C'est le
+   * comportement voulu — l'ordre est celui de la bande publique, la
+   * pagination n'est qu'une commodité d'affichage ici.
+   */
+  const PAR_PAGE = 8
+  const [page, setPage] = useState(0)
+  const totalPages = Math.max(1, Math.ceil(videos.length / PAR_PAGE))
+  // Se recale si une suppression fait disparaître la dernière page affichée.
+  const pageActuelle = Math.min(page, totalPages - 1)
+  const videosPage = videos.slice(pageActuelle * PAR_PAGE, pageActuelle * PAR_PAGE + PAR_PAGE)
   const boite = useRef<HTMLDialogElement>(null)
   // `null` = création, une vidéo = édition, `undefined` = fermé.
   const [edite, setEdite] = useState<VideoListe | null | undefined>(undefined)
@@ -107,7 +129,13 @@ export function TableauVideos({
           <p className="p-6 text-base leading-relaxed text-ko-muted">{textes.vide}</p>
         ) : (
           <ul className="divide-y divide-ko-line">
-            {videos.map((v, i) => (
+            {videosPage.map((v, iPage) => {
+              // Rang GLOBAL, pas le rang dans la page : c'est lui qui dit si
+              // la vidéo est réellement en tête ou en fin de bande, donc
+              // quelle flèche désactiver.
+              const i = pageActuelle * PAR_PAGE + iPage
+
+              return (
               <li
                 key={v.id}
                 className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 transition-colors duration-200 hover:bg-ko-cream"
@@ -222,11 +250,53 @@ export function TableauVideos({
                     </form>
                   )}
                 </div>
-              </li>
-            ))}
+                </li>
+              )
+            })}
           </ul>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-end gap-4">
+          <p className="label-mono text-ko-muted">
+            {textes.pageGabarit
+              .replace('{page}', String(pageActuelle + 1))
+              .replace('{total}', String(totalPages))}
+          </p>
+          <div className="flex gap-2">
+            {/* `border-ko-ink` explicite sur le chevron : Tailwind ne colore
+                pas les bordures en `currentColor` par défaut. Même correctif
+                que la pagination du catalogue et les flèches de BandeauImages. */}
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={pageActuelle === 0}
+              aria-label={textes.pagePrecedente}
+              title={textes.pagePrecedente}
+              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
+            >
+              <span
+                aria-hidden="true"
+                className="ml-0.5 h-2.5 w-2.5 rotate-45 border-b-2 border-l-2 border-ko-ink transition-colors duration-200 group-hover:border-ko-blue group-disabled:border-ko-line"
+              />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={pageActuelle >= totalPages - 1}
+              aria-label={textes.pageSuivante}
+              title={textes.pageSuivante}
+              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
+            >
+              <span
+                aria-hidden="true"
+                className="mr-0.5 h-2.5 w-2.5 rotate-45 border-r-2 border-t-2 border-ko-ink transition-colors duration-200 group-hover:border-ko-blue group-disabled:border-ko-line"
+              />
+            </button>
+          </div>
+        </div>
+      )}
 
       <dialog
         ref={boite}

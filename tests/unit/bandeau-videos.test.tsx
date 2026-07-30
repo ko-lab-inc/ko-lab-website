@@ -98,6 +98,28 @@ describe('BandeauVideos — lecture en surimpression', () => {
     expect(container.querySelector('iframe')).toBeNull()
   })
 
+  it('avance d’une PAGE ENTIÈRE de cartes, pas de 85 % de la largeur', () => {
+    const { container } = render(<BandeauVideos videos={VIDEOS} libelles={LIBELLES} />)
+    const piste = container.querySelector('[role="group"]') as HTMLElement
+
+    // jsdom ne calcule aucune mise en page : on impose des dimensions
+    // réalistes (4 cartes de 280px + 3 écarts de 20px = 1180px visibles).
+    Object.defineProperty(piste, 'clientWidth', { value: 1180, configurable: true })
+    const premiere = piste.firstElementChild as HTMLElement
+    premiere.getBoundingClientRect = () => ({ width: 280 }) as DOMRect
+    piste.style.columnGap = '20px'
+
+    const appels: number[] = []
+    piste.scrollBy = (opts) => appels.push((opts as ScrollToOptions).left ?? 0)
+
+    fireEvent.click(screen.getByRole('button', { name: LIBELLES.suivant }))
+
+    // 4 cartes × (280 + 20) = 1200. L'ancien réglage (0.85 × 1180 = 1003)
+    // s'arrêtait au milieu de la 4e carte : une déjà vue revenait, une autre
+    // était sautée — le « 3 au lieu de 4 » signalé par Christian.
+    expect(appels).toEqual([1200])
+  })
+
   it('laisse un lien sortant pour un hébergeur non reconnu', () => {
     render(<BandeauVideos videos={VIDEOS} libelles={LIBELLES} />)
 

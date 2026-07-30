@@ -376,3 +376,30 @@
 .scrollbar-none::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Edge */
 }
+
+/* =============================================================================
+   Barre de défilement discrète — barre latérale de l'espace équipe.
+   =============================================================================
+   La scrollbar SYSTÈME de Windows fait ~17px de large et s'affiche en gris
+   clair : collée au menu noir, elle formait un bandeau qui coupait l'écran en
+   deux — relevé par Christian, « je ne veux pas cette barre de scroll à côté
+   du menu, je voudrais que ce soit juste une ligne ».
+
+   La masquer complètement (.scrollbar-none) supprimerait le seul indice qu'il
+   reste des entrées plus bas sur un écran court. D'où un filet de 3px, dans
+   les tons de la barre : présent quand ça défile, invisible sinon. */
+.scrollbar-fine {
+  scrollbar-width: thin; /* Firefox */
+  /* pouce puis piste — la piste transparente évite le rail gris. */
+  scrollbar-color: var(--ko-line-d) transparent;
+}
+.scrollbar-fine::-webkit-scrollbar {
+  width: 3px;
+}
+.scrollbar-fine::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-fine::-webkit-scrollbar-thumb {
+  background-color: var(--ko-line-d);
+  border-radius: 999px;
+}

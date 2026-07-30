@@ -83,10 +83,30 @@ export function BandeauVideos({
   function defiler(sens: 1 | -1) {
     const el = piste.current
     if (!el) return
-    // Un peu moins que la largeur visible : la dernière vignette de l'écran
-    // précédent reste partiellement visible, ce qui signale qu'on a avancé
-    // plutôt que sauté à un endroit arbitraire. Même réglage que BandeauImages.
-    el.scrollBy({ left: sens * el.clientWidth * 0.85, behavior: 'smooth' })
+
+    /**
+     * Une PAGE ENTIÈRE de cartes, pas 85 % de la largeur.
+     *
+     * ⚠️ Corrigé : le réglage repris de BandeauImages (0.85 × largeur)
+     * laissait volontairement dépasser la carte suivante pour signaler qu'on
+     * avait avancé. Sur une bande de quatre, ça fait avancer de 3,4 cartes —
+     * donc une carte déjà vue revient, et une autre est sautée. Christian :
+     * « le slide du LAB doit se faire par 4 d'un coup et non 3 ».
+     *
+     * Mesuré sur la première carte plutôt que calculé depuis un nombre en
+     * dur : la bande montre 1, 2 ou 4 cartes selon la largeur (voir les
+     * classes `basis-*`), et ce calcul suit automatiquement.
+     */
+    const premiere = el.firstElementChild
+    if (!premiere) return
+
+    const largeurCarte = premiere.getBoundingClientRect().width
+    const ecart = parseFloat(getComputedStyle(el).columnGap) || 0
+    const pas = largeurCarte + ecart
+    // Nombre de cartes entièrement visibles, au moins une.
+    const parPage = Math.max(1, Math.round((el.clientWidth + ecart) / pas))
+
+    el.scrollBy({ left: sens * parPage * pas, behavior: 'smooth' })
   }
 
   /**

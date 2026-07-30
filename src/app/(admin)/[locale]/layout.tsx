@@ -207,7 +207,7 @@ export default async function AdminLayout({ children, params }: Props) {
         globals.css.
       */}
       <body className="flex min-h-svh flex-col bg-ko-cream font-sans antialiased lg:h-svh lg:flex-row lg:overflow-hidden">
-        <aside className="shrink-0 border-b border-ko-line-d bg-ko-black lg:h-svh lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+        <aside className="scrollbar-fine shrink-0 border-b border-ko-line-d bg-ko-black lg:h-svh lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
           {/* Bloc d'identité en tête de la barre, comme la référence. */}
           <div className="flex items-baseline gap-3 border-b border-ko-line-d px-5 py-[19px]">
             <span className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-ko-white">

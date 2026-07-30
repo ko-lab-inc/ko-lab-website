@@ -108,6 +108,9 @@ export default async function VideosAdminPage({ params }: Props) {
           monter: t('action_monter'),
           descendre: t('action_descendre'),
           apercu: t('action_ouvrir_video'),
+          pageGabarit: t('page_gabarit'),
+          pagePrecedente: t('page_precedente'),
+          pageSuivante: t('page_suivante'),
         }}
       />
     </>
