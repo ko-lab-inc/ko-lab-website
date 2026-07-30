@@ -27,7 +27,10 @@ import { createClient } from '@/lib/supabase/server'
  * ---------------------------------------------------------------------------
  */
 
-export type EtatProduit = { erreur?: 'donnees' | 'refuse' | 'slug_pris' | 'serveur'; succes?: boolean }
+export type EtatProduit = {
+  erreur?: 'donnees' | 'refuse' | 'slug_pris' | 'photo' | 'serveur'
+  succes?: boolean
+}
 
 const CATEGORIES = ['impression', 'laser', 'conteneurs', 'equipements'] as const
 
@@ -42,30 +45,58 @@ const schemaProduit = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   marque: z.string().trim().min(1).max(80),
   categorie: z.enum(CATEGORIES),
+  /**
+   * Nom et description dans UNE SEULE langue — décision de Christian.
+   *
+   * Le formulaire envoie la langue choisie dans `langue`, et remplit la paire
+   * correspondante. L'autre reste vide ; l'affichage retombe dessus (voir
+   * `texteLocalise` dans lib/produits.ts). Ce n'est pas de la traduction :
+   * un anglophone verra le texte français plutôt qu'un blanc, ce qui est
+   * préférable mais reste un pis-aller tant qu'aucun service de traduction
+   * n'est branché.
+   */
   nom_fr: z.string().trim().min(2).max(120),
-  nom_en: z.string().trim().min(2).max(120),
-  description_fr: z.string().trim().max(600).optional(),
-  description_en: z.string().trim().max(600).optional(),
-  // Le prix est FACULTATIF : `null` signifie « sur demande », ce que la
-  // boutique sait déjà afficher. Une chaîne vide devient donc null, pas 0 —
-  // un produit à 0 $ et un produit sans prix ne disent pas la même chose.
-  prix: z
-    .union([z.coerce.number().min(0).max(1_000_000), z.literal('')])
-    .transform((v) => (v === '' ? null : v)),
+  nom_en: z.string().trim().max(120).nullable(),
+  description_fr: z.string().trim().max(600).nullable(),
+  description_en: z.string().trim().max(600).nullable(),
+  /**
+   * Prix OBLIGATOIRE — décision de Christian : « le prix n'est pas sur
+   * demande, on va le mettre ». La colonne reste nullable en base pour ne pas
+   * bloquer un import ; c'est ici que la règle s'applique, là où on la corrige
+   * en une ligne.
+   */
+  prix: z.coerce.number().min(0).max(1_000_000),
   cadrage: z.enum(['contain', 'cover']),
   ordre: z.coerce.number().int().min(0).max(9999),
 })
 
 function lire(donnees: FormData) {
+  // Une seule paire de champs à l'écran ; c'est `langue` qui décide dans
+  // quelles colonnes elle atterrit.
+  const anglais = donnees.get('langue') === 'en'
+  const nom = String(donnees.get('nom') ?? '').trim()
+  const description = String(donnees.get('description') ?? '').trim()
+
+  /**
+   * `nom_fr` reçoit TOUJOURS le texte saisi, quelle que soit la langue.
+   *
+   * Deux raisons. La colonne est NOT NULL depuis 0001 — c'est la seule langue
+   * garantie, et le français est la langue première du site. Et c'est elle qui
+   * sert de repli : un visiteur anglophone verra le texte français plutôt
+   * qu'un blanc, et inversement si la saisie s'est faite en anglais.
+   *
+   * `nom_en` n'est rempli que si l'anglais a été choisi. Sinon il reste null,
+   * et l'affichage retombe sur `nom_fr`.
+   */
   return schemaProduit.safeParse({
     slug: donnees.get('slug'),
     marque: donnees.get('marque'),
     categorie: donnees.get('categorie'),
-    nom_fr: donnees.get('nom_fr'),
-    nom_en: donnees.get('nom_en'),
-    description_fr: donnees.get('description_fr') || undefined,
-    description_en: donnees.get('description_en') || undefined,
-    prix: donnees.get('prix') ?? '',
+    nom_fr: nom,
+    nom_en: anglais ? nom : null,
+    description_fr: description || null,
+    description_en: anglais ? description || null : null,
+    prix: donnees.get('prix'),
     cadrage: donnees.get('cadrage'),
     ordre: donnees.get('ordre') ?? 0,
   })
@@ -73,6 +104,55 @@ function lire(donnees: FormData) {
 
 /** 23505 = violation d'unicité. Le seul index unique ici porte sur `slug`. */
 const slugDejaPris = (code?: string) => code === '23505'
+
+const TAILLE_MAX = 5 * 1024 * 1024
+const TYPES_IMAGE = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
+
+/**
+ * Téléverse la photo dans le bucket `produits` et renvoie son URL publique.
+ *
+ * `null` si aucun fichier n'a été fourni — cas normal d'une modification qui
+ * ne touche pas à l'image. `undefined` en cas d'échec, pour que l'appelant
+ * distingue « pas de nouvelle photo » de « la photo a échoué ».
+ *
+ * ⚠️ Type et taille sont revérifiés ICI. L'attribut `accept` du champ de
+ * fichier ne filtre que le sélecteur du système : n'importe quelle requête
+ * fabriquée à la main l'ignore. Le bucket applique la même règle en dernier
+ * recours (allowed_mime_types, 0010), mais un refus à ce niveau remonterait
+ * une erreur illisible.
+ *
+ * Le nom du fichier vient du SLUG, jamais du nom d'origine : un fichier
+ * téléversé peut s'appeler `../../etc/passwd` ou porter des caractères que
+ * l'URL n'accepte pas. L'horodatage évite que le CDN serve l'ancienne image
+ * après un remplacement — même problème que les visuels renommés en `-v2`.
+ */
+async function televerserPhoto(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  fichier: FormDataEntryValue | null,
+  slug: string,
+): Promise<string | null | undefined> {
+  if (!(fichier instanceof File) || fichier.size === 0) return null
+
+  if (fichier.size > TAILLE_MAX || !TYPES_IMAGE.includes(fichier.type)) {
+    console.error('[catalogue] photo refusée —', fichier.type, fichier.size)
+    return undefined
+  }
+
+  const extension = fichier.type.split('/')[1]?.replace('jpeg', 'jpg') ?? 'webp'
+  const chemin = `${slug}-${Date.now()}.${extension}`
+
+  const { error } = await supabase.storage
+    .from('produits')
+    .upload(chemin, fichier, { contentType: fichier.type, upsert: false })
+
+  if (error) {
+    console.error('[catalogue] téléversement refusé', error.message)
+    return undefined
+  }
+
+  const { data } = supabase.storage.from('produits').getPublicUrl(chemin)
+  return data.publicUrl
+}
 
 export async function creerProduit(
   _precedent: EtatProduit,
@@ -84,12 +164,16 @@ export async function creerProduit(
 
   try {
     const supabase = await createClient()
+
+    const url = await televerserPhoto(supabase, donnees.get('photo'), analyse.data.slug)
+    if (url === undefined) return { erreur: 'photo' }
+
     // `publie: false` à la création, toujours. Un produit incomplet — sans
     // photo, sans prix confirmé — ne doit pas apparaître en boutique parce
     // qu'on a cliqué « Créer ». La publication est un geste séparé.
     const { error } = await supabase
       .from('produits_boutique')
-      .insert({ ...analyse.data, publie: false })
+      .insert({ ...analyse.data, images: url ? [url] : [], publie: false })
 
     if (error) {
       if (slugDejaPris(error.code)) return { erreur: 'slug_pris' }
@@ -118,9 +202,16 @@ export async function modifierProduit(
 
   try {
     const supabase = await createClient()
+
+    const url = await televerserPhoto(supabase, donnees.get('photo'), analyse.data.slug)
+    if (url === undefined) return { erreur: 'photo' }
+
+    // `images` n'est touché QUE si une nouvelle photo a été fournie. Sans
+    // cette condition, enregistrer une correction de prix effacerait l'image
+    // du produit — le champ de fichier est vide à chaque réouverture.
     const { error } = await supabase
       .from('produits_boutique')
-      .update(analyse.data)
+      .update(url ? { ...analyse.data, images: [url] } : analyse.data)
       .eq('id', id)
 
     if (error) {

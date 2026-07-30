@@ -271,6 +271,57 @@ export function IconeTendance(props: IconeProps) {
   )
 }
 
+/* =============================================================================
+ * Actions de tableau
+ *
+ * ⚠️ Ces trois-là sont les SEULES icônes du projet qui portent le sens à elles
+ * seules — pas de libellé à côté, faute de place dans une ligne de tableau.
+ * Elles exigent donc un `aria-label` sur le bouton qui les contient, et une
+ * infobulle `title` pour la souris. Sans ça, l'action est illisible.
+ * ========================================================================== */
+
+/** Consulter — œil. Ouvre la fiche publique. */
+export function IconeOeil(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M2 12s3.6-6.4 10-6.4S22 12 22 12s-3.6 6.4-10 6.4S2 12 2 12z" />
+      <circle cx="12" cy="12" r="2.8" />
+    </Icone>
+  )
+}
+
+/** Modifier — crayon. */
+export function IconeCrayon(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M16.4 3.6a2.3 2.3 0 0 1 3.3 3.3L7.9 18.7l-4.4 1.1 1.1-4.4z" />
+      <path d="M14.6 5.4l3.3 3.3" />
+    </Icone>
+  )
+}
+
+/** Supprimer — corbeille. */
+export function IconePoubelle(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M3.5 6.2h17" />
+      <path d="M8.6 6.2V4.4a1.4 1.4 0 0 1 1.4-1.4h4a1.4 1.4 0 0 1 1.4 1.4v1.8" />
+      <path d="M5.8 6.2l1 13.1a1.6 1.6 0 0 0 1.6 1.5h7.2a1.6 1.6 0 0 0 1.6-1.5l1-13.1" />
+      <path d="M10.2 10.4v6.2M13.8 10.4v6.2" />
+    </Icone>
+  )
+}
+
+/** Ajouter — plus encadré. */
+export function IconeAjouter(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="2" />
+      <path d="M12 8v8M8 12h8" />
+    </Icone>
+  )
+}
+
 /** Point d'attention — triangle et barre. Jamais seul : un libellé l'accompagne. */
 export function IconeAlerte(props: IconeProps) {
   return (

@@ -88,7 +88,10 @@ export type Database = {
           marque: string
           categorie: string
           nom_fr: string
-          nom_en: string
+          /** Nullable depuis 0010 : la saisie se fait dans UNE langue, l'autre
+           *  colonne reste vide et l'affichage retombe sur celle qui est
+           *  remplie. */
+          nom_en: string | null
           description_fr: string | null
           description_en: string | null
           /** NULL = « sur demande » — voir skills 03 et 21. */
@@ -120,7 +123,7 @@ export type Database = {
           marque: string
           categorie: string
           nom_fr: string
-          nom_en: string
+          nom_en?: string | null
           description_fr?: string | null
           description_en?: string | null
           prix?: number | null
@@ -139,7 +142,7 @@ export type Database = {
           marque?: string
           categorie?: string
           nom_fr?: string
-          nom_en?: string
+          nom_en?: string | null
           description_fr?: string | null
           description_en?: string | null
           prix?: number | null

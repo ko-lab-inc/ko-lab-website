@@ -9,6 +9,7 @@ import {
 } from '@/app/(admin)/[locale]/admin/catalogue/actions'
 import { buttonVariants } from '@/components/ui/Button'
 import { cn } from '@/lib/utils/cn'
+import { slugifier } from '@/lib/utils/slug'
 
 /**
  * Création et édition d'un produit — un seul formulaire pour les deux.
@@ -39,14 +40,20 @@ export type Produit = {
 
 export type LibellesProduit = {
   slug: string
+  slugAideCreation: string
+  slugAideEdition: string
   marque: string
   categorie: string
-  nomFr: string
-  nomEn: string
-  descriptionFr: string
-  descriptionEn: string
+  langue: string
+  langueFr: string
+  langueEn: string
+  langueAide: string
+  nom: string
+  description: string
   prix: string
-  prixAide: string
+  photo: string
+  photoAide: string
+  photoActuelle: string
   cadrage: string
   cadrageContain: string
   cadrageCover: string
@@ -58,6 +65,7 @@ export type LibellesProduit = {
   categories: Record<string, string>
   erreurDonnees: string
   erreurSlug: string
+  erreurPhoto: string
   erreurRefuse: string
   erreurServeur: string
 }
@@ -101,13 +109,30 @@ export function FormulaireProduit({
     produit ? modifierProduit : creerProduit,
     {},
   )
-  // Les `id` doivent être uniques dans le document : douze formulaires
-  // d'édition coexistent sur la page, plus celui de création.
+  // Les `id` doivent être uniques dans le document : le formulaire du modal
+  // peut coexister avec un autre.
   const [prefixe] = useState(() => (produit ? `p-${produit.id}-` : 'nouveau-'))
+
+  /**
+   * Slug proposé automatiquement à partir du nom français — À LA CRÉATION
+   * SEULEMENT.
+   *
+   * Le slug d'un produit existant vit dans une URL publique
+   * (/boutique/<slug>) : le régénérer parce qu'on corrige une faute dans le
+   * nom casserait tout lien déjà partagé. En édition, le champ reste ce qu'il
+   * est, et c'est à la personne de décider.
+   *
+   * `slugTouche` gèle la proposition dès que le champ est modifié à la main :
+   * sans ça, taper un slug court comme `conteneur-20-pieds` puis retoucher le
+   * nom l'écraserait aussitôt.
+   */
+  const [slug, setSlug] = useState(produit?.slug ?? '')
+  const [slugTouche, setSlugTouche] = useState(false)
 
   const messages: Record<string, string> = {
     donnees: libelles.erreurDonnees,
     slug_pris: libelles.erreurSlug,
+    photo: libelles.erreurPhoto,
     refuse: libelles.erreurRefuse,
     serveur: libelles.erreurServeur,
   }
@@ -119,12 +144,20 @@ export function FormulaireProduit({
       {produit && <input type="hidden" name="id" value={produit.id} />}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Champ id={`${prefixe}slug`} libelle={libelles.slug}>
+        <Champ
+          id={`${prefixe}slug`}
+          libelle={libelles.slug}
+          aide={produit ? libelles.slugAideEdition : libelles.slugAideCreation}
+        >
           <input
             id={`${prefixe}slug`}
             name="slug"
             required
-            defaultValue={produit?.slug}
+            value={slug}
+            onChange={(e) => {
+              setSlugTouche(true)
+              setSlug(e.target.value)
+            }}
             pattern="[a-z0-9]+(-[a-z0-9]+)*"
             maxLength={80}
             className={CHAMP}
@@ -157,11 +190,12 @@ export function FormulaireProduit({
           </select>
         </Champ>
 
-        <Champ id={`${prefixe}prix`} libelle={libelles.prix} aide={libelles.prixAide}>
+        <Champ id={`${prefixe}prix`} libelle={libelles.prix}>
           <input
             id={`${prefixe}prix`}
             name="prix"
             type="number"
+            required
             min={0}
             step="0.01"
             defaultValue={produit?.prix ?? ''}
@@ -169,52 +203,58 @@ export function FormulaireProduit({
           />
         </Champ>
 
-        <Champ id={`${prefixe}nom_fr`} libelle={libelles.nomFr}>
-          <input
-            id={`${prefixe}nom_fr`}
-            name="nom_fr"
-            required
-            defaultValue={produit?.nom_fr}
-            maxLength={120}
+        <Champ id={`${prefixe}langue`} libelle={libelles.langue} aide={libelles.langueAide}>
+          <select
+            id={`${prefixe}langue`}
+            name="langue"
+            defaultValue={produit?.nom_en ? 'en' : 'fr'}
             className={CHAMP}
-          />
+          >
+            <option value="fr">{libelles.langueFr}</option>
+            <option value="en">{libelles.langueEn}</option>
+          </select>
         </Champ>
 
-        <Champ id={`${prefixe}nom_en`} libelle={libelles.nomEn}>
+        <Champ id={`${prefixe}nom`} libelle={libelles.nom}>
           <input
-            id={`${prefixe}nom_en`}
-            name="nom_en"
+            id={`${prefixe}nom`}
+            name="nom"
             required
-            defaultValue={produit?.nom_en}
+            minLength={2}
+            defaultValue={produit?.nom_en ?? produit?.nom_fr}
             maxLength={120}
+            onChange={(e) => {
+              if (!produit && !slugTouche) setSlug(slugifier(e.target.value))
+            }}
             className={CHAMP}
           />
         </Champ>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Champ id={`${prefixe}description_fr`} libelle={libelles.descriptionFr}>
-          <textarea
-            id={`${prefixe}description_fr`}
-            name="description_fr"
-            rows={3}
-            defaultValue={produit?.description_fr ?? ''}
-            maxLength={600}
-            className={cn(CHAMP, 'resize-y')}
-          />
-        </Champ>
+      <Champ id={`${prefixe}description`} libelle={libelles.description}>
+        <textarea
+          id={`${prefixe}description`}
+          name="description"
+          rows={3}
+          defaultValue={produit?.description_en ?? produit?.description_fr ?? ''}
+          maxLength={600}
+          className={cn(CHAMP, 'resize-y')}
+        />
+      </Champ>
 
-        <Champ id={`${prefixe}description_en`} libelle={libelles.descriptionEn}>
-          <textarea
-            id={`${prefixe}description_en`}
-            name="description_en"
-            rows={3}
-            defaultValue={produit?.description_en ?? ''}
-            maxLength={600}
-            className={cn(CHAMP, 'resize-y')}
-          />
-        </Champ>
-      </div>
+      {/* Téléversement de la photo. `accept` filtre le sélecteur de fichiers,
+          mais ne garantit rien : le type et la taille sont revérifiés côté
+          serveur, et le bucket lui-même refuse ce qui n'est pas une image
+          (allowed_mime_types, migration 0010). */}
+      <Champ id={`${prefixe}photo`} libelle={libelles.photo} aide={libelles.photoAide}>
+        <input
+          id={`${prefixe}photo`}
+          name="photo"
+          type="file"
+          accept="image/webp,image/jpeg,image/png,image/avif"
+          className="w-full text-sm text-ko-ink file:mr-4 file:min-h-[36px] file:cursor-pointer file:border file:border-ko-line file:bg-ko-cream file:px-4 file:text-sm file:text-ko-ink hover:file:border-ko-ink"
+        />
+      </Champ>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Champ id={`${prefixe}cadrage`} libelle={libelles.cadrage}>
