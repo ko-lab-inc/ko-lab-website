@@ -308,7 +308,11 @@ export default async function FicheProduitPage({ params }: Props) {
           calcul silencieusement. */}
       <div
         data-barre-achat
-        className="fixed inset-x-0 bottom-0 z-30 border-t border-ko-line bg-ko-white/95 p-4 backdrop-blur-sm lg:hidden"
+        // `ko-frost`, pas `ko-white` : seuls ko-scrim/ko-frost/ko-accent
+        // acceptent un modificateur d'opacité Tailwind (tailwind.config.ts) —
+        // `bg-ko-white/95` ne générait aucune règle, laissant la barre
+        // totalement transparente sur mobile.
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-ko-line bg-ko-frost/95 p-4 backdrop-blur-sm lg:hidden"
       >
         <div className="mx-auto flex max-w-container items-center justify-between gap-4">
           <p className="font-mono text-sm text-ko-ink">{prixFormate}</p>

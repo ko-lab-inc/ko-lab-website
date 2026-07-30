@@ -229,7 +229,10 @@ export function TableauProduits({
               return (
                 <li
                   key={p.id}
-                  className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 transition-colors duration-200 hover:bg-ko-cream/60"
+                  // `ko-cream` sans modificateur : cette couleur n'accepte pas
+                  // l'opacité Tailwind (tailwind.config.ts) — `/60` ne
+                  // générait aucune règle, la ligne ne réagissait pas au survol.
+                  className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 transition-colors duration-200 hover:bg-ko-cream"
                 >
                   {/* Vignette au même vocabulaire que la boutique : filet 1px,
                       fond blanc pur, `contain` ou `cover` selon le cadrage

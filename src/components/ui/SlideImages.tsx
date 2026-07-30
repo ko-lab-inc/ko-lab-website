@@ -157,7 +157,11 @@ export function SlideImages({
       // déjà que l'image ne dépasse pas sa boîte ; si un débordement apparaît
       // malgré tout — un très long texte de description, par exemple — il
       // vaut mieux le couper que casser l'écran plein cadre.
-      className="h-svh max-h-none w-svw max-w-none overflow-hidden border-0 bg-ko-black/95 p-0 text-ko-white backdrop:bg-ko-black/80"
+      // `ko-scrim`, pas `ko-black` : seuls ko-scrim/ko-frost/ko-accent
+      // acceptent un modificateur d'opacité Tailwind (voir tailwind.config.ts)
+      // — `bg-ko-black/95` ne générait aucune règle, laissant le fond blanc
+      // par défaut du <dialog>, d'où le titre text-ko-white illisible dessus.
+      className="h-svh max-h-none w-svw max-w-none overflow-hidden border-0 bg-ko-scrim/95 p-0 text-ko-white backdrop:bg-ko-scrim/80"
     >
       <div className="flex h-full flex-col overflow-hidden">
         {/* ---------------------------- Entête ---------------------------- */}
