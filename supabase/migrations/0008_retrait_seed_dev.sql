@@ -42,7 +42,7 @@
 -- contenu réel ajouté depuis :
 --
 --   select slug, titre_fr, publie, created_at from public.realisations order by created_at;
---   select slug, titre_fr, actif, created_at from public.postes_carrieres order by created_at;
+--   select titre_fr, actif, created_at from public.postes_carrieres order by created_at;
 
 update public.realisations
 set publie = false
@@ -53,9 +53,19 @@ where slug in (
 );
 
 -- postes_carrieres utilise `actif`, pas `publie` — voir 0001.
+--
+-- ⚠️ ET ELLE N'A PAS DE COLONNE `slug`. La première version de ce fichier
+-- ciblait `where slug = …` et échouait sur « column "slug" does not exist ».
+-- L'éditeur SQL de Supabase exécute le script dans une transaction : l'erreur
+-- a donc aussi annulé la mise à jour des réalisations plus haut, et rien n'est
+-- passé. Ce fichier est à rejouer en entier.
+--
+-- La table s'identifie par `id` (uuid généré) ou par le titre. On cible donc
+-- le titre — c'est exactement la clé que 0003 utilise lui-même dans son
+-- `where not exists` pour éviter le doublon, ce qui la rend fiable ici.
 update public.postes_carrieres
 set actif = false
-where slug = 'chef-equipe-terrain';
+where titre_fr = 'Chef d''équipe terrain';
 
 -- =============================================================================
 -- VÉRIFICATION — refaire la lecture publique
