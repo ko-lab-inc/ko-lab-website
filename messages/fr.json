@@ -594,6 +594,7 @@
     "alerte_prix_provisoires": "Trois prix sont encore provisoires : X1-Carbon, xTool P2, xTool F1.",
     "alerte_smtp": "Aucun service d’envoi de courriel configuré : validations d’adresse, réinitialisations et notifications de contact ne partent pas.",
     "alerte_demandes": "{n, plural, one {# demande non traitée} other {# demandes non traitées}}.",
+    "alerte_stock": "{n, plural, one {# produit en rupture ou en stock faible (moins de 5 unités).} other {# produits en rupture ou en stock faible (moins de 5 unités).}}",
     "chiffre_affaires": "Chiffre d'affaires",
     "commandes": "Commandes",
     "clients": "Clients",

@@ -8,6 +8,8 @@ import {
   type EtatProduit,
 } from '@/app/(admin)/[locale]/admin/catalogue/actions'
 import { buttonVariants } from '@/components/ui/Button'
+import { EtiquetteStock } from '@/components/ui/EtiquetteStock'
+import { statutSuggere } from '@/lib/stock'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -121,6 +123,31 @@ export function FormulaireProduit({
   // peut coexister avec un autre.
   const [prefixe] = useState(() => (produit ? `p-${produit.id}-` : 'nouveau-'))
 
+  /**
+   * Quantité et statut, contrôlés — pas par choix, par nécessité : le badge
+   * ci-dessous et la suggestion automatique de statut doivent réagir à la
+   * frappe, ce que `defaultValue` ne permet pas.
+   *
+   * `statutSuggere` ne fait que SUGGÉRER : elle ne touche jamais un statut
+   * fournisseur (en_commande, en_livraison) choisi à la main, et l'équipe
+   * peut toujours changer le menu déroulant après coup — voir lib/stock.ts.
+   */
+  const [quantite, setQuantite] = useState(produit?.quantite ?? 0)
+  const [statutStock, setStatutStock] = useState(produit?.statut_stock ?? 'en_stock')
+
+  function surChangementQuantite(e: React.ChangeEvent<HTMLInputElement>) {
+    const valeur = Math.max(0, Math.trunc(Number(e.target.value) || 0))
+    setQuantite(valeur)
+    setStatutStock((actuel) => statutSuggere(actuel, valeur))
+  }
+
+  const libellesStatutStock: Record<string, string> = {
+    en_stock: libelles.statutEnStock,
+    rupture: libelles.statutRupture,
+    en_commande: libelles.statutEnCommande,
+    en_livraison: libelles.statutEnLivraison,
+  }
+
   const messages: Record<string, string> = {
     donnees: libelles.erreurDonnees,
     photo: libelles.erreurPhoto,
@@ -182,7 +209,8 @@ export function FormulaireProduit({
             required
             min={0}
             step={1}
-            defaultValue={produit?.quantite ?? 0}
+            value={quantite}
+            onChange={surChangementQuantite}
             className={CHAMP}
           />
         </Champ>
@@ -192,7 +220,8 @@ export function FormulaireProduit({
             <select
               id={`${prefixe}statut_stock`}
               name="statut_stock"
-              defaultValue={produit?.statut_stock ?? 'en_stock'}
+              value={statutStock}
+              onChange={(e) => setStatutStock(e.target.value)}
               className={CHAMP}
             >
               <option value="en_stock">{libelles.statutEnStock}</option>
@@ -201,6 +230,21 @@ export function FormulaireProduit({
               <option value="en_livraison">{libelles.statutEnLivraison}</option>
             </select>
           </Champ>
+
+          {/* Aperçu en direct — demande de Christian : voir l'effet du
+              changement ici, sans attendre l'enregistrement. */}
+          <p className="mt-2">
+            <EtiquetteStock
+              statut={statutStock}
+              quantite={quantite}
+              texte={
+                statutStock === 'en_stock'
+                  ? `${quantite} ${libelles.quantite.toLowerCase()}`
+                  : (libellesStatutStock[statutStock] ?? statutStock)
+              }
+              className="label-mono"
+            />
+          </p>
         </div>
 
         <Champ id={`${prefixe}nom`} libelle={libelles.nom}>

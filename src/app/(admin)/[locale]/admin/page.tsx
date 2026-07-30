@@ -23,6 +23,7 @@ import {
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import { construireProduits } from '@/lib/produits'
+import { stockEnAttention } from '@/lib/stock'
 import { TYPES_DEMANDE } from '@/types'
 
 type Props = { params: Promise<{ locale: string }> }
@@ -78,7 +79,7 @@ export default async function TableauDeBordPage({ params }: Props) {
   const debutFenetre = new Date(Date.now() - (JOURS - 1) * 86_400_000)
   debutFenetre.setHours(0, 0, 0, 0)
 
-  const [{ count: total }, { count: nouvelles }, { count: comptes }, fenetre, recentes] =
+  const [{ count: total }, { count: nouvelles }, { count: comptes }, fenetre, recentes, stock] =
     await Promise.all([
       // `head: true` : on veut le compte, pas les lignes. Ramener la table
       // entière pour en mesurer la longueur deviendrait coûteux dès quelques
@@ -100,6 +101,9 @@ export default async function TableauDeBordPage({ params }: Props) {
         .select('id, created_at, type, nom, email, statut')
         .order('created_at', { ascending: false })
         .limit(8),
+      // Quantité/statut de tout le catalogue (migration 0013) — une douzaine
+      // de lignes, filtrées ici même plutôt qu'en SQL : voir stockEnAttention.
+      supabase.from('produits_boutique').select('quantite, statut_stock'),
     ])
 
   const lignes = fenetre.data ?? []
@@ -148,6 +152,10 @@ export default async function TableauDeBordPage({ params }: Props) {
    * Calculés sur l'état RÉEL du projet, pas sur un stock qui n'existe pas.
    * Chacun correspond à quelque chose qu'on peut aller corriger aujourd'hui.
    */
+  const produitsEnAttention = (stock.data ?? []).filter((p) =>
+    stockEnAttention(p.statut_stock, p.quantite),
+  ).length
+
   const alertes = [
     produits.filter((p) => p.prixIndicatif === null).length > 0
       ? t('alerte_prix_absents')
@@ -157,6 +165,7 @@ export default async function TableauDeBordPage({ params }: Props) {
     t('alerte_prix_provisoires'),
     process.env.RESEND_API_KEY ? null : t('alerte_smtp'),
     (nouvelles ?? 0) > 0 ? t('alerte_demandes', { n: nouvelles ?? 0 }) : null,
+    produitsEnAttention > 0 ? t('alerte_stock', { n: produitsEnAttention }) : null,
   ].filter((a): a is string => a !== null)
 
   return (

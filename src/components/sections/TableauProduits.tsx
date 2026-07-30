@@ -10,6 +10,7 @@ import {
   type Produit,
 } from '@/components/sections/FormulaireProduit'
 import { buttonVariants } from '@/components/ui/Button'
+import { EtiquetteStock } from '@/components/ui/EtiquetteStock'
 import {
   IconeAjouter,
   IconeCrayon,
@@ -272,10 +273,17 @@ export function TableauProduits({
                   {/* Suivi de stock — masqué sous lg, la ligne est déjà dense
                       à cette largeur. Le détail (l'œil) reste la source
                       complète sur mobile. */}
-                  <span className="label-mono hidden w-28 shrink-0 text-right text-ko-muted xl:block">
-                    {p.statut_stock === 'en_stock'
-                      ? `${p.quantite} ${libelles.quantite.toLowerCase()}`
-                      : libellesStatutStock[p.statut_stock] ?? p.statut_stock}
+                  <span className="label-mono hidden w-28 shrink-0 xl:block">
+                    <EtiquetteStock
+                      statut={p.statut_stock}
+                      quantite={p.quantite}
+                      texte={
+                        p.statut_stock === 'en_stock'
+                          ? `${p.quantite} ${libelles.quantite.toLowerCase()}`
+                          : (libellesStatutStock[p.statut_stock] ?? p.statut_stock)
+                      }
+                      className="justify-end"
+                    />
                   </span>
 
                   {/* Publication : bouton et non simple étiquette — c'est le
@@ -530,8 +538,12 @@ export function TableauProduits({
                 </div>
                 <div>
                   <dt className="label-mono text-ko-muted">{libelles.statutStock}</dt>
-                  <dd className="mt-1 text-sm text-ko-ink">
-                    {libellesStatutStock[voir.statut_stock] ?? voir.statut_stock}
+                  <dd className="mt-1 text-sm">
+                    <EtiquetteStock
+                      statut={voir.statut_stock}
+                      quantite={voir.quantite}
+                      texte={libellesStatutStock[voir.statut_stock] ?? voir.statut_stock}
+                    />
                   </dd>
                 </div>
               </dl>
