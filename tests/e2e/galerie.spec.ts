@@ -121,3 +121,69 @@ test.describe('Galerie — visionneuse', () => {
     expect(debordement, `${debordement}px de débordement`).toBeLessThanOrEqual(0)
   })
 })
+
+test.describe('Galerie — bande continue de vignettes', () => {
+  test('n’apparaît que sous les cartes ayant plusieurs photos', async ({ page }) => {
+    await page.goto('/fr/realisations')
+    await page.getByRole('button', { name: /Voir les images/ }).first().scrollIntoViewIfNeeded()
+
+    // Les trois réalisations du repli ont 3, 2 et 3 images — chacune a donc sa
+    // bande. Si une seule réalisation à image unique existait, elle n'en
+    // aurait aucune : c'est la même condition que le badge « N images ».
+    const bandes = page.getByRole('group', { name: /Photos de la réalisation/ })
+    await expect(bandes).toHaveCount(3)
+  })
+
+  test('cliquer une vignette ouvre la visionneuse SUR cette image', async ({ page }) => {
+    await page.goto('/fr/realisations')
+
+    const premiereBande = page
+      .getByRole('group', { name: /Photos de la réalisation/ })
+      .first()
+    await premiereBande.scrollIntoViewIfNeeded()
+
+    // Troisième vignette de la première réalisation (qui en compte 3).
+    await premiereBande.getByRole('button').nth(2).click()
+
+    await expect(page.getByRole('dialog').getByText('3 sur 3')).toBeVisible()
+  })
+
+  test('les flèches font défiler la bande sans ouvrir la visionneuse', async ({ page }) => {
+    await page.goto('/fr/realisations')
+
+    const premiereBande = page
+      .getByRole('group', { name: /Photos de la réalisation/ })
+      .first()
+    await premiereBande.scrollIntoViewIfNeeded()
+
+    const avant = await premiereBande.evaluate((el) => el.scrollLeft)
+    await page.getByRole('button', { name: 'Image suivante' }).first().click()
+    await page.waitForTimeout(500)
+    const apres = await premiereBande.evaluate((el) => el.scrollLeft)
+
+    expect(apres).toBeGreaterThan(avant)
+    // La visionneuse ne doit pas s'être ouverte : les flèches de la bande ne
+    // sont pas celles de la visionneuse, bien qu'elles portent le même nom.
+    await expect(page.getByRole('dialog')).toHaveCount(0)
+  })
+
+  test('toutes les vignettes ont la même taille, quelle que soit la photo', async ({ page }) => {
+    await page.goto('/fr/realisations')
+
+    const premiereBande = page
+      .getByRole('group', { name: /Photos de la réalisation/ })
+      .first()
+    await premiereBande.scrollIntoViewIfNeeded()
+
+    const tailles = await premiereBande.getByRole('button').evaluateAll((boutons) =>
+      boutons.map((b) => {
+        const r = b.getBoundingClientRect()
+        return `${Math.round(r.width)}x${Math.round(r.height)}`
+      }),
+    )
+
+    // Rognées en `object-cover` dans une boîte fixe : peu importe le ratio de
+    // la photo d'origine, la vignette doit toujours occuper la même surface.
+    expect(new Set(tailles).size, tailles.join(', ')).toBe(1)
+  })
+})

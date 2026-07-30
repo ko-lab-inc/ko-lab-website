@@ -9,6 +9,7 @@ import {
   IconeCamion,
   IconeEquipe,
   IconeEtiquette,
+  IconeGalerie,
   IconeReglages,
   IconeTableauBord,
 } from '@/components/ui/Icones'
@@ -105,6 +106,11 @@ export default async function AdminLayout({ children, params }: Props) {
           href: `/${locale}/admin/catalogue`,
           label: t('nav_catalogue'),
           icone: <IconeBadgeStock taille={17} />,
+        },
+        {
+          href: `/${locale}/admin/realisations`,
+          label: t('nav_realisations'),
+          icone: <IconeGalerie taille={17} />,
         },
       ],
     },

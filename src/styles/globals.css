@@ -345,3 +345,17 @@
     transition-delay: 0ms;
   }
 }
+
+/* =============================================================================
+   Bande de défilement horizontal sans scrollbar visible — BandeauImages.
+   =============================================================================
+   Le geste de défilement (tactile, trackpad, flèches) reste entier ; seule la
+   scrollbar SYSTÈME disparaît. Aucun utilitaire Tailwind ne couvre les deux
+   propriétés nécessaires (Firefox et WebKit divergent), d'où cette règle hors
+   calque plutôt qu'un plugin pour un seul besoin. */
+.scrollbar-none {
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

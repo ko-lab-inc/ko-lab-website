@@ -40,8 +40,6 @@ export type ImageSlide = {
    * l'image est purement illustrative et n'ajoute rien au texte.
    */
   alt: string
-  /** Classe de recentrage (`object-[50%_58%]`) pour les cadrages difficiles. */
-  cadrage?: string
   style?: React.CSSProperties
 }
 
@@ -154,28 +152,48 @@ export function SlideImages({
       onClick={(e) => {
         if (e.target === boite.current) boite.current?.close()
       }}
-      className="h-svh max-h-none w-svw max-w-none border-0 bg-ko-black/95 p-0 text-ko-white backdrop:bg-ko-black/80"
+      // `overflow-hidden` sur les deux niveaux : un visionneur plein écran ne
+      // doit jamais faire apparaître de scrollbar. `object-contain` garantit
+      // déjà que l'image ne dépasse pas sa boîte ; si un débordement apparaît
+      // malgré tout — un très long texte de description, par exemple — il
+      // vaut mieux le couper que casser l'écran plein cadre.
+      className="h-svh max-h-none w-svw max-w-none overflow-hidden border-0 bg-ko-black/95 p-0 text-ko-white backdrop:bg-ko-black/80"
     >
-      <div className="flex h-full flex-col">
+      <div className="flex h-full flex-col overflow-hidden">
         {/* ---------------------------- Entête ---------------------------- */}
         <div className="flex shrink-0 items-start justify-between gap-4 px-5 py-4 lg:px-8 lg:py-6">
           <div className="min-w-0">
-            <h2 className="truncate font-serif text-[20px] font-light leading-tight lg:text-[26px]">
+            {/* `text-ko-white` explicite plutôt que l'héritage du `<dialog>` :
+                un poids léger (300) en petite taille sur noir pur perd déjà du
+                contraste ; laisser la couleur à l'héritage aurait ajouté un
+                risque de plus si un jour un wrapper intermédiaire change la
+                couleur du texte. */}
+            <h2 className="truncate font-serif text-[20px] font-normal leading-tight text-ko-white lg:text-[26px]">
               {titre}
             </h2>
             {description && (
-              <p className="mt-1 max-w-[70ch] text-sm leading-relaxed text-ko-frost/70">
+              <p className="mt-1 max-w-[70ch] text-sm leading-relaxed text-ko-frost/80">
                 {description}
               </p>
             )}
           </div>
 
+          {/*
+            Fermeture — le seul chemin de retour vers la page, donc jamais
+            discrète.
+
+            ⚠️ Corrigé : une icône seule à 70 % d'opacité sur fond noir devient
+            quasi invisible — relevé par Christian, qui ne la voyait plus une
+            fois la visionneuse ouverte. Même traitement que les flèches
+            maintenant : pastille pleine et opaque, visible sans survol, pas
+            seulement au passage de la souris.
+          */}
           <button
             type="button"
             onClick={() => boite.current?.close()}
             aria-label={libelles.fermer}
             title={libelles.fermer}
-            className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center text-ko-frost/70 transition-colors duration-200 hover:text-ko-white"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ko-scrim/55 text-ko-white transition-colors duration-200 hover:bg-ko-blue"
           >
             <IconeFermer taille={20} />
           </button>
@@ -185,43 +203,68 @@ export function SlideImages({
         <div
           onTouchStart={debutToucher}
           onTouchEnd={finToucher}
-          className="relative min-h-0 flex-1"
+          className="relative flex min-h-0 flex-1 items-center justify-center px-4 pb-2 lg:px-8"
         >
           {/*
-            Toutes les images sont montées, une seule visible.
+            La « scène ».
 
-            ⚠️ Le réflexe serait de ne rendre que l'image courante. Elle serait
-            alors téléchargée au moment du clic sur « suivant » : sur une
-            connexion de chantier, ça fait un écran noir d'une seconde à chaque
-            passage. Montées ensemble, les suivantes sont déjà en cache.
-
-            C'est tenable parce qu'une réalisation compte quelques images, pas
-            deux cents. Le jour où une série devient longue, ne monter que
-            l'image courante et ses deux voisines.
+            ⚠️ POURQUOI UNE BOÎTE À TAILLE FIXE, ET PAS `inset-0` DIRECTEMENT
+            SUR LE CONTENEUR PLEIN ÉCRAN.
+            Sans elle, chaque photo est mise à l'échelle du plein écran
+            SÉPARÉMENT : un paysage remplit une grande partie de l'écran, un
+            portrait suivant se retrouve visuellement bien plus petit — deux
+            tailles perçues différentes d'une image à l'autre, pour la même
+            visionneuse. La scène fixe la même boîte pour toutes les photos ;
+            chacune s'y contient à sa manière (un portrait y sera pilier-boxé,
+            un paysage la remplira davantage en largeur), mais le CADRE, lui,
+            ne change jamais d'une image à l'autre.
           */}
-          {images.map((im, i) => (
-            <div
-              key={im.src}
-              aria-hidden={i !== index}
-              className={cn(
-                'absolute inset-0 transition-opacity duration-300',
-                i === index ? 'opacity-100' : 'pointer-events-none opacity-0',
-              )}
-            >
-              <Image
-                src={im.src}
-                alt={i === index ? im.alt : ''}
-                fill
-                // `contain` : une photo de chantier recadrée en `cover` perd
-                // justement ce qu'on est venu regarder.
-                className={cn('object-contain', im.cadrage)}
-                style={im.style}
-                sizes="100vw"
-                quality={85}
-                priority={i === indexInitial}
-              />
-            </div>
-          ))}
+          <div className="relative h-full w-full max-w-[1100px]">
+            {/*
+              Toutes les images sont montées, une seule visible.
+
+              ⚠️ Le réflexe serait de ne rendre que l'image courante. Elle
+              serait alors téléchargée au moment du clic sur « suivant » : sur
+              une connexion de chantier, ça fait un écran noir d'une seconde à
+              chaque passage. Montées ensemble, les suivantes sont déjà en
+              cache.
+
+              C'est tenable parce qu'une réalisation compte quelques images,
+              pas deux cents. Le jour où une série devient longue, ne monter
+              que l'image courante et ses deux voisines.
+            */}
+            {images.map((im, i) => (
+              <div
+                key={im.src}
+                aria-hidden={i !== index}
+                className={cn(
+                  'absolute inset-0 transition-opacity duration-300',
+                  i === index ? 'opacity-100' : 'pointer-events-none opacity-0',
+                )}
+              >
+                <Image
+                  src={im.src}
+                  alt={i === index ? im.alt : ''}
+                  fill
+                  // `contain` : une photo de chantier recadrée en `cover` perd
+                  // justement ce qu'on est venu regarder.
+                  //
+                  // ⚠️ AUCUN `object-position` ici, à la différence des cartes
+                  // de la grille. Un recadrage comme `object-[22%_40%]` a un
+                  // sens pour un `object-cover` qui ROGNE l'image dans un
+                  // cadre fixe — il indique quelle partie garder. En
+                  // `object-contain`, rien n'est rogné : ce même décalage
+                  // pousse l'image entière hors du centre de la boîte, avec un
+                  // grand vide de l'autre côté.
+                  className="object-contain"
+                  style={im.style}
+                  sizes="(max-width: 1100px) 100vw, 1100px"
+                  quality={85}
+                  priority={i === indexInitial}
+                />
+              </div>
+            ))}
+          </div>
 
           {total > 1 && (
             <>

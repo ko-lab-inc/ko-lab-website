@@ -234,15 +234,32 @@ async function contrainteRole() {
 
 /* -- 4. stockage ------------------------------------------------------------- */
 
-async function stockage() {
-  console.log('\n4 · Bucket des photos produit')
+/**
+ * Un bucket de photos, sondé une fois par appelant.
+ *
+ * Factorisé plutôt que dupliqué : produits (0010) et réalisations (0012)
+ * suivent EXACTEMENT le même schéma de politiques — bucket public, écriture
+ * réservée à l'équipe. Deux copies auraient fini par diverger silencieusement
+ * à la première correction apportée à l'une des deux.
+ */
+async function bucketPhotos(nom, migration) {
+  console.log(`\n4 · Bucket des photos ${nom}`)
 
-  const r = await fetch(`${URL_BASE}/storage/v1/bucket/produits`, {
+  const r = await fetch(`${URL_BASE}/storage/v1/bucket/${nom}`, {
     headers: { apikey: CLE_SERVICE ?? CLE_PUBLIQUE, Authorization: `Bearer ${CLE_SERVICE ?? CLE_PUBLIQUE}` },
   })
 
-  if (r.status === 404) {
-    verdict(false, 'bucket « produits » ABSENT', 'le téléversement échouera — migration 0010 non appliquée')
+  // ⚠️ PAS `r.status === 404`. L'API Storage de Supabase renvoie un bucket
+  // manquant en HTTP 400, avec le vrai code dans le CORPS JSON
+  // (`{ statusCode: "404", error: "Bucket not found" }`) — un statut HTTP 404
+  // littéral n'arrive jamais ici. Vérifier seulement le statut HTTP a d'abord
+  // laissé passer un faux « bucket présent », les champs lus valant
+  // `undefined` sans que rien ne l'signale.
+  if (!r.ok) {
+    // `note`, pas `verdict` : un bucket absent avant que sa migration soit
+    // jouée est un état ATTENDU, pas une mauvaise configuration — même
+    // raisonnement que la table `reglages` absente en section 6.
+    note(`bucket « ${nom} » absent`, `le téléversement échouera tant que la migration ${migration} n'est pas exécutée`)
     return
   }
 
@@ -250,7 +267,7 @@ async function stockage() {
   verdict(true, 'bucket présent', `public=${b.public}, limite=${b.file_size_limit}`)
 
   // Téléversement anonyme : doit être refusé.
-  const envoi = await fetch(`${URL_BASE}/storage/v1/object/produits/audit-${Date.now()}.txt`, {
+  const envoi = await fetch(`${URL_BASE}/storage/v1/object/${nom}/audit-${Date.now()}.txt`, {
     method: 'POST',
     headers: {
       apikey: CLE_PUBLIQUE,
@@ -260,6 +277,11 @@ async function stockage() {
     body: 'audit',
   })
   verdict(envoi.status !== 200, `téléversement anonyme ${envoi.status === 200 ? 'ACCEPTÉ' : 'refusé'}`, `statut ${envoi.status}`)
+}
+
+async function stockage() {
+  await bucketPhotos('produits', '0010')
+  await bucketPhotos('realisations', '0012')
 }
 
 /* -- 5. données de développement en production ------------------------------- */

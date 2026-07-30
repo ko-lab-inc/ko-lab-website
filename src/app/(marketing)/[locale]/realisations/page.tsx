@@ -7,8 +7,9 @@ import {
   type RealisationCarte,
 } from '@/components/sections/GalerieRealisations'
 import { Reveal } from '@/components/ui/Reveal'
-import { routing } from '@/i18n/routing'
+import { routing, type AppLocale } from '@/i18n/routing'
 import { CADRAGES, IMAGES } from '@/lib/images'
+import { lireRealisationsPubliees, type RealisationPubliee } from '@/lib/realisations'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -45,19 +46,39 @@ export default async function RealisationsPage({ params }: Props) {
   const t = await getTranslations('Realisations')
 
   /**
-   * ⚠️ CONTENU PROVISOIRE — trois entrées en attendant Supabase.
+   * Base d'abord, contenu provisoire en repli.
    *
-   * Les chaînes sont résolues ICI, côté serveur, puis passées à la galerie
-   * cliente. Sans ça, il faudrait embarquer le catalogue de traductions dans
-   * le bundle navigateur juste pour afficher trois titres.
+   * ---------------------------------------------------------------------------
+   * ⚠️ POURQUOI UN REPLI, ET NON UN SIMPLE TABLEAU VIDE
    *
-   * ⚠️ Les séries d'images réutilisent des photos déjà présentes ailleurs sur
-   * le site. C'est visible et assumé : ce sont les mêmes images de banque que
-   * partout, en attendant les vraies photos de chantier KO-LAB. La visionneuse,
-   * elle, est définitive — le jour où les photos arrivent, seule cette liste
-   * change.
+   * `lireRealisationsPubliees()` renvoie `null` tant qu'AUCUNE réalisation
+   * n'a été publiée avec au moins une photo depuis /admin/realisations — c'est
+   * le cas aujourd'hui : les trois lignes de démonstration ont été dépubliées
+   * (elles étaient inventées), et rien de réel n'a encore été saisi. Sans
+   * repli, la galerie publique se viderait le jour du déploiement de cette
+   * fonctionnalité, avant même que Christian ait eu le temps d'y ajouter un
+   * seul chantier.
+   *
+   * Le contenu provisoire ci-dessous restera donc affiché jusqu'à ce qu'une
+   * première réalisation soit publiée — à cet instant, `lireRealisationsPubliees()`
+   * cesse de renvoyer `null` et ce tableau de repli n'est plus jamais atteint.
+   * Rien à changer ici ce jour-là.
+   * ---------------------------------------------------------------------------
    */
-  const realisations: readonly RealisationCarte[] = [
+  const publiees = await lireRealisationsPubliees()
+
+  const libellesCategories = {
+    terrain: t('filtre_terrain'),
+    installation: t('filtre_installation'),
+    lab: t('filtre_lab'),
+    equipement: t('filtre_equipement'),
+  }
+
+  // ⚠️ CONTENU PROVISOIRE — voir la note ci-dessus. Les séries d'images
+  // réutilisent des photos déjà présentes ailleurs sur le site : ce sont les
+  // mêmes images de banque que partout, en attendant les vraies photos de
+  // chantier KO-LAB.
+  const repli: readonly RealisationCarte[] = [
     {
       cle: 'terrain',
       categorie: 'terrain',
@@ -81,13 +102,7 @@ export default async function RealisationsPage({ params }: Props) {
       src: IMAGES.installationNacelle,
       cadrage: CADRAGES.installationNacelle,
       desature: false,
-      serie: [
-        {
-          src: IMAGES.besoinInstaller,
-          alt: t('alt.installation_echafaudage'),
-          cadrage: CADRAGES.besoinInstaller,
-        },
-      ],
+      serie: [{ src: IMAGES.besoinInstaller, alt: t('alt.installation_echafaudage') }],
     },
     {
       cle: 'lab',
@@ -111,6 +126,10 @@ export default async function RealisationsPage({ params }: Props) {
       ],
     },
   ]
+
+  const realisations: readonly RealisationCarte[] = publiees
+    ? publiees.map((r) => versCarte(r, locale as AppLocale, libellesCategories))
+    : repli
 
   // Les catégories du skill 21. `equipement` est proposée dès maintenant même
   // sans réalisation associée : le message « aucun résultat » informe mieux
@@ -157,4 +176,56 @@ export default async function RealisationsPage({ params }: Props) {
       </section>
     </>
   )
+}
+
+/**
+ * Ligne de base → carte affichable.
+ *
+ * ---------------------------------------------------------------------------
+ * PAS DE CADRAGE NI DE DÉSATURATION POUR LE CONTENU RÉEL
+ *
+ * `cadrage` (recentrage `object-position`) et `desature` (le filtre chaud
+ * appliqué aux photos de nuit sous-exposées) sont des correctifs pensés pour
+ * DES PHOTOS DE BANQUE dépareillées — elles n'appartiennent pas au même
+ * reportage et n'ont donc jamais le même ton ni le même cadrage naturel. Une
+ * vraie série de photos KO-LAB, prise par la même personne le même jour, n'a
+ * pas ce problème : `object-center` et aucun filtre suffisent.
+ *
+ * ⚠️ Si un jour une photo réelle a besoin d'un recadrage précis, ce sera un
+ * réglage PAR IMAGE dans /admin/realisations, pas une constante de ce fichier
+ * — la table n'a volontairement pas cette colonne tant que le besoin ne
+ * s'est pas présenté.
+ */
+function versCarte(
+  r: RealisationPubliee,
+  locale: AppLocale,
+  libellesCategories: Record<string, string>,
+): RealisationCarte {
+  const anglais = locale === 'en'
+
+  // `titre_fr` et `titre_en` sont tous deux NOT NULL (contrainte réelle de la
+  // table) : pas de repli à calculer, contrairement au catalogue.
+  const titre = anglais ? r.titre_en : r.titre_fr
+  const description = anglais
+    ? (r.description_en ?? r.description_fr ?? '')
+    : (r.description_fr ?? r.description_en ?? '')
+
+  const [premiere, ...suite] = r.images
+
+  return {
+    cle: r.slug,
+    categorie: r.categorie,
+    titre,
+    description,
+    tag: libellesCategories[r.categorie] ?? r.categorie,
+    // `premiere` est garantie par `lireRealisationsPubliees()`, qui écarte
+    // déjà toute réalisation sans la moindre image.
+    src: premiere?.url ?? '',
+    cadrage: 'object-center',
+    desature: false,
+    serie: suite.map((im) => ({
+      src: im.url,
+      alt: anglais ? im.alt_en || im.alt_fr : im.alt_fr || im.alt_en,
+    })),
+  }
 }

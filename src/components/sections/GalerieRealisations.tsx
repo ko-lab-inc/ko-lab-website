@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 
+import { BandeauImages } from '@/components/ui/BandeauImages'
 import { SlideImages, type ImageSlide } from '@/components/ui/SlideImages'
 import { FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD } from '@/lib/images'
 import { cn } from '@/lib/utils/cn'
@@ -83,6 +84,11 @@ export function GalerieRealisations({
    * pour n'en montrer qu'un à la fois.
    */
   const [ouverte, setOuverte] = useState<RealisationCarte | null>(null)
+  // Index de départ dans la visionneuse — 0 par défaut (le clic sur la carte
+  // ou le badge « N images »), mais une vignette précise de la bande continue
+  // (BandeauImages) doit ouvrir directement SUR ELLE, pas revenir à la
+  // première image de la série.
+  const [indexOuverture, setIndexOuverture] = useState(0)
 
   const libellesSlide = useMemo(
     () => ({
@@ -225,7 +231,10 @@ export function GalerieRealisations({
                 {serie.length > 1 && (
                   <button
                     type="button"
-                    onClick={() => setOuverte(r)}
+                    onClick={() => {
+                      setIndexOuverture(0)
+                      setOuverte(r)
+                    }}
                     aria-label={`${t('voir_serie')} — ${r.titre}`}
                     className="absolute inset-0 cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ko-blue"
                   >
@@ -256,6 +265,28 @@ export function GalerieRealisations({
                   </p>
                 </div>
               </div>
+
+              {/* Bande continue — « autre forme d'exposition » demandée en plus
+                  de la visionneuse plein écran : parcourir la série sans avoir
+                  à ouvrir de fenêtre. N'apparaît que s'il y a plus d'une photo,
+                  même condition que le badge « N images » ci-dessus. */}
+              {serie.length > 1 && (
+                <div className="p-3">
+                  <BandeauImages
+                    images={serie}
+                    onSelectionner={(index) => {
+                      setIndexOuverture(index)
+                      setOuverte(r)
+                    }}
+                    libelles={{
+                      groupe: `${t('bandeau_groupe')} — ${r.titre}`,
+                      position: (n, total) => t('slide_position', { n, total }),
+                      precedent: t('slide_precedent'),
+                      suivant: t('slide_suivant'),
+                    }}
+                  />
+                </div>
+              )}
             </article>
             )
           })}
@@ -269,6 +300,7 @@ export function GalerieRealisations({
         <SlideImages
           key={ouverte.cle}
           ouvert
+          indexInitial={indexOuverture}
           onFermer={() => setOuverte(null)}
           images={serieDe(ouverte)}
           titre={ouverte.titre}
@@ -294,8 +326,12 @@ function serieDe(r: RealisationCarte): readonly ImageSlide[] {
       // Vide : le titre et la description de la réalisation sont déjà lus
       // dans l'entête de la visionneuse. Répéter ferait dire deux fois la
       // même chose.
+      //
+      // ⚠️ PAS de `cadrage` ici. `r.cadrage` est un `object-position` pensé
+      // pour le recadrage `object-cover` DE LA CARTE — appliqué tel quel à la
+      // visionneuse, en `object-contain`, il décentrait l'image au lieu de la
+      // recentrer (voir SlideImages.tsx pour le détail).
       alt: '',
-      cadrage: r.cadrage,
       style: r.desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN,
     },
     ...(r.serie ?? []),
