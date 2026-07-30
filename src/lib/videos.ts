@@ -36,9 +36,12 @@ import type { VignetteVideo } from '@/components/ui/BandeauVideos'
  *      dans la CSP, et une URL qu'on ne contrôle pas.
  *   3. Un titre court par vidéo.
  *
- * Tant que ce tableau est vide, la section entière ne s'affiche pas : pas de
- * titre suivi d'un trou. Dès qu'il contient une entrée, elle apparaît — sans
- * autre changement de code.
+ * Tant que ce tableau est vide, la section s'affiche avec quatre EMPLACEMENTS
+ * RÉSERVÉS (« Vidéo à venir ») — pas masquée. Le document de cadrage le
+ * demande explicitement, et une section invisible empêchait Christian de
+ * valider le format sur la page réelle. Dès qu'une entrée est ajoutée ici,
+ * elle remplace un emplacement, sans autre changement de code et sans
+ * décalage de mise en page (même format 16/9).
  *
  * ⚠️ Aucune ouverture de CSP n'est nécessaire tant qu'on s'en tient à ce
  * modèle (vignette locale + lien sortant). Elle le deviendrait seulement si

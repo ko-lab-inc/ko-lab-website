@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { useRef } from 'react'
 
 import { IconeLecture } from '@/components/ui/Icones'
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 
 /**
  * Bande continue de vidéos — quatre visibles, défilement horizontal.
@@ -57,12 +58,22 @@ export type VignetteVideo = {
   vignette: string
 }
 
+/** Nombre d'emplacements réservés affichés tant qu'aucune vidéo n'est fournie. */
+const EMPLACEMENTS_RESERVES = 4
+
 export function BandeauVideos({
   videos,
   libelles,
 }: {
   videos: readonly VignetteVideo[]
-  libelles: { groupe: string; lire: string; precedent: string; suivant: string }
+  libelles: {
+    groupe: string
+    lire: string
+    precedent: string
+    suivant: string
+    /** Étiquette des emplacements réservés — ex. « Vidéo à venir ». */
+    aVenir: string
+  }
 }) {
   const piste = useRef<HTMLDivElement>(null)
 
@@ -75,10 +86,35 @@ export function BandeauVideos({
     el.scrollBy({ left: sens * el.clientWidth * 0.85, behavior: 'smooth' })
   }
 
-  // Rien à montrer : la section entière disparaît plutôt que d'afficher une
-  // bande vide. C'est l'appelant qui décide, mais ce garde-fou évite qu'un
-  // tableau vide produise un titre suivi d'un trou.
-  if (videos.length === 0) return null
+  /**
+   * Aucune vidéo fournie : quatre emplacements réservés, PAS une section
+   * masquée.
+   *
+   * ⚠️ Premier réflexe (corrigé) : ne rien rendre du tout. Christian n'a
+   * alors rien vu sur la page et n'a pas pu valider le format — « je ne vois
+   * pas la bande de vidéo sur le lab ». Le document de cadrage tranche
+   * d'ailleurs dans l'autre sens : « Prévoir des espaces réservés tant que la
+   * sélection finale n'est pas terminée » (voir PhotoPlaceholder, skill 22).
+   *
+   * L'emplacement réservé dit ce qui manque sans rien inventer — ni fausse
+   * vignette, ni faux titre, ni vidéo d'un tiers passée pour la nôtre. Il
+   * occupe exactement le format final (16/9), donc le remplacement par de
+   * vraies vidéos ne décalera pas la mise en page.
+   */
+  if (videos.length === 0) {
+    return (
+      <div className="flex gap-5 overflow-hidden">
+        {Array.from({ length: EMPLACEMENTS_RESERVES }, (_, i) => (
+          <div
+            key={i}
+            className="shrink-0 basis-[78%] sm:basis-[46%] lg:basis-[calc((100%-3.75rem)/4)]"
+          >
+            <PhotoPlaceholder ratio="aspect-video" label={libelles.aVenir} className="rounded-md" />
+          </div>
+        ))}
+      </div>
+    )
+  }
 
   return (
     <div className="relative">

@@ -39,10 +39,11 @@ type PageCapaciteProps = {
   /**
    * Bande de vidéos, entre la liste des capacités et le CTA.
    *
-   * Optionnelle et VIDE par défaut : seule la page Le LAB en prévoit une
-   * aujourd'hui (demande de Christian), et tant que `lib/videos.ts` ne
-   * contient rien, la section entière ne s'affiche pas — voir ce fichier
-   * pour ce qu'il faut fournir.
+   * ⚠️ C'est la PRÉSENCE de la prop qui décide, pas son contenu. Passer un
+   * tableau vide affiche la section avec des emplacements réservés (voir
+   * BandeauVideos) ; ne pas passer la prop du tout n'affiche rien. Seule la
+   * page Le LAB en prévoit une aujourd'hui — les trois autres pages de
+   * capacités omettent simplement la prop.
    */
   videos?: readonly VignetteVideo[]
 }
@@ -57,7 +58,7 @@ export async function PageCapacite({
   src,
   cadrage,
   desature = false,
-  videos = [],
+  videos,
 }: PageCapaciteProps) {
   const t = await getTranslations('Capacites.cta')
 
@@ -193,11 +194,12 @@ export async function PageCapacite({
       </section>
 
       {/* ------------------------------ Vidéos ------------------------------ */}
-      {/* Rendue seulement s'il y a des vidéos : pas de titre suivi d'un trou.
-          Placée APRÈS la liste des capacités et AVANT le CTA — on montre le
-          savoir-faire en images une fois qu'il a été énoncé, et juste avant
-          de proposer de démarrer un projet. */}
-      {videos.length > 0 && (
+      {/* Rendue dès que la prop est passée, même vide — la bande affiche alors
+          des emplacements réservés (voir BandeauVideos). Placée APRÈS la liste
+          des capacités et AVANT le CTA : on montre le savoir-faire en images
+          une fois qu'il a été énoncé, et juste avant de proposer de démarrer
+          un projet. */}
+      {videos !== undefined && (
         <section className="border-t border-ko-line bg-ko-white pb-16 lg:pb-24">
           <div className="mx-auto max-w-container px-6 lg:px-12">
             <Reveal>
@@ -212,6 +214,7 @@ export async function PageCapacite({
                     lire: t('videos_lire'),
                     precedent: t('videos_precedent'),
                     suivant: t('videos_suivant'),
+                    aVenir: t('videos_a_venir'),
                   }}
                 />
               </div>

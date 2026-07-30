@@ -214,7 +214,8 @@
       "videos_titre": "Le LAB en action",
       "videos_lire": "Regarder",
       "videos_precedent": "Vidéos précédentes",
-      "videos_suivant": "Vidéos suivantes"
+      "videos_suivant": "Vidéos suivantes",
+      "videos_a_venir": "Vidéo à venir"
     },
     "operations": {
       "label": "Opérations terrain",
