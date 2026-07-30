@@ -1,5 +1,6 @@
 import { hasLocale } from 'next-intl'
 import { getFormatter, getTranslations } from 'next-intl/server'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { AnneauSegments, BarresPeriode, ListeClassee } from '@/components/admin/Visualisations'
@@ -257,7 +258,17 @@ export default async function TableauDeBordPage({ params }: Props) {
 
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <h2 className="ko-h3 mb-4 text-[20px] text-ko-ink">{t('recentes')}</h2>
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h2 className="ko-h3 text-[20px] text-ko-ink">{t('recentes')}</h2>
+            {/* Relie le tableau de bord au nouvel écran de gestion — avant,
+                cliquer une ligne « récente » ne menait nulle part. */}
+            <Link
+              href={`/${locale}/admin/demandes`}
+              className="text-sm text-ko-blue transition-colors duration-200 hover:text-ko-ink"
+            >
+              {t('voir_toutes_demandes')} →
+            </Link>
+          </div>
           <PanneauAdmin sansPadding>
             {recentes.error ? (
               // Le message technique n'est PAS affiché : il révélerait noms de

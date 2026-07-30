@@ -6,6 +6,7 @@ import { notFound, redirect } from 'next/navigation'
 
 import { NavAdmin } from '@/components/layout/NavAdmin'
 import {
+  IconeAccompagnement,
   IconeBadgeStock,
   IconeCamion,
   IconeEquipe,
@@ -102,6 +103,11 @@ export default async function AdminLayout({ children, params }: Props) {
           href: `/${locale}/admin`,
           label: t('nav_tableau'),
           icone: <IconeTableauBord taille={17} />,
+        },
+        {
+          href: `/${locale}/admin/demandes`,
+          label: t('nav_demandes'),
+          icone: <IconeAccompagnement taille={17} />,
         },
         {
           href: `/${locale}/admin/catalogue`,
