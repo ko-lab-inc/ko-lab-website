@@ -621,7 +621,6 @@
     "retirer_vitrine": "Retirer de la vitrine",
     "supprimer": "Supprimer",
     "nouveau_produit": "Ajouter un produit",
-    "nouveau_produit_note": "Un produit créé arrive hors ligne. Vérifiez son prix et sa photo avant de le publier — la photo se dépose pour l'instant dans public/images/produits/ et se nomme d'après le slug.",
     "creer_produit": "Créer le produit",
     "produit_enregistre": "Enregistré.",
     "champ_slug": "Slug (URL)",

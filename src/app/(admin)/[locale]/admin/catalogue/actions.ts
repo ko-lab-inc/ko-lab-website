@@ -244,10 +244,14 @@ export async function creerProduit(
         cadrage: 'contain',
         ordre,
         images: photo ? [photo.url] : [],
-        // `publie: false` à la création, toujours. Un produit incomplet —
-        // sans photo, sans prix confirmé — ne doit pas apparaître en boutique
-        // parce qu'on a cliqué « Créer ». La publication est un geste séparé.
-        publie: false,
+        // `publie: true` dès la création — demande explicite de Christian :
+        // un produit ajouté doit être en ligne immédiatement, pas retrouvé
+        // « hors ligne » après coup. Le prix est déjà obligatoire à la
+        // saisie (schéma Zod ci-dessus) ; l'absence de photo, elle, retombe
+        // sur l'emplacement réservé de CatalogueBoutique.tsx plutôt que de
+        // bloquer l'affichage. Retirer de la vitrine reste un geste séparé
+        // (bouton Publier/Retirer), dans l'autre sens.
+        publie: true,
       })
 
       if (!error) {
