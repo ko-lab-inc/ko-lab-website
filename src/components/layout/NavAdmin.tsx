@@ -89,25 +89,25 @@ export function NavAdmin({
         onClick={() => setOuvert((v) => !v)}
         aria-expanded={ouvert}
         aria-controls="nav-admin-groupes"
-        className="mb-4 flex min-h-[44px] w-full items-center justify-between text-sm text-ko-ink lg:hidden"
+        className="mb-4 flex min-h-[44px] w-full items-center justify-between text-sm text-ko-white lg:hidden"
       >
         {ouvert ? labelFermer : labelMenu}
         <span aria-hidden="true" className="flex h-6 w-6 shrink-0 flex-col items-center justify-center gap-1.5">
           <span
             className={cn(
-              'block h-px w-5 bg-ko-ink transition-transform duration-250',
+              'block h-px w-5 bg-ko-white transition-transform duration-250',
               ouvert && 'translate-y-[5px] rotate-45',
             )}
           />
           <span
             className={cn(
-              'block h-px w-5 bg-ko-ink transition-opacity duration-250',
+              'block h-px w-5 bg-ko-white transition-opacity duration-250',
               ouvert && 'opacity-0',
             )}
           />
           <span
             className={cn(
-              'block h-px w-5 bg-ko-ink transition-transform duration-250',
+              'block h-px w-5 bg-ko-white transition-transform duration-250',
               ouvert && '-translate-y-[5px] -rotate-45',
             )}
           />
@@ -117,7 +117,7 @@ export function NavAdmin({
       <div id="nav-admin-groupes" className={cn(!ouvert && 'hidden', 'lg:block')}>
         {groupes.map((groupe) => (
           <div key={groupe.titre} className="mb-8 last:mb-0">
-            <p className="label-mono mb-3 text-ko-muted">{groupe.titre}</p>
+            <p className="label-mono mb-3 text-ko-muted-d">{groupe.titre}</p>
 
             <ul className="flex flex-col items-stretch gap-0.5">
               {groupe.entrees.map(({ href, label, icone }) => {
@@ -131,16 +131,22 @@ export function NavAdmin({
                     <Link
                       href={href}
                       aria-current={actif ? 'page' : undefined}
-                      // Entrée active sur un aplat bleu très léger (ko-blue-bg,
-                      // #e8f2fb, déjà dans la palette) plutôt qu'un simple filet
-                      // à gauche : dans une barre pleine hauteur, un trait de
-                      // 2px se perdait. L'aplat se voit d'un coup d'œil sans
-                      // ajouter de couleur au système.
+                      // Entrée active sur un aplat plutôt qu'un simple filet à
+                      // gauche : dans une barre pleine hauteur, un trait de
+                      // 2px se perdait.
+                      //
+                      // ⚠️ Sur fond sombre, l'aplat est un voile blanc
+                      // translucide (ko-frost) et non l'ancien ko-blue-bg
+                      // (#e8f2fb) : ce bleu très pâle était conçu pour un
+                      // fond clair et deviendrait un pavé lumineux sur le
+                      // noir. Le texte passe à ko-blue2, seul bleu de la
+                      // palette qui atteint le seuil AA sur ko-black (6.97:1
+                      // contre 4.47:1 — voir label-mono-d dans globals.css).
                       className={cn(
                         'flex min-h-[40px] items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors duration-200',
                         actif
-                          ? 'bg-ko-blue-bg font-medium text-ko-blue'
-                          : 'text-ko-ink hover:bg-ko-cream hover:text-ko-blue',
+                          ? 'bg-ko-frost/10 font-medium text-ko-blue2'
+                          : 'text-ko-muted-d hover:bg-ko-frost/5 hover:text-ko-white',
                       )}
                     >
                       {/* L'icône hérite de la couleur du lien via currentColor :
