@@ -92,22 +92,91 @@ export default async function AdminLayout({ children, params }: Props) {
 
   const t = await getTranslations('Admin')
 
+  const GROUPES = [
+    {
+      titre: t('section_gestion'),
+      entrees: [
+        {
+          href: `/${locale}/admin`,
+          label: t('nav_tableau'),
+          icone: <IconeTableauBord taille={17} />,
+        },
+        {
+          href: `/${locale}/admin/catalogue`,
+          label: t('nav_catalogue'),
+          icone: <IconeBadgeStock taille={17} />,
+        },
+      ],
+    },
+    {
+      titre: t('section_equipe'),
+      entrees: [
+        {
+          href: `/${locale}/admin/utilisateurs`,
+          label: t('nav_utilisateurs'),
+          icone: <IconeEquipe taille={17} />,
+        },
+        {
+          href: `/${locale}/admin/vendeurs`,
+          label: t('nav_vendeurs'),
+          icone: <IconeEtiquette taille={17} />,
+        },
+        {
+          href: `/${locale}/admin/livreurs`,
+          label: t('nav_livreurs'),
+          icone: <IconeCamion taille={17} />,
+        },
+      ],
+    },
+    {
+      titre: t('section_compte'),
+      entrees: [
+        {
+          href: `/${locale}/admin/reglages`,
+          label: t('nav_reglages'),
+          icone: <IconeReglages taille={17} />,
+        },
+      ],
+    },
+  ]
+
   return (
     <html
       lang={locale}
       className={`${fraunces.variable} ${instrumentSans.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="min-h-svh bg-ko-cream font-sans antialiased">
-        <header className="border-b border-ko-line bg-ko-white">
-          <div className="mx-auto flex max-w-container items-center justify-between gap-6 px-6 py-4 lg:px-12">
-            <div className="flex items-baseline gap-4">
-              <span className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-ko-ink">
-                KO-LAB
-              </span>
-              <span className="label-mono text-ko-blue">{t('espace')}</span>
-            </div>
+      {/*
+        Barre latérale COLLÉE au bord gauche, sur toute la hauteur, et en-tête
+        pleine largeur à sa droite. La version précédente enfermait les deux
+        dans un `max-w-container` centré : la barre flottait au milieu du fond
+        crème et laissait des marges vides partout, ce que Christian a relevé.
 
-            <div className="flex items-center gap-6">
+        Un outil de gestion prend toute la fenêtre — la colonne de lecture
+        confortable du site vitrine n'a pas de sens devant un tableau.
+      */}
+      <body className="flex min-h-svh flex-col bg-ko-cream font-sans antialiased lg:flex-row">
+        <aside className="shrink-0 border-b border-ko-line bg-ko-white lg:h-svh lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+          {/* Bloc d'identité en tête de la barre, comme la référence. */}
+          <div className="flex items-baseline gap-3 border-b border-ko-line px-5 py-[19px]">
+            <span className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-ko-ink">
+              KO-LAB
+            </span>
+            <span className="label-mono text-ko-blue">{t('espace')}</span>
+          </div>
+
+          <div className="px-4 py-6">
+            {/* Href préfixés ICI, côté serveur : NavAdmin utilise le
+                `next/link` natif, qui ne connaît pas la langue courante. */}
+            <NavAdmin
+              racine={`/${locale}/admin`}
+              groupes={GROUPES}
+            />
+          </div>
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="border-b border-ko-line bg-ko-white">
+            <div className="flex items-center justify-end gap-6 px-6 py-4 lg:px-8">
               {/* Le rôle est affiché : un editor qui ne comprend pas pourquoi
                   un bouton de suppression lui est refusé doit pouvoir le
                   constater sans ouvrir la base. Sur deux lignes plutôt qu'une
@@ -138,72 +207,9 @@ export default async function AdminLayout({ children, params }: Props) {
                 </button>
               </form>
             </div>
-          </div>
-        </header>
+          </header>
 
-        {/* Menu latéral à partir de lg. En dessous il passe au-dessus du
-            contenu : une colonne fixe sur un téléphone ne laisserait pas de
-            place au tableau qu'elle est censée accompagner. */}
-        <div className="mx-auto flex max-w-container flex-col gap-8 px-6 py-10 lg:flex-row lg:gap-14 lg:px-12 lg:py-14">
-          {/* Menu sur son propre panneau blanc : posé à même le fond crème il
-              se confondait avec le contenu, et l'écran n'avait plus de
-              structure lisible. */}
-          <aside className="border border-ko-line bg-ko-white p-5 lg:w-56 lg:shrink-0">
-            {/* Href préfixés ICI, côté serveur : NavAdmin utilise le
-                `next/link` natif, qui ne connaît pas la langue courante. */}
-            <NavAdmin
-              racine={`/${locale}/admin`}
-              groupes={[
-                {
-                  titre: t('section_gestion'),
-                  entrees: [
-                    {
-                      href: `/${locale}/admin`,
-                      label: t('nav_tableau'),
-                      icone: <IconeTableauBord taille={17} />,
-                    },
-                    {
-                      href: `/${locale}/admin/catalogue`,
-                      label: t('nav_catalogue'),
-                      icone: <IconeBadgeStock taille={17} />,
-                    },
-                  ],
-                },
-                {
-                  titre: t('section_equipe'),
-                  entrees: [
-                    {
-                      href: `/${locale}/admin/utilisateurs`,
-                      label: t('nav_utilisateurs'),
-                      icone: <IconeEquipe taille={17} />,
-                    },
-                    {
-                      href: `/${locale}/admin/vendeurs`,
-                      label: t('nav_vendeurs'),
-                      icone: <IconeEtiquette taille={17} />,
-                    },
-                    {
-                      href: `/${locale}/admin/livreurs`,
-                      label: t('nav_livreurs'),
-                      icone: <IconeCamion taille={17} />,
-                    },
-                  ],
-                },
-                {
-                  titre: t('section_compte'),
-                  entrees: [
-                    {
-                      href: `/${locale}/admin/reglages`,
-                      label: t('nav_reglages'),
-                      icone: <IconeReglages taille={17} />,
-                    },
-                  ],
-                },
-              ]}
-            />
-          </aside>
-
-          <main className="min-w-0 flex-1">{children}</main>
+          <main className="min-w-0 flex-1 px-6 py-8 lg:px-8 lg:py-10">{children}</main>
         </div>
       </body>
     </html>

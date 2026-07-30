@@ -66,11 +66,16 @@ export function NavAdmin({ groupes, racine }: { groupes: GroupeAdmin[]; racine: 
                   <Link
                     href={href}
                     aria-current={actif ? 'page' : undefined}
+                    // Entrée active sur un aplat bleu très léger (ko-blue-bg,
+                    // #e8f2fb, déjà dans la palette) plutôt qu'un simple filet
+                    // à gauche : dans une barre pleine hauteur, un trait de
+                    // 2px se perdait. L'aplat se voit d'un coup d'œil sans
+                    // ajouter de couleur au système.
                     className={cn(
-                      'flex min-h-[40px] items-center gap-3 border-l-2 py-1.5 pl-3 text-sm transition-colors duration-200',
+                      'flex min-h-[40px] items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors duration-200',
                       actif
-                        ? 'border-ko-blue font-medium text-ko-blue'
-                        : 'border-transparent text-ko-ink hover:border-ko-line hover:text-ko-blue',
+                        ? 'bg-ko-blue-bg font-medium text-ko-blue'
+                        : 'text-ko-ink hover:bg-ko-cream hover:text-ko-blue',
                     )}
                   >
                     {/* L'icône hérite de la couleur du lien via currentColor :
