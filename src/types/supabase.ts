@@ -213,7 +213,7 @@ export type Database = {
           /** Nullable depuis 0014 : le site est désormais francophone uniquement. */
           titre_en: string | null
           departement: string
-          /** CHECK : 'temps-plein' | 'temps-partiel' | 'contrat' */
+          /** CHECK : 'temps-plein' | 'temps-partiel' | 'contrat' | 'saisonnier' | 'etudiant' (migration 0015) */
           type: string
           description_fr: string | null
           description_en: string | null

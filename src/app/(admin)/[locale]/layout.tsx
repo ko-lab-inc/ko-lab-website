@@ -12,6 +12,7 @@ import {
   IconeEquipe,
   IconeEtiquette,
   IconeGalerie,
+  IconeMallette,
   IconeReglages,
   IconeTableauBord,
 } from '@/components/ui/Icones'
@@ -119,6 +120,11 @@ export default async function AdminLayout({ children, params }: Props) {
           label: t('nav_realisations'),
           icone: <IconeGalerie taille={17} />,
         },
+        {
+          href: `/${locale}/admin/carrieres`,
+          label: t('nav_carrieres'),
+          icone: <IconeMallette taille={17} />,
+        },
       ],
     },
     {
@@ -193,6 +199,8 @@ export default async function AdminLayout({ children, params }: Props) {
             <NavAdmin
               racine={`/${locale}/admin`}
               groupes={GROUPES}
+              labelMenu={t('menu_ouvrir')}
+              labelFermer={t('menu_fermer')}
             />
           </div>
         </aside>

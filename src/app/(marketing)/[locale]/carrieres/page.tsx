@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/ui/Button'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
+import { lireOffresPubliees } from '@/lib/carrieres'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -32,15 +33,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 /**
  * Carrières.
  *
- * ⚠️ CONTENU PROVISOIRE — trois postes issus du document de cadrage, en dur.
- * À l'arrivée de la table `postes_carrieres` (skill 03) :
+ * ---------------------------------------------------------------------------
+ * BASE D'ABORD, CONTENU PROVISOIRE EN REPLI
  *
- *     const supabase = createStaticClient()   // JAMAIS createClient()
- *     const { data } = await supabase.from('postes_carrieres')
- *       .select('*').eq('actif', true)
- *
- * Le message `aucun_poste` est déjà traduit et prêt pour le cas d'une liste
- * vide, qui deviendra possible dès que les données viendront de la base.
+ * `lireOffresPubliees()` renvoie `null` tant qu'aucun poste actif n'a été
+ * publié depuis /admin/carrieres — c'est le cas aujourd'hui. Sans repli, la
+ * page se viderait le jour du déploiement de cette fonctionnalité, avant même
+ * que Christian ait publié une seule offre. Les trois postes ci-dessous
+ * (document de cadrage) restent donc affichés jusqu'à ce qu'un premier poste
+ * réel soit publié — voir lib/carrieres.ts pour le détail du mécanisme, même
+ * principe que /realisations.
+ * ---------------------------------------------------------------------------
  */
 export default async function CarrieresPage({ params }: Props) {
   const { locale } = await params
@@ -48,23 +51,47 @@ export default async function CarrieresPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Carrieres')
+  const publiees = await lireOffresPubliees()
 
-  // Traducteurs cadrés par poste : chaque clé est ainsi vérifiée à la
-  // compilation contre son seul espace de noms.
-  const [tOp, tSup, tChef] = await Promise.all([
-    getTranslations('Carrieres.postes.operateur'),
-    getTranslations('Carrieres.postes.superviseur'),
-    getTranslations('Carrieres.postes.chef_equipe'),
-  ])
+  const libellesType: Record<string, string> = {
+    'temps-plein': t('type_temps_plein'),
+    'temps-partiel': t('type_temps_partiel'),
+    contrat: t('type_contrat'),
+    saisonnier: t('type_saisonnier'),
+    etudiant: t('type_etudiant'),
+  }
 
-  const postes = [tOp, tSup, tChef].map((tp, i) => ({
-    cle: ['operateur', 'superviseur', 'chef_equipe'][i] ?? String(i),
-    numero: String(i + 1).padStart(2, '0'),
-    titre: tp('titre'),
-    departement: tp('departement'),
-    description: tp('description'),
-    exigences: [tp('exigence_1'), tp('exigence_2'), tp('exigence_3'), tp('exigence_4')],
-  }))
+  let postes: { cle: string; numero: string; titre: string; departement: string; type: string; description: string; exigences: string[] }[]
+
+  if (publiees) {
+    postes = publiees.map((p, i) => ({
+      cle: p.id,
+      numero: String(i + 1).padStart(2, '0'),
+      titre: p.titre,
+      departement: p.departement,
+      type: libellesType[p.type] ?? p.type,
+      description: p.description,
+      exigences: p.exigences,
+    }))
+  } else {
+    // Traducteurs cadrés par poste : chaque clé est ainsi vérifiée à la
+    // compilation contre son seul espace de noms.
+    const [tOp, tSup, tChef] = await Promise.all([
+      getTranslations('Carrieres.postes.operateur'),
+      getTranslations('Carrieres.postes.superviseur'),
+      getTranslations('Carrieres.postes.chef_equipe'),
+    ])
+
+    postes = [tOp, tSup, tChef].map((tp, i) => ({
+      cle: ['operateur', 'superviseur', 'chef_equipe'][i] ?? String(i),
+      numero: String(i + 1).padStart(2, '0'),
+      titre: tp('titre'),
+      departement: tp('departement'),
+      type: t('type_temps_plein'),
+      description: tp('description'),
+      exigences: [tp('exigence_1'), tp('exigence_2'), tp('exigence_3'), tp('exigence_4')],
+    }))
+  }
 
   return (
     <>
@@ -97,10 +124,8 @@ export default async function CarrieresPage({ params }: Props) {
 
                       <h2 className="ko-h2 mt-4 max-w-[16ch] text-ko-ink">{poste.titre}</h2>
 
-                      {/* Le type est identique pour les trois postes : une
-                          pastille suffit, inutile d'en faire une colonne. */}
                       <p className="mt-4 inline-flex items-center border border-ko-line px-3 py-1.5 font-mono text-[10px] uppercase tracking-widest text-ko-muted">
-                        {t('type_temps_plein')}
+                        {poste.type}
                       </p>
 
                       <p className="mt-6 max-w-[46ch] text-base leading-relaxed text-ko-muted">

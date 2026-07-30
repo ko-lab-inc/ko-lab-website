@@ -461,3 +461,14 @@ export function IconeCle(props: IconeProps) {
     </Icone>
   )
 }
+
+/** Carrières — nav admin. Mallette : poignée et ligne de fermeture. */
+export function IconeMallette(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <rect x="3" y="8" width="18" height="12" rx="1.5" />
+      <path d="M9 8V6.5A2.5 2.5 0 0 1 11.5 4h1A2.5 2.5 0 0 1 15 6.5V8" />
+      <path d="M3 13.5h18" />
+    </Icone>
+  )
+}

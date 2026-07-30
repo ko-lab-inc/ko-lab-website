@@ -43,8 +43,8 @@ export type TypeDemande = (typeof TYPES_DEMANDE)[number]
 export const STATUTS_DEMANDE = ['nouveau', 'lu', 'traite'] as const
 export type StatutDemande = (typeof STATUTS_DEMANDE)[number]
 
-/** postes_carrieres.type — skill 03 */
-export const TYPES_POSTE = ['temps-plein', 'temps-partiel', 'contrat'] as const
+/** postes_carrieres.type — skill 03. `saisonnier`/`etudiant` ajoutés par 0015. */
+export const TYPES_POSTE = ['temps-plein', 'temps-partiel', 'contrat', 'saisonnier', 'etudiant'] as const
 export type TypePoste = (typeof TYPES_POSTE)[number]
 
 /**
