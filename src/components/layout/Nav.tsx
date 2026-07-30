@@ -6,10 +6,35 @@ import { useEffect, useState } from 'react'
 import { Link, usePathname } from '@/i18n/navigation'
 import { useScrolled } from '@/hooks/useScrolled'
 import { buttonVariants } from '@/components/ui/Button'
-import { IconeProfil } from '@/components/ui/Icones'
+import { IconeGlobe, IconeProfil } from '@/components/ui/Icones'
 import { LienPanier } from '@/components/ui/LienPanier'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
+
+/**
+ * Traduction — un lien, pas un widget.
+ *
+ * Décision de Christian : rendre visible ce que Chrome propose déjà tout
+ * seul (sa bannière de traduction), pour que les visiteurs anglophones
+ * n'aient pas à la chercher. Un widget Google intégré (bannière + script
+ * dans la page) exigerait de rouvrir la CSP tout juste resserrée pour
+ * autoriser des domaines Google supplémentaires — et le service officiel
+ * d'intégration (« Google Website Translator ») est fermé aux nouveaux
+ * sites depuis 2019. Ce lien, lui, n'ajoute ni script ni frame : il ouvre
+ * la traduction Google de la page courante dans un nouvel onglet.
+ *
+ * `sl=fr` fixe explicitement la langue source — le site n'a plus qu'une
+ * langue, pas de détection à laisser à Google. `tl=en` est un point de
+ * départ, pas une limite : la page Google Translate qui s'ouvre a son
+ * propre sélecteur, d'où on choisit n'importe quelle autre langue cible.
+ *
+ * `window.location.href` lu au clic, jamais au rendu : lire `window`
+ * pendant le rendu casserait l'hydratation (absent côté serveur).
+ */
+function ouvrirTraduction() {
+  const url = `https://translate.google.com/translate?sl=fr&tl=en&u=${encodeURIComponent(window.location.href)}`
+  window.open(url, '_blank', 'noopener,noreferrer')
+}
 
 /**
  * Navigation principale — fond crème, sticky (CLAUDE.md).
@@ -146,6 +171,19 @@ export function Nav({
               disparaît d'ici comme de la boutique. */}
           {panierActif && <LienPanier />}
 
+          {/* Lien externe, pas <Link> : sa destination n'est pas une route du
+              site. Icône ET libellé — un globe seul se lirait comme une
+              icône de site web ou de paramètres régionaux, pas de traduction. */}
+          <button
+            type="button"
+            onClick={ouvrirTraduction}
+            title={t('traduireAide')}
+            className="flex min-h-[44px] items-center gap-1.5 text-sm text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+          >
+            <IconeGlobe taille={18} />
+            {t('traduire')}
+          </button>
+
           {/*
             Compte — icône seule, comme le panier.
 
@@ -248,6 +286,15 @@ export function Nav({
               </li>
             ))}
           </ul>
+
+          <button
+            type="button"
+            onClick={ouvrirTraduction}
+            className="mb-5 flex min-h-[44px] items-center gap-2 text-sm text-ko-muted"
+          >
+            <IconeGlobe taille={18} />
+            {t('traduire')}
+          </button>
 
           <div className="flex items-center justify-between gap-4">
             {/* Sur mobile l'icône seule serait illisible hors du contexte de

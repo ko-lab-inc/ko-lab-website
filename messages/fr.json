@@ -66,7 +66,9 @@
     "compte": "Mon compte",
     "ouvrirMenu": "Ouvrir le menu",
     "fermerMenu": "Fermer le menu",
-    "menuPrincipal": "Navigation principale"
+    "menuPrincipal": "Navigation principale",
+    "traduire": "Traduire",
+    "traduireAide": "Ouvre cette page traduite par Google Translate, dans un nouvel onglet"
   },
   "Home": {
     "hero": {
