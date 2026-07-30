@@ -31,7 +31,7 @@ export const ROUTES = {
    *
    * Christian a tranché le 29 juillet 2026 : parcours normal, ouvert à tous,
    * plutôt qu'une porte d'équipe sur invitation. Ce qui est possible sans
-   * risque depuis la migration 0004 — un compte créé arrive en 'invite', sans
+   * risque depuis la migration 0004 — un compte créé arrive en 'client', sans
    * aucun droit. L'accès à /admin reste conditionné à une élévation manuelle.
    */
   connexion: '/connexion',

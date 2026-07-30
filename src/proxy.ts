@@ -116,7 +116,7 @@ export default async function proxy(request: NextRequest) {
     }
 
     // Être authentifié ne suffit pas. Depuis 0004, un compte fraîchement créé
-    // arrive en 'invite' — il existe, il n'ouvre rien. Le rôle est donc relu à
+    // arrive en 'client' — il existe, il n'ouvre rien. Le rôle est donc relu à
     // chaque requête plutôt que déduit de la simple présence d'une session.
     const { data: profil } = await supabase
       .from('profils')

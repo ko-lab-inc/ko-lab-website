@@ -17,7 +17,7 @@ type Props = { params: Promise<{ locale: string }> }
 /**
  * Où atterrit un compte ordinaire après connexion ou validation d'adresse.
  *
- * Sans cette page, un compte 'invite' — c'est-à-dire tout compte fraîchement
+ * Sans cette page, un compte 'client' — c'est-à-dire tout compte fraîchement
  * créé — n'avait nulle part où aller : /admin le refuse, et le renvoyer sur la
  * page de connexion alors qu'il vient de se connecter se lit comme une panne.
  * Il voit ici que son compte fonctionne, et ce qui lui manque.

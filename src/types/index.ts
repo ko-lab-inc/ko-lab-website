@@ -50,29 +50,30 @@ export type TypePoste = (typeof TYPES_POSTE)[number]
 /**
  * profils.role — skill 24 (RBAC).
  *
- * ⚠️ 'invite' ajouté par la migration 0004, et c'est désormais la valeur PAR
+ * ⚠️ 'client' ajouté par la migration 0004, et c'est désormais la valeur PAR
  * DÉFAUT. Le skill 24 et la migration 0001 faisaient défaut à 'editor' : comme
  * un profil est créé automatiquement à chaque inscription (trigger
  * on_auth_user_created) et que l'inscription publique était ouverte, n'importe
  * qui pouvait devenir éditeur du site — donc lire tout demandes_contact.
  *
- * 'invite' ne correspond à AUCUNE politique RLS de 0002 : le compte existe,
- * il n'ouvre rien. Un admin l'élève ensuite à la main.
+ * 'client' (nommé 'client' jusqu'à la migration 0009) ne correspond à AUCUNE
+ * politique RLS de 0002 : le compte existe, il n'ouvre rien. Un admin l'élève
+ * ensuite à la main.
  *
  * L'ordre compte : ROLES_EQUIPE liste les rôles qui donnent réellement accès,
- * à utiliser pour toute décision d'autorisation plutôt que `role !== 'invite'`
+ * à utiliser pour toute décision d'autorisation plutôt que `role !== 'client'`
  * — un futur quatrième rôle sans droits casserait la seconde forme en silence.
  */
-export const ROLES = ['admin', 'editor', 'vendeur', 'livreur', 'invite'] as const
+export const ROLES = ['admin', 'editor', 'vendeur', 'livreur', 'client'] as const
 export type Role = (typeof ROLES)[number]
 
 /**
  * Rôles donnant accès à l'espace de gestion. Miroir EXACT des politiques
  * de 0002, qui nomment 'admin' et 'editor' et personne d'autre.
  *
- * ⚠️ 'vendeur' et 'livreur' existent (migration 0006) mais n'y sont PAS, et
- * ne doivent pas y être ajoutés tant que les politiques RLS correspondantes
- * n'existent pas. Cette constante gouverne l'accès à /admin : y verser un rôle
+ * ⚠️ 'vendeur' et 'livreur' sont du PERSONNEL (voir ROLES_PERSONNEL) mais ne
+ * sont PAS ici, et ne doivent pas y être ajoutés tant que les politiques RLS
+ * correspondantes n'existent pas. Cette constante gouverne l'accès à /admin : y verser un rôle
  * sans politique lui donnerait les droits complets d'un editor, y compris la
  * lecture de demandes_contact. Le détail de ce qui bloque est dans 0006.
  */

@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils/cn'
  *
  * ⚠️ Pas de bouton « Créer un compte », et c'est délibéré : l'inscription
  * publique est fermée sur le projet Supabase, et un compte créé librement
- * arriverait de toute façon en 'invite', sans aucun droit (migration 0004).
+ * arriverait de toute façon en 'client', sans aucun droit (0004 et 0009).
  * Les comptes se créent par invitation depuis l'espace admin.
  */
 

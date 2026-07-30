@@ -2,20 +2,15 @@ import { hasLocale } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
-import { EnteteAdmin, SectionAVenir } from '@/components/layout/CadreAdmin'
+import { ListeProfils } from '@/components/sections/ListeProfils'
 import { routing } from '@/i18n/routing'
 
 type Props = { params: Promise<{ locale: string }> }
 
 /**
- * Section non construite — écran d'attente honnête.
- *
- * Il nomme la décision ou la donnée qui bloque, plutôt que d'afficher un
- * tableau vide qui se lirait comme une panne. Les trois points sont ce qu'il
- * faut trancher avant d'écrire la moindre ligne.
- *
- * Clés numérotées plutôt qu'un tableau : `AbstractIntlMessages` de next-intl
- * n'accepte que des chaînes ou des objets imbriqués, jamais un `string[]`.
+ * Écran de gestion — même moteur que les deux autres listes de comptes, seul
+ * le filtre de rôle change. Voir ListeProfils pour le détail du RLS et du
+ * pourquoi ces trois pages partagent une seule requête.
  */
 export default async function Page({ params }: Props) {
   const { locale } = await params
@@ -24,13 +19,12 @@ export default async function Page({ params }: Props) {
   const t = await getTranslations('Admin')
 
   return (
-    <>
-      <EnteteAdmin titre={t('vendeurs_titre')} />
-      <SectionAVenir
-        etiquette={t('a_construire')}
-        texte={t('vendeurs_texte')}
-        points={[t('vendeurs_point_1'), t('vendeurs_point_2'), t('vendeurs_point_3')]}
-      />
-    </>
+    <ListeProfils
+      locale={locale}
+      titre={t('vendeurs_titre')}
+      intro={t('vendeurs_intro')}
+      roles={['vendeur']}
+      vide={t('vendeurs_vide')}
+    />
   )
 }

@@ -17,7 +17,7 @@ type Props = { params: Promise<{ locale: string }> }
  *
  * L'inscription est ouverte à tous, et c'est sans risque : le trigger
  * on_auth_user_created crée le profil avec le rôle par défaut, qui vaut
- * 'invite' depuis la migration 0004 — aucune politique RLS ne lui correspond.
+ * 'client' depuis la migration 0004 — aucune politique RLS ne lui correspond.
  * Un compte tout neuf n'ouvre donc aucune donnée tant qu'un admin ne l'a pas
  * élevé. C'est précisément ce qui permet d'accepter l'inscription publique
  * sans rouvrir l'élévation de privilège corrigée par 0004.

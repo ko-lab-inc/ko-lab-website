@@ -17,7 +17,7 @@ import { rateLimit } from '@/lib/utils/rateLimit'
  * CE QU'UN COMPTE DONNE : RIEN, AU DÉPART
  *
  * Le trigger on_auth_user_created crée le profil avec le rôle par défaut, qui
- * vaut 'invite' depuis la migration 0004 — aucune politique RLS ne lui
+ * vaut 'client' depuis 0004, renommé par 0009 — aucune politique RLS ne lui
  * correspond. N'importe qui peut donc s'inscrire sans qu'aucune donnée ne
  * s'ouvre. C'est ce qui rend l'inscription publique acceptable ici.
  *

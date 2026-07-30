@@ -17,7 +17,7 @@ import { ROLES } from '@/types'
  * 2. Le contrôle explicite ci-dessous, pour renvoyer une erreur lisible plutôt
  *    qu'un échec muet de la base.
  * 3. L'interdiction de se rétrograder soi-même : le dernier administrateur qui
- *    se passe en 'invite' verrouille l'espace pour tout le monde, et plus
+ *    se passe en 'client' verrouille l'espace pour tout le monde, et plus
  *    personne ne peut le rouvrir sans repasser par le SQL Editor.
  *
  * ⚠️ Le client de session est utilisé, PAS la service role key. Passer par

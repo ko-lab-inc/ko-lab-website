@@ -154,7 +154,17 @@ export default async function AdminLayout({ children, params }: Props) {
         Un outil de gestion prend toute la fenêtre — la colonne de lecture
         confortable du site vitrine n'a pas de sens devant un tableau.
       */}
-      <body className="flex min-h-svh flex-col bg-ko-cream font-sans antialiased lg:flex-row">
+      {/*
+        `h-svh overflow-hidden` sur le body : la fenêtre ne défile plus, ce
+        sont les deux colonnes qui gèrent leur propre défilement. Sans ça, la
+        barre et l'en-tête remontaient avec la page et disparaissaient dès
+        qu'on descendait dans le tableau de bord — relevé par Christian.
+
+        Uniquement à partir de lg. Sous cette largeur la barre passe au-dessus
+        du contenu et le document défile normalement : figer une colonne de
+        240 px sur un téléphone ne laisserait rien à lire.
+      */}
+      <body className="flex min-h-svh flex-col bg-ko-cream font-sans antialiased lg:h-svh lg:flex-row lg:overflow-hidden">
         <aside className="shrink-0 border-b border-ko-line bg-ko-white lg:h-svh lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
           {/* Bloc d'identité en tête de la barre, comme la référence. */}
           <div className="flex items-baseline gap-3 border-b border-ko-line px-5 py-[19px]">
@@ -174,8 +184,8 @@ export default async function AdminLayout({ children, params }: Props) {
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="border-b border-ko-line bg-ko-white">
+        <div className="flex min-w-0 flex-1 flex-col lg:h-svh lg:overflow-hidden">
+          <header className="shrink-0 border-b border-ko-line bg-ko-white">
             <div className="flex items-center justify-end gap-6 px-6 py-4 lg:px-8">
               {/* Le rôle est affiché : un editor qui ne comprend pas pourquoi
                   un bouton de suppression lui est refusé doit pouvoir le
@@ -209,7 +219,11 @@ export default async function AdminLayout({ children, params }: Props) {
             </div>
           </header>
 
-          <main className="min-w-0 flex-1 px-6 py-8 lg:px-8 lg:py-10">{children}</main>
+          {/* Seule zone qui défile : l'en-tête au-dessus et la barre à gauche
+              restent en place. */}
+          <main className="min-w-0 flex-1 px-6 py-8 lg:overflow-y-auto lg:px-8 lg:py-10">
+            {children}
+          </main>
         </div>
       </body>
     </html>

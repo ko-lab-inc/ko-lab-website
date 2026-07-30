@@ -103,7 +103,7 @@ export function LigneUtilisateur({
         <span
           className={cn(
             'shrink-0 font-mono text-xs uppercase tracking-[0.14em]',
-            role === 'invite' ? 'text-ko-muted' : 'text-ko-blue',
+            role === 'client' ? 'text-ko-muted' : 'text-ko-blue',
           )}
         >
           {libelles.roles[role]}

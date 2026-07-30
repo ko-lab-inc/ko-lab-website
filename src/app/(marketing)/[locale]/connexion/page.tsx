@@ -29,7 +29,7 @@ type Props = {
  * son adresse. L'icône de profil de la nav tombait donc sur une page qui
  * parlait d'administration, ce qui n'avait aucun sens pour un visiteur.
  *
- * Ce que ça ne change PAS : un compte créé arrive en 'invite' et n'ouvre
+ * Ce que ça ne change PAS : un compte créé arrive en 'client' et n'ouvre
  * aucune donnée (migration 0004). L'espace de gestion reste conditionné à une
  * élévation manuelle.
  *
