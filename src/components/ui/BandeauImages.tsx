@@ -96,23 +96,40 @@ export function BandeauImages({
 
       {images.length > 1 && (
         <div className="mt-3 flex justify-end gap-2">
+          {/*
+            ⚠️ Corrigé : un trait fin gris clair (border-ko-line) sur un fond
+            de carte tout aussi clair devenait quasi invisible — même défaut
+            que le bouton de fermeture de SlideImages, relevé par Christian.
+            Bordure sombre et pleine dès le repos, pas seulement au survol :
+            l'affordance doit se voir avant qu'on la cherche.
+          */}
           <button
             type="button"
             onClick={() => defiler(-1)}
             aria-label={libelles.precedent}
             title={libelles.precedent}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-ko-line text-ko-muted transition-colors duration-200 hover:border-ko-ink hover:text-ko-ink"
+            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue"
           >
-            <span aria-hidden="true" className="ml-0.5 h-2.5 w-2.5 rotate-45 border-b-2 border-l-2" />
+            {/* `border-ko-ink` explicite : Tailwind ne colore pas les bordures
+                en `currentColor` par défaut, un `border-b-2` sans classe de
+                couleur retombe sur le gris clair du thème — invisible ici,
+                exactement le défaut que ce correctif visait à éliminer. */}
+            <span
+              aria-hidden="true"
+              className="ml-0.5 h-2.5 w-2.5 rotate-45 border-b-2 border-l-2 border-ko-ink transition-colors duration-200 group-hover:border-ko-blue"
+            />
           </button>
           <button
             type="button"
             onClick={() => defiler(1)}
             aria-label={libelles.suivant}
             title={libelles.suivant}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-ko-line text-ko-muted transition-colors duration-200 hover:border-ko-ink hover:text-ko-ink"
+            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue"
           >
-            <span aria-hidden="true" className="mr-0.5 h-2.5 w-2.5 rotate-45 border-r-2 border-t-2" />
+            <span
+              aria-hidden="true"
+              className="mr-0.5 h-2.5 w-2.5 rotate-45 border-r-2 border-t-2 border-ko-ink transition-colors duration-200 group-hover:border-ko-blue"
+            />
           </button>
         </div>
       )}

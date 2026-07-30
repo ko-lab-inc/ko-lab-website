@@ -116,6 +116,10 @@ export type Database = {
           publie: boolean
           ordre: number
           created_at: string
+          /** Migration 0013. Mise à jour manuelle depuis /admin/catalogue. */
+          quantite: number
+          /** Migration 0013. CHECK : 'en_stock' | 'rupture' | 'en_commande' | 'en_livraison' */
+          statut_stock: string
         }
         Insert: {
           id?: string
@@ -135,6 +139,8 @@ export type Database = {
           publie?: boolean
           ordre?: number
           created_at?: string
+          quantite?: number
+          statut_stock?: string
         }
         Update: {
           id?: string
@@ -154,6 +160,8 @@ export type Database = {
           publie?: boolean
           ordre?: number
           created_at?: string
+          quantite?: number
+          statut_stock?: string
         }
         Relationships: []
       }

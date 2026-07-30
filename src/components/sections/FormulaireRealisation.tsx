@@ -11,7 +11,6 @@ import {
 import { buttonVariants } from '@/components/ui/Button'
 import { IconePoubelle } from '@/components/ui/Icones'
 import { cn } from '@/lib/utils/cn'
-import { slugifier } from '@/lib/utils/slug'
 
 import type { ImageRealisation } from '@/lib/realisations'
 
@@ -55,8 +54,6 @@ export type RealisationAdmin = {
 
 export type LibellesRealisation = {
   slug: string
-  slugAideCreation: string
-  slugAideEdition: string
   titreFr: string
   titreEn: string
   descriptionFr: string
@@ -77,7 +74,6 @@ export type LibellesRealisation = {
   enCours: string
   succes: string
   erreurDonnees: string
-  erreurSlug: string
   erreurPhoto: string
   erreurRefuse: string
   erreurServeur: string
@@ -126,9 +122,6 @@ export function FormulaireRealisation({
   )
   const [prefixe] = useState(() => (realisation ? `r-${realisation.id}-` : 'nouveau-'))
 
-  const [slug, setSlug] = useState(realisation?.slug ?? '')
-  const [slugTouche, setSlugTouche] = useState(false)
-
   // Photos déjà en base (ou déjà téléversées dans cette session d'édition) —
   // voir la docstring du fichier pour pourquoi c'est un state et non des
   // champs non contrôlés.
@@ -148,7 +141,6 @@ export function FormulaireRealisation({
 
   const messages: Record<string, string> = {
     donnees: libelles.erreurDonnees,
-    slug_pris: libelles.erreurSlug,
     photo: libelles.erreurPhoto,
     refuse: libelles.erreurRefuse,
     serveur: libelles.erreurServeur,
@@ -161,26 +153,6 @@ export function FormulaireRealisation({
       {realisation && <input type="hidden" name="id" value={realisation.id} />}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Champ
-          id={`${prefixe}slug`}
-          libelle={libelles.slug}
-          aide={realisation ? libelles.slugAideEdition : libelles.slugAideCreation}
-        >
-          <input
-            id={`${prefixe}slug`}
-            name="slug"
-            required
-            value={slug}
-            onChange={(e) => {
-              setSlugTouche(true)
-              setSlug(e.target.value)
-            }}
-            pattern="[a-z0-9]+(-[a-z0-9]+)*"
-            maxLength={80}
-            className={CHAMP}
-          />
-        </Champ>
-
         <Champ id={`${prefixe}categorie`} libelle={libelles.categorie}>
           <select
             id={`${prefixe}categorie`}
@@ -204,9 +176,6 @@ export function FormulaireRealisation({
             minLength={2}
             maxLength={120}
             defaultValue={realisation?.titre_fr}
-            onChange={(e) => {
-              if (!realisation && !slugTouche) setSlug(slugifier(e.target.value))
-            }}
             className={CHAMP}
           />
         </Champ>

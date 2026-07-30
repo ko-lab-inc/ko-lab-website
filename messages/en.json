@@ -702,7 +702,18 @@
     "images_compte": "{n, plural, =0 {No photos} one {# photo} other {# photos}}",
     "erreur_serveur_realisation": "Saving failed. Try again, or tell Moussa if it persists.",
     "confirmer_suppression_realisation": "Delete this realisation permanently?",
-    "titre_detail_realisation": "Realisation details"
+    "titre_detail_realisation": "Realisation details",
+    "champ_quantite": "Stock quantity",
+    "champ_statut_stock": "Stock status",
+    "statut_stock_en_stock": "In stock",
+    "statut_stock_rupture": "Out of stock",
+    "statut_stock_en_commande": "On order from supplier",
+    "statut_stock_en_livraison": "In transit",
+    "erreur_refuse_produit": "This action was refused. Try again, or tell Moussa if it persists.",
+    "erreur_serveur_produit": "Saving failed. Try again, or tell Moussa if it persists.",
+    "page_gabarit": "Page {page} of {total}",
+    "page_precedente": "Previous page",
+    "page_suivante": "Next page"
   },
   "Aide": {
     "ouvrir": "Ask a question",

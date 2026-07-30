@@ -9,7 +9,6 @@ import {
 } from '@/app/(admin)/[locale]/admin/catalogue/actions'
 import { buttonVariants } from '@/components/ui/Button'
 import { cn } from '@/lib/utils/cn'
-import { slugifier } from '@/lib/utils/slug'
 
 /**
  * Création et édition d'un produit — un seul formulaire pour les deux.
@@ -17,10 +16,17 @@ import { slugifier } from '@/lib/utils/slug'
  * Les champs sont identiques ; seule l'action diffère. Deux composants
  * auraient garanti qu'un champ ajouté un jour n'existe que dans l'un des deux.
  *
- * Le formulaire d'édition est replié par défaut : douze produits ouverts en
- * même temps donneraient une page de plusieurs milliers de pixels où l'on ne
- * retrouve rien. Un `<details>` natif suffit — pas d'état, pas de JavaScript
- * pour ouvrir et fermer.
+ * ---------------------------------------------------------------------------
+ * CE QUE CE FORMULAIRE NE DEMANDE PLUS — décision de Christian
+ *
+ * Slug, cadrage et ordre d'affichage ont disparu. Le slug se déduit
+ * automatiquement du nom côté serveur (voir actions.ts) ; le cadrage est
+ * toujours le même pour tous les produits (déjà le cas pour 9 des 12
+ * existants) ; l'ordre s'ajoute à la fin du catalogue à la création et ne
+ * bouge plus ensuite. Les TROIS restent des colonnes réelles — visibles en
+ * lecture seule dans l'aperçu (l'œil, dans TableauProduits) — simplement
+ * plus des choix à faire ici.
+ * ---------------------------------------------------------------------------
  */
 
 export type Produit = {
@@ -36,27 +42,28 @@ export type Produit = {
   cadrage: string
   ordre: number
   publie: boolean
+  quantite: number
+  statut_stock: string
 }
 
 export type LibellesProduit = {
   slug: string
-  slugAideCreation: string
-  slugAideEdition: string
   marque: string
   categorie: string
   langue: string
   langueFr: string
   langueEn: string
-  langueAide: string
   nom: string
   description: string
   prix: string
+  quantite: string
+  statutStock: string
+  statutEnStock: string
+  statutRupture: string
+  statutEnCommande: string
+  statutEnLivraison: string
   photo: string
   photoAide: string
-  photoActuelle: string
-  cadrage: string
-  cadrageContain: string
-  cadrageCover: string
   ordre: string
   enregistrer: string
   creer: string
@@ -64,7 +71,6 @@ export type LibellesProduit = {
   succes: string
   categories: Record<string, string>
   erreurDonnees: string
-  erreurSlug: string
   erreurPhoto: string
   erreurRefuse: string
   erreurServeur: string
@@ -114,24 +120,20 @@ export function FormulaireProduit({
   const [prefixe] = useState(() => (produit ? `p-${produit.id}-` : 'nouveau-'))
 
   /**
-   * Slug proposé automatiquement à partir du nom français — À LA CRÉATION
-   * SEULEMENT.
+   * Langue de saisie — un interrupteur à côté du champ qu'il gouverne, pas un
+   * menu déroulant séparé avec un paragraphe d'explication.
    *
-   * Le slug d'un produit existant vit dans une URL publique
-   * (/boutique/<slug>) : le régénérer parce qu'on corrige une faute dans le
-   * nom casserait tout lien déjà partagé. En édition, le champ reste ce qu'il
-   * est, et c'est à la personne de décider.
-   *
-   * `slugTouche` gèle la proposition dès que le champ est modifié à la main :
-   * sans ça, taper un slug court comme `conteneur-20-pieds` puis retoucher le
-   * nom l'écraserait aussitôt.
+   * ⚠️ Corrigé : la version précédente posait le choix de langue loin du nom
+   * et de la description, reliés seulement par un texte d'aide — Christian
+   * l'a trouvé confus à l'usage. Le mécanisme ne change pas (une seule
+   * langue saisie, l'autre retombe sur elle à l'affichage) : seule la
+   * présentation change, pour que le lien entre le bouton et les champs
+   * qu'il affecte soit visible sans rien avoir à lire.
    */
-  const [slug, setSlug] = useState(produit?.slug ?? '')
-  const [slugTouche, setSlugTouche] = useState(false)
+  const [langue, setLangue] = useState<'fr' | 'en'>(produit?.nom_en ? 'en' : 'fr')
 
   const messages: Record<string, string> = {
     donnees: libelles.erreurDonnees,
-    slug_pris: libelles.erreurSlug,
     photo: libelles.erreurPhoto,
     refuse: libelles.erreurRefuse,
     serveur: libelles.erreurServeur,
@@ -142,28 +144,9 @@ export function FormulaireProduit({
     <form action={action} className="space-y-4">
       <input type="hidden" name="locale" value={locale} />
       {produit && <input type="hidden" name="id" value={produit.id} />}
+      <input type="hidden" name="langue" value={langue} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Champ
-          id={`${prefixe}slug`}
-          libelle={libelles.slug}
-          aide={produit ? libelles.slugAideEdition : libelles.slugAideCreation}
-        >
-          <input
-            id={`${prefixe}slug`}
-            name="slug"
-            required
-            value={slug}
-            onChange={(e) => {
-              setSlugTouche(true)
-              setSlug(e.target.value)
-            }}
-            pattern="[a-z0-9]+(-[a-z0-9]+)*"
-            maxLength={80}
-            className={CHAMP}
-          />
-        </Champ>
-
         <Champ id={`${prefixe}marque`} libelle={libelles.marque}>
           <input
             id={`${prefixe}marque`}
@@ -203,32 +186,82 @@ export function FormulaireProduit({
           />
         </Champ>
 
-        <Champ id={`${prefixe}langue`} libelle={libelles.langue} aide={libelles.langueAide}>
-          <select
-            id={`${prefixe}langue`}
-            name="langue"
-            defaultValue={produit?.nom_en ? 'en' : 'fr'}
-            className={CHAMP}
-          >
-            <option value="fr">{libelles.langueFr}</option>
-            <option value="en">{libelles.langueEn}</option>
-          </select>
-        </Champ>
-
-        <Champ id={`${prefixe}nom`} libelle={libelles.nom}>
+        <Champ id={`${prefixe}quantite`} libelle={libelles.quantite}>
           <input
-            id={`${prefixe}nom`}
-            name="nom"
+            id={`${prefixe}quantite`}
+            name="quantite"
+            type="number"
             required
-            minLength={2}
-            defaultValue={produit?.nom_en ?? produit?.nom_fr}
-            maxLength={120}
-            onChange={(e) => {
-              if (!produit && !slugTouche) setSlug(slugifier(e.target.value))
-            }}
+            min={0}
+            step={1}
+            defaultValue={produit?.quantite ?? 0}
             className={CHAMP}
           />
         </Champ>
+
+        <div className="sm:col-span-2">
+          <Champ id={`${prefixe}statut_stock`} libelle={libelles.statutStock}>
+            <select
+              id={`${prefixe}statut_stock`}
+              name="statut_stock"
+              defaultValue={produit?.statut_stock ?? 'en_stock'}
+              className={CHAMP}
+            >
+              <option value="en_stock">{libelles.statutEnStock}</option>
+              <option value="rupture">{libelles.statutRupture}</option>
+              <option value="en_commande">{libelles.statutEnCommande}</option>
+              <option value="en_livraison">{libelles.statutEnLivraison}</option>
+            </select>
+          </Champ>
+        </div>
+      </div>
+
+      {/* Nom et description partagent UNE langue, choisie ici. Le groupe de
+          boutons est collé au libellé qu'il gouverne — c'est la relation
+          elle-même qui sert d'explication. */}
+      <div>
+        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
+          <label htmlFor={`${prefixe}nom`} className="label-mono text-ko-muted">
+            {libelles.nom}
+          </label>
+          <div
+            role="group"
+            aria-label={libelles.langue}
+            className="flex overflow-hidden rounded-sm border border-ko-line"
+          >
+            <button
+              type="button"
+              onClick={() => setLangue('fr')}
+              aria-pressed={langue === 'fr'}
+              className={cn(
+                'min-h-[28px] px-3 font-mono text-xs uppercase tracking-widest transition-colors duration-200',
+                langue === 'fr' ? 'bg-ko-blue text-ko-white' : 'text-ko-muted hover:text-ko-ink',
+              )}
+            >
+              {libelles.langueFr}
+            </button>
+            <button
+              type="button"
+              onClick={() => setLangue('en')}
+              aria-pressed={langue === 'en'}
+              className={cn(
+                'min-h-[28px] border-l border-ko-line px-3 font-mono text-xs uppercase tracking-widest transition-colors duration-200',
+                langue === 'en' ? 'bg-ko-blue text-ko-white' : 'text-ko-muted hover:text-ko-ink',
+              )}
+            >
+              {libelles.langueEn}
+            </button>
+          </div>
+        </div>
+        <input
+          id={`${prefixe}nom`}
+          name="nom"
+          required
+          minLength={2}
+          defaultValue={produit?.nom_en ?? produit?.nom_fr}
+          maxLength={120}
+          className={CHAMP}
+        />
       </div>
 
       <Champ id={`${prefixe}description`} libelle={libelles.description}>
@@ -255,32 +288,6 @@ export function FormulaireProduit({
           className="w-full text-sm text-ko-ink file:mr-4 file:min-h-[36px] file:cursor-pointer file:border file:border-ko-line file:bg-ko-cream file:px-4 file:text-sm file:text-ko-ink hover:file:border-ko-ink"
         />
       </Champ>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Champ id={`${prefixe}cadrage`} libelle={libelles.cadrage}>
-          <select
-            id={`${prefixe}cadrage`}
-            name="cadrage"
-            defaultValue={produit?.cadrage ?? 'contain'}
-            className={CHAMP}
-          >
-            <option value="contain">{libelles.cadrageContain}</option>
-            <option value="cover">{libelles.cadrageCover}</option>
-          </select>
-        </Champ>
-
-        <Champ id={`${prefixe}ordre`} libelle={libelles.ordre}>
-          <input
-            id={`${prefixe}ordre`}
-            name="ordre"
-            type="number"
-            min={0}
-            step={10}
-            defaultValue={produit?.ordre ?? 0}
-            className={CHAMP}
-          />
-        </Champ>
-      </div>
 
       {erreur && (
         <p role="alert" className="text-sm text-ko-ink">

@@ -8,6 +8,7 @@ import { ETIQUETTE_REALISATIONS, type ImageRealisation } from '@/lib/realisation
 import { createClient } from '@/lib/supabase/server'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
+import { slugifier } from '@/lib/utils/slug'
 import { CATEGORIES_REALISATION } from '@/types'
 
 /**
@@ -37,17 +38,11 @@ import { CATEGORIES_REALISATION } from '@/types'
  */
 
 export type EtatRealisation = {
-  erreur?: 'donnees' | 'refuse' | 'slug_pris' | 'photo' | 'serveur'
+  erreur?: 'donnees' | 'refuse' | 'photo' | 'serveur'
   succes?: boolean
 }
 
 const schemaRealisation = z.object({
-  slug: z
-    .string()
-    .trim()
-    .min(3)
-    .max(80)
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   titre_fr: z.string().trim().min(2).max(120),
   titre_en: z.string().trim().min(2).max(120),
   description_fr: z.string().trim().max(600).nullable(),
@@ -58,7 +53,6 @@ const schemaRealisation = z.object({
 
 function lireChamps(donnees: FormData) {
   return schemaRealisation.safeParse({
-    slug: donnees.get('slug'),
     titre_fr: donnees.get('titre_fr'),
     titre_en: donnees.get('titre_en'),
     description_fr: String(donnees.get('description_fr') ?? '').trim() || null,
@@ -187,6 +181,9 @@ async function construireImages(
   return { images: [...conservees, ...nouvelles] }
 }
 
+/** Plafond de tentatives sur un slug déjà pris — au-delà, quelque chose d'anormal se passe. */
+const TENTATIVES_SLUG_MAX = 20
+
 export async function creerRealisation(
   _precedent: EtatRealisation,
   donnees: FormData,
@@ -195,22 +192,47 @@ export async function creerRealisation(
   const analyse = lireChamps(donnees)
   if (!analyse.success) return { erreur: 'donnees' }
 
+  // ⚠️ Slug automatique — décision de Christian : « le slug doit être
+  // automatique ». Dérivé du titre français, avec repli -2/-3/... en cas de
+  // collision, même mécanisme que le catalogue (voir cette action pour le
+  // détail) : l'admin ne voit plus ce champ, il ne peut donc plus choisir
+  // lui-même une variante.
+  const baseSlug = slugifier(analyse.data.titre_fr)
+  if (!baseSlug) return { erreur: 'donnees' }
+
   try {
     const supabase = await createClient()
 
-    const resultatImages = await construireImages(supabase, donnees, analyse.data.slug)
+    const resultatImages = await construireImages(supabase, donnees, baseSlug)
     if ('erreur' in resultatImages) return { erreur: 'photo' }
 
-    // `publie: false` à la création, toujours — même raison que le
-    // catalogue : une réalisation sans photo confirmée ne doit pas
-    // apparaître parce qu'on a cliqué « Créer ».
-    const { error } = await supabase
-      .from('realisations')
-      .insert({ ...analyse.data, images: resultatImages.images, publie: false })
+    let creation: { erreur: true } | { erreur: false } = { erreur: true }
 
-    if (error) {
-      if (slugDejaPris(error.code)) return { erreur: 'slug_pris' }
-      console.error('[realisations] création refusée', error.message)
+    for (let tentative = 0; tentative < TENTATIVES_SLUG_MAX; tentative += 1) {
+      const slug = tentative === 0 ? baseSlug : `${baseSlug}-${tentative + 1}`
+
+      // `publie: false` à la création, toujours — même raison que le
+      // catalogue : une réalisation sans photo confirmée ne doit pas
+      // apparaître parce qu'on a cliqué « Créer ».
+      const { error } = await supabase
+        .from('realisations')
+        .insert({ ...analyse.data, slug, images: resultatImages.images, publie: false })
+
+      if (!error) {
+        creation = { erreur: false }
+        break
+      }
+      if (!slugDejaPris(error.code)) {
+        console.error('[realisations] création refusée', error.message)
+        return { erreur: 'refuse' }
+      }
+      // Slug pris : la boucle réessaie avec le suffixe suivant.
+    }
+
+    if (creation.erreur) {
+      console.error(
+        `[realisations] création refusée — slug « ${baseSlug} » saturé après ${TENTATIVES_SLUG_MAX} tentatives`,
+      )
       return { erreur: 'refuse' }
     }
   } catch (err) {
@@ -237,7 +259,10 @@ export async function modifierRealisation(
   try {
     const supabase = await createClient()
 
-    const resultatImages = await construireImages(supabase, donnees, analyse.data.slug)
+    // Le slug n'est PAS recalculé à partir du titre : il vit dans une URL
+    // publique déjà partagée, et une correction de faute de frappe ne doit
+    // jamais la casser. `id` nomme les nouvelles photos à la place.
+    const resultatImages = await construireImages(supabase, donnees, id)
     if ('erreur' in resultatImages) return { erreur: 'photo' }
 
     const { error } = await supabase
@@ -246,7 +271,6 @@ export async function modifierRealisation(
       .eq('id', id)
 
     if (error) {
-      if (slugDejaPris(error.code)) return { erreur: 'slug_pris' }
       console.error('[realisations] mise à jour refusée', error.message)
       return { erreur: 'refuse' }
     }

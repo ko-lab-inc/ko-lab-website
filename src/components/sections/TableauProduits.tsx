@@ -114,11 +114,49 @@ export function TableauProduits({
     titreCreation: string
     titreDetail: string
     sansImage: string
+    /**
+     * Gabarit, pas une fonction — ex. « Page {page} sur {total} ».
+     *
+     * ⚠️ Une fonction ne traverse pas la frontière serveur → client (voir la
+     * docstring de RealisationListe dans TableauRealisations.tsx pour le
+     * plantage que ça a causé). La pagination, elle, vit entièrement ici,
+     * côté client — impossible de précalculer « page 2 sur 3 » côté serveur
+     * puisqu'on ne sait pas encore sur quelle page l'équipe cliquera. Un
+     * gabarit textuel avec deux espaces réservés, complété par un simple
+     * remplacement de chaîne, contourne le problème sans réintroduire une
+     * fonction en prop.
+     */
+    pageGabarit: string
+    pagePrecedente: string
+    pageSuivante: string
   }
 }) {
   // Lu une fois : NEXT_PUBLIC_* est figé à la compilation, et refaire le
   // découpage d'URL à chaque ligne du tableau n'apporte rien.
   const hoteStockage = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '')
+
+  const libellesStatutStock: Record<string, string> = {
+    en_stock: libelles.statutEnStock,
+    rupture: libelles.statutRupture,
+    en_commande: libelles.statutEnCommande,
+    en_livraison: libelles.statutEnLivraison,
+  }
+
+  /**
+   * Pagination — 8 produits par page.
+   *
+   * Entièrement côté client : les douze produits (et les quelques dizaines à
+   * venir) sont déjà tous chargés d'un coup par la page serveur, qui trie par
+   * `ordre`. Paginer côté serveur demanderait une route dédiée et un
+   * paramètre d'URL pour un gain nul à cette échelle — la liste complète tient
+   * largement en mémoire.
+   */
+  const PAR_PAGE = 8
+  const [page, setPage] = useState(0)
+  const totalPages = Math.max(1, Math.ceil(produits.length / PAR_PAGE))
+  // Se recale si une suppression fait disparaître la dernière page affichée.
+  const pageActuelle = Math.min(page, totalPages - 1)
+  const produitsPage = produits.slice(pageActuelle * PAR_PAGE, pageActuelle * PAR_PAGE + PAR_PAGE)
 
   const boite = useRef<HTMLDialogElement>(null)
   // `null` = création, un produit = édition, `undefined` = fermé.
@@ -181,11 +219,11 @@ export function TableauProduits({
       </div>
 
       <div className="border border-ko-line bg-ko-white">
-        {produits.length === 0 ? (
+        {produitsPage.length === 0 ? (
           <p className="p-6 text-base leading-relaxed text-ko-muted">{textes.vide}</p>
         ) : (
           <ul className="divide-y divide-ko-line">
-            {produits.map((p) => {
+            {produitsPage.map((p) => {
               const image = premiereImage(p.images, hoteStockage)
 
               return (
@@ -226,6 +264,15 @@ export function TableauProduits({
 
                   <span className="w-24 shrink-0 text-right font-mono text-sm text-ko-ink">
                     {p.prix === null ? '—' : `${p.prix} $`}
+                  </span>
+
+                  {/* Suivi de stock — masqué sous lg, la ligne est déjà dense
+                      à cette largeur. Le détail (l'œil) reste la source
+                      complète sur mobile. */}
+                  <span className="label-mono hidden w-28 shrink-0 text-right text-ko-muted xl:block">
+                    {p.statut_stock === 'en_stock'
+                      ? `${p.quantite} ${libelles.quantite.toLowerCase()}`
+                      : libellesStatutStock[p.statut_stock] ?? p.statut_stock}
                   </span>
 
                   {/* Publication : bouton et non simple étiquette — c'est le
@@ -302,6 +349,49 @@ export function TableauProduits({
           </ul>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-4 flex items-center justify-end gap-4">
+          <p className="label-mono text-ko-muted">
+            {textes.pageGabarit
+              .replace('{page}', String(pageActuelle + 1))
+              .replace('{total}', String(totalPages))}
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.max(0, p - 1))}
+              disabled={pageActuelle === 0}
+              aria-label={textes.pagePrecedente}
+              title={textes.pagePrecedente}
+              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
+            >
+              {/* `border-ko-ink` explicite sur le chevron : Tailwind ne colore
+                  pas les bordures en `currentColor` par défaut, un
+                  `border-b-2` seul retombe sur le gris clair du thème et
+                  devient invisible — même défaut déjà corrigé dans
+                  BandeauImages. */}
+              <span
+                aria-hidden="true"
+                className="ml-0.5 h-2.5 w-2.5 rotate-45 border-b-2 border-l-2 border-ko-ink transition-colors duration-200 group-hover:border-ko-blue group-disabled:border-ko-line"
+              />
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+              disabled={pageActuelle >= totalPages - 1}
+              aria-label={textes.pageSuivante}
+              title={textes.pageSuivante}
+              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
+            >
+              <span
+                aria-hidden="true"
+                className="mr-0.5 h-2.5 w-2.5 rotate-45 border-r-2 border-t-2 border-ko-ink transition-colors duration-200 group-hover:border-ko-blue group-disabled:border-ko-line"
+              />
+            </button>
+          </div>
+        </div>
+      )}
 
       <dialog
         ref={boite}
@@ -437,6 +527,16 @@ export function TableauProduits({
                 <div>
                   <dt className="label-mono text-ko-muted">{libelles.ordre}</dt>
                   <dd className="mt-1 text-sm text-ko-ink">{voir.ordre}</dd>
+                </div>
+                <div>
+                  <dt className="label-mono text-ko-muted">{libelles.quantite}</dt>
+                  <dd className="mt-1 text-sm text-ko-ink">{voir.quantite}</dd>
+                </div>
+                <div>
+                  <dt className="label-mono text-ko-muted">{libelles.statutStock}</dt>
+                  <dd className="mt-1 text-sm text-ko-ink">
+                    {libellesStatutStock[voir.statut_stock] ?? voir.statut_stock}
+                  </dd>
                 </div>
               </dl>
             </div>

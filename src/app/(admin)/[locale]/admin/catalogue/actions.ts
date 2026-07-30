@@ -7,6 +7,7 @@ import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
+import { slugifier } from '@/lib/utils/slug'
 
 /**
  * CRUD du catalogue — table produits_boutique.
@@ -25,27 +26,44 @@ import { rateLimit } from '@/lib/utils/rateLimit'
  * toujours celui du code qui finit par diverger de la politique.
  *
  * ⚠️ Ce qui est vérifié ici, en revanche, c'est la FORME des données. Le RLS
- * dit qui écrit, pas ce qui est écrit : sans Zod, un prix négatif ou un slug
- * de 3 000 caractères passerait sans broncher.
+ * dit qui écrit, pas ce qui est écrit : sans Zod, un prix négatif ou une
+ * quantité de -5 passerait sans broncher.
+ *
+ * ---------------------------------------------------------------------------
+ * TROIS CHAMPS QUE LE FORMULAIRE NE DEMANDE PLUS — décision de Christian
+ *
+ * Slug, cadrage et ordre d'affichage sont sortis du formulaire : « le slug
+ * doit être automatique », « le cadrage doit être pareil pour chaque
+ * produit », et l'ordre suit la même logique. Cette action les calcule donc
+ * elle-même :
+ *   - slug   : dérivé du nom, avec repli sur -2/-3/... en cas de collision
+ *              (l'admin ne voit plus le champ, donc ne peut plus l'ajuster
+ *              à la main comme avant)
+ *   - cadrage: toujours 'contain' à la création — c'est déjà la valeur de
+ *              9 des 12 produits existants, la photo détourée sur blanc est
+ *              la norme du catalogue
+ *   - ordre  : (ordre maximum existant) + 10 à la création, jamais retouché
+ *              en édition — aucune réorganisation manuelle n'est demandée
  * ---------------------------------------------------------------------------
  */
 
 export type EtatProduit = {
-  erreur?: 'donnees' | 'refuse' | 'slug_pris' | 'photo' | 'serveur'
+  erreur?: 'donnees' | 'refuse' | 'photo' | 'serveur'
   succes?: boolean
 }
 
 const CATEGORIES = ['impression', 'laser', 'conteneurs', 'equipements'] as const
 
+/**
+ * Statuts de suivi — migration 0013.
+ *
+ * Indépendant de `quantite` : un statut est une décision de l'équipe
+ * (« le fournisseur nous prévient d'une rupture »), pas un calcul automatique
+ * sur le nombre en stock.
+ */
+const STATUTS_STOCK = ['en_stock', 'rupture', 'en_commande', 'en_livraison'] as const
+
 const schemaProduit = z.object({
-  slug: z
-    .string()
-    .trim()
-    .min(3)
-    .max(80)
-    // Minuscules, chiffres et tirets : le slug part dans une URL publique
-    // (/boutique/<slug>) et sert de clé d'unicité.
-    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   marque: z.string().trim().min(1).max(80),
   categorie: z.enum(CATEGORIES),
   /**
@@ -69,8 +87,8 @@ const schemaProduit = z.object({
    * en une ligne.
    */
   prix: z.coerce.number().min(0).max(1_000_000),
-  cadrage: z.enum(['contain', 'cover']),
-  ordre: z.coerce.number().int().min(0).max(9999),
+  quantite: z.coerce.number().int().min(0).max(100_000),
+  statut_stock: z.enum(STATUTS_STOCK),
 })
 
 function lire(donnees: FormData) {
@@ -92,7 +110,6 @@ function lire(donnees: FormData) {
    * et l'affichage retombe sur `nom_fr`.
    */
   return schemaProduit.safeParse({
-    slug: donnees.get('slug'),
     marque: donnees.get('marque'),
     categorie: donnees.get('categorie'),
     nom_fr: nom,
@@ -100,8 +117,8 @@ function lire(donnees: FormData) {
     description_fr: description || null,
     description_en: anglais ? description || null : null,
     prix: donnees.get('prix'),
-    cadrage: donnees.get('cadrage'),
-    ordre: donnees.get('ordre') ?? 0,
+    quantite: donnees.get('quantite') ?? 0,
+    statut_stock: donnees.get('statut_stock'),
   })
 }
 
@@ -124,15 +141,17 @@ const TYPES_IMAGE = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
  * recours (allowed_mime_types, 0010), mais un refus à ce niveau remonterait
  * une erreur illisible.
  *
- * Le nom du fichier vient du SLUG, jamais du nom d'origine : un fichier
- * téléversé peut s'appeler `../../etc/passwd` ou porter des caractères que
- * l'URL n'accepte pas. L'horodatage évite que le CDN serve l'ancienne image
- * après un remplacement — même problème que les visuels renommés en `-v2`.
+ * `identifiant` nomme le fichier — le slug à la création (encore lisible et
+ * stable à cet instant), l'id du produit en édition (le slug n'est plus
+ * transmis par le formulaire). Jamais le nom d'origine du fichier : il peut
+ * s'appeler `../../etc/passwd` ou porter des caractères que l'URL n'accepte
+ * pas. L'horodatage évite que le CDN serve l'ancienne image après un
+ * remplacement — même problème que les visuels renommés en `-v2`.
  */
 async function televerserPhoto(
   supabase: Awaited<ReturnType<typeof createClient>>,
   fichier: FormDataEntryValue | null,
-  slug: string,
+  identifiant: string,
 ): Promise<Photo | null | undefined> {
   if (!(fichier instanceof File) || fichier.size === 0) return null
 
@@ -159,7 +178,7 @@ async function televerserPhoto(
   }
 
   const extension = fichier.type.split('/')[1]?.replace('jpeg', 'jpg') ?? 'webp'
-  const chemin = `${slug}-${Date.now()}.${extension}`
+  const chemin = `${identifiant}-${Date.now()}.${extension}`
 
   const { error } = await supabase.storage
     .from('produits')
@@ -177,10 +196,10 @@ async function televerserPhoto(
 /**
  * Le chemin accompagne l'URL parce qu'il faut pouvoir revenir en arrière.
  *
- * Si l'enregistrement échoue APRÈS le téléversement — slug déjà pris, c'est le
- * cas courant — le fichier reste dans le bucket sans qu'aucune ligne n'y
- * renvoie. On corrige le slug, on renvoie le formulaire, et un orphelin
- * s'accumule à chaque essai. Personne ne les voit, ils ne se nettoient jamais.
+ * Si l'enregistrement échoue APRÈS le téléversement, le fichier reste dans le
+ * bucket sans qu'aucune ligne n'y renvoie. On corrige et on renvoie le
+ * formulaire, et un orphelin s'accumule à chaque essai. Personne ne les voit,
+ * ils ne se nettoient jamais.
  */
 type Photo = { url: string; chemin: string }
 
@@ -196,6 +215,9 @@ async function retirerPhoto(
   if (error) console.error('[catalogue] orphelin non nettoyé', photo.chemin, error.message)
 }
 
+/** Plafond de tentatives sur un slug déjà pris — au-delà, quelque chose d'anormal se passe. */
+const TENTATIVES_SLUG_MAX = 20
+
 export async function creerProduit(
   _precedent: EtatProduit,
   donnees: FormData,
@@ -204,26 +226,63 @@ export async function creerProduit(
   const analyse = lire(donnees)
   if (!analyse.success) return { erreur: 'donnees' }
 
+  const baseSlug = slugifier(analyse.data.nom_fr)
+  // Un nom composé UNIQUEMENT de caractères que le slugifier retire (des
+  // symboles, par exemple) donnerait une chaîne vide : rien de valide à
+  // enregistrer, mieux vaut le dire maintenant qu'échouer à l'insertion.
+  if (!baseSlug) return { erreur: 'donnees' }
+
   try {
     const supabase = await createClient()
 
-    const photo = await televerserPhoto(supabase, donnees.get('photo'), analyse.data.slug)
+    const photo = await televerserPhoto(supabase, donnees.get('photo'), baseSlug)
     if (photo === undefined) return { erreur: 'photo' }
 
-    // `publie: false` à la création, toujours. Un produit incomplet — sans
-    // photo, sans prix confirmé — ne doit pas apparaître en boutique parce
-    // qu'on a cliqué « Créer ». La publication est un geste séparé.
-    const { error } = await supabase
+    const { data: dernier } = await supabase
       .from('produits_boutique')
-      .insert({ ...analyse.data, images: photo ? [photo.url] : [], publie: false })
+      .select('ordre')
+      .order('ordre', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    const ordre = (dernier?.ordre ?? 0) + 10
 
-    if (error) {
-      // Le fichier est déjà dans le bucket : sans ce retrait, chaque tentative
-      // sur un slug déjà pris y laisserait une image que plus rien ne
-      // référence.
+    let creation: { erreur: true } | { erreur: false } = { erreur: true }
+
+    for (let tentative = 0; tentative < TENTATIVES_SLUG_MAX; tentative += 1) {
+      // Premier essai : le slug tel quel. Ensuite, -2, -3... — l'admin ne
+      // voit plus ce champ, il ne peut donc plus choisir lui-même une
+      // variante en cas de collision.
+      const slug = tentative === 0 ? baseSlug : `${baseSlug}-${tentative + 1}`
+
+      const { error } = await supabase.from('produits_boutique').insert({
+        ...analyse.data,
+        slug,
+        cadrage: 'contain',
+        ordre,
+        images: photo ? [photo.url] : [],
+        // `publie: false` à la création, toujours. Un produit incomplet —
+        // sans photo, sans prix confirmé — ne doit pas apparaître en boutique
+        // parce qu'on a cliqué « Créer ». La publication est un geste séparé.
+        publie: false,
+      })
+
+      if (!error) {
+        creation = { erreur: false }
+        break
+      }
+      if (!slugDejaPris(error.code)) {
+        await retirerPhoto(supabase, photo)
+        console.error('[catalogue] création refusée', error.message)
+        return { erreur: 'refuse' }
+      }
+      // Slug pris : la boucle réessaie avec le suffixe suivant.
+    }
+
+    if (creation.erreur) {
       await retirerPhoto(supabase, photo)
-      if (slugDejaPris(error.code)) return { erreur: 'slug_pris' }
-      console.error('[catalogue] création refusée', error.message)
+      console.error(
+        `[catalogue] création refusée — slug « ${baseSlug} » saturé après ${TENTATIVES_SLUG_MAX} tentatives`,
+      )
       return { erreur: 'refuse' }
     }
   } catch (err) {
@@ -249,7 +308,11 @@ export async function modifierProduit(
   try {
     const supabase = await createClient()
 
-    const photo = await televerserPhoto(supabase, donnees.get('photo'), analyse.data.slug)
+    // Ni le slug ni le cadrage ni l'ordre ne sont dans `analyse.data` : ils ne
+    // sont plus des champs du formulaire, donc pas dans cette mise à jour non
+    // plus. Le slug en particulier vit dans une URL déjà partagée — une
+    // correction de faute de frappe dans le nom ne doit jamais la casser.
+    const photo = await televerserPhoto(supabase, donnees.get('photo'), id)
     if (photo === undefined) return { erreur: 'photo' }
 
     // `images` n'est touché QUE si une nouvelle photo a été fournie. Sans
@@ -262,7 +325,6 @@ export async function modifierProduit(
 
     if (error) {
       await retirerPhoto(supabase, photo)
-      if (slugDejaPris(error.code)) return { erreur: 'slug_pris' }
       console.error('[catalogue] mise à jour refusée', error.message)
       return { erreur: 'refuse' }
     }

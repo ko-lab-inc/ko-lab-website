@@ -51,23 +51,22 @@ export default async function CataloguePage({ params }: Props) {
 
   const libelles: LibellesProduit = {
     slug: t('champ_slug'),
-    slugAideCreation: t('champ_slug_aide_creation'),
-    slugAideEdition: t('champ_slug_aide_edition'),
     marque: t('champ_marque'),
     categorie: t('colonne_categorie'),
     langue: t('champ_langue'),
     langueFr: t('champ_langue_fr'),
     langueEn: t('champ_langue_en'),
-    langueAide: t('champ_langue_aide'),
     nom: t('champ_nom'),
     description: t('champ_description'),
     prix: t('colonne_prix'),
+    quantite: t('champ_quantite'),
+    statutStock: t('champ_statut_stock'),
+    statutEnStock: t('statut_stock_en_stock'),
+    statutRupture: t('statut_stock_rupture'),
+    statutEnCommande: t('statut_stock_en_commande'),
+    statutEnLivraison: t('statut_stock_en_livraison'),
     photo: t('champ_photo'),
     photoAide: t('champ_photo_aide'),
-    photoActuelle: t('champ_photo_actuelle'),
-    cadrage: t('champ_cadrage'),
-    cadrageContain: t('champ_cadrage_contain'),
-    cadrageCover: t('champ_cadrage_cover'),
     ordre: t('champ_ordre'),
     enregistrer: t('enregistrer'),
     creer: t('creer_produit'),
@@ -80,10 +79,14 @@ export default async function CataloguePage({ params }: Props) {
       equipements: t('cat_equipements'),
     },
     erreurDonnees: t('erreur_donnees_produit'),
-    erreurSlug: t('erreur_slug_pris'),
     erreurPhoto: t('erreur_photo'),
-    erreurRefuse: t('reserve_admin_texte'),
-    erreurServeur: t('erreur_lecture'),
+    // ⚠️ Deux clés dédiées plutôt que la réutilisation historique de
+    // `reserve_admin_texte` / `erreur_lecture` : leur texte parlait de rôles
+    // et de « lecture des demandes », un copier-coller resté depuis un autre
+    // écran. Trouvé en construisant /admin/realisations, corrigé ici aussi
+    // puisque ce fichier est déjà rouvert pour d'autres raisons.
+    erreurRefuse: t('erreur_refuse_produit'),
+    erreurServeur: t('erreur_serveur_produit'),
   }
 
   if (error) {
@@ -124,6 +127,9 @@ export default async function CataloguePage({ params }: Props) {
           titreCreation: t('nouveau_produit'),
           titreDetail: t('titre_detail'),
           sansImage: t('sans_image'),
+          pageGabarit: t('page_gabarit'),
+          pagePrecedente: t('page_precedente'),
+          pageSuivante: t('page_suivante'),
         }}
       />
     </>

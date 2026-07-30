@@ -44,8 +44,6 @@ export default async function RealisationsAdminPage({ params }: Props) {
 
   const libelles: LibellesRealisation = {
     slug: t('champ_slug'),
-    slugAideCreation: t('champ_slug_aide_creation_realisation'),
-    slugAideEdition: t('champ_slug_aide_edition'),
     titreFr: t('champ_titre_fr'),
     titreEn: t('champ_titre_en'),
     descriptionFr: t('champ_description_fr'),
@@ -71,7 +69,6 @@ export default async function RealisationsAdminPage({ params }: Props) {
     enCours: t('en_cours'),
     succes: t('realisation_enregistree'),
     erreurDonnees: t('erreur_donnees_realisation'),
-    erreurSlug: t('erreur_slug_pris_realisation'),
     erreurPhoto: t('erreur_photo'),
     erreurRefuse: t('erreur_refuse_realisation'),
     erreurServeur: t('erreur_serveur_realisation'),

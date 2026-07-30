@@ -702,7 +702,18 @@
     "images_compte": "{n, plural, =0 {Aucune photo} one {# photo} other {# photos}}",
     "erreur_serveur_realisation": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste.",
     "confirmer_suppression_realisation": "Supprimer cette réalisation définitivement ?",
-    "titre_detail_realisation": "Détail de la réalisation"
+    "titre_detail_realisation": "Détail de la réalisation",
+    "champ_quantite": "Quantité en stock",
+    "champ_statut_stock": "Statut de stock",
+    "statut_stock_en_stock": "En stock",
+    "statut_stock_rupture": "Rupture de stock",
+    "statut_stock_en_commande": "En commande fournisseur",
+    "statut_stock_en_livraison": "En livraison",
+    "erreur_refuse_produit": "Cette action a été refusée. Réessayez, ou prévenez Moussa si ça persiste.",
+    "erreur_serveur_produit": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste.",
+    "page_gabarit": "Page {page} sur {total}",
+    "page_precedente": "Page précédente",
+    "page_suivante": "Page suivante"
   },
   "Aide": {
     "ouvrir": "Poser une question",
