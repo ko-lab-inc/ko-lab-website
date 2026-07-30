@@ -35,10 +35,22 @@ alter table public.produits_boutique
 -- LES DOUZE PRODUITS
 -- =============================================================================
 --
--- on conflict (slug) : ce fichier peut être rejoué sans créer de doublon. Il
--- met à jour le CONTENU, mais laisse publie et ordre intacts — sinon un rejeu
--- écraserait les décisions prises depuis l'espace d'administration, ce qui
--- est précisément ce qu'on veut éviter maintenant que le catalogue s'y règle.
+-- on conflict (slug) : ce fichier peut être rejoué sans créer de doublon.
+--
+-- ⚠️ LA TABLE N'EST PAS VIDE. 0003_seed_dev.sql — un seed de DÉVELOPPEMENT —
+-- a déjà été exécuté sur ce projet et y a laissé deux lignes incomplètes,
+-- bambu-lab-x1-carbon et xtool-p2, sans prix et avec ordre 1 et 2. Leurs slugs
+-- entrent en collision avec deux des douze ci-dessous : elles seront donc
+-- corrigées, pas dupliquées.
+--
+-- `ordre` EST mis à jour, contrairement à `publie`. Sans ça, ces deux lignes
+-- garderaient 1 et 2 et remonteraient en tête du catalogue, cassant le
+-- regroupement par marque. Le jour où l'ordre se règle depuis l'espace
+-- d'administration, retirer `ordre` de la liste ci-dessous — un rejeu
+-- écraserait sinon un classement décidé à la main.
+--
+-- `publie` reste protégé dès maintenant : un produit volontairement retiré de
+-- la vitrine ne doit pas y revenir parce qu'on a rejoué un fichier.
 --
 -- ⚠️ PRIX PROVISOIRES : X1-Carbon, xTool P2 et xTool F1 n'ont jamais été
 -- confirmés sur une source officielle (voir les commentaires de produits.ts).
@@ -69,7 +81,8 @@ on conflict (slug) do update set
   description_en = excluded.description_en,
   prix           = excluded.prix,
   images         = excluded.images,
-  cadrage        = excluded.cadrage;
+  cadrage        = excluded.cadrage,
+  ordre          = excluded.ordre;
 
 -- =============================================================================
 -- VÉRIFICATION
