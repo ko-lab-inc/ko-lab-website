@@ -461,13 +461,3 @@ export function IconeCle(props: IconeProps) {
     </Icone>
   )
 }
-
-/** Traduire la page — nav, skill 10. Globe : méridien central et un parallèle. */
-export function IconeGlobe(props: IconeProps) {
-  return (
-    <Icone {...props}>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M3 12h18M12 3c2.4 2.5 3.8 5.7 3.8 9s-1.4 6.5-3.8 9c-2.4-2.5-3.8-5.7-3.8-9s1.4-6.5 3.8-9z" />
-    </Icone>
-  )
-}
