@@ -16,11 +16,13 @@ import { ROUTES } from '@/lib/routes'
  * est la signature d'un template.
  *
  * ⚠️ CONTENU PROVISOIRE. Les titres sont les catégories filtrables du skill 21,
- * pas des projets réels — aucun nom n'est inventé. À l'arrivée des données :
+ * pas des projets réels — aucun nom n'est inventé. Ce bandeau d'accueil n'est
+ * PAS branché sur Supabase (contrairement à la page /realisations, voir
+ * GalerieRealisations.tsx) ; à l'arrivée des données :
  *
  *     const supabase = createStaticClient()   // JAMAIS createClient()
  *     const { data } = await supabase.from('realisations')
- *       .select('slug, titre_fr, titre_en, categorie, images')
+ *       .select('slug, titre_fr, categorie, images')
  *       .eq('publie', true).order('ordre').limit(3)
  */
 export async function Realisations() {

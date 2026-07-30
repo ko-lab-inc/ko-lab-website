@@ -19,14 +19,10 @@ import type { CategorieRealisation } from '@/types'
  * qui permet de garder next-intl côté serveur : passer les clés brutes aurait
  * obligé à embarquer le catalogue de traductions dans le bundle client.
  *
- * ⚠️ CONTENU PROVISOIRE — trois entrées codées en dur en attendant Supabase.
- * Le jour du branchement, seule la page serveur change ; ce composant reçoit
- * la même forme de données :
- *
- *     const supabase = createStaticClient()   // JAMAIS createClient()
- *     const { data } = await supabase.from('realisations')
- *       .select('slug, titre_fr, titre_en, categorie, images')
- *       .eq('publie', true).order('ordre')
+ * Le branchement Supabase est fait — voir `lireRealisationsPubliees()` dans
+ * lib/realisations.ts, appelée par page.tsx. Ce composant ne connaît QUE la
+ * forme `RealisationCarte` ci-dessous ; il reçoit soit du contenu réel, soit
+ * le repli provisoire de page.tsx tant qu'aucune réalisation n'est publiée.
  */
 
 export type RealisationCarte = {
