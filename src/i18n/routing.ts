@@ -1,27 +1,41 @@
 import { defineRouting } from 'next-intl/routing'
 
 /**
- * Configuration de routage i18n — FR principal, EN secondaire (CLAUDE.md).
+ * Configuration de routage i18n — site francophone uniquement.
  *
- * `localePrefix: 'always'` : les deux langues portent leur préfixe (/fr, /en).
- * C'est ce que supposent le sitemap et les hreflang du skill 10, qui listent
- * `ko-lab.ca/fr` et `ko-lab.ca/en` sans URL sans préfixe.
+ * ---------------------------------------------------------------------------
+ * ⚠️ L'ANGLAIS A ÉTÉ RETIRÉ — décision de Christian
  *
- * Options laissées à leur valeur par défaut, à connaître :
- * - `localeDetection: true` — un visiteur arrivant sur `/` est redirigé selon
- *   son en-tête Accept-Language. Cohérent pour un site bilingue, mais rend `/`
- *   non cacheable. Passer à `false` pour envoyer tout le monde vers /fr.
- * - `alternateLinks: true` — next-intl pose l'en-tête `Link` avec les versions
- *   alternées, en complément des balises hreflang du skill 10.
+ * Le site était bilingue FR/EN. Pour tout contenu saisi par l'équipe
+ * (produits, réalisations), ça obligeait à écrire chaque fiche deux fois —
+ * « l'insertion sera compliquée car on va saisir deux fois pour tout ». Le
+ * site est désormais entièrement en français ; un visiteur anglophone se
+ * traduit la page avec son navigateur.
+ *
+ * `localePrefix: 'always'` reste en vigueur : les URLs gardent leur préfixe
+ * (/fr/...) plutôt que d'en changer la forme, un chantier de migration d'URL
+ * à part entière et sans rapport avec le retrait de l'anglais. `/en/...`
+ * n'est plus une locale valide ; le proxy (src/proxy.ts) redirige ces chemins
+ * vers leur équivalent /fr/... en 308, pour ne pas perdre le référencement
+ * d'éventuels liens déjà indexés.
+ *
+ * `localeDetection: false` — une seule locale existe : rien à détecter depuis
+ * Accept-Language. Ça a aussi un effet de bord bienvenu : `/` redevient
+ * pleinement cacheable (skill 12), alors qu'avec la détection activée chaque
+ * visite de `/` dépendait de l'en-tête du visiteur et ne pouvait pas être
+ * mise en cache par le CDN.
+ * ---------------------------------------------------------------------------
  */
 export const routing = defineRouting({
-  locales: ['fr', 'en'],
+  locales: ['fr'],
   defaultLocale: 'fr',
   localePrefix: 'always',
+  localeDetection: false,
 })
 
 /**
- * Union des locales supportées : 'fr' | 'en'.
- * Dérivée de la config — ajouter une langue à `locales` la propage partout.
+ * Union des locales supportées : 'fr' — seule.
+ * Dérivée de la config plutôt qu'écrite en dur, pour qu'une réintroduction
+ * future de l'anglais n'ait qu'un seul endroit à changer.
  */
 export type AppLocale = (typeof routing.locales)[number]

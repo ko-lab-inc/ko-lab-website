@@ -16,7 +16,6 @@ import { routing, type AppLocale } from './routing'
  */
 const messagesByLocale = {
   fr: () => import('../../messages/fr.json'),
-  en: () => import('../../messages/en.json'),
 } satisfies Record<AppLocale, () => Promise<{ default: AbstractIntlMessages }>>
 
 /**
@@ -35,10 +34,11 @@ export default getRequestConfig(async ({ requestLocale }) => {
   // Le segment [locale] se comporte comme un catch-all : il capture aussi
   // /unknown.txt ou /favicon.ico. On ne fait donc jamais confiance à sa valeur.
   //
-  // hasLocale est un type guard : après ce ternaire, `locale` vaut 'fr' | 'en',
-  // jamais string. On retombe sur la langue par défaut plutôt que de lever une
-  // erreur — c'est au layout [locale] de renvoyer un 404 sur une langue
-  // invalide, pour ne pas servir la page d'accueil sous une URL inexistante.
+  // hasLocale est un type guard : après ce ternaire, `locale` vaut une entrée
+  // de AppLocale (seulement 'fr' aujourd'hui), jamais string quelconque. On
+  // retombe sur la langue par défaut plutôt que de lever une erreur — c'est
+  // au layout [locale] de renvoyer un 404 sur une langue invalide, pour ne
+  // pas servir la page d'accueil sous une URL inexistante.
   const locale = hasLocale(routing.locales, requested) ? requested : routing.defaultLocale
 
   const { default: messages } = await messagesByLocale[locale]()

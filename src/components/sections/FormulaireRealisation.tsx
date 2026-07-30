@@ -21,12 +21,13 @@ import type { ImageRealisation } from '@/lib/realisations'
  * les deux modes, seule l'action diffère.
  *
  * ---------------------------------------------------------------------------
- * DEUX LANGUES DE TITRE ET DE DESCRIPTION
+ * UN SEUL TITRE, UNE SEULE DESCRIPTION — décision de Christian
  *
- * Le catalogue n'en demande qu'une (0010) ; ce formulaire en garde deux, parce
- * que le schéma l'exige encore ici — `titre_en` est NOT NULL sur cette table,
- * et rien n'a changé cette contrainte. Reproduire la simplification du
- * catalogue supposerait une décision qui n'a pas été prise pour cet écran.
+ * `titre_en`/`description_en` existaient parce que `titre_en` était NOT NULL
+ * sur cette table (contrainte assouplie par la migration 0014). Le site est
+ * désormais francophone uniquement : « on retire tout ce qui est traduit
+ * [...] on garde en français pour facilité ». Les colonnes `_en` restent en
+ * base, nullables, mais ce formulaire ne les écrit plus jamais.
  *
  * ---------------------------------------------------------------------------
  * LA SÉRIE D'IMAGES EST GÉRÉE CÔTÉ CLIENT, PUIS ENVOYÉE À PLAT
@@ -43,9 +44,7 @@ export type RealisationAdmin = {
   id: string
   slug: string
   titre_fr: string
-  titre_en: string
   description_fr: string | null
-  description_en: string | null
   categorie: string
   images: ImageRealisation[]
   ordre: number
@@ -55,9 +54,7 @@ export type RealisationAdmin = {
 export type LibellesRealisation = {
   slug: string
   titreFr: string
-  titreEn: string
   descriptionFr: string
-  descriptionEn: string
   categorie: string
   categories: Record<string, string>
   ordre: string
@@ -65,8 +62,7 @@ export type LibellesRealisation = {
   photosAide: string
   imagesTitre: string
   imagesVide: string
-  imageAltFr: string
-  imageAltEn: string
+  imageAlt: string
   imageOrdre: string
   imageRetirer: string
   enregistrer: string
@@ -180,18 +176,6 @@ export function FormulaireRealisation({
           />
         </Champ>
 
-        <Champ id={`${prefixe}titre_en`} libelle={libelles.titreEn}>
-          <input
-            id={`${prefixe}titre_en`}
-            name="titre_en"
-            required
-            minLength={2}
-            maxLength={120}
-            defaultValue={realisation?.titre_en}
-            className={CHAMP}
-          />
-        </Champ>
-
         <Champ id={`${prefixe}ordre`} libelle={libelles.ordre}>
           <input
             id={`${prefixe}ordre`}
@@ -205,29 +189,16 @@ export function FormulaireRealisation({
         </Champ>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Champ id={`${prefixe}description_fr`} libelle={libelles.descriptionFr}>
-          <textarea
-            id={`${prefixe}description_fr`}
-            name="description_fr"
-            rows={3}
-            defaultValue={realisation?.description_fr ?? ''}
-            maxLength={600}
-            className={cn(CHAMP, 'resize-y')}
-          />
-        </Champ>
-
-        <Champ id={`${prefixe}description_en`} libelle={libelles.descriptionEn}>
-          <textarea
-            id={`${prefixe}description_en`}
-            name="description_en"
-            rows={3}
-            defaultValue={realisation?.description_en ?? ''}
-            maxLength={600}
-            className={cn(CHAMP, 'resize-y')}
-          />
-        </Champ>
-      </div>
+      <Champ id={`${prefixe}description_fr`} libelle={libelles.descriptionFr}>
+        <textarea
+          id={`${prefixe}description_fr`}
+          name="description_fr"
+          rows={3}
+          defaultValue={realisation?.description_fr ?? ''}
+          maxLength={600}
+          className={cn(CHAMP, 'resize-y')}
+        />
+      </Champ>
 
       {/* ------------------------------ Images ------------------------------ */}
       <div>
@@ -248,28 +219,15 @@ export function FormulaireRealisation({
                   <Image src={img.url} alt="" fill sizes="56px" className="object-cover" />
                 </div>
 
-                <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-3">
+                <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-ko-muted">
-                      {libelles.imageAltFr}
+                      {libelles.imageAlt}
                     </span>
                     <input
-                      name={`image_alt_fr_${i}`}
-                      value={img.alt_fr}
-                      onChange={(e) => actualiserImage(i, 'alt_fr', e.target.value)}
-                      maxLength={200}
-                      className={CHAMP_PETIT}
-                    />
-                  </label>
-
-                  <label className="block">
-                    <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-ko-muted">
-                      {libelles.imageAltEn}
-                    </span>
-                    <input
-                      name={`image_alt_en_${i}`}
-                      value={img.alt_en}
-                      onChange={(e) => actualiserImage(i, 'alt_en', e.target.value)}
+                      name={`image_alt_${i}`}
+                      value={img.alt}
+                      onChange={(e) => actualiserImage(i, 'alt', e.target.value)}
                       maxLength={200}
                       className={CHAMP_PETIT}
                     />
@@ -293,7 +251,7 @@ export function FormulaireRealisation({
                 <button
                   type="button"
                   onClick={() => retirerImage(i)}
-                  aria-label={`${libelles.imageRetirer} — ${img.alt_fr || img.url}`}
+                  aria-label={`${libelles.imageRetirer} — ${img.alt || img.url}`}
                   title={libelles.imageRetirer}
                   className="flex h-9 w-9 shrink-0 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
                 >

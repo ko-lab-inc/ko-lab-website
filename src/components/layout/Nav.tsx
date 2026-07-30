@@ -1,6 +1,6 @@
 'use client'
 
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 
 import { Link, usePathname } from '@/i18n/navigation'
@@ -35,14 +35,11 @@ export function Nav({
   panierActif: boolean
 }) {
   const t = useTranslations('Nav')
-  const locale = useLocale()
   const pathname = usePathname()
   const scrolled = useScrolled()
 
   const [menuOuvert, setMenuOuvert] = useState(false)
   const [capacitesOuvert, setCapacitesOuvert] = useState(false)
-
-  const autreLocale = locale === 'fr' ? 'en' : 'fr'
 
   // Referme les panneaux à chaque navigation : sans ça, le menu mobile reste
   // ouvert par-dessus la nouvelle page.
@@ -144,18 +141,6 @@ export function Nav({
               {t(key)}
             </Link>
           ))}
-
-          {/* Bascule de langue : un vrai lien, pas un bouton — le moteur de
-              recherche doit pouvoir suivre vers l'autre version. `locale`
-              conserve le chemin courant et change seulement le préfixe. */}
-          <Link
-            href={pathname}
-            locale={autreLocale}
-            hrefLang={autreLocale}
-            className="flex min-h-[44px] items-center font-mono text-xs uppercase tracking-widest text-ko-muted transition-colors duration-200 hover:text-ko-ink"
-          >
-            {t('changerLangue')}
-          </Link>
 
           {/* Piloté depuis Réglages › Parties du site. Décoché, le panier
               disparaît d'ici comme de la boutique. */}
@@ -265,15 +250,6 @@ export function Nav({
           </ul>
 
           <div className="flex items-center justify-between gap-4">
-            <Link
-              href={pathname}
-              locale={autreLocale}
-              hrefLang={autreLocale}
-              className="flex min-h-[44px] items-center font-mono text-xs uppercase tracking-widest text-ko-muted"
-            >
-              {t('changerLangue')}
-            </Link>
-
             {/* Sur mobile l'icône seule serait illisible hors du contexte de
                 la barre : le libellé est écrit. */}
             <Link

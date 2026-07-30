@@ -28,11 +28,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     robots: { index: false, follow: false },
     alternates: {
       canonical: `/${locale}${ROUTES.boutiqueDemande}`,
-      languages: {
-        fr: `/fr${ROUTES.boutiqueDemande}`,
-        en: `/en${ROUTES.boutiqueDemande}`,
-        'x-default': `/fr${ROUTES.boutiqueDemande}`,
-      },
     },
   }
 }

@@ -7,7 +7,7 @@ import {
   type RealisationCarte,
 } from '@/components/sections/GalerieRealisations'
 import { Reveal } from '@/components/ui/Reveal'
-import { routing, type AppLocale } from '@/i18n/routing'
+import { routing } from '@/i18n/routing'
 import { CADRAGES, IMAGES } from '@/lib/images'
 import { lireRealisationsPubliees, type RealisationPubliee } from '@/lib/realisations'
 import { ROUTES } from '@/lib/routes'
@@ -29,11 +29,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}${ROUTES.realisations}`,
-      languages: {
-        fr: `/fr${ROUTES.realisations}`,
-        en: `/en${ROUTES.realisations}`,
-        'x-default': `/fr${ROUTES.realisations}`,
-      },
     },
   }
 }
@@ -128,7 +123,7 @@ export default async function RealisationsPage({ params }: Props) {
   ]
 
   const realisations: readonly RealisationCarte[] = publiees
-    ? publiees.map((r) => versCarte(r, locale as AppLocale, libellesCategories))
+    ? publiees.map((r) => versCarte(r, libellesCategories))
     : repli
 
   // Les catégories du skill 21. `equipement` est proposée dès maintenant même
@@ -198,34 +193,21 @@ export default async function RealisationsPage({ params }: Props) {
  */
 function versCarte(
   r: RealisationPubliee,
-  locale: AppLocale,
   libellesCategories: Record<string, string>,
 ): RealisationCarte {
-  const anglais = locale === 'en'
-
-  // `titre_fr` et `titre_en` sont tous deux NOT NULL (contrainte réelle de la
-  // table) : pas de repli à calculer, contrairement au catalogue.
-  const titre = anglais ? r.titre_en : r.titre_fr
-  const description = anglais
-    ? (r.description_en ?? r.description_fr ?? '')
-    : (r.description_fr ?? r.description_en ?? '')
-
   const [premiere, ...suite] = r.images
 
   return {
     cle: r.slug,
     categorie: r.categorie,
-    titre,
-    description,
+    titre: r.titre_fr,
+    description: r.description_fr ?? '',
     tag: libellesCategories[r.categorie] ?? r.categorie,
     // `premiere` est garantie par `lireRealisationsPubliees()`, qui écarte
     // déjà toute réalisation sans la moindre image.
     src: premiere?.url ?? '',
     cadrage: 'object-center',
     desature: false,
-    serie: suite.map((im) => ({
-      src: im.url,
-      alt: anglais ? im.alt_en || im.alt_fr : im.alt_fr || im.alt_en,
-    })),
+    serie: suite.map((im) => ({ src: im.url, alt: im.alt })),
   }
 }

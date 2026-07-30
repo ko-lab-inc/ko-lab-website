@@ -148,35 +148,15 @@ test.describe('Accueil', () => {
     expect(await fondFleche()).not.toBe(flecheAvant)
   })
 
-  test('6 · la bascule FR → EN change contenu, titre ET lang', async ({ page }) => {
+  test('6 · aucun sélecteur de langue — le site est francophone uniquement', async ({ page }) => {
+    // ⚠️ Remplace l'ancien test « bascule FR → EN » — l'anglais a été retiré
+    // du site (décision de Christian, « on garde en français pour
+    // facilité »). Ce test garde la régression inverse en mémoire : si un
+    // lien de bascule réapparaissait un jour sans que /en soit réellement
+    // supporté, ce serait un lien mort.
     await page.goto('/fr')
-    const h1Fr = await page.locator('h1').first().innerText()
-
-    // Sous lg, la bascule de langue vit dans le panneau hamburger : il faut
-    // l'ouvrir d'abord. Le test couvre ainsi le vrai parcours mobile.
-    const hamburger = page.getByRole('button', { name: /menu/i })
-    if (await hamburger.isVisible()) {
-      // toPass() réessaie le clic ET l'assertion. Indispensable : sous charge
-      // parallèle, le premier clic peut partir avant la fin de l'hydratation
-      // React — le bouton est déjà peint, mais aucun gestionnaire n'y répond
-      // encore, et le clic est perdu sans erreur.
-      await expect(async () => {
-        await hamburger.click()
-        await expect(page.locator('#menu-mobile')).toBeVisible({ timeout: 1000 })
-      }).toPass({ timeout: 15_000 })
-    }
-
-    // `:visible` est indispensable : la nav desktop et le panneau mobile
-    // contiennent chacun un lien de bascule. Sans filtre, `.first()` attrape
-    // celui du desktop, masqué par `hidden lg:flex` en mobile.
-    await page.locator('a[hreflang="en"]:visible').first().click()
-    await page.waitForURL('**/en')
-
-    await expect(page.locator('h1').first()).not.toHaveText(h1Fr)
-    await expect(page).toHaveTitle(/From idea/)
-    // Régression surveillée : `lang` restait figé quand <html> vivait dans un
-    // layout au-dessus du segment [locale].
-    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+    await expect(page.locator('a[hreflang]')).toHaveCount(0)
+    await expect(page.locator('html')).toHaveAttribute('lang', 'fr')
   })
 
   test('7 · reveal — tout se révèle, sauf le h1 qui doit rester hors reveal', async ({ page }) => {

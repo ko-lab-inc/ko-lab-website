@@ -24,11 +24,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}${ROUTES.operations}`,
-      languages: {
-        fr: `/fr${ROUTES.operations}`,
-        en: `/en${ROUTES.operations}`,
-        'x-default': `/fr${ROUTES.operations}`,
-      },
     },
   }
 }

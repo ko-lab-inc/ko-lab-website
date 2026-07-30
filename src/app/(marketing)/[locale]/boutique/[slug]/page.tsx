@@ -63,11 +63,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: produit.texte,
     alternates: {
       canonical: `/${locale}${routeProduit(slug)}`,
-      languages: {
-        fr: `/fr${routeProduit(slug)}`,
-        en: `/en${routeProduit(slug)}`,
-        'x-default': `/fr${routeProduit(slug)}`,
-      },
     },
   }
 }

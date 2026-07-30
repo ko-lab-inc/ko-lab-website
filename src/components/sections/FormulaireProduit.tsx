@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils/cn'
  * auraient garanti qu'un champ ajouté un jour n'existe que dans l'un des deux.
  *
  * ---------------------------------------------------------------------------
- * CE QUE CE FORMULAIRE NE DEMANDE PLUS — décision de Christian
+ * CE QUE CE FORMULAIRE NE DEMANDE PLUS — décisions de Christian
  *
  * Slug, cadrage et ordre d'affichage ont disparu. Le slug se déduit
  * automatiquement du nom côté serveur (voir actions.ts) ; le cadrage est
@@ -26,6 +26,13 @@ import { cn } from '@/lib/utils/cn'
  * bouge plus ensuite. Les TROIS restent des colonnes réelles — visibles en
  * lecture seule dans l'aperçu (l'œil, dans TableauProduits) — simplement
  * plus des choix à faire ici.
+ *
+ * ⚠️ Le choix de langue a lui aussi disparu — retrait plus large que sa seule
+ * simplification d'affichage : « on va retirer la traduction partout dans le
+ * site [...] on garde en français pour facilité ». Le nom et la description
+ * s'écrivent directement dans les colonnes françaises ; les colonnes `_en`
+ * restent en base (une réintroduction future de l'anglais les retrouverait
+ * intactes) mais ce formulaire ne les touche plus jamais.
  * ---------------------------------------------------------------------------
  */
 
@@ -35,9 +42,7 @@ export type Produit = {
   marque: string
   categorie: string
   nom_fr: string
-  nom_en: string
   description_fr: string | null
-  description_en: string | null
   prix: number | null
   cadrage: string
   ordre: number
@@ -50,9 +55,6 @@ export type LibellesProduit = {
   slug: string
   marque: string
   categorie: string
-  langue: string
-  langueFr: string
-  langueEn: string
   nom: string
   description: string
   prix: string
@@ -119,19 +121,6 @@ export function FormulaireProduit({
   // peut coexister avec un autre.
   const [prefixe] = useState(() => (produit ? `p-${produit.id}-` : 'nouveau-'))
 
-  /**
-   * Langue de saisie — un interrupteur à côté du champ qu'il gouverne, pas un
-   * menu déroulant séparé avec un paragraphe d'explication.
-   *
-   * ⚠️ Corrigé : la version précédente posait le choix de langue loin du nom
-   * et de la description, reliés seulement par un texte d'aide — Christian
-   * l'a trouvé confus à l'usage. Le mécanisme ne change pas (une seule
-   * langue saisie, l'autre retombe sur elle à l'affichage) : seule la
-   * présentation change, pour que le lien entre le bouton et les champs
-   * qu'il affecte soit visible sans rien avoir à lire.
-   */
-  const [langue, setLangue] = useState<'fr' | 'en'>(produit?.nom_en ? 'en' : 'fr')
-
   const messages: Record<string, string> = {
     donnees: libelles.erreurDonnees,
     photo: libelles.erreurPhoto,
@@ -144,7 +133,6 @@ export function FormulaireProduit({
     <form action={action} className="space-y-4">
       <input type="hidden" name="locale" value={locale} />
       {produit && <input type="hidden" name="id" value={produit.id} />}
-      <input type="hidden" name="langue" value={langue} />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Champ id={`${prefixe}marque`} libelle={libelles.marque}>
@@ -214,54 +202,18 @@ export function FormulaireProduit({
             </select>
           </Champ>
         </div>
-      </div>
 
-      {/* Nom et description partagent UNE langue, choisie ici. Le groupe de
-          boutons est collé au libellé qu'il gouverne — c'est la relation
-          elle-même qui sert d'explication. */}
-      <div>
-        <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-          <label htmlFor={`${prefixe}nom`} className="label-mono text-ko-muted">
-            {libelles.nom}
-          </label>
-          <div
-            role="group"
-            aria-label={libelles.langue}
-            className="flex overflow-hidden rounded-sm border border-ko-line"
-          >
-            <button
-              type="button"
-              onClick={() => setLangue('fr')}
-              aria-pressed={langue === 'fr'}
-              className={cn(
-                'min-h-[28px] px-3 font-mono text-xs uppercase tracking-widest transition-colors duration-200',
-                langue === 'fr' ? 'bg-ko-blue text-ko-white' : 'text-ko-muted hover:text-ko-ink',
-              )}
-            >
-              {libelles.langueFr}
-            </button>
-            <button
-              type="button"
-              onClick={() => setLangue('en')}
-              aria-pressed={langue === 'en'}
-              className={cn(
-                'min-h-[28px] border-l border-ko-line px-3 font-mono text-xs uppercase tracking-widest transition-colors duration-200',
-                langue === 'en' ? 'bg-ko-blue text-ko-white' : 'text-ko-muted hover:text-ko-ink',
-              )}
-            >
-              {libelles.langueEn}
-            </button>
-          </div>
-        </div>
-        <input
-          id={`${prefixe}nom`}
-          name="nom"
-          required
-          minLength={2}
-          defaultValue={produit?.nom_en ?? produit?.nom_fr}
-          maxLength={120}
-          className={CHAMP}
-        />
+        <Champ id={`${prefixe}nom`} libelle={libelles.nom}>
+          <input
+            id={`${prefixe}nom`}
+            name="nom"
+            required
+            minLength={2}
+            defaultValue={produit?.nom_fr}
+            maxLength={120}
+            className={CHAMP}
+          />
+        </Champ>
       </div>
 
       <Champ id={`${prefixe}description`} libelle={libelles.description}>
@@ -269,7 +221,7 @@ export function FormulaireProduit({
           id={`${prefixe}description`}
           name="description"
           rows={3}
-          defaultValue={produit?.description_en ?? produit?.description_fr ?? ''}
+          defaultValue={produit?.description_fr ?? ''}
           maxLength={600}
           className={cn(CHAMP, 'resize-y')}
         />

@@ -43,16 +43,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}`,
-      languages: {
-        fr: '/fr',
-        en: '/en',
-        'x-default': '/fr',
-      },
     },
     openGraph: {
       type: 'website',
       siteName: 'KO-LAB Inc.',
-      locale: locale === 'fr' ? 'fr_CA' : 'en_CA',
+      locale: 'fr_CA',
       url: `/${locale}`,
       title: t('title'),
       description: t('description'),

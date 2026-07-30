@@ -30,11 +30,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}${ROUTES.capacites}`,
-      languages: {
-        fr: `/fr${ROUTES.capacites}`,
-        en: `/en${ROUTES.capacites}`,
-        'x-default': `/fr${ROUTES.capacites}`,
-      },
     },
   }
 }

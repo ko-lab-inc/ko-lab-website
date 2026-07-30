@@ -36,9 +36,12 @@ import { CATEGORIES_REALISATION, type CategorieRealisation, type Realisation } f
  * ---------------------------------------------------------------------------
  */
 
-export type ImageRealisation = { url: string; alt_fr: string; alt_en: string; ordre: number }
+export type ImageRealisation = { url: string; alt: string; ordre: number }
 
-export type RealisationPubliee = Omit<Realisation, 'categorie' | 'images'> & {
+export type RealisationPubliee = Omit<
+  Realisation,
+  'categorie' | 'images' | 'titre_en' | 'description_en'
+> & {
   categorie: CategorieRealisation
   images: ImageRealisation[]
 }
@@ -63,8 +66,10 @@ export function validerImages(brut: unknown): ImageRealisation[] {
     .filter((x): x is Record<string, unknown> => typeof x === 'object' && x !== null)
     .map((x) => ({
       url: typeof x.url === 'string' ? x.url : '',
-      alt_fr: typeof x.alt_fr === 'string' ? x.alt_fr : '',
-      alt_en: typeof x.alt_en === 'string' ? x.alt_en : '',
+      // `alt_fr` en repli : d'éventuelles lignes écrites avant le retrait de
+      // l'anglais (0014) portent encore cette clé dans leur jsonb — Postgres
+      // ne migre pas le contenu d'une colonne jsonb, seule sa contrainte.
+      alt: typeof x.alt === 'string' ? x.alt : typeof x.alt_fr === 'string' ? x.alt_fr : '',
       ordre: typeof x.ordre === 'number' ? x.ordre : 0,
     }))
     // Une entrée sans URL ne montre rien : autant l'écarter ici qu'obliger
@@ -78,9 +83,7 @@ async function lireDepuisBase(): Promise<RealisationPubliee[] | null> {
     const supabase = createStaticClient()
     const { data, error } = await supabase
       .from('realisations')
-      .select(
-        'id, slug, titre_fr, titre_en, description_fr, description_en, categorie, tags, images, publie, ordre, created_at, updated_at',
-      )
+      .select('id, slug, titre_fr, description_fr, categorie, tags, images, publie, ordre, created_at, updated_at')
       .eq('publie', true)
       .order('ordre')
 

@@ -36,7 +36,8 @@ export type Database = {
           id: string
           slug: string
           titre_fr: string
-          titre_en: string
+          /** Nullable depuis 0014 : le site est désormais francophone uniquement. */
+          titre_en: string | null
           description_fr: string | null
           description_en: string | null
           /** CHECK : 'terrain' | 'installation' | 'lab' | 'equipement' */
@@ -52,7 +53,7 @@ export type Database = {
           id?: string
           slug: string
           titre_fr: string
-          titre_en: string
+          titre_en?: string | null
           description_fr?: string | null
           description_en?: string | null
           categorie: string
@@ -67,7 +68,7 @@ export type Database = {
           id?: string
           slug?: string
           titre_fr?: string
-          titre_en?: string
+          titre_en?: string | null
           description_fr?: string | null
           description_en?: string | null
           categorie?: string
@@ -209,7 +210,8 @@ export type Database = {
         Row: {
           id: string
           titre_fr: string
-          titre_en: string
+          /** Nullable depuis 0014 : le site est désormais francophone uniquement. */
+          titre_en: string | null
           departement: string
           /** CHECK : 'temps-plein' | 'temps-partiel' | 'contrat' */
           type: string
@@ -224,7 +226,7 @@ export type Database = {
         Insert: {
           id?: string
           titre_fr: string
-          titre_en: string
+          titre_en?: string | null
           departement: string
           type: string
           description_fr?: string | null
@@ -238,7 +240,7 @@ export type Database = {
         Update: {
           id?: string
           titre_fr?: string
-          titre_en?: string
+          titre_en?: string | null
           departement?: string
           type?: string
           description_fr?: string | null

@@ -1,0 +1,51 @@
+-- =============================================================================
+-- 0014 — Retrait de l'obligation bilingue (réalisations, carrières)
+-- =============================================================================
+--
+-- ⚠️ À EXÉCUTER PAR MOUSSA DANS LE SQL EDITOR SUPABASE, projet ko-lab-site.
+--
+-- -----------------------------------------------------------------------------
+-- POURQUOI CETTE MIGRATION
+-- -----------------------------------------------------------------------------
+-- Décision de Christian : « on va retirer la traduction partout dans le site
+-- [...] sinon l'insertion sera compliquée car on va saisir deux fois pour
+-- tout [...] on garde en français pour facilité ». Le site devient
+-- entièrement francophone ; un visiteur anglophone se traduit la page avec
+-- son navigateur.
+--
+-- `produits_boutique.nom_en` était déjà passée nullable par 0010, pour la
+-- même raison, appliquée alors au seul catalogue. Cette migration applique le
+-- même assouplissement aux deux tables qui l'avaient encore en NOT NULL :
+--
+--   realisations.titre_en      — actif : /admin/realisations l'exigeait
+--   postes_carrieres.titre_en  — latent : aucun écran admin n'existe encore
+--                                 pour cette table, mais le jour où il sera
+--                                 construit sur ce schéma inchangé, la même
+--                                 erreur se reproduirait à l'identique
+--
+-- -----------------------------------------------------------------------------
+-- NULLABLE, PAS SUPPRIMÉE
+-- -----------------------------------------------------------------------------
+-- La colonne reste en place plutôt que d'être retirée par un `drop column`.
+-- Une colonne nullable et inutilisée se réactive en une ligne le jour où
+-- l'anglais reviendrait ; une colonne supprimée emporte ses données avec
+-- elle, sans retour possible. Aucune des deux tables ne contient aujourd'hui
+-- de vrai contenu anglais (les lignes de démonstration ont été dépubliées par
+-- 0008, et `postes_carrieres` n'a jamais reçu de contenu réel) — rien n'est
+-- donc perdu à ce moment précis, mais la prudence reste la même règle que
+-- pour tout `drop column` : irréversible, donc évité quand une alternative
+-- réversible suffit.
+
+alter table public.realisations alter column titre_en drop not null;
+alter table public.postes_carrieres alter column titre_en drop not null;
+
+-- =============================================================================
+-- VÉRIFICATION
+-- =============================================================================
+--   select column_name, is_nullable
+--   from information_schema.columns
+--   where table_schema = 'public'
+--     and table_name in ('realisations', 'postes_carrieres')
+--     and column_name = 'titre_en';
+--
+-- Attendu : is_nullable = 'YES' pour les deux lignes.

@@ -66,8 +66,7 @@
     "compte": "Mon compte",
     "ouvrirMenu": "Ouvrir le menu",
     "fermerMenu": "Fermer le menu",
-    "menuPrincipal": "Navigation principale",
-    "changerLangue": "English"
+    "menuPrincipal": "Navigation principale"
   },
   "Home": {
     "hero": {
@@ -621,12 +620,8 @@
     "produit_enregistre": "Enregistré.",
     "champ_slug": "Slug (URL)",
     "champ_marque": "Marque",
-    "champ_cadrage": "Cadrage de la photo",
-    "champ_cadrage_contain": "Détourée sur blanc — produit entier",
-    "champ_cadrage_cover": "Photo de scène — remplit le cadre",
     "champ_ordre": "Ordre d'affichage",
     "erreur_donnees_produit": "Vérifiez les champs. Le slug n'accepte que des minuscules, des chiffres et des tirets.",
-    "erreur_slug_pris": "Ce slug est déjà utilisé par un autre produit.",
     "en_cours": "Enregistrement…",
     "action_voir": "Voir le détail",
     "action_modifier": "Modifier",
@@ -634,12 +629,6 @@
     "fermer": "Fermer",
     "titre_edition": "Modifier le produit",
     "sans_image": "Aucune image",
-    "champ_slug_aide_creation": "Proposé d'après le nom. Modifiable tant que le produit n'est pas créé.",
-    "champ_slug_aide_edition": "Il vit dans l'URL publique : le changer casse les liens déjà partagés.",
-    "champ_langue": "Langue de saisie",
-    "champ_langue_fr": "Français",
-    "champ_langue_en": "Anglais",
-    "champ_langue_aide": "Une seule langue à saisir. L'autre version affiche ce texte ; le visiteur peut traduire la page avec son navigateur.",
     "champ_nom": "Nom du produit",
     "champ_description": "Description",
     "champ_photo": "Photo du produit",
@@ -678,10 +667,7 @@
     "nouvelle_realisation": "Ajouter une réalisation",
     "titre_edition_realisation": "Modifier la réalisation",
     "champ_titre_fr": "Titre (français)",
-    "champ_titre_en": "Titre (anglais)",
     "champ_description_fr": "Description (français)",
-    "champ_description_en": "Description (anglais)",
-    "champ_slug_aide_creation_realisation": "Proposé d'après le titre français. Modifiable tant que la réalisation n'est pas créée.",
     "rcat_terrain": "Opérations",
     "rcat_installation": "Installations",
     "rcat_lab": "Le LAB",
@@ -690,8 +676,6 @@
     "champ_photos_realisation_aide": "WebP, JPEG, PNG ou AVIF, 5 Mo maximum par fichier. Plusieurs fichiers à la fois : sélection multiple prise en charge.",
     "champ_images_titre": "Photos de la série",
     "champ_images_vide": "Aucune photo pour l'instant. La réalisation n'apparaîtra pas dans la galerie publique tant qu'elle n'en a pas au moins une.",
-    "champ_image_alt_fr": "Texte alternatif (FR)",
-    "champ_image_alt_en": "Texte alternatif (EN)",
     "champ_image_ordre": "Ordre",
     "action_retirer_image": "Retirer cette photo",
     "realisation_enregistree": "Enregistré.",
@@ -713,7 +697,8 @@
     "erreur_serveur_produit": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste.",
     "page_gabarit": "Page {page} sur {total}",
     "page_precedente": "Page précédente",
-    "page_suivante": "Page suivante"
+    "page_suivante": "Page suivante",
+    "champ_image_alt": "Texte alternatif"
   },
   "Aide": {
     "ouvrir": "Poser une question",

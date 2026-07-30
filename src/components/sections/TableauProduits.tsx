@@ -436,13 +436,6 @@ export function TableauProduits({
         et croix — pour que passer de l'un à l'autre ne dépayse pas. Le corps,
         lui, n'a aucun champ : uniquement du texte, à l'image de ce qu'un
         visiteur verrait sur une fiche produit.
-
-        ⚠️ Les deux mêmes replis qu'ailleurs dans ce fichier : `nom_en ??
-        nom_fr` et `description_en ?? description_fr` retrouvent le texte
-        entré quelle qu'ait été la langue choisie au formulaire — c'est
-        exactement le calcul que FormulaireProduit fait pour pré-remplir ses
-        propres champs, reproduit ici pour que l'aperçu affiche la même chose
-        que ce que l'édition montrerait.
       */}
       <dialog
         ref={boiteDetail}
@@ -503,15 +496,15 @@ export function TableauProduits({
               </div>
 
               <div>
-                <h3 className="ko-h3 text-[22px] text-ko-ink">{voir.nom_en ?? voir.nom_fr}</h3>
+                <h3 className="ko-h3 text-[22px] text-ko-ink">{voir.nom_fr}</h3>
                 <p className="mt-1.5 font-mono text-base text-ko-ink">
                   {voir.prix === null ? '—' : `${voir.prix} $`}
                 </p>
               </div>
 
-              {(voir.description_en ?? voir.description_fr) && (
+              {voir.description_fr && (
                 <p className="whitespace-pre-line text-sm leading-relaxed text-ko-ink">
-                  {voir.description_en ?? voir.description_fr}
+                  {voir.description_fr}
                 </p>
               )}
 

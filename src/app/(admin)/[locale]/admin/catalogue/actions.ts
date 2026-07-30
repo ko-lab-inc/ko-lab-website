@@ -67,19 +67,14 @@ const schemaProduit = z.object({
   marque: z.string().trim().min(1).max(80),
   categorie: z.enum(CATEGORIES),
   /**
-   * Nom et description dans UNE SEULE langue — décision de Christian.
-   *
-   * Le formulaire envoie la langue choisie dans `langue`, et remplit la paire
-   * correspondante. L'autre reste vide ; l'affichage retombe dessus (voir
-   * `texteLocalise` dans lib/produits.ts). Ce n'est pas de la traduction :
-   * un anglophone verra le texte français plutôt qu'un blanc, ce qui est
-   * préférable mais reste un pis-aller tant qu'aucun service de traduction
-   * n'est branché.
+   * Nom et description en FRANÇAIS SEULEMENT — décision de Christian : « on
+   * retire tout ce qui est traduit [...] on garde en français pour
+   * facilité ». Les colonnes `_en` restent en base (une réintroduction
+   * future de l'anglais les retrouverait) mais ce formulaire ne les écrit
+   * plus jamais — elles ne figurent donc pas dans ce schéma.
    */
   nom_fr: z.string().trim().min(2).max(120),
-  nom_en: z.string().trim().max(120).nullable(),
   description_fr: z.string().trim().max(600).nullable(),
-  description_en: z.string().trim().max(600).nullable(),
   /**
    * Prix OBLIGATOIRE — décision de Christian : « le prix n'est pas sur
    * demande, on va le mettre ». La colonne reste nullable en base pour ne pas
@@ -92,30 +87,11 @@ const schemaProduit = z.object({
 })
 
 function lire(donnees: FormData) {
-  // Une seule paire de champs à l'écran ; c'est `langue` qui décide dans
-  // quelles colonnes elle atterrit.
-  const anglais = donnees.get('langue') === 'en'
-  const nom = String(donnees.get('nom') ?? '').trim()
-  const description = String(donnees.get('description') ?? '').trim()
-
-  /**
-   * `nom_fr` reçoit TOUJOURS le texte saisi, quelle que soit la langue.
-   *
-   * Deux raisons. La colonne est NOT NULL depuis 0001 — c'est la seule langue
-   * garantie, et le français est la langue première du site. Et c'est elle qui
-   * sert de repli : un visiteur anglophone verra le texte français plutôt
-   * qu'un blanc, et inversement si la saisie s'est faite en anglais.
-   *
-   * `nom_en` n'est rempli que si l'anglais a été choisi. Sinon il reste null,
-   * et l'affichage retombe sur `nom_fr`.
-   */
   return schemaProduit.safeParse({
     marque: donnees.get('marque'),
     categorie: donnees.get('categorie'),
-    nom_fr: nom,
-    nom_en: anglais ? nom : null,
-    description_fr: description || null,
-    description_en: anglais ? description || null : null,
+    nom_fr: String(donnees.get('nom') ?? '').trim(),
+    description_fr: String(donnees.get('description') ?? '').trim() || null,
     prix: donnees.get('prix'),
     quantite: donnees.get('quantite') ?? 0,
     statut_stock: donnees.get('statut_stock'),

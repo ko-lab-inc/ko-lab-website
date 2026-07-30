@@ -79,39 +79,3 @@ export type Role = (typeof ROLES)[number]
  */
 export const ROLES_EQUIPE = ['admin', 'editor'] as const satisfies readonly Role[]
 export type RoleEquipe = (typeof ROLES_EQUIPE)[number]
-
-/* -----------------------------------------------------------------------------
- * Colonnes jsonb
- *
- * `realisations.images` et `produits_boutique.images` sont typées `Json | null`
- * par le générateur — donc inexploitables sans forme déclarée. Ces types
- * décrivent le contenu attendu ; à valider avec Zod à la frontière (skill 09)
- * plutôt qu'à coup de cast, la base ne garantissant pas la forme d'un jsonb.
- * -------------------------------------------------------------------------- */
-
-/** Une image dans realisations.images / produits_boutique.images — skill 03 */
-export type ImageMedia = {
-  url: string
-  alt_fr: string
-  alt_en: string
-  ordre: number
-}
-
-/** produits_boutique.specs — paires libres, affichées telles quelles */
-export type SpecsProduit = Record<string, string>
-
-/* -----------------------------------------------------------------------------
- * Vues enrichies
- * -------------------------------------------------------------------------- */
-
-/** Réalisation dont le jsonb `images` a été validé et typé. */
-export type RealisationAvecImages = Omit<Realisation, 'categorie' | 'images'> & {
-  categorie: CategorieRealisation
-  images: ImageMedia[]
-}
-
-/** Produit dont les jsonb ont été validés et typés. */
-export type ProduitAvecMedias = Omit<ProduitBoutique, 'images' | 'specs'> & {
-  images: ImageMedia[]
-  specs: SpecsProduit
-}

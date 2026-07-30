@@ -41,7 +41,7 @@ export default async function CataloguePage({ params }: Props) {
     supabase
       .from('produits_boutique')
       .select(
-        'id, slug, marque, categorie, nom_fr, nom_en, description_fr, description_en, prix, cadrage, ordre, publie, images',
+        'id, slug, marque, categorie, nom_fr, description_fr, prix, cadrage, ordre, publie, images, quantite, statut_stock',
       )
       .order('ordre'),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
@@ -53,9 +53,6 @@ export default async function CataloguePage({ params }: Props) {
     slug: t('champ_slug'),
     marque: t('champ_marque'),
     categorie: t('colonne_categorie'),
-    langue: t('champ_langue'),
-    langueFr: t('champ_langue_fr'),
-    langueEn: t('champ_langue_en'),
     nom: t('champ_nom'),
     description: t('champ_description'),
     prix: t('colonne_prix'),

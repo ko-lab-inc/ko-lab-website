@@ -303,18 +303,12 @@ export function TableauRealisations({
                 </span>
               </div>
 
-              <div>
-                <h3 className="ko-h3 text-[20px] text-ko-ink">{voir.titre_fr}</h3>
-                <p className="mt-0.5 text-sm text-ko-muted">{voir.titre_en}</p>
-              </div>
+              <h3 className="ko-h3 text-[20px] text-ko-ink">{voir.titre_fr}</h3>
 
-              {(voir.description_fr || voir.description_en) && (
-                <div className="space-y-3 text-sm leading-relaxed text-ko-ink">
-                  {voir.description_fr && <p className="whitespace-pre-line">{voir.description_fr}</p>}
-                  {voir.description_en && (
-                    <p className="whitespace-pre-line text-ko-muted">{voir.description_en}</p>
-                  )}
-                </div>
+              {voir.description_fr && (
+                <p className="whitespace-pre-line text-sm leading-relaxed text-ko-ink">
+                  {voir.description_fr}
+                </p>
               )}
 
               {/* La série complète, pas une seule photo mise en avant : c'est
@@ -334,9 +328,9 @@ export function TableauRealisations({
                         <div className="relative aspect-square overflow-hidden border border-ko-line bg-ko-photo">
                           <Image src={img.url} alt="" fill sizes="200px" className="object-cover" />
                         </div>
-                        {(img.alt_fr || img.alt_en) && (
-                          <p className="mt-1 truncate text-xs text-ko-muted" title={img.alt_fr || img.alt_en}>
-                            {img.alt_fr || img.alt_en}
+                        {img.alt && (
+                          <p className="mt-1 truncate text-xs text-ko-muted" title={img.alt}>
+                            {img.alt}
                           </p>
                         )}
                       </li>

@@ -27,13 +27,13 @@ import { CATEGORIES_REALISATION } from '@/types'
  * de SESSION, et le RLS refuse ce qui doit l'être.
  *
  * ---------------------------------------------------------------------------
- * DEUX LANGUES OBLIGATOIRES, À LA DIFFÉRENCE DU CATALOGUE
+ * UN SEUL TITRE, UNE SEULE DESCRIPTION — décision de Christian
  *
- * Le catalogue a été simplifié à une seule langue de saisie (0010). Rien
- * d'équivalent n'a été décidé pour les réalisations, et le schéma le confirme :
- * `titre_en` est resté NOT NULL. Ce formulaire garde donc deux champs de titre
- * et deux champs de description — fidèle à la contrainte réelle, sans
- * supposer une décision qui n'a pas été prise pour cet écran.
+ * `titre_en` était NOT NULL, ce qui forçait deux champs de titre. La
+ * contrainte a été assouplie par la migration 0014 : le site est désormais
+ * francophone uniquement, « on garde en français pour facilité ». Les
+ * colonnes `_en` restent en base, nullables, mais cette action ne les écrit
+ * plus jamais.
  * ---------------------------------------------------------------------------
  */
 
@@ -44,9 +44,7 @@ export type EtatRealisation = {
 
 const schemaRealisation = z.object({
   titre_fr: z.string().trim().min(2).max(120),
-  titre_en: z.string().trim().min(2).max(120),
   description_fr: z.string().trim().max(600).nullable(),
-  description_en: z.string().trim().max(600).nullable(),
   categorie: z.enum(CATEGORIES_REALISATION),
   ordre: z.coerce.number().int().min(0).max(9999),
 })
@@ -54,9 +52,7 @@ const schemaRealisation = z.object({
 function lireChamps(donnees: FormData) {
   return schemaRealisation.safeParse({
     titre_fr: donnees.get('titre_fr'),
-    titre_en: donnees.get('titre_en'),
     description_fr: String(donnees.get('description_fr') ?? '').trim() || null,
-    description_en: String(donnees.get('description_en') ?? '').trim() || null,
     categorie: donnees.get('categorie'),
     ordre: donnees.get('ordre') ?? 0,
   })
@@ -92,10 +88,9 @@ function cheminDepuisUrl(url: string): string | null {
  * `image_count` donne le nombre de photos CONSERVÉES — celles que le client a
  * déjà retirées de sa liste avant l'envoi ne comptent plus dedans. Pour
  * chaque indice i < image_count :
- *   image_url_i     (hidden)  URL publique actuelle
- *   image_alt_fr_i  (text)    texte alternatif français
- *   image_alt_en_i  (text)    texte alternatif anglais
- *   image_ordre_i   (number)  position dans la série
+ *   image_url_i    (hidden)  URL publique actuelle
+ *   image_alt_i    (text)    texte alternatif
+ *   image_ordre_i  (number)  position dans la série
  *
  * `image_supprimee` (répété, un par photo retirée) porte l'URL de chaque
  * photo à effacer du STOCKAGE — une info que son absence de la liste
@@ -122,8 +117,7 @@ async function construireImages(
 
     conservees.push({
       url,
-      alt_fr: String(donnees.get(`image_alt_fr_${i}`) ?? '').trim(),
-      alt_en: String(donnees.get(`image_alt_en_${i}`) ?? '').trim(),
+      alt: String(donnees.get(`image_alt_${i}`) ?? '').trim(),
       ordre: Number(donnees.get(`image_ordre_${i}`) ?? i * 10),
     })
   }
@@ -167,7 +161,7 @@ async function construireImages(
     }
 
     const { data } = supabase.storage.from('realisations').getPublicUrl(chemin)
-    nouvelles.push({ url: data.publicUrl, alt_fr: '', alt_en: '', ordre: ordreSuivant })
+    nouvelles.push({ url: data.publicUrl, alt: '', ordre: ordreSuivant })
     ordreSuivant += 10
   }
 

@@ -33,9 +33,7 @@ export default async function RealisationsAdminPage({ params }: Props) {
   const [{ data: realisations, error }, { data: moi }] = await Promise.all([
     supabase
       .from('realisations')
-      .select(
-        'id, slug, titre_fr, titre_en, description_fr, description_en, categorie, images, ordre, publie',
-      )
+      .select('id, slug, titre_fr, description_fr, categorie, images, ordre, publie')
       .order('ordre'),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
   ])
@@ -45,9 +43,7 @@ export default async function RealisationsAdminPage({ params }: Props) {
   const libelles: LibellesRealisation = {
     slug: t('champ_slug'),
     titreFr: t('champ_titre_fr'),
-    titreEn: t('champ_titre_en'),
     descriptionFr: t('champ_description_fr'),
-    descriptionEn: t('champ_description_en'),
     categorie: t('colonne_categorie'),
     categories: {
       terrain: t('rcat_terrain'),
@@ -60,8 +56,7 @@ export default async function RealisationsAdminPage({ params }: Props) {
     photosAide: t('champ_photos_realisation_aide'),
     imagesTitre: t('champ_images_titre'),
     imagesVide: t('champ_images_vide'),
-    imageAltFr: t('champ_image_alt_fr'),
-    imageAltEn: t('champ_image_alt_en'),
+    imageAlt: t('champ_image_alt'),
     imageOrdre: t('champ_image_ordre'),
     imageRetirer: t('action_retirer_image'),
     enregistrer: t('enregistrer'),
