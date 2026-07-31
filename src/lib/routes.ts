@@ -25,6 +25,8 @@ export const ROUTES = {
   boutiqueDemande: '/boutique/demande',
   apropos: '/a-propos',
   carrieres: '/carrieres',
+  /** Formulaire de candidature — le MÊME pour les neuf postes (0017). */
+  carrieresPostuler: '/carrieres/postuler',
   contact: '/contact',
   /**
    * Parcours de compte — connexion, création, récupération.

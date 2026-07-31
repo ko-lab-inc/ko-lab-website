@@ -43,6 +43,22 @@ export type PosteCarte = {
 /** Étiquette de cache — partagée avec les actions d'administration. */
 export const ETIQUETTE_CARRIERES = 'carrieres'
 
+/**
+ * Clés des trois postes de repli, dans `Carrieres.postes.*`.
+ *
+ * ⚠️ PARTAGÉES ENTRE LES DEUX PAGES, et c'est le point.
+ *
+ * La page /carrieres retombe sur ces trois postes quand la base est vide ;
+ * le formulaire /carrieres/postuler doit alors proposer EXACTEMENT les mêmes
+ * cases à cocher. Sans cette liste commune, les deux divergeaient : la page
+ * affichait trois boutons « Postuler » qui menaient à un formulaire annonçant
+ * « aucun poste ouvert » — un cul-de-sac, constaté avant la migration 0017.
+ *
+ * Ces trois postes disparaissent d'eux-mêmes dès qu'un poste réel est actif
+ * en base (voir lireOffresPubliees, qui renvoie alors autre chose que `null`).
+ */
+export const POSTES_REPLI = ['operateur', 'superviseur', 'chef_equipe'] as const
+
 async function lireDepuisBase(): Promise<PosteCarte[] | null> {
   try {
     const supabase = createStaticClient()

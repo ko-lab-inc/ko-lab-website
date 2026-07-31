@@ -254,6 +254,61 @@ export type Database = {
         Relationships: []
       }
 
+      /** Migration 0017 — candidatures reçues depuis /carrieres/postuler. */
+      candidatures: {
+        Row: {
+          id: string
+          nom: string
+          telephone: string
+          email: string
+          ville: string
+          postes: string[]
+          disponibilites: string
+          travail_exterieur: boolean
+          a_experience: boolean
+          experience_texte: string | null
+          /** Chemin dans le bucket PRIVÉ `cv`. NULL = aucun CV joint. */
+          cv_chemin: string | null
+          source: string | null
+          /** CHECK : 'nouveau' | 'lu' | 'traite' */
+          statut: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          nom: string
+          telephone: string
+          email: string
+          ville: string
+          postes?: string[]
+          disponibilites: string
+          travail_exterieur: boolean
+          a_experience: boolean
+          experience_texte?: string | null
+          cv_chemin?: string | null
+          source?: string | null
+          statut?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          nom?: string
+          telephone?: string
+          email?: string
+          ville?: string
+          postes?: string[]
+          disponibilites?: string
+          travail_exterieur?: boolean
+          a_experience?: boolean
+          experience_texte?: string | null
+          cv_chemin?: string | null
+          source?: string | null
+          statut?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+
       /** Migration 0016 — bande de vidéos de la page Le LAB. */
       videos: {
         Row: {

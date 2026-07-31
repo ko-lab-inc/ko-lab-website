@@ -131,6 +131,11 @@ export default async function AdminLayout({ children, params }: Props) {
           label: t('nav_carrieres'),
           icone: <IconeMallette taille={17} />,
         },
+        {
+          href: `/${locale}/admin/candidatures`,
+          label: t('nav_candidatures'),
+          icone: <IconeEquipe taille={17} />,
+        },
       ],
     },
     {

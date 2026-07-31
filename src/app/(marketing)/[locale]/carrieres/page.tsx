@@ -6,7 +6,7 @@ import { buttonVariants } from '@/components/ui/Button'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
-import { lireOffresPubliees } from '@/lib/carrieres'
+import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -76,14 +76,15 @@ export default async function CarrieresPage({ params }: Props) {
   } else {
     // Traducteurs cadrés par poste : chaque clé est ainsi vérifiée à la
     // compilation contre son seul espace de noms.
-    const [tOp, tSup, tChef] = await Promise.all([
-      getTranslations('Carrieres.postes.operateur'),
-      getTranslations('Carrieres.postes.superviseur'),
-      getTranslations('Carrieres.postes.chef_equipe'),
-    ])
+    //
+    // ⚠️ POSTES_REPLI est partagé avec /carrieres/postuler, qui doit
+    // proposer exactement les mêmes cases à cocher — voir lib/carrieres.ts.
+    const traducteurs = await Promise.all(
+      POSTES_REPLI.map((cle) => getTranslations(`Carrieres.postes.${cle}`)),
+    )
 
-    postes = [tOp, tSup, tChef].map((tp, i) => ({
-      cle: ['operateur', 'superviseur', 'chef_equipe'][i] ?? String(i),
+    postes = traducteurs.map((tp, i) => ({
+      cle: POSTES_REPLI[i] ?? String(i),
       numero: String(i + 1).padStart(2, '0'),
       titre: tp('titre'),
       departement: tp('departement'),
@@ -108,6 +109,16 @@ export default async function CarrieresPage({ params }: Props) {
 
       <section className="bg-ko-white py-16 lg:py-24">
         <div className="mx-auto max-w-container px-6 lg:px-12">
+          {/* Combien de rôles, et comment postuler — un seul formulaire pour
+              tous, décision de Christian. Le compte vient de la liste réelle,
+              jamais écrit en dur : fermer un poste depuis /admin/carrieres le
+              met à jour tout seul. */}
+          <div className="mb-14 max-w-[56ch]">
+            <p className="label-mono">{t('postes_label')}</p>
+            <p className="ko-h3 mt-5 text-ko-ink">{t('postes_compte', { n: postes.length })}</p>
+            <p className="mt-5 text-base leading-relaxed text-ko-muted">{t('postes_texte')}</p>
+          </div>
+
           <ul className="border-t border-ko-line">
             {postes.map((poste) => (
               <li key={poste.cle}>
@@ -151,11 +162,13 @@ export default async function CarrieresPage({ params }: Props) {
                         ))}
                       </ul>
 
-                      {/* ?type=carriere présélectionne le formulaire de contact.
-                          Le paramètre y est validé contre TYPES_DEMANDE — une
-                          valeur d'URL reste une entrée utilisateur. */}
+                      {/* Le MÊME formulaire pour les neuf postes ; `?poste=`
+                          coche simplement la bonne case à l'arrivée. Le
+                          paramètre y est validé contre les postes réellement
+                          ouverts — une valeur d'URL reste une entrée
+                          utilisateur (voir postuler/page.tsx). */}
                       <Link
-                        href={`${ROUTES.contact}?type=carriere`}
+                        href={`${ROUTES.carrieresPostuler}?poste=${encodeURIComponent(poste.titre)}`}
                         className={`mt-9 ${buttonVariants({ variant: 'ghost' })}`}
                       >
                         {t('postuler')}
@@ -167,6 +180,33 @@ export default async function CarrieresPage({ params }: Props) {
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      {/* ------------------------- Ressources humaines ------------------------- */}
+      {/* Une question sur le recrutement n'est pas une candidature : elle a sa
+          propre adresse, fournie par Christian. Un `mailto:` plutôt que le
+          formulaire de contact — on écrit à quelqu'un, on ne dépose pas un
+          dossier. */}
+      <section className="bg-ko-cream py-20 lg:py-28">
+        <div className="mx-auto max-w-container px-6 lg:px-12">
+          <Reveal>
+            <div className="mx-auto max-w-2xl text-center">
+              <p className="label-mono">{t('rh_label')}</p>
+              <h2 className="ko-h2 mt-5 text-ko-ink">{t('rh_titre')}</h2>
+              <p className="mx-auto mt-6 max-w-[48ch] text-base leading-relaxed text-ko-muted">
+                {t('rh_texte')}
+              </p>
+
+              <a
+                href={`mailto:${t('rh_courriel')}`}
+                className={`mt-9 ${buttonVariants({ variant: 'ghost' })}`}
+              >
+                {t('rh_courriel')}
+                <span aria-hidden="true">→</span>
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
     </>
