@@ -2,6 +2,29 @@
 -- 0008 — Retrait du contenu de démonstration
 -- =============================================================================
 --
+-- ⛔ FICHIER NEUTRALISÉ LE 2026-07-30 — NE PAS EXÉCUTER. VOIR 0018.
+--
+-- Ce fichier n'est jamais passé : sa première version référençait une colonne
+-- inexistante, et l'éditeur SQL de Supabase exécutant tout dans une seule
+-- transaction, l'erreur a annulé le script entier. Il portait donc la mention
+-- « à rejouer en entier ».
+--
+-- NE LE REJOUEZ PAS. Sa dernière instruction ferme le poste intitulé « Chef
+-- d'équipe terrain ». Ce titre désignait la fausse offre du seed de
+-- développement ; depuis la migration 0017, il désigne l'un des NEUF POSTES
+-- RÉELS de Christian. Le rejouer fermerait une offre réellement ouverte, sans
+-- la moindre erreur ni le moindre message.
+--
+-- Les deux instructions ci-dessous sont donc mises en commentaire. Le retrait
+-- des réalisations de démonstration — la partie encore nécessaire, et la seule
+-- — est repris dans 0018_retrait_seed_dev_correctif.sql. Le texte d'origine
+-- est conservé tel quel plus bas : il documente comment une transaction
+-- annulée laisse du contenu inventé en ligne pendant des mois sans que rien
+-- ne le signale.
+--
+-- -----------------------------------------------------------------------------
+-- (texte d'origine)
+--
 -- ⚠️ À EXÉCUTER PAR MOUSSA, APRÈS 0007. Lire les deux avertissements avant.
 --
 -- -----------------------------------------------------------------------------

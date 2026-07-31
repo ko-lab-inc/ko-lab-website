@@ -4,7 +4,7 @@ import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
 
 import { ETIQUETTE_REGLAGES, type CleReglage } from '@/lib/reglages'
-import { createClient } from '@/lib/supabase/server'
+import { exigerRole } from '@/lib/auth/garde'
 
 /**
  * Enregistrement des réglages du site.
@@ -73,7 +73,9 @@ export async function enregistrerReglages(
   if (!analyse.success) return { erreur: 'donnees' }
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(['admin'])
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
 
     /**
      * Une requête par clé, et pas un `upsert` groupé.

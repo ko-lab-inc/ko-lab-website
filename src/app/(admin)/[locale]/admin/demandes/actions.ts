@@ -2,8 +2,9 @@
 
 import { revalidatePath } from 'next/cache'
 
-import { createClient } from '@/lib/supabase/server'
-import { STATUTS_DEMANDE } from '@/types'
+import { exigerRole } from '@/lib/auth/garde'
+import { estUuid } from '@/lib/utils/identifiant'
+import { STATUTS_DEMANDE, ROLES_EQUIPE } from '@/types'
 
 /**
  * Gestion des demandes — table demandes_contact.
@@ -35,10 +36,12 @@ export async function changerStatutDemande(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
   const statut = String(donnees.get('statut') ?? '')
-  if (!id || !STATUTS_DEMANDE.some((s) => s === statut)) return
+  if (!estUuid(id) || !STATUTS_DEMANDE.some((s) => s === statut)) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    const { supabase } = acces
     const { error } = await supabase.from('demandes_contact').update({ statut }).eq('id', id)
     if (error) console.error('[demandes] changement de statut refusé', error.message)
   } catch (err) {
@@ -59,10 +62,12 @@ export async function changerStatutDemande(donnees: FormData): Promise<void> {
 export async function supprimerDemande(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
-  if (!id) return
+  if (!estUuid(id)) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(['admin'])
+    if (!acces) return
+    const { supabase } = acces
     const { data, error } = await supabase
       .from('demandes_contact')
       .delete()

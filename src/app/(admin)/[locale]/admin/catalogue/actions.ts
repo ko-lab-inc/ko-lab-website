@@ -5,7 +5,10 @@ import { headers } from 'next/headers'
 import { z } from 'zod'
 
 import { ETIQUETTE_PRODUITS } from '@/lib/produits'
+import { exigerRole } from '@/lib/auth/garde'
+import { ROLES_EQUIPE } from '@/types'
 import { createClient } from '@/lib/supabase/server'
+import { estUuid } from '@/lib/utils/identifiant'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { slugifier } from '@/lib/utils/slug'
@@ -210,7 +213,9 @@ export async function creerProduit(
   if (!baseSlug) return { erreur: 'donnees' }
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
 
     const photo = await televerserPhoto(supabase, donnees.get('photo'), baseSlug)
     if (photo === undefined) return { erreur: 'photo' }
@@ -289,13 +294,15 @@ export async function modifierProduit(
 ): Promise<EtatProduit> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
-  if (!id) return { erreur: 'donnees' }
+  if (!estUuid(id)) return { erreur: 'donnees' }
 
   const analyse = lire(donnees)
   if (!analyse.success) return { erreur: 'donnees' }
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
 
     // Ni le slug ni le cadrage ni l'ordre ne sont dans `analyse.data` : ils ne
     // sont plus des champs du formulaire, donc pas dans cette mise à jour non
@@ -339,10 +346,12 @@ export async function basculerPublication(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
   const publie = donnees.get('publie') === 'true'
-  if (!id) return
+  if (!estUuid(id)) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    const { supabase } = acces
     const { error } = await supabase
       .from('produits_boutique')
       .update({ publie: !publie })
@@ -366,10 +375,12 @@ export async function basculerPublication(donnees: FormData): Promise<void> {
 export async function supprimerProduit(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
-  if (!id) return
+  if (!estUuid(id)) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(['admin'])
+    if (!acces) return
+    const { supabase } = acces
     const { data, error } = await supabase
       .from('produits_boutique')
       .delete()

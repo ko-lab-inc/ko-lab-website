@@ -279,9 +279,154 @@ async function bucketPhotos(nom, migration) {
   verdict(envoi.status !== 200, `téléversement anonyme ${envoi.status === 200 ? 'ACCEPTÉ' : 'refusé'}`, `statut ${envoi.status}`)
 }
 
+/**
+ * Bucket `cv` — le seul bucket privé du projet (0017).
+ *
+ * ⚠️ Ce contrôle manquait, et c'est le trou le plus gênant du dispositif :
+ * le script sondait `produits` et `realisations` — deux buckets de photos
+ * publiques — et ignorait celui qui contient des documents personnels.
+ *
+ * Deux choses à vérifier, et elles sont différentes :
+ *   · la LECTURE anonyme doit être refusée (elle l'a toujours été) ;
+ *   · le DÉPÔT anonyme doit être BORNÉ, pas interdit. Le formulaire de
+ *     candidature dépose sans compte, c'est sa raison d'être. Ce qu'on
+ *     interdit, c'est le dépôt d'un chemin arbitraire — ce que l'audit du
+ *     2026-07-30 avait trouvé possible, et que 0019 a resserré.
+ */
+async function bucketCv() {
+  const lecture = await fetch(`${URL_BASE}/storage/v1/object/public/cv/quelconque.pdf`)
+  verdict(
+    lecture.status !== 200,
+    `bucket cv — lecture publique ${lecture.status === 200 ? 'ACCEPTÉE' : 'refusée'}`,
+    `statut ${lecture.status}`,
+  )
+
+  // Chemin volontairement illégitime : sous-dossier + extension hors liste.
+  // 0019 le refuse ; avant 0019 il passait.
+  //
+  // ⚠️ NOM UNIQUE À CHAQUE EXÉCUTION, et ce n'est pas cosmétique. Avec un nom
+  // fixe, un fichier laissé par une exécution précédente fait échouer le dépôt
+  // en « doublon » (les buckets sont en `upsert: false`) : la sonde conclut
+  // « refusé » alors que la politique laisse toujours passer. Un faux négatif
+  // qui masque exactement ce qu'on cherche.
+  const cible = `zzaudit/x-${Date.now()}.exe`
+  const abus = await fetch(`${URL_BASE}/storage/v1/object/cv/${cible}`, {
+    method: 'POST',
+    headers: {
+      apikey: CLE_PUBLIQUE,
+      Authorization: `Bearer ${CLE_PUBLIQUE}`,
+      'Content-Type': 'application/pdf',
+    },
+    body: 'audit',
+  })
+  verdict(
+    abus.status !== 200,
+    `bucket cv — dépôt anonyme hors format ${abus.status === 200 ? 'ACCEPTÉ' : 'refusé'}`,
+    abus.status === 200 ? 'exécuter la migration 0019' : `statut ${abus.status}`,
+  )
+
+  // ⚠️ NETTOYER CE QUE LA SONDE A ÉCRIT.
+  //
+  // Tant que 0019 n'est pas exécutée, ce dépôt réussit — et un script d'audit
+  // qui laisse un fichier dans le stockage du client à chaque exécution est un
+  // script qu'on finit par ne plus lancer. Le retrait passe par la clé de
+  // service : le bucket `cv` n'accorde la suppression qu'à `admin`.
+  if (abus.status === 200) {
+    await nettoyer(
+      `${URL_BASE}/storage/v1/object/cv`,
+      { prefixes: [cible] },
+      'fichier de test déposé dans cv',
+    )
+  }
+}
+
+/**
+ * Retire une trace laissée par une sonde, avec la clé de service.
+ *
+ * Signale bruyamment un échec plutôt que de le taire : une trace oubliée dans
+ * la base d'un client doit se voir.
+ */
+async function nettoyer(url, corps, quoi) {
+  if (!CLE_SERVICE) {
+    note(`${quoi} — NON NETTOYÉ`, 'SUPABASE_SERVICE_ROLE_KEY absente de .env.local')
+    return
+  }
+  const r = await fetch(url, {
+    method: 'DELETE',
+    headers: {
+      apikey: CLE_SERVICE,
+      Authorization: `Bearer ${CLE_SERVICE}`,
+      'Content-Type': 'application/json',
+    },
+    ...(corps ? { body: JSON.stringify(corps) } : {}),
+  })
+  if (r.status >= 400) note(`${quoi} — NON NETTOYÉ`, `statut ${r.status}`)
+}
+
+/**
+ * Tables apportées par 0016 et 0017, absentes du script d'origine.
+ *
+ * `candidatures` est la table la plus sensible du projet. Un `200 []` n'est
+ * PAS un bon résultat ici : il signifie que `anon` détient le privilège SELECT
+ * et que seule la politique RLS renvoie l'ensemble vide. On attend un 401
+ * (42501), comme pour `demandes_contact` et `profils`. Voir 0019 §1.
+ */
+async function tablesRecentes() {
+  const c = await rest('candidatures?select=nom,email&limit=1')
+  verdict(
+    c.statut === 401,
+    `candidatures — lecture anonyme ${c.statut === 200 ? 'ACCORDÉE PAR GRANT (RLS seul rempart)' : 'refusée'}`,
+    c.statut === 200 ? 'exécuter la migration 0019 §1' : `statut ${c.statut}`,
+  )
+
+  // Insertion anonyme en forçant `statut = 'traite'` : la candidature
+  // n'apparaîtrait jamais comme nouvelle dans /admin. 0019 §3 l'interdit.
+  // Le courriel sert de marqueur pour le nettoyage juste après.
+  const MARQUEUR = 'zzaudit-sonde@example.test'
+  const ecriture = await rest('candidatures', {
+    methode: 'POST',
+    corps: {
+      nom: 'ZZAUDIT sonde',
+      telephone: '000000',
+      email: MARQUEUR,
+      ville: 'ZZ',
+      postes: ['ZZ'],
+      disponibilites: 'ZZ',
+      travail_exterieur: false,
+      a_experience: false,
+      statut: 'traite',
+    },
+  })
+  verdict(
+    ecriture.statut >= 400,
+    `candidatures — insertion anonyme avec statut forcé ${ecriture.statut < 400 ? 'ACCEPTÉE' : 'refusée'}`,
+    ecriture.statut < 400 ? 'exécuter la migration 0019 §3' : `statut ${ecriture.statut}`,
+  )
+
+  if (ecriture.statut < 400) {
+    await nettoyer(
+      `${URL_BASE}/rest/v1/candidatures?email=eq.${encodeURIComponent(MARQUEUR)}`,
+      null,
+      'candidature de test insérée',
+    )
+  }
+
+  // `videos` est du contenu marketing : la lecture publique est NORMALE, on
+  // vérifie seulement qu'elle se limite aux vidéos actives.
+  const v = await rest('videos?select=actif')
+  if (v.statut !== 200) {
+    note('lecture des vidéos impossible', `statut ${v.statut} ${v.message ?? ''}`)
+  } else {
+    const inactives = v.charge.filter((x) => x.actif === false).length
+    verdict(inactives === 0, `${inactives} vidéo(s) inactive(s) visible(s) publiquement`, '')
+  }
+}
+
 async function stockage() {
   await bucketPhotos('produits', '0010')
   await bucketPhotos('realisations', '0012')
+  await bucketCv()
+  await tablesRecentes()
 }
 
 /* -- 5. données de développement en production ------------------------------- */
@@ -297,16 +442,24 @@ async function seedDev() {
   // ⚠️ postes_carrieres se publie avec `actif`, pas `publie` (0001). Confondre
   // les deux renvoie un 400 — c'est l'erreur qui avait fait annuler 0008 en
   // entier, la transaction emportant la mise à jour des réalisations avec elle.
+  //
+  // ⚠️ CE CONTRÔLE A ÉTÉ RETIRÉ, ET C'EST VOLONTAIRE.
+  //
+  // Il cherchait le titre « Chef d'équipe terrain », qui désignait la fausse
+  // offre de 0003. La migration 0017 a inséré les NEUF postes réels de
+  // Christian, et l'un d'eux porte exactement ce titre. Le contrôle signalait
+  // donc une vraie offre comme du contenu de démonstration à chaque exécution
+  // — et une alerte qui crie au loup finit par masquer les vraies.
+  //
+  // Il n'y a rien à remettre à la place : le seed n'a jamais inséré cette
+  // offre (son `where not exists` l'en a empêchée), et les neuf offres en base
+  // sont toutes réelles. On compte simplement, pour que le chiffre saute aux
+  // yeux si un jour il change tout seul.
   const r = await rest('postes_carrieres?select=titre_fr&actif=eq.true')
   if (r.statut !== 200) {
     note('lecture des offres impossible', `statut ${r.statut} ${r.message ?? ''}`)
   } else {
-    const faux = r.charge.filter((p) => /chef d.équipe terrain/i.test(p.titre_fr ?? ''))
-    verdict(
-      faux.length === 0,
-      `${faux.length} offre(s) fictive(s) en ligne sur ${r.charge.length}`,
-      faux.map((p) => p.titre_fr).join(', '),
-    )
+    note(`${r.charge.length} offre(s) active(s)`, 'toutes réelles depuis 0017')
   }
 
   const rr = await rest('realisations?select=slug,titre_fr&publie=eq.true')

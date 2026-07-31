@@ -3,7 +3,9 @@
 import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
 
-import { createClient } from '@/lib/supabase/server'
+import { exigerRole } from '@/lib/auth/garde'
+import { ROLES_EQUIPE } from '@/types'
+import { estUuid } from '@/lib/utils/identifiant'
 import { vignetteVideo } from '@/lib/utils/youtube'
 import { ETIQUETTE_VIDEOS } from '@/lib/videos'
 
@@ -21,13 +23,41 @@ export type EtatVideo = {
   succes?: boolean
 }
 
+/**
+ * `z.string().url()` NE SUFFIT PAS À FAIRE UNE URL SÛRE.
+ *
+ * Vérifié à l'exécution contre la version installée de Zod : `url()` accepte
+ * `javascript:alert(1)` et `data:text/html,…`. Or cette valeur est rendue
+ * telle quelle en `href` sur la page publique Le LAB quand ce n'est pas un
+ * lien YouTube reconnu (BandeauVideos, branche « lien sortant »).
+ *
+ * Aujourd'hui React neutralise les `javascript:` — il les remplace par une
+ * URL qui lève une erreur — et les navigateurs bloquent la navigation de
+ * premier niveau vers `data:`. Ce n'était donc pas exploitable. Mais faire
+ * reposer une garantie de sécurité sur un comportement non documenté d'une
+ * bibliothèque tierce, c'est l'exposer à sa prochaine version. On refuse
+ * explicitement tout ce qui n'est pas http(s).
+ */
+const schemaUrl = z
+  .string()
+  .trim()
+  .url()
+  .max(500)
+  .refine((v) => {
+    try {
+      return /^https?:$/.test(new URL(v).protocol)
+    } catch {
+      return false
+    }
+  }, { message: 'schema-non-http' })
+
 const schemaVideo = z.object({
   titre: z.string().trim().min(2).max(200),
-  url: z.string().trim().url().max(500),
+  url: schemaUrl,
+  // Facultative, mais soumise au même filtre quand elle est fournie : elle
+  // sert de `src` d'image sur une page publique.
   vignette: z
-    .string()
-    .trim()
-    .max(500)
+    .union([schemaUrl, z.literal('')])
     .optional()
     .transform((v) => v || null),
 })
@@ -60,7 +90,9 @@ export async function creerVideo(_precedent: EtatVideo, donnees: FormData): Prom
   if (vignetteManquante(analyse.data.url, analyse.data.vignette)) return { erreur: 'lien' }
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
 
     // Le plus PETIT `ordre`, comme le catalogue, les réalisations et les
     // postes : la vidéo ajoutée apparaît EN TÊTE de la bande.
@@ -99,14 +131,16 @@ export async function creerVideo(_precedent: EtatVideo, donnees: FormData): Prom
 export async function modifierVideo(_precedent: EtatVideo, donnees: FormData): Promise<EtatVideo> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
-  if (!id) return { erreur: 'donnees' }
+  if (!estUuid(id)) return { erreur: 'donnees' }
 
   const analyse = lire(donnees)
   if (!analyse.success) return { erreur: 'donnees' }
   if (vignetteManquante(analyse.data.url, analyse.data.vignette)) return { erreur: 'lien' }
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
     const { error } = await supabase
       .from('videos')
       .update({
@@ -135,10 +169,12 @@ export async function basculerPublicationVideo(donnees: FormData): Promise<void>
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
   const actif = donnees.get('actif') === 'true'
-  if (!id) return
+  if (!estUuid(id)) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    const { supabase } = acces
     const { error } = await supabase.from('videos').update({ actif: !actif }).eq('id', id)
     if (error) console.error('[videos] bascule refusée', error.message)
   } catch (err) {
@@ -161,10 +197,12 @@ export async function deplacerVideo(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
   const sens = String(donnees.get('sens') ?? '')
-  if (!id || (sens !== 'haut' && sens !== 'bas')) return
+  if (!estUuid(id) || (sens !== 'haut' && sens !== 'bas')) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    const { supabase } = acces
 
     const { data: courante } = await supabase
       .from('videos')
@@ -207,10 +245,12 @@ export async function deplacerVideo(donnees: FormData): Promise<void> {
 export async function supprimerVideo(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
-  if (!id) return
+  if (!estUuid(id)) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(['admin'])
+    if (!acces) return
+    const { supabase } = acces
     const { data, error } = await supabase.from('videos').delete().eq('id', id).select('id')
 
     if (error) console.error('[videos] suppression refusée', error.message)

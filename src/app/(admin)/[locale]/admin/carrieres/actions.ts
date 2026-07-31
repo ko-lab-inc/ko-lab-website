@@ -4,8 +4,9 @@ import { revalidatePath, updateTag } from 'next/cache'
 import { z } from 'zod'
 
 import { ETIQUETTE_CARRIERES } from '@/lib/carrieres'
-import { createClient } from '@/lib/supabase/server'
-import { TYPES_POSTE } from '@/types'
+import { exigerRole } from '@/lib/auth/garde'
+import { estUuid } from '@/lib/utils/identifiant'
+import { TYPES_POSTE, ROLES_EQUIPE } from '@/types'
 
 /**
  * CRUD des offres d'emploi — table postes_carrieres.
@@ -54,7 +55,9 @@ export async function creerPoste(_precedent: EtatPoste, donnees: FormData): Prom
   if (!analyse.success) return { erreur: 'donnees' }
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
 
     // Le plus PETIT `ordre` existant, pas le plus grand : même règle que le
     // catalogue et les réalisations — le poste ajouté doit apparaître EN
@@ -97,13 +100,15 @@ export async function creerPoste(_precedent: EtatPoste, donnees: FormData): Prom
 export async function modifierPoste(_precedent: EtatPoste, donnees: FormData): Promise<EtatPoste> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
-  if (!id) return { erreur: 'donnees' }
+  if (!estUuid(id)) return { erreur: 'donnees' }
 
   const analyse = lire(donnees)
   if (!analyse.success) return { erreur: 'donnees' }
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
     const { error } = await supabase
       .from('postes_carrieres')
       .update({
@@ -137,10 +142,12 @@ export async function basculerPublicationPoste(donnees: FormData): Promise<void>
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
   const actif = donnees.get('actif') === 'true'
-  if (!id) return
+  if (!estUuid(id)) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    const { supabase } = acces
     const { error } = await supabase.from('postes_carrieres').update({ actif: !actif }).eq('id', id)
     if (error) console.error('[carrieres] bascule refusée', error.message)
   } catch (err) {
@@ -160,10 +167,12 @@ export async function basculerPublicationPoste(donnees: FormData): Promise<void>
 export async function supprimerPoste(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
-  if (!id) return
+  if (!estUuid(id)) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(['admin'])
+    if (!acces) return
+    const { supabase } = acces
     const { data, error } = await supabase
       .from('postes_carrieres')
       .delete()

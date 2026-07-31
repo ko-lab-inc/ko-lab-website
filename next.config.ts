@@ -60,6 +60,31 @@ const CRISP_SCRIPT = 'https://client.crisp.chat'
 const CRISP_CONNECT = 'https://client.crisp.chat wss://client.relay.crisp.chat'
 const CRISP_IMG = 'https://client.crisp.chat https://image.crisp.chat https://storage.crisp.chat'
 
+/**
+ * ⚠️ `script-src 'unsafe-inline'` — LIMITE CONNUE, NON CORRIGÉE, ASSUMÉE.
+ *
+ * Relevé par l'audit de sécurité du 2026-07-30 : `'unsafe-inline'` retire à la
+ * CSP l'essentiel de sa valeur contre le XSS. En cas d'injection HTML, un
+ * `<script>` en ligne s'exécuterait.
+ *
+ * POURQUOI ON LE GARDE MALGRÉ TOUT. Next injecte ses propres scripts en ligne
+ * (amorçage, données de flux RSC). La seule alternative propre est un nonce
+ * par requête, ce qui suppose de fabriquer la CSP dans le proxy — donc de
+ * rendre DYNAMIQUE chaque page qui la reçoit. Or ce site est très largement
+ * pré-rendu (voir la sortie de `npm run build` : presque tout est en ● SSG,
+ * avec ISR à 1 h). Échanger cela contre un durcissement dont on n'a
+ * aujourd'hui aucun usage — l'audit n'a trouvé AUCUN point d'injection —
+ * serait un mauvais marché, et une décision qui revient à Christian.
+ *
+ * CE SUR QUOI REPOSE RÉELLEMENT LA PROTECTION XSS, vérifié pendant l'audit :
+ *   · aucun `dangerouslySetInnerHTML`, `innerHTML`, `eval` ni `new Function`
+ *     dans tout `src/` — zéro occurrence ;
+ *   · l'échappement automatique de React sur toute valeur rendue ;
+ *   · aucune requête SQL textuelle : tout passe par le constructeur de
+ *     requêtes PostgREST, paramétré.
+ *
+ * À rouvrir si l'on introduit un jour du HTML riche saisi en administration.
+ */
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' ${CRISP_SCRIPT}${isDev ? " 'unsafe-eval'" : ''}`,

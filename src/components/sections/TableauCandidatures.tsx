@@ -121,11 +121,21 @@ export function TableauCandidatures({
     return () => el.removeEventListener('close', fermer)
   }, [])
 
-  /** Bouton de téléchargement — un <form> : l'action renvoie une URL signée. */
-  const BoutonCv = ({ chemin, nom }: { chemin: string; nom: string }) => (
-    <form action={telechargerCv} target="_blank">
+  /**
+   * Bouton de téléchargement — un <form> : l'action renvoie une URL signée.
+   *
+   * On envoie l'IDENTIFIANT de la candidature, pas le chemin du fichier :
+   * l'action relit `cv_chemin` en base sous le RLS. Un chemin transmis d'ici
+   * serait une entrée utilisateur comme une autre.
+   *
+   * `rel="noopener"` : un `target="_blank"` ouvre un contexte qui garde une
+   * référence `window.opener`. Tous les autres liens du projet le posent ;
+   * ce formulaire était la seule exception.
+   */
+  const BoutonCv = ({ id, nom }: { id: string; nom: string }) => (
+    <form action={telechargerCv} target="_blank" rel="noopener">
       <input type="hidden" name="locale" value={locale} />
-      <input type="hidden" name="chemin" value={chemin} />
+      <input type="hidden" name="id" value={id} />
       <button
         type="submit"
         className="min-h-[36px] border-b border-ko-line pb-0.5 text-sm text-ko-blue transition-colors duration-200 hover:border-ko-blue"
@@ -241,7 +251,6 @@ export function TableauCandidatures({
                     >
                       <input type="hidden" name="locale" value={locale} />
                       <input type="hidden" name="id" value={c.id} />
-                      <input type="hidden" name="chemin" value={c.cv_chemin ?? ''} />
                       <button
                         type="submit"
                         aria-label={`${textes.supprimer} — ${c.nom}`}
@@ -387,7 +396,7 @@ export function TableauCandidatures({
             <div className="mt-5 border-t border-ko-line pt-5">
               <p className="label-mono mb-2 text-ko-muted">{textes.cv}</p>
               {voir.cv_chemin ? (
-                <BoutonCv chemin={voir.cv_chemin} nom={voir.nom} />
+                <BoutonCv id={voir.id} nom={voir.nom} />
               ) : (
                 <p className="text-sm text-ko-muted">{textes.cvAucun}</p>
               )}

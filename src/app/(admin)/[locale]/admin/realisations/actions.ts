@@ -5,11 +5,13 @@ import { headers } from 'next/headers'
 import { z } from 'zod'
 
 import { ETIQUETTE_REALISATIONS, type ImageRealisation } from '@/lib/realisations'
+import { exigerRole } from '@/lib/auth/garde'
 import { createClient } from '@/lib/supabase/server'
+import { estUuid } from '@/lib/utils/identifiant'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { slugifier } from '@/lib/utils/slug'
-import { CATEGORIES_REALISATION } from '@/types'
+import { CATEGORIES_REALISATION, ROLES_EQUIPE } from '@/types'
 
 /**
  * CRUD des réalisations — table `realisations`.
@@ -65,17 +67,40 @@ const TAILLE_MAX = 5 * 1024 * 1024
 const TYPES_IMAGE = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
 
 /**
+ * Plafond du nombre d'images d'une réalisation.
+ *
+ * Sert de borne à la reconstruction de la série (voir `construireImages`).
+ * Volontairement large : une réalisation en compte une poignée.
+ */
+const MAX_IMAGES = 50
+
+/**
+ * Préfixe des URL publiques du bucket `realisations`.
+ *
+ * Toute URL persistée dans la colonne `images` doit en venir : c'est le seul
+ * endroit où ce projet dépose des photos de réalisations. Sert à la fois à
+ * valider ce qui entre et à retrouver le chemin de ce qui sort.
+ */
+const PREFIXE_PUBLIC_REALISATIONS = `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''}/storage/v1/object/public/realisations/`
+
+/**
  * Chemin de stockage à partir d'une URL publique, pour pouvoir supprimer le
  * fichier quand une photo est retirée de la série.
  *
  * `images` ne conserve que l'URL — jamais le chemin brut, qui n'a aucun sens
  * pour l'affichage. Le chemin se retrouve en retirant le préfixe fixe que
  * Supabase Storage ajoute à toute URL publique.
+ *
+ * ⚠️ On exige le préfixe COMPLET, hôte compris, et non plus le seul chemin
+ * `/storage/v1/object/public/realisations/` cherché n'importe où dans la
+ * chaîne. Sans l'hôte, une URL pointant vers un autre projet Supabase
+ * désignait un objet à supprimer dans CE bucket-ci.
  */
 function cheminDepuisUrl(url: string): string | null {
-  const marqueur = '/storage/v1/object/public/realisations/'
-  const i = url.indexOf(marqueur)
-  return i === -1 ? null : url.slice(i + marqueur.length)
+  if (!url.startsWith(PREFIXE_PUBLIC_REALISATIONS)) return null
+  const chemin = url.slice(PREFIXE_PUBLIC_REALISATIONS.length)
+  // Un chemin vide ou remontant d'un cran ne désigne aucune photo légitime.
+  return chemin === '' || chemin.includes('..') ? null : chemin
 }
 
 /**
@@ -108,17 +133,43 @@ async function construireImages(
   donnees: FormData,
   slug: string,
 ): Promise<{ images: ImageRealisation[] } | { erreur: true }> {
-  const compte = Number(donnees.get('image_count') ?? 0)
+  /**
+   * ⚠️ COMPTEUR BORNÉ — `Number()` accepte `Infinity`.
+   *
+   * `image_count` vient du formulaire, donc de l'appelant. Écrit
+   * naïvement, `for (let i = 0; i < Number(donnees.get('image_count')); i++)`
+   * boucle À L'INFINI dès que la valeur transmise est `Infinity` ou `1e12` :
+   * une boucle synchrone sans appel réseau, qui sature un cœur jusqu'au
+   * délai d'expiration de la fonction.
+   *
+   * Et elle s'exécutait AVANT la première requête à la base — donc avant
+   * que le RLS, la session ou le rôle n'aient leur mot à dire. C'était le
+   * seul défaut de l'audit du 2026-07-30 déclenchable sans aucun compte.
+   *
+   * `MAX_IMAGES` est très au-dessus de l'usage réel (une réalisation en
+   * compte une poignée) : la borne coupe l'abus, pas le travail.
+   */
+  const brut = Number(donnees.get('image_count') ?? 0)
+  const compte = Number.isFinite(brut) ? Math.min(Math.max(Math.trunc(brut), 0), MAX_IMAGES) : 0
+
   const conservees: ImageRealisation[] = []
 
   for (let i = 0; i < compte; i += 1) {
     const url = String(donnees.get(`image_url_${i}`) ?? '')
-    if (!url) continue
+    // Une URL persistée ici finira en `src` d'une balise <img>. On n'accepte
+    // que ce que le bucket public de ce projet peut servir : une valeur
+    // arbitraire donnerait une image cassée, et rendrait la colonne
+    // `images` dépendante d'un domaine tiers.
+    if (!url || !url.startsWith(PREFIXE_PUBLIC_REALISATIONS)) continue
+
+    const ordreBrut = Number(donnees.get(`image_ordre_${i}`) ?? i * 10)
 
     conservees.push({
       url,
       alt: String(donnees.get(`image_alt_${i}`) ?? '').trim(),
-      ordre: Number(donnees.get(`image_ordre_${i}`) ?? i * 10),
+      // `Number('abc')` vaut NaN, qui se sérialise en `null` dans le JSON et
+      // casse le tri à la relecture.
+      ordre: Number.isFinite(ordreBrut) ? ordreBrut : i * 10,
     })
   }
 
@@ -195,7 +246,9 @@ export async function creerRealisation(
   if (!baseSlug) return { erreur: 'donnees' }
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
 
     const resultatImages = await construireImages(supabase, donnees, baseSlug)
     if ('erreur' in resultatImages) return { erreur: 'photo' }
@@ -245,13 +298,15 @@ export async function modifierRealisation(
 ): Promise<EtatRealisation> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
-  if (!id) return { erreur: 'donnees' }
+  if (!estUuid(id)) return { erreur: 'donnees' }
 
   const analyse = lireChamps(donnees)
   if (!analyse.success) return { erreur: 'donnees' }
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
 
     // Le slug n'est PAS recalculé à partir du titre : il vit dans une URL
     // publique déjà partagée, et une correction de faute de frappe ne doit
@@ -287,10 +342,12 @@ export async function basculerPublicationRealisation(donnees: FormData): Promise
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
   const publie = donnees.get('publie') === 'true'
-  if (!id) return
+  if (!estUuid(id)) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    const { supabase } = acces
     const { error } = await supabase.from('realisations').update({ publie: !publie }).eq('id', id)
     if (error) console.error('[realisations] bascule refusée', error.message)
   } catch (err) {
@@ -312,10 +369,12 @@ export async function basculerPublicationRealisation(donnees: FormData): Promise
 export async function supprimerRealisation(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
-  if (!id) return
+  if (!estUuid(id)) return
 
   try {
-    const supabase = await createClient()
+    const acces = await exigerRole(['admin'])
+    if (!acces) return
+    const { supabase } = acces
     const { data, error } = await supabase.from('realisations').delete().eq('id', id).select('id')
 
     if (error) console.error('[realisations] suppression refusée', error.message)
