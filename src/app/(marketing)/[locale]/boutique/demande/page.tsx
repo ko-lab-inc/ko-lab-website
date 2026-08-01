@@ -71,7 +71,7 @@ export default async function DemandePrixPage({ params }: Props) {
 
       <section className="bg-ko-white py-16 lg:py-24">
         <div className="mx-auto max-w-container px-6 lg:px-12">
-          <PagePanier fiches={fiches} />
+          <PagePanier locale={locale} fiches={fiches} />
         </div>
       </section>
     </>

@@ -41,9 +41,16 @@ function Erreur({ message }: { message: string | null }) {
 
 export function FormulaireInscription({
   locale,
+  suivant,
   libelles,
 }: {
   locale: string
+  /**
+   * Où revenir une fois le courriel de confirmation cliqué — porté jusqu'à
+   * `inscrire()` par un champ caché, exactement comme dans FormulaireConnexion.
+   * Brut, non validé ici : la Server Action revalide avant de s'en servir.
+   */
+  suivant?: string
   libelles: {
     courriel: string
     motDePasse: string
@@ -90,6 +97,7 @@ export function FormulaireInscription({
   return (
     <form action={action} className="mt-8 space-y-4">
       <input type="hidden" name="locale" value={locale} />
+      {suivant && <input type="hidden" name="suivant" value={suivant} />}
       <ChampAuth
         id="email"
         name="email"

@@ -10,7 +10,10 @@ import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
 
-type Props = { params: Promise<{ locale: string }> }
+type Props = {
+  params: Promise<{ locale: string }>
+  searchParams: Promise<{ suivant?: string }>
+}
 
 /**
  * Création de compte.
@@ -30,16 +33,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t('titre'), description: t('intro'), robots: { index: false, follow: false } }
 }
 
-export default async function InscriptionPage({ params }: Props) {
+export default async function InscriptionPage({ params, searchParams }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
 
+  const { suivant } = await searchParams
   const t = await getTranslations('Inscription')
 
   return (
     <CadreAuth titre={t('titre')} intro={t('intro')}>
       <FormulaireInscription
         locale={locale}
+        suivant={suivant}
         libelles={{
           courriel: t('courriel'),
           motDePasse: t('mot_de_passe'),
@@ -64,7 +69,10 @@ export default async function InscriptionPage({ params }: Props) {
       <p className="mt-6 text-sm text-ko-muted">
         {t('deja_compte')}{' '}
         <Link
-          href={ROUTES.connexion}
+          // `suivant` reporté sur ce lien : quelqu'un venu ici pour commander
+          // mais qui a DÉJÀ un compte ne doit pas perdre sa destination en
+          // choisissant de se connecter plutôt que de s'inscrire.
+          href={suivant ? `${ROUTES.connexion}?suivant=${encodeURIComponent(suivant)}` : ROUTES.connexion}
           className="text-ko-blue underline-offset-4 transition-colors duration-200 hover:underline"
         >
           {t('se_connecter')}

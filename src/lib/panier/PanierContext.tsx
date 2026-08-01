@@ -37,6 +37,17 @@ type Panier = {
    * `pret` avant d'afficher quoi que ce soit qui dépende du contenu.
    */
   pret: boolean
+  /**
+   * `null` tant que /api/session n'a pas répondu, `true`/`false` ensuite.
+   *
+   * Sert de garde à l'envoi de la demande (skill 05, décision de Christian) :
+   * passer une commande exige désormais un compte, pour qu'on retrouve la
+   * personne dans /admin/utilisateurs. `null` distingue « on ne sait pas
+   * encore » de « pas connecté » — un bouton qui basculerait déjà en « créez
+   * un compte » avant la réponse enverrait quelqu'un de déjà connecté sur une
+   * fausse piste pendant l'instant du chargement.
+   */
+  connecte: boolean | null
   ajouter: (article: Omit<ArticlePanier, 'quantite'>) => void
   retirer: (slug: string) => void
   changerQuantite: (slug: string, quantite: number) => void
@@ -108,6 +119,7 @@ export function PanierProvider({ children }: { children: ReactNode }) {
   const [articles, setArticles] = useState<ArticlePanier[]>([])
   const [pret, setPret] = useState(false)
   const [cle, setCle] = useState<string | null>(null)
+  const [connecte, setConnecte] = useState<boolean | null>(null)
 
   /**
    * Qui est là ? /api/session renvoie l'identifiant et rien d'autre.
@@ -156,8 +168,14 @@ export function PanierProvider({ children }: { children: ReactNode }) {
        * vit en mémoire pour la visite et disparaît au rechargement. Une
        * sélection perdue est un désagrément ; la sélection de quelqu'un
        * d'autre affichée sous son nom, non.
+       *
+       * `connecte: false` et non `null` — un `null` durable laisserait le
+       * bouton d'envoi désactivé indéfiniment (identifier() ne réessaie pas).
+       * Exiger un compte dans le doute est le bon défaut : ça propose un
+       * chemin (se connecter), là où rester bloqué n'en propose aucun.
        */
       if (!identiteConnue) {
+        setConnecte(false)
         setPret(true)
         return
       }
@@ -208,6 +226,7 @@ export function PanierProvider({ children }: { children: ReactNode }) {
         return [...stocke, ...prealables.filter((a) => !slugs.has(a.slug))]
       })
       setCle(k)
+      setConnecte(userId !== null)
       setPret(true)
     }
 
@@ -262,13 +281,14 @@ export function PanierProvider({ children }: { children: ReactNode }) {
       articles,
       nombre: articles.length,
       pret,
+      connecte,
       ajouter,
       retirer,
       changerQuantite,
       vider,
       contient: (slug) => articles.some((a) => a.slug === slug),
     }),
-    [articles, pret, ajouter, retirer, changerQuantite, vider],
+    [articles, pret, connecte, ajouter, retirer, changerQuantite, vider],
   )
 
   return <ContextePanier.Provider value={valeur}>{children}</ContextePanier.Provider>

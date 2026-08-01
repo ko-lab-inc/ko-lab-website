@@ -95,7 +95,10 @@ export default async function ConnexionPage({ params, searchParams }: Props) {
         <p className="text-ko-muted">
           {t('pas_encore')}{' '}
           <Link
-            href={ROUTES.inscription}
+            // Même report qu'en sens inverse (voir inscription/page.tsx) :
+            // quelqu'un venu commander qui n'a PAS encore de compte ne doit
+            // pas atterrir sur /compte une fois inscrit.
+            href={suivant ? `${ROUTES.inscription}?suivant=${encodeURIComponent(suivant)}` : ROUTES.inscription}
             className="text-ko-blue underline-offset-4 transition-colors duration-200 hover:underline"
           >
             {t('creer_compte')}

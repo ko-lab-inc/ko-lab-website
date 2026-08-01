@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
+import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import { schemaInscription, schemaMotDePasse } from '@/lib/validation'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
@@ -50,11 +51,29 @@ function origine(): string {
   return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 }
 
+/**
+ * Où renvoyer une fois le compte confirmé — la commande boutique en a besoin
+ * pour reprendre exactement là où la création de compte l'a interrompue.
+ *
+ * ⚠️ MÊME GARDE que `destination()` dans connexion/actions.ts et que la
+ * validation de /api/auth/confirmer, dupliquée plutôt qu'importée : `suivant`
+ * vient de l'URL, donc de n'importe qui, et ce fichier reste volontairement
+ * indépendant de connexion/actions.ts (voir l'en-tête de ce fichier). Un
+ * `suivant` invalide ne doit jamais transformer l'inscription en tremplin de
+ * redirection.
+ */
+function suivantValide(suivant: string): string | null {
+  if (!suivant || !suivant.startsWith('/') || suivant.startsWith('//')) return null
+  const premier = suivant.split('/')[1]
+  return routing.locales.some((l) => l === premier) ? suivant : null
+}
+
 export async function inscrire(
   _precedent: EtatInscription,
   donnees: FormData,
 ): Promise<EtatInscription> {
   const locale = String(donnees.get('locale') ?? 'fr')
+  const suivant = suivantValide(String(donnees.get('suivant') ?? ''))
 
   if (rateLimit(`inscription:${await adresse()}`, { max: 5, windowMs: 3_600_000 })) {
     return { erreur: 'trop_de_tentatives' }
@@ -90,7 +109,13 @@ export async function inscrire(
         // Où Supabase renvoie après le clic sur le lien de validation. Cette
         // URL doit figurer dans Authentication -> URL Configuration ->
         // Redirect URLs, sinon Supabase refuse la redirection.
-        emailRedirectTo: `${origine()}/api/auth/confirmer?suivant=/${locale}/compte`,
+        //
+        // `suivant` peut porter son propre `?type=boutique` (retour au panier
+        // après création de compte) : encodé ici, sinon son `?` casserait la
+        // query string de cette URL-ci. `/api/auth/confirmer` le décode et le
+        // revalide de toute façon avant de rediriger — cet encodage ne fait
+        // que le faire voyager intact jusque-là.
+        emailRedirectTo: `${origine()}/api/auth/confirmer?suivant=${encodeURIComponent(suivant ?? `/${locale}/compte`)}`,
       },
     })
 
