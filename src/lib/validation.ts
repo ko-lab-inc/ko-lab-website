@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { TYPES_DEMANDE } from '@/types'
+import { MODES_LIVRAISON, TYPES_DEMANDE } from '@/types'
 
 /**
  * Schéma du formulaire de contact — skills 05 et 09.
@@ -51,6 +51,76 @@ export const schemaContact = z.object({
 })
 
 export type DonneesContact = z.infer<typeof schemaContact>
+
+/**
+ * Une ligne de commande TELLE QUE LE CLIENT LA DÉCRIT — un slug et une
+ * quantité, rien de plus.
+ *
+ * ⚠️ Ni nom, ni catégorie, ni prix ici. C'est le principe même de la
+ * migration 0021 : `nom_produit`/`categorie`/`prix_indicatif` sont RE-DÉRIVÉS
+ * côté serveur depuis `produits_boutique` au moment de l'écriture (voir
+ * creerCommande), jamais pris tels quels du navigateur. Un client qui
+ * soumettrait un nom ou un prix ici verrait simplement ces champs ignorés —
+ * ils ne font pas partie du schéma.
+ */
+export const schemaLigneCommande = z.object({
+  slug: z.string().trim().min(1).max(200),
+  quantite: z.number().int().min(1).max(99),
+})
+
+/**
+ * Schéma de la confirmation de commande — skill 05, migration 0021.
+ *
+ * Même discipline que schemaContact : partagé entre le formulaire et la
+ * Server Action, bornes appliquées aux deux bouts.
+ */
+export const schemaCommande = z
+  .object({
+    nom: z.string().trim().min(2).max(120),
+    email: z.string().trim().email().max(200),
+    telephone: z
+      .string()
+      .trim()
+      .max(40)
+      .optional()
+      .transform((v) => (v === '' ? undefined : v)),
+    organisation: z
+      .string()
+      .trim()
+      .max(200)
+      .optional()
+      .transform((v) => (v === '' ? undefined : v)),
+
+    modeLivraison: z.enum(MODES_LIVRAISON),
+    // ⚠️ `.nullish()`, pas `.optional()` — FormulaireCommande ne rend ce champ
+    // que si `modeLivraison === 'expedition'` : en ramassage, l'élément
+    // n'existe pas dans le DOM et `FormData.get('adresseLivraison')` renvoie
+    // `null` (pas `undefined`). `.optional()` seul rejette `null`
+    // (invalid_type), ce qui faisait échouer TOUTE commande en ramassage —
+    // le mode par défaut — à la validation, avant même d'atteindre la base.
+    adresseLivraison: z
+      .string()
+      .trim()
+      .max(500)
+      .nullish()
+      .transform((v) => (v === '' || v === null ? undefined : v)),
+
+    // Au moins une ligne : une commande vide n'a pas de sens, et le panier
+    // affiche déjà son propre état « vide » avant d'en arriver là.
+    lignes: z.array(schemaLigneCommande).min(1).max(50),
+
+    // Honeypot — même motif que schemaContact : accepté sans borne stricte,
+    // testé dans l'action, jamais annoncé par un refus de validation.
+    _hp: z.string().max(200).optional(),
+  })
+  // Adresse exigée UNIQUEMENT si expédition — c'est la validation
+  // « côté application, pas contrainte SQL trop rigide » demandée pour 0021.
+  .refine((d) => d.modeLivraison !== 'expedition' || (d.adresseLivraison?.length ?? 0) >= 5, {
+    path: ['adresseLivraison'],
+    message: 'adresse_requise',
+  })
+
+export type DonneesCommande = z.infer<typeof schemaCommande>
 
 /**
  * Mots de passe les plus utilisés au monde, et leurs variantes « conformes ».

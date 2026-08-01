@@ -11,32 +11,14 @@ import { expect, test, type Page } from '@playwright/test'
 
 /**
  * ⚠️ La clé porte l'identité depuis la séparation des paniers par compte
- * (PanierContext, `cleDe()`). La plupart de ces tests naviguent sans session :
- * le suffixe est donc `anonyme`. Exception au test 6, qui simule une connexion
- * — voir `connecterCommeSi`. Le cloisonnement entre comptes est vérifié à
- * part, dans `compte.spec.ts`.
+ * (PanierContext, `cleDe()`). Ces tests naviguent tous sans session : le
+ * suffixe est donc `anonyme`. Le cloisonnement entre comptes est vérifié à
+ * part, dans `compte.spec.ts` ; la confirmation de commande avec une VRAIE
+ * session, dans `commande.spec.ts` (nécessaire dès qu'une écriture en base
+ * dépend de `auth.getUser()` — une session simulée via /api/session, comme
+ * ici, ne suffit plus pour ça).
  */
 const CLE = 'kolab_panier:anonyme'
-
-/**
- * Fait répondre /api/session comme si telle personne était connectée.
- *
- * Même technique et même raison qu'dans compte.spec.ts (`connecterCommeSi`) :
- * une vraie inscription exigerait un SMTP configuré (Resend en attente côté
- * KO-LAB), donc un clic de confirmation qu'un test E2E ne peut pas recevoir.
- * Ce qu'on vérifie ici — le bouton d'envoi change de comportement selon
- * `connecte` — ne dépend que de la réponse de cette route, pas d'une session
- * Supabase réelle.
- */
-async function connecterCommeSi(page: Page, userId: string) {
-  await page.route('**/api/session', (route) =>
-    route.fulfill({
-      status: 200,
-      contentType: 'application/json',
-      body: JSON.stringify({ userId }),
-    }),
-  )
-}
 
 /**
  * Ajoute UN PRODUIT NOMMÉ (pas « le n-ième ») à la demande.
@@ -188,49 +170,23 @@ test.describe('Panier / sélection', () => {
     expect(texte).toContain('3 800')
   })
 
-  test('6 · envoi groupé — le message est pré-rempli avec la liste', async ({ page }) => {
-    // Le bouton d'envoi exige désormais un compte (décision de Christian,
-    // voir PagePanier). Sans connexion simulée, ce clic atterrirait sur
-    // /connexion et jamais sur /contact — c'est le test 6bis, juste après.
-    await connecterCommeSi(page, '33333333-3333-4333-8333-333333333333')
-    await page.goto('/fr/boutique')
-    await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
-    await ajouterProduit(page, 'Conteneur 2 pieds', 2)
-    await page.goto('/fr/boutique/demande')
-
-    await page.getByRole('link', { name: /Confirmer ma sélection/ }).click()
-    await page.waitForURL('**/contact**')
-    await page.waitForTimeout(800)
-
-    const message = await page.locator('#message').inputValue()
-    expect(message).toContain('Bambu Lab X1-Carbon')
-    // Type de demande présélectionné par ?type=boutique.
-    await expect(page.locator('#type')).toHaveValue('boutique')
-  })
-
-  test('6bis · anonyme — l’envoi est bloqué par une exigence de compte', async ({ page }) => {
-    await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)
-    await page.goto('/fr/boutique/demande')
-
-    // Anonyme : pas de « Confirmer ma sélection », mais une invite à se
-    // connecter ou créer un compte — jamais les deux boutons à la fois.
-    await expect(page.getByRole('link', { name: /Confirmer ma sélection/ })).toHaveCount(0)
-    const inviter = page.getByRole('link', { name: /Se connecter ou créer un compte/ })
-    await expect(inviter).toBeVisible()
-
-    await inviter.click()
-    await page.waitForURL('**/connexion**')
-
-    // La destination post-connexion doit ramener exactement à la demande
-    // boutique — pas à /compte, la valeur par défaut pour toute autre visite.
-    const url = new URL(page.url())
-    expect(url.searchParams.get('suivant')).toBe('/fr/contact?type=boutique')
-
-    // Rien n'est parti : le panier est toujours là, intact, prêt pour après
-    // la connexion.
-    const stocke = await page.evaluate((cle) => window.localStorage.getItem(cle), CLE)
-    expect(JSON.parse(stocke ?? '[]')).toHaveLength(1)
-  })
+  /**
+   * ⚠️ Tests 6 et 6bis RETIRÉS le 1er août 2026 (migration 0021), pas
+   * seulement corrigés.
+   *
+   * Les deux vérifiaient un mécanisme qui n'existe plus : un lien direct vers
+   * /contact?type=boutique (test 6), et une redirection vers /connexion pour
+   * l'anonyme (6bis). Confirmer une commande passe désormais par une VRAIE
+   * commande (`commandes`/`lignes_commande`) et, pour l'anonyme, par une
+   * modale EN PLACE — plus aucune navigation vers /contact ni /connexion à
+   * ce moment du parcours.
+   *
+   * La même intention est couverte, à jour, dans tests/e2e/commande.spec.ts :
+   *   test 1 — anonyme, la modale apparaît, aucune navigation
+   *   test 2 — connecté, la commande est créée et le panier vidé
+   * Dupliquer ici aurait fini par diverger de ce que fait réellement
+   * PagePanier, exactement le risque que ces tests étaient censés surveiller.
+   */
 
   test('7 · le panier n’est PAS pré-rempli hors demande boutique', async ({ page }) => {
     await ajouterProduit(page, 'Bambu Lab X1-Carbon', 1)

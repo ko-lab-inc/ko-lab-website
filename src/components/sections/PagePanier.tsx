@@ -2,9 +2,12 @@
 
 import Image from 'next/image'
 import { useFormatter, useTranslations } from 'next-intl'
+import { useState } from 'react'
 
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeMoins, IconePlus } from '@/components/ui/Icones'
+import { FormulaireCommande } from '@/components/sections/FormulaireCommande'
+import { ModaleAuth } from '@/components/sections/ModaleAuth'
 import { Link } from '@/i18n/navigation'
 import { usePanier } from '@/lib/panier/PanierContext'
 import type { FichePanier } from '@/lib/produits'
@@ -30,6 +33,11 @@ export function PagePanier({
   const t = useTranslations('Panier')
   const format = useFormatter()
   const { articles, pret, retirer, changerQuantite, connecte } = usePanier()
+
+  // `authentifie` : succès de la modale PENDANT cette visite — voir la note
+  // au-dessus du bouton de confirmation plus bas.
+  const [modaleOuverte, setModaleOuverte] = useState(false)
+  const [authentifie, setAuthentifie] = useState(false)
 
   // Somme uniquement les articles dont le prix indicatif est connu — un
   // article `null` (prix sur demande) ne doit ni fausser le total ni le
@@ -205,47 +213,44 @@ export function PagePanier({
       )}
 
       {/*
-        ⚠️ COMPTE EXIGÉ AVANT L'ENVOI — décision de Christian.
-        Sans ça, la personne qui commande n'existe nulle part dans
-        /admin/utilisateurs : la demande atterrit anonyme dans Demandes, sans
-        aucun moyen de la relier à qui que ce soit après coup.
+        ⚠️ COMPTE EXIGÉ AVANT LA CONFIRMATION — décision de Christian, revue le
+        1er août 2026 : authentification obligatoire, mais déclenchée à
+        L'INSTANT de confirmer, jamais avant. Naviguer et remplir le panier
+        restent 100% anonymes (PanierContext, inchangé) ; seule la
+        confirmation exige une session.
 
-        `connecte` vient de PanierContext, lui-même dérivé de /api/session —
-        pas de second appel réseau ici. `null` (réponse pas encore connue) est
-        traité comme `true` pour l'AFFICHAGE du bouton, jamais pour la
-        navigation : il pointe alors vers /contact comme si tout allait bien,
-        mais la vraie garde est POST /contact lui-même côté anonyme, qui
-        fonctionne déjà pour toute autre demande (mandat, location…). Ce
-        court instant de chargement ne doit pas afficher « créez un compte »
-        à quelqu'un qui l'a déjà fait.
+        `connecte` vient de PanierContext (dérivé de /api/session, aucun appel
+        réseau de plus ici). `authentifie` est un succès LOCAL À CETTE VISITE,
+        obtenu via la modale sans quitter la page — sans cet état, revenir sur
+        /boutique/demande après connexion afficherait encore l'invite, le
+        temps que /api/session confirme ce qu'on vient d'apprendre autrement.
       */}
       <div className="mt-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-        {connecte === false ? (
+        {connecte === true || authentifie ? (
+          <FormulaireCommande locale={locale} articles={articles} />
+        ) : (
           <div>
             <p className="mb-3 max-w-[46ch] text-sm leading-relaxed text-ko-muted">
               {t('compte_requis_texte')}
             </p>
-            {/* `suivant` porte le chemin COMPLET, langue comprise — c'est ce
-                que connecter()/inscrire() attendent (voir destination() dans
-                connexion/actions.ts). Encodé deux fois : une fois pour la
-                query string de /connexion elle-même (ce `encodeURIComponent`
-                extérieur), une fois pour le `?type=boutique` qu'il contient. */}
-            <Link
-              href={`${ROUTES.connexion}?suivant=${encodeURIComponent(`/${locale}${ROUTES.contact}?type=boutique`)}`}
+            <button
+              type="button"
+              onClick={() => setModaleOuverte(true)}
               className={buttonVariants({ variant: 'primary' })}
             >
               {t('compte_requis_bouton')}
               <span aria-hidden="true">→</span>
-            </Link>
+            </button>
+            <ModaleAuth
+              ouverte={modaleOuverte}
+              locale={locale}
+              onFermer={() => setModaleOuverte(false)}
+              onSucces={() => {
+                setAuthentifie(true)
+                setModaleOuverte(false)
+              }}
+            />
           </div>
-        ) : (
-          <Link
-            href={`${ROUTES.contact}?type=boutique`}
-            className={buttonVariants({ variant: 'primary' })}
-          >
-            {t('envoyer')}
-            <span aria-hidden="true">→</span>
-          </Link>
         )}
 
         <Link href={ROUTES.boutique} className={buttonVariants({ variant: 'text' })}>

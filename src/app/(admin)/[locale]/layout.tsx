@@ -14,6 +14,7 @@ import {
   IconeGalerie,
   IconeLecture,
   IconeMallette,
+  IconePanier,
   IconeReglages,
   IconeTableauBord,
 } from '@/components/ui/Icones'
@@ -110,6 +111,11 @@ export default async function AdminLayout({ children, params }: Props) {
           href: `/${locale}/admin/demandes`,
           label: t('nav_demandes'),
           icone: <IconeAccompagnement taille={17} />,
+        },
+        {
+          href: `/${locale}/admin/commandes`,
+          label: t('nav_commandes'),
+          icone: <IconePanier taille={17} />,
         },
         {
           href: `/${locale}/admin/catalogue`,

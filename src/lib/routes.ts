@@ -42,6 +42,8 @@ export const ROUTES = {
   motDePasseNouveau: '/mot-de-passe/nouveau',
   /** Où atterrit un compte ordinaire : ni /admin, ni la page de connexion. */
   compte: '/compte',
+  /** Commandes du client connecté — migration 0021. Accès par session, jamais par un token dans l'URL. */
+  compteCommandes: '/compte/commandes',
 } as const
 
 export type RouteKey = keyof typeof ROUTES
@@ -49,6 +51,9 @@ export type RouteKey = keyof typeof ROUTES
 /** Fiche produit boutique — chemin construit, pas de segment dans ROUTES
  *  puisqu'il dépend d'un slug qui n'existe qu'au pluriel (produits_boutique). */
 export const routeProduit = (slug: string) => `${ROUTES.boutique}/${slug}`
+
+/** Détail d'une commande — migration 0021. */
+export const routeCommande = (id: string) => `${ROUTES.compteCommandes}/${id}`
 
 /** Les quatre pages de capacités, dans l'ordre du document de cadrage. */
 export const ROUTES_CAPACITES = [

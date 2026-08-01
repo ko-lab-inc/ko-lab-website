@@ -22,6 +22,8 @@ export type ProduitBoutique = Tables<'produits_boutique'>
 export type DemandeContact = Tables<'demandes_contact'>
 export type PosteCarriere = Tables<'postes_carrieres'>
 export type Profil = Tables<'profils'>
+export type Commande = Tables<'commandes'>
+export type LigneCommande = Tables<'lignes_commande'>
 
 /* -----------------------------------------------------------------------------
  * Unions métier
@@ -46,6 +48,38 @@ export type StatutDemande = (typeof STATUTS_DEMANDE)[number]
 /** postes_carrieres.type — skill 03. `saisonnier`/`etudiant` ajoutés par 0015. */
 export const TYPES_POSTE = ['temps-plein', 'temps-partiel', 'contrat', 'saisonnier', 'etudiant'] as const
 export type TypePoste = (typeof TYPES_POSTE)[number]
+
+/** commandes.mode_livraison — migration 0021. Le client choisit à la confirmation. */
+export const MODES_LIVRAISON = ['expedition', 'ramassage'] as const
+export type ModeLivraison = (typeof MODES_LIVRAISON)[number]
+
+/**
+ * commandes.statut — migration 0021.
+ *
+ * Ordre du cycle de vie, pas alphabétique : c'est celui du sélecteur dans
+ * /admin/commandes, et il rend la progression lisible sans commentaire.
+ * `annulee` ferme le cycle depuis n'importe quel statut, pas seulement le
+ * dernier — une commande peut être annulée à toute étape.
+ */
+export const STATUTS_COMMANDE = [
+  'nouvelle',
+  'confirmee',
+  'en_preparation',
+  'prete',
+  'expediee',
+  'completee',
+  'annulee',
+] as const
+export type StatutCommande = (typeof STATUTS_COMMANDE)[number]
+
+/**
+ * Statuts sous lesquels la fenêtre de 48h autorise encore une modification
+ * par le client depuis /commande/[token]. Dès que le statut avance à
+ * `en_preparation`, l'équipe a déjà commencé à donner suite — une
+ * modification cliente à ce stade créerait un écart avec ce qui est en train
+ * d'être préparé.
+ */
+export const STATUTS_MODIFIABLES = ['nouvelle', 'confirmee'] as const satisfies readonly StatutCommande[]
 
 /**
  * profils.role — skill 24 (RBAC).

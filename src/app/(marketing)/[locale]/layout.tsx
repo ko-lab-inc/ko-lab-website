@@ -176,6 +176,9 @@ export default async function MarketingLayout({ children, params }: Props) {
    *   CatalogueBoutique.tsx    → Panier, Boutique
    *   PagePanier.tsx           → Panier
    *   WidgetAide.tsx           → Aide
+   *   FormulaireCommande.tsx, ModaleAuth.tsx, EditeurLignesCommande.tsx
+   *                            → Commande (migration 0021, montés par PagePanier
+   *                              et par /compte/commandes/[id])
    *
    * CatalogueBoutique reçoit ses chaînes en props, résolues côté serveur —
    * c'est le modèle à privilégier pour tout nouveau composant.
@@ -192,6 +195,9 @@ export default async function MarketingLayout({ children, params }: Props) {
     // Ajouté explicitement, PAS en élargissant au catalogue entier : le panier
     // vit côté client, ses libellés doivent y être — mais rien d'autre.
     Panier: tousLesMessages.Panier,
+    // Formulaire de commande, modale de connexion/inscription déclenchée à la
+    // confirmation, et éditeur de lignes de /compte/commandes/[id] — 0021.
+    Commande: tousLesMessages.Commande,
     // Namespace entier : ce ne sont que des libellés d'interface du widget
     // d'aide, aucun contenu non publié ne s'y trouve.
     Aide: tousLesMessages.Aide,

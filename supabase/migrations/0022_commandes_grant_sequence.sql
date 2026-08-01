@@ -1,0 +1,44 @@
+-- =============================================================================
+-- 0022 — Correctif : GRANT manquant sur la séquence de numérotation (0021)
+-- =============================================================================
+--
+-- ⚠️ À EXÉCUTER PAR MOUSSA DANS LE SQL EDITOR SUPABASE, projet ko-lab-site.
+--
+-- -----------------------------------------------------------------------------
+-- POURQUOI CE FICHIER EXISTE
+-- -----------------------------------------------------------------------------
+-- 0021 accorde `insert` sur `commandes` à `authenticated` (§5), mais jamais
+-- l'usage de la séquence `commandes_numero_seq` que la colonne `numero`
+-- appelle par défaut (`nextval(...)`). Un GRANT sur une table ne s'étend
+-- JAMAIS à une séquence, même liée par `alter sequence ... owned by` — cette
+-- clause ne régit que le comportement de DROP CASCADE, pas les permissions.
+--
+-- Résultat, prouvé par tests/e2e/commande.spec.ts (tests 2 et 4) une fois
+-- 0021 exécutée en base le 1er août 2026 : toute commande créée par un VRAI
+-- client (le client de session, `authenticated` — jamais `service_role`,
+-- jamais la clé anon) échouait à l'insertion avec :
+--
+--   42501 permission denied for sequence commandes_numero_seq
+--
+-- Les sondes de l'audit (`npm run audit:supabase`) ne l'avaient pas révélé :
+-- elles ne testent que la clé anon, correctement bloquée par l'absence de
+-- GRANT — pas une session authenticated réelle qui, elle, a le droit
+-- d'insérer dans `commandes` mais pas d'avancer la séquence.
+-- =============================================================================
+
+grant usage, select on sequence public.commandes_numero_seq to authenticated;
+
+-- =============================================================================
+-- VÉRIFICATION
+-- =============================================================================
+--
+-- 1. Le GRANT est en place :
+--
+--      select grantee, privilege_type from information_schema.role_usage_grants
+--      where object_name = 'commandes_numero_seq' and object_schema = 'public';
+--      -- attendu : authenticated apparaît avec USAGE et SELECT
+--
+-- 2. Preuve qui compte : tests/e2e/commande.spec.ts, tests 2 et 4, doivent
+--    passer au vert (ils échouaient tous deux avec 42501 avant ce correctif,
+--    tous deux avec une session authenticated réelle, jamais service_role).
+-- =============================================================================

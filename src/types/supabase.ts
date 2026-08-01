@@ -342,6 +342,100 @@ export type Database = {
         Relationships: []
       }
 
+      /** Migration 0021 — commande post-panier, fenêtre de modification par token. */
+      commandes: {
+        Row: {
+          id: string
+          /** Le compte auth.users qui a passé la commande. */
+          client_id: string
+          numero: string
+          nom: string
+          email: string
+          telephone: string | null
+          organisation: string | null
+          /** CHECK : 'expedition' | 'ramassage' */
+          mode_livraison: string
+          adresse_livraison: string | null
+          /** CHECK : 'nouvelle' | 'confirmee' | 'en_preparation' | 'prete' | 'expediee' | 'completee' | 'annulee' */
+          statut: string
+          fenetre_modification_expire_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          client_id: string
+          numero?: string
+          nom: string
+          email: string
+          telephone?: string | null
+          organisation?: string | null
+          mode_livraison: string
+          adresse_livraison?: string | null
+          statut?: string
+          fenetre_modification_expire_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          client_id?: string
+          numero?: string
+          nom?: string
+          email?: string
+          telephone?: string | null
+          organisation?: string | null
+          mode_livraison?: string
+          adresse_livraison?: string | null
+          statut?: string
+          fenetre_modification_expire_at?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'commandes_client_id_fkey'
+            columns: ['client_id']
+            isOneToOne: false
+            referencedRelation: 'users'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+
+      /** Migration 0021 — lignes figées d'une commande, copiées au moment de l'écriture. */
+      lignes_commande: {
+        Row: {
+          id: string
+          commande_id: string
+          /** NULL si le produit a été retiré du catalogue depuis. */
+          produit_id: string | null
+          nom_produit: string
+          categorie: string
+          quantite: number
+          prix_indicatif: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          commande_id: string
+          produit_id?: string | null
+          nom_produit: string
+          categorie: string
+          quantite: number
+          prix_indicatif?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          commande_id?: string
+          produit_id?: string | null
+          nom_produit?: string
+          categorie?: string
+          quantite?: number
+          prix_indicatif?: number | null
+          created_at?: string
+        }
+        Relationships: []
+      }
+
       reglages: {
         Row: {
           cle: string

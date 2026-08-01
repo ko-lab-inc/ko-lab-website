@@ -59,6 +59,8 @@ export type VarianteCouleur = {
 }
 
 export type ProduitCarte = {
+  /** Migration 0021 — nécessaire pour lier une ligne de commande au produit. */
+  id: string
   slug: string
   categorie: string
   nom: string
@@ -169,7 +171,7 @@ async function lireDepuisBase(): Promise<ProduitCarte[]> {
     const { data, error } = await supabase
       .from('produits_boutique')
       .select(
-        'slug, categorie, nom_fr, description_fr, prix, images, cadrage, couleurs, quantite, statut_stock',
+        'id, slug, categorie, nom_fr, description_fr, prix, images, cadrage, couleurs, quantite, statut_stock',
       )
       .eq('publie', true)
       .order('ordre')
@@ -182,6 +184,7 @@ async function lireDepuisBase(): Promise<ProduitCarte[]> {
         const enRupture = statutSuggere(p.statut_stock, p.quantite) === 'rupture'
 
         return {
+          id: p.id,
           slug: p.slug,
           categorie: p.categorie,
           nom: p.nom_fr,

@@ -422,11 +422,69 @@ async function tablesRecentes() {
   }
 }
 
+/**
+ * commandes / lignes_commande — migration 0021.
+ *
+ * ⚠️ Différent de tout ce qui précède : `anon` ne doit RIEN pouvoir faire ici,
+ * ni lire ni écrire, quel que soit le filtre — pas même un GRANT insert.
+ * Depuis 0021, confirmer une commande exige une session (décision de
+ * Christian, 1ᵉʳ août 2026) ; `anon` n'a donc plus aucune raison légitime de
+ * toucher ces deux tables, à aucun moment du parcours. Le test d'accès
+ * croisé entre deux comptes réels (A ne lit ni ne modifie une commande de B)
+ * est fait à part, dans les E2E — deux sessions authentifiées ne se prouvent
+ * pas avec la seule clé publique.
+ */
+async function commandes() {
+  const c = await rest('commandes?select=id&limit=1')
+  if (c.code === 'PGRST205') {
+    note('commandes — table absente', 'exécuter la migration 0021')
+  } else {
+    verdict(
+      c.statut === 401,
+      `commandes — lecture anonyme ${c.statut === 200 ? 'ACCORDÉE (RLS seul rempart)' : 'refusée'}`,
+      `statut ${c.statut}`,
+    )
+  }
+
+  const l = await rest('lignes_commande?select=id&limit=1')
+  if (l.code !== 'PGRST205') {
+    verdict(
+      l.statut === 401,
+      `lignes_commande — lecture anonyme ${l.statut === 200 ? 'ACCORDÉE (RLS seul rempart)' : 'refusée'}`,
+      `statut ${l.statut}`,
+    )
+  }
+
+  // Corps minimal mais valide : si jamais un GRANT INSERT existait par
+  // erreur, on veut le voir échouer sur le RLS, pas sur une colonne
+  // manquante qui masquerait la vraie question.
+  const MARQUEUR = `zzaudit-sonde-${Date.now()}@example.test`
+  const ins = await rest('commandes', {
+    methode: 'POST',
+    corps: { nom: 'ZZAUDIT sonde', email: MARQUEUR, mode_livraison: 'ramassage' },
+  })
+  if (ins.code !== 'PGRST205') {
+    verdict(
+      ins.statut >= 400,
+      `commandes — insertion anonyme ${ins.statut < 400 ? 'ACCEPTÉE' : 'refusée'}`,
+      ins.statut < 400 ? 'GRANT INSERT à retirer (0021 ne doit en poser aucun à anon)' : `statut ${ins.statut}`,
+    )
+    if (ins.statut < 400) {
+      await nettoyer(
+        `${URL_BASE}/rest/v1/commandes?email=eq.${encodeURIComponent(MARQUEUR)}`,
+        null,
+        'commande de test insérée par la sonde',
+      )
+    }
+  }
+}
+
 async function stockage() {
   await bucketPhotos('produits', '0010')
   await bucketPhotos('realisations', '0012')
   await bucketCv()
   await tablesRecentes()
+  await commandes()
 }
 
 /* -- 5. données de développement en production ------------------------------- */
