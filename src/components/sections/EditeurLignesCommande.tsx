@@ -6,6 +6,8 @@ import { useFormatter, useTranslations } from 'next-intl'
 import { modifierCommande, type EtatModification } from '@/app/(marketing)/[locale]/compte/commandes/[id]/actions'
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeMoins, IconePlus } from '@/components/ui/Icones'
+import { Link } from '@/i18n/navigation'
+import { ROUTES } from '@/lib/routes'
 
 type LigneEditable = {
   slug: string
@@ -78,20 +80,7 @@ export function EditeurLignesCommande({
   )
   const lignesIndisponibles = lignesInitiales.filter((l) => !l.slug || !parSlug.has(l.slug))
 
-  const [slugAAjouter, setSlugAAjouter] = useState('')
   const [etat, action, enCours] = useActionState<EtatModification, FormData>(modifierCommande, {})
-
-  const disponiblesAAjouter = catalogue.filter((p) => !lignes.some((l) => l.slug === p.slug))
-
-  function ajouter() {
-    const produit = parSlug.get(slugAAjouter)
-    if (!produit) return
-    setLignes((actuelles) => [
-      ...actuelles,
-      { slug: produit.slug, nom: produit.nom, categorie: produit.categorie, prixIndicatif: produit.prixIndicatif, quantite: 1 },
-    ])
-    setSlugAAjouter('')
-  }
 
   function retirer(slug: string) {
     setLignes((actuelles) => actuelles.filter((l) => l.slug !== slug))
@@ -178,33 +167,19 @@ export function EditeurLignesCommande({
         )}
       </ul>
 
-      {disponiblesAAjouter.length > 0 && (
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <label className="flex-1">
-            <span className="label-mono mb-2 block text-ko-muted">{t('ajouter_produit')}</span>
-            <select
-              value={slugAAjouter}
-              onChange={(e) => setSlugAAjouter(e.target.value)}
-              className="min-h-[44px] w-full border border-ko-line bg-ko-white px-4 py-3 text-base text-ko-ink focus:border-ko-blue focus:outline-none"
-            >
-              <option value="">—</option>
-              {disponiblesAAjouter.map((p) => (
-                <option key={p.slug} value={p.slug}>
-                  {p.nom}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={ajouter}
-            disabled={!slugAAjouter}
-            className={buttonVariants({ variant: 'ghost' })}
-          >
-            {t('ajouter')}
-          </button>
-        </div>
-      )}
+      {/*
+        Pas de sélecteur ici — demande de Christian, 2 août 2026 : un menu qui
+        ne montre qu'un nom de produit n'aide pas à choisir. Ajouter un
+        produit à une commande existante passe désormais par la VRAIE
+        boutique (photos, prix, descriptions), pas par une liste plate
+        recréée dans ce formulaire.
+      */}
+      <div>
+        <Link href={ROUTES.boutique} className={buttonVariants({ variant: 'ghost' })}>
+          {t('ajouter_produit')}
+          <span aria-hidden="true">→</span>
+        </Link>
+      </div>
 
       <form action={action}>
         <input type="hidden" name="locale" value={locale} />
