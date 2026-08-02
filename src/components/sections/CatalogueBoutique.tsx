@@ -87,7 +87,7 @@ export function CatalogueBoutique({
   return (
     // Colonne latérale sur desktop (référence Bambu Store) : au-dessus de la
     // grille sous lg, où une colonne fixe grignoterait toute la largeur utile.
-    <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-12">
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-12">
       {/* ------------------------------ Filtres ------------------------------ */}
       {/* w-60 et non w-52 : à 208 px, le champ de recherche tronquait sa
           propre invite (« Rechercher un produi… », le « t » invisible relevé
@@ -104,11 +104,25 @@ export function CatalogueBoutique({
           value={recherche}
           onChange={(e) => setRecherche(e.target.value)}
           placeholder={t('recherche_placeholder')}
-          className="mb-8 w-full min-h-[44px] border border-ko-line bg-ko-white px-4 py-3 text-base text-ko-ink transition-colors duration-200 placeholder:text-ko-muted focus:border-ko-blue focus:outline-none"
+          className="mb-5 w-full min-h-[44px] border border-ko-line bg-ko-white px-4 py-3 text-base text-ko-ink transition-colors duration-200 placeholder:text-ko-muted focus:border-ko-blue focus:outline-none lg:mb-8"
         />
 
-        <p className="label-mono mb-4 text-ko-muted">{labelFiltres}</p>
-        <div role="group" aria-label={labelFiltres} className="flex flex-col items-start gap-1">
+        <p className="label-mono mb-3 text-ko-muted lg:mb-4">{labelFiltres}</p>
+        {/*
+          ⚠️ HORIZONTAL EN MOBILE, LISTE VERTICALE À PARTIR DE `lg:` —
+          constaté par Christian : quatre catégories empilées en pleine
+          largeur poussaient la grille de produits loin sous la ligne de
+          flottaison, avant même d'avoir vu un seul produit. En dessous de
+          `lg:`, les catégories deviennent des pastilles qui s'enroulent
+          (même motif que les filtres de /realisations) ; à partir de `lg:`,
+          on retrouve la colonne latérale à indicateur gauche (référence
+          Bambu Store, choix déjà validé par Christian).
+        */}
+        <div
+          role="group"
+          aria-label={labelFiltres}
+          className="flex flex-wrap gap-2 lg:flex-col lg:flex-nowrap lg:items-start lg:gap-1"
+        >
           {filtres.map(({ valeur, label }) => {
             const actif = valeur === categorie
 
@@ -119,10 +133,11 @@ export function CatalogueBoutique({
                 onClick={() => setCategorie(valeur)}
                 aria-pressed={actif}
                 className={cn(
-                  'min-h-[40px] border-l-2 py-1.5 pl-3 text-left text-sm transition-colors duration-200',
+                  'min-h-[40px] rounded-sm border px-4 py-1.5 text-left text-sm transition-colors duration-200',
+                  'lg:rounded-none lg:border-x-0 lg:border-t-0 lg:border-l-2 lg:px-3 lg:pl-3',
                   actif
-                    ? 'border-ko-blue font-medium text-ko-blue'
-                    : 'border-transparent text-ko-ink hover:border-ko-line hover:text-ko-blue',
+                    ? 'border-ko-blue bg-ko-blue text-ko-white lg:bg-transparent lg:font-medium lg:text-ko-blue'
+                    : 'border-ko-line text-ko-ink hover:border-ko-ink lg:border-transparent lg:hover:border-ko-line lg:hover:text-ko-blue',
                 )}
               >
                 {label}
@@ -137,12 +152,19 @@ export function CatalogueBoutique({
         {visibles.length === 0 ? (
           <p className="text-base text-ko-muted">{messageVide}</p>
         ) : (
-          // Gouttières dissociées : 32 px entre colonnes, 48 px entre rangées.
-          // À gap-5 uniforme, les cadres de deux produits voisins se touchaient
-          // presque — c'est le « trop collé » signalé. Un écart vertical plus
-          // large qu'horizontal fait aussi lire la grille par rangées plutôt
-          // qu'en damier.
-          <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          // Gouttières dissociées : 32 px entre colonnes, 48 px entre rangées
+          // à partir de `sm`. À gap-5 uniforme, les cadres de deux produits
+          // voisins se touchaient presque — c'est le « trop collé » signalé.
+          // Un écart vertical plus large qu'horizontal fait aussi lire la
+          // grille par rangées plutôt qu'en damier.
+          //
+          // ⚠️ DEUX COLONNES DÈS LE PLUS PETIT ÉCRAN — demande de Christian,
+          // référence Temu : une seule colonne en mobile forçait à faire
+          // défiler beaucoup pour voir plusieurs produits. Gouttières
+          // resserrées en dessous de `sm` (16 px) : à 32 px, deux cartes de
+          // ~150 px de large sur un téléphone étroit se seraient touché le
+          // bord de l'écran.
+          <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:gap-x-8 sm:gap-y-12 lg:grid-cols-3 xl:grid-cols-4">
             {visibles.map((produit) => {
               const nomCategorie =
                 filtres.find((f) => f.valeur === produit.categorie)?.label ?? produit.categorie
@@ -255,7 +277,7 @@ export function CatalogueBoutique({
                       {nomCategorie}
                     </p>
 
-                    <h3 className="mt-2 font-serif text-[18px] leading-tight text-ko-ink transition-colors duration-200 group-hover:text-ko-blue">
+                    <h3 className="mt-2 font-serif text-[16px] leading-tight text-ko-ink transition-colors duration-200 group-hover:text-ko-blue sm:text-[18px]">
                       {/*
                         LIEN UNIQUE de la carte, étiré sur toute sa surface.
 

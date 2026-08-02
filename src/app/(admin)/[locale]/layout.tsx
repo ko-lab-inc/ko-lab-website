@@ -217,26 +217,39 @@ export default async function AdminLayout({ children, params }: Props) {
         palette, et leurs ratios de contraste sont documentés dans
         globals.css.
       */}
-      <body className="flex min-h-svh flex-col bg-ko-cream font-sans antialiased lg:h-svh lg:flex-row lg:overflow-hidden">
-        <aside className="scrollbar-fine shrink-0 border-b border-ko-line-d bg-ko-black lg:h-svh lg:w-60 lg:overflow-y-auto lg:border-b-0 lg:border-r">
-          {/* Bloc d'identité en tête de la barre, comme la référence. */}
-          <div className="flex items-baseline gap-3 border-b border-ko-line-d px-5 py-[19px]">
-            <span className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-ko-white">
-              KO-LAB
-            </span>
-            <span className="label-mono label-mono-d">{t('espace')}</span>
-          </div>
+      {/*
+        `pt-[60px]` compense la barre `fixed` de NavAdmin (identité +
+        hamburger) sous `lg` : cette barre est sortie du flux normal pour
+        rester visible au défilement (voir sa docstring), donc plus rien
+        n'occupe sa hauteur — sans ce padding, le sous-menu déplié et
+        « Voir le site » commenceraient masqués dessous. Neutralisé à partir
+        de `lg`, où la barre redevient un bloc normal en tête de la colonne
+        fixe.
+      */}
+      <body className="flex min-h-svh flex-col bg-ko-cream pt-[60px] font-sans antialiased lg:h-svh lg:flex-row lg:overflow-hidden lg:pt-0">
+        <aside className="scrollbar-fine shrink-0 bg-ko-black lg:h-svh lg:w-60 lg:overflow-y-auto lg:border-r lg:border-ko-line-d">
+          {/* Href préfixés ICI, côté serveur : NavAdmin utilise le
+              `next/link` natif, qui ne connaît pas la langue courante.
 
-          <div className="px-4 py-6">
-            {/* Href préfixés ICI, côté serveur : NavAdmin utilise le
-                `next/link` natif, qui ne connaît pas la langue courante. */}
-            <NavAdmin
-              racine={`/${locale}/admin`}
-              groupes={GROUPES}
-              labelMenu={t('menu_ouvrir')}
-              labelFermer={t('menu_fermer')}
-            />
-          </div>
+              Le bloc d'identité (KO-LAB / Espace équipe) est passé en prop,
+              pas gardé ici : sous `lg`, il doit vivre SUR LA MÊME LIGNE que
+              le bouton hamburger de NavAdmin, dans une barre qui reste
+              visible au défilement — voir la docstring de NavAdmin.tsx pour
+              le détail. */}
+          <NavAdmin
+            identite={
+              <div className="flex items-baseline gap-3 lg:border-b lg:border-ko-line-d lg:px-5 lg:py-[19px]">
+                <span className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-ko-white">
+                  KO-LAB
+                </span>
+                <span className="label-mono label-mono-d">{t('espace')}</span>
+              </div>
+            }
+            racine={`/${locale}/admin`}
+            groupes={GROUPES}
+            labelMenu={t('menu_ouvrir')}
+            labelFermer={t('menu_fermer')}
+          />
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col lg:h-svh lg:overflow-hidden">

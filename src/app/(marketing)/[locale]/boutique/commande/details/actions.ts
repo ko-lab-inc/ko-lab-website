@@ -124,6 +124,7 @@ export async function creerCommande(
     organisation: donnees.get('organisation'),
     modeLivraison: donnees.get('modeLivraison'),
     adresse: donnees.get('adresse'),
+    appartement: donnees.get('appartement'),
     ville: donnees.get('ville'),
     codePostal: donnees.get('codePostal'),
     province: donnees.get('province'),
@@ -167,9 +168,13 @@ export async function creerCommande(
   // base (commandes.adresse_livraison, 0021) — composée ici, jamais côté
   // client, pour ne dépendre d'aucun format que le navigateur prétendrait
   // avoir déjà assemblé.
+  const rue = analyse.data.appartement
+    ? `${analyse.data.adresse}, app. ${analyse.data.appartement}`
+    : analyse.data.adresse
+
   const adresseLivraison =
     analyse.data.modeLivraison === 'expedition'
-      ? `${analyse.data.adresse}, ${analyse.data.ville} (${analyse.data.province}) ${analyse.data.codePostal}`
+      ? `${rue}, ${analyse.data.ville} (${analyse.data.province}) ${analyse.data.codePostal}`
       : null
 
   const nom = nomClient(user)

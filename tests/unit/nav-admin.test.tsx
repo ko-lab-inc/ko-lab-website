@@ -42,7 +42,13 @@ const GROUPES = [
 
 function poser() {
   return render(
-    <NavAdmin groupes={GROUPES} racine="/fr/admin" labelMenu="Menu" labelFermer="Fermer" />,
+    <NavAdmin
+      identite={<span>KO-LAB</span>}
+      groupes={GROUPES}
+      racine="/fr/admin"
+      labelMenu="Menu"
+      labelFermer="Fermer"
+    />,
   )
 }
 

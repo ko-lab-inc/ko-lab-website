@@ -166,6 +166,17 @@ export function FormulaireDetailsCommande({ locale }: { locale: string }) {
               <input id="cmd-adresse" name="adresse" required maxLength={200} autoComplete="street-address" className={CHAMP} />
             </Champ>
           </div>
+          {/* Jamais obligatoire — signalé par Christian comme manquant, mais
+              une maison ou une entreprise n'en a simplement pas besoin. */}
+          <Champ id="cmd-appartement" libelle={t('appartement')} marqueur={t('champ_obligatoire')}>
+            <input
+              id="cmd-appartement"
+              name="appartement"
+              maxLength={20}
+              autoComplete="address-line2"
+              className={CHAMP}
+            />
+          </Champ>
           <Champ id="cmd-ville" libelle={t('ville')} obligatoire marqueur={t('champ_obligatoire')}>
             <input id="cmd-ville" name="ville" required maxLength={100} autoComplete="address-level2" className={CHAMP} />
           </Champ>

@@ -47,11 +47,20 @@ export type EntreeAdmin = {
 export type GroupeAdmin = { titre: string; entrees: EntreeAdmin[] }
 
 export function NavAdmin({
+  identite,
   groupes,
   racine,
   labelMenu,
   labelFermer,
 }: {
+  /**
+   * Bloc « KO-LAB / Espace équipe », rendu côté SERVEUR par le layout.
+   *
+   * Reçu en élément déjà rendu, pas en composant à invoquer ici — même règle
+   * que `icone` sur `EntreeAdmin` juste au-dessus : un composant ne traverse
+   * pas la frontière serveur/client, un élément si.
+   */
+  identite: ReactNode
   groupes: GroupeAdmin[]
   racine: string
   /** Libellés du bouton hamburger — lu et affiché sous `lg` seulement. */
@@ -84,37 +93,71 @@ export function NavAdmin({
 
   return (
     <nav className="lg:sticky lg:top-8">
-      <button
-        type="button"
-        onClick={() => setOuvert((v) => !v)}
-        aria-expanded={ouvert}
-        aria-controls="nav-admin-groupes"
-        className="mb-4 flex min-h-[44px] w-full items-center justify-between text-sm text-ko-white lg:hidden"
-      >
-        {ouvert ? labelFermer : labelMenu}
-        <span aria-hidden="true" className="flex h-6 w-6 shrink-0 flex-col items-center justify-center gap-1.5">
-          <span
-            className={cn(
-              'block h-px w-5 bg-ko-white transition-transform duration-250',
-              ouvert && 'translate-y-[5px] rotate-45',
-            )}
-          />
-          <span
-            className={cn(
-              'block h-px w-5 bg-ko-white transition-opacity duration-250',
-              ouvert && 'opacity-0',
-            )}
-          />
-          <span
-            className={cn(
-              'block h-px w-5 bg-ko-white transition-transform duration-250',
-              ouvert && '-translate-y-[5px] -rotate-45',
-            )}
-          />
-        </span>
-      </button>
+      {/*
+        ⚠️ `fixed`, PAS `sticky` — demande de Christian : la ligne « KO-LAB /
+        Espace équipe » et le bouton menu doivent rester visibles en
+        permanence pendant le défilement, en mobile. `sticky` a été essayé
+        d'abord et ne tenait PAS : un élément sticky ne reste collé que tant
+        que son PARENT est encore à l'écran, or `<aside>` replié (menu fermé)
+        ne fait que la hauteur de cette seule ligne — dès qu'on défilait de
+        60px, l'aside entier sortait du viewport et emportait la barre avec
+        lui. Constaté en testant un vrai défilement, pas en relisant le CSS.
 
-      <div id="nav-admin-groupes" className={cn(!ouvert && 'hidden', 'lg:block')}>
+        `fixed` sort la barre du flux : `pt-[60px]` sur le <body>
+        (layout.tsx) compense exactement sa hauteur pour que rien ne
+        commence caché dessous — aussi bien le sous-menu déplié que
+        « Voir le site » / « Se déconnecter » juste en dessous.
+
+        `lg:static lg:block` : à partir de `lg`, la colonne entière est déjà
+        fixe (voir layout.tsx), cette ligne redevient un bloc normal et le
+        bouton disparaît (`lg:hidden` sur le bouton lui-même).
+      */}
+      {/* ⚠️ Ce conteneur ne porte QUE le chrome mobile (fond noir, filet,
+          hauteur fixe, padding horizontal) — à partir de `lg`, il redevient
+          neutre (`lg:bg-transparent lg:border-b-0 lg:px-0`) et c'est
+          `identite` (voir layout.tsx) qui porte SON PROPRE filet et padding
+          desktop. Les deux superposeraient sinon leurs paddings. */}
+      <div className="fixed inset-x-0 top-0 z-30 flex h-[60px] items-center justify-between gap-3 border-b border-ko-line-d bg-ko-black px-5 lg:static lg:block lg:h-auto lg:border-b-0 lg:bg-transparent lg:px-0 lg:py-0">
+        {identite}
+
+        <button
+          type="button"
+          onClick={() => setOuvert((v) => !v)}
+          aria-expanded={ouvert}
+          aria-controls="nav-admin-groupes"
+          aria-label={ouvert ? labelFermer : labelMenu}
+          className="flex h-11 w-11 shrink-0 items-center justify-center lg:hidden"
+        >
+          <span aria-hidden="true" className="flex h-6 w-6 shrink-0 flex-col items-center justify-center gap-1.5">
+            <span
+              className={cn(
+                'block h-px w-5 bg-ko-white transition-transform duration-250',
+                ouvert && 'translate-y-[5px] rotate-45',
+              )}
+            />
+            <span
+              className={cn(
+                'block h-px w-5 bg-ko-white transition-opacity duration-250',
+                ouvert && 'opacity-0',
+              )}
+            />
+            <span
+              className={cn(
+                'block h-px w-5 bg-ko-white transition-transform duration-250',
+                ouvert && '-translate-y-[5px] -rotate-45',
+              )}
+            />
+          </span>
+        </button>
+      </div>
+
+      <div
+        id="nav-admin-groupes"
+        className={cn(
+          !ouvert && 'hidden',
+          'border-b border-ko-line-d px-4 py-6 lg:block lg:border-b-0 lg:p-0 lg:pt-6',
+        )}
+      >
         {groupes.map((groupe) => (
           <div key={groupe.titre} className="mb-8 last:mb-0">
             <p className="label-mono mb-3 text-ko-muted-d">{groupe.titre}</p>

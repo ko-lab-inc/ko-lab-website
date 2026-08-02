@@ -43,8 +43,17 @@ export function EnteteAdmin({
         </h1>
         {action}
       </div>
+      {/*
+        Masqué en mobile — demande de Christian, 2 août 2026 : ce chapô
+        explicatif repousse les outils réels (recherche, filtres, bouton
+        « ajouter ») hors de l'écran sur un téléphone, pour un texte qui
+        n'aide plus une fois l'écran déjà connu. Il reste affiché à partir de
+        `sm:`, où la largeur ne pose pas ce problème.
+      */}
       {intro && (
-        <p className="mt-4 max-w-[68ch] text-base leading-relaxed text-ko-muted">{intro}</p>
+        <p className="mt-4 hidden max-w-[68ch] text-base leading-relaxed text-ko-muted sm:block">
+          {intro}
+        </p>
       )}
     </header>
   )
@@ -95,16 +104,31 @@ export function TuileStat({
   Icone?: ComponentType<IconeProps>
 }) {
   return (
-    <div className="bg-ko-white p-6">
+    // `min-w-0` : sans lui, une grille CSS refuse de rétrécir une cellule
+    // sous la largeur intrinsèque de son contenu — `truncate` et le `clamp()`
+    // ci-dessous n'auraient alors aucun effet en mobile.
+    <div className="min-w-0 bg-ko-white p-4 sm:p-6">
       <div className="flex items-center gap-2.5">
         {/* L'icône accompagne le libellé, elle ne le remplace pas : à elle
             seule, une enveloppe ne dit pas « demandes reçues ». */}
-        {Icone && <Icone taille={16} className="text-ko-muted" />}
+        {Icone && <Icone taille={16} className="shrink-0 text-ko-muted" />}
+        {/* Pas de `truncate` ici : « Chiffre d'affaires » sur deux lignes
+            n'a jamais posé problème — seule la GRANDE valeur en dessous
+            débordait. Tronquer le libellé cacherait de l'information pour
+            un bug qui ne le concernait pas. */}
         <p className="label-mono text-ko-muted">{libelle}</p>
       </div>
+      {/*
+        ⚠️ TAILLE RESPONSIVE, PAS UN 32px FIXE — constaté par Christian sur
+        mobile : « Chiffre d'affaires » en grille à 2 colonnes réduit chaque
+        tuile à ~150px, où « 12 600 $CA » à 32px débordait par-dessus la
+        tuile voisine. `clamp()` suit la largeur de l'écran comme le titre de
+        EnteteAdmin ci-dessus ; `truncate` reste un filet de sécurité si un
+        chiffre futur est encore plus long.
+      */}
       <p
         className={cn(
-          'mt-3 font-mono text-[32px] leading-none',
+          'mt-3 truncate font-mono text-[clamp(18px,6vw,32px)] leading-none',
           accent ? 'text-ko-blue' : 'text-ko-ink',
         )}
       >

@@ -123,6 +123,15 @@ export const schemaCommande = z
       .max(200)
       .nullish()
       .transform((v) => (v === '' || v === null ? undefined : v)),
+    // Jamais obligatoire, même en expédition — demande de Christian : un
+    // client sans numéro d'appartement (maison, entreprise) ne doit pas
+    // buter sur un champ qu'il n'a rien à y mettre.
+    appartement: z
+      .string()
+      .trim()
+      .max(20)
+      .nullish()
+      .transform((v) => (v === '' || v === null ? undefined : v)),
     ville: z
       .string()
       .trim()
