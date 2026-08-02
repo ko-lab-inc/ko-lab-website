@@ -23,6 +23,12 @@ export const ROUTES = {
   boutique: '/boutique',
   /** Demande de prix groupée — récapitulatif du panier. */
   boutiqueDemande: '/boutique/demande',
+  /**
+   * Étape 2 de la commande — téléphone, organisation, mode de livraison,
+   * adresse si expédition. Route protégée par session (voir son page.tsx) ;
+   * nom et courriel ne s'y demandent plus, lus depuis auth.getUser().
+   */
+  boutiqueCommandeDetails: '/boutique/commande/details',
   apropos: '/a-propos',
   carrieres: '/carrieres',
   /** Formulaire de candidature — le MÊME pour les neuf postes (0017). */

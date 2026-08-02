@@ -176,9 +176,10 @@ export default async function MarketingLayout({ children, params }: Props) {
    *   CatalogueBoutique.tsx    → Panier, Boutique
    *   PagePanier.tsx           → Panier
    *   WidgetAide.tsx           → Aide
-   *   FormulaireCommande.tsx, ModaleAuth.tsx, EditeurLignesCommande.tsx
-   *                            → Commande (migration 0021, montés par PagePanier
-   *                              et par /compte/commandes/[id])
+   *   FormulaireDetailsCommande.tsx, EditeurLignesCommande.tsx
+   *                            → Commande (migration 0021 ; la première montée
+   *                              par /boutique/commande/details, la seconde
+   *                              par /compte/commandes/[id])
    *
    * CatalogueBoutique reçoit ses chaînes en props, résolues côté serveur —
    * c'est le modèle à privilégier pour tout nouveau composant.

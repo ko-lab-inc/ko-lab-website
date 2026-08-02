@@ -46,6 +46,7 @@ export default async function InscriptionPage({ params, searchParams }: Props) {
         locale={locale}
         suivant={suivant}
         libelles={{
+          nom: t('nom'),
           courriel: t('courriel'),
           motDePasse: t('mot_de_passe'),
           aideMotDePasse: t('aide_mot_de_passe'),

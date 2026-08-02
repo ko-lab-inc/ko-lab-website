@@ -2,13 +2,10 @@
 
 import Image from 'next/image'
 import { useFormatter, useTranslations } from 'next-intl'
-import { useState } from 'react'
 
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeMoins, IconePlus } from '@/components/ui/Icones'
-import { FormulaireCommande } from '@/components/sections/FormulaireCommande'
-import { ModaleAuth } from '@/components/sections/ModaleAuth'
-import { Link } from '@/i18n/navigation'
+import { Link, useRouter } from '@/i18n/navigation'
 import { usePanier } from '@/lib/panier/PanierContext'
 import type { FichePanier } from '@/lib/produits'
 import { ROUTES, routeProduit } from '@/lib/routes'
@@ -32,12 +29,8 @@ export function PagePanier({
 }) {
   const t = useTranslations('Panier')
   const format = useFormatter()
+  const router = useRouter()
   const { articles, pret, retirer, changerQuantite, connecte } = usePanier()
-
-  // `authentifie` : succès de la modale PENDANT cette visite — voir la note
-  // au-dessus du bouton de confirmation plus bas.
-  const [modaleOuverte, setModaleOuverte] = useState(false)
-  const [authentifie, setAuthentifie] = useState(false)
 
   // Somme uniquement les articles dont le prix indicatif est connu — un
   // article `null` (prix sur demande) ne doit ni fausser le total ni le
@@ -213,45 +206,36 @@ export function PagePanier({
       )}
 
       {/*
-        ⚠️ COMPTE EXIGÉ AVANT LA CONFIRMATION — décision de Christian, revue le
-        1er août 2026 : authentification obligatoire, mais déclenchée à
-        L'INSTANT de confirmer, jamais avant. Naviguer et remplir le panier
-        restent 100% anonymes (PanierContext, inchangé) ; seule la
-        confirmation exige une session.
+        ⚠️ PLUS DE FORMULAIRE NI DE MODALE ICI — parcours simplifié à la
+        demande de Christian (revu après le prompt précédent).
+        /boutique/demande ne montre plus que la liste et ce bouton ; la
+        connexion/inscription se fait par vraie navigation de page
+        (/connexion, /inscription), et les détails de livraison (téléphone,
+        organisation, mode de livraison, adresse) sont demandés APRÈS
+        connexion, sur /boutique/commande/details.
 
-        `connecte` vient de PanierContext (dérivé de /api/session, aucun appel
-        réseau de plus ici). `authentifie` est un succès LOCAL À CETTE VISITE,
-        obtenu via la modale sans quitter la page — sans cet état, revenir sur
-        /boutique/demande après connexion afficherait encore l'invite, le
-        temps que /api/session confirme ce qu'on vient d'apprendre autrement.
+        `connecte` vient de PanierContext (dérivé de /api/session) : déjà
+        connecté → direction la page de détails ; sinon → /connexion, avec
+        `suivant` pour revenir automatiquement une fois authentifié. Le
+        panier n'est jamais touché par cette navigation — seule
+        creerCommande, à la toute fin, le vide.
       */}
       <div className="mt-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-        {connecte === true || authentifie ? (
-          <FormulaireCommande locale={locale} articles={articles} />
-        ) : (
-          <div>
-            <p className="mb-3 max-w-[46ch] text-sm leading-relaxed text-ko-muted">
-              {t('compte_requis_texte')}
-            </p>
-            <button
-              type="button"
-              onClick={() => setModaleOuverte(true)}
-              className={buttonVariants({ variant: 'primary' })}
-            >
-              {t('compte_requis_bouton')}
-              <span aria-hidden="true">→</span>
-            </button>
-            <ModaleAuth
-              ouverte={modaleOuverte}
-              locale={locale}
-              onFermer={() => setModaleOuverte(false)}
-              onSucces={() => {
-                setAuthentifie(true)
-                setModaleOuverte(false)
-              }}
-            />
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={() => {
+            if (connecte === true) {
+              router.push(ROUTES.boutiqueCommandeDetails)
+              return
+            }
+            const cible = `/${locale}${ROUTES.boutiqueCommandeDetails}`
+            router.push(`${ROUTES.connexion}?suivant=${encodeURIComponent(cible)}`)
+          }}
+          className={buttonVariants({ variant: 'primary' })}
+        >
+          {t('confirmer_commande')}
+          <span aria-hidden="true">→</span>
+        </button>
 
         <Link href={ROUTES.boutique} className={buttonVariants({ variant: 'text' })}>
           {t('continuer')}

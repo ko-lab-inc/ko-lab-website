@@ -80,6 +80,7 @@ export async function inscrire(
   }
 
   const analyse = schemaInscription.safeParse({
+    nom: donnees.get('nom'),
     email: donnees.get('email'),
     motDePasse: donnees.get('motDePasse'),
     confirmation: donnees.get('confirmation'),
@@ -106,6 +107,11 @@ export async function inscrire(
       email: analyse.data.email,
       password: analyse.data.motDePasse,
       options: {
+        // Nom complet — capturé UNE SEULE FOIS, ici, à l'inscription. Voir
+        // schemaInscription (lib/validation.ts) : creerCommande le relit
+        // depuis `auth.getUser().user_metadata.nom`, jamais depuis un
+        // formulaire de commande, qui ne le demande plus.
+        data: { nom: analyse.data.nom },
         // Où Supabase renvoie après le clic sur le lien de validation. Cette
         // URL doit figurer dans Authentication -> URL Configuration ->
         // Redirect URLs, sinon Supabase refuse la redirection.

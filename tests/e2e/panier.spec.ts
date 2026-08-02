@@ -157,10 +157,17 @@ test.describe('Panier / sélection', () => {
       .toLowerCase()
       .replace(/[  ]/g, ' ')
 
-    // Toujours interdit : vocabulaire d'achat ferme, même avec un total
-    // affiché — la sélection reste sujette à confirmation, jamais une
-    // facture ou une commande passée.
-    for (const interdit of ['commande', 'achat', 'checkout', 'panier']) {
+    // ⚠️ « commande » RETIRÉ de cette liste le 1er août 2026.
+    //
+    // Interdit à l'origine parce que ce parcours n'était qu'une demande de
+    // prix, jamais un achat ferme. Depuis les migrations 0021+ (comptes
+    // clients, table `commandes`, numéros CMD-2026-XXXX, /compte/commandes),
+    // ce n'est plus vrai : Christian a explicitement demandé un bouton
+    // intitulé « Confirmer ma commande » sur CETTE page — le mot est
+    // désormais le terme correct, pas une fuite de vocabulaire de commerce.
+    // « achat » et « checkout », eux, n'ont jamais eu leur place ici : aucun
+    // paiement en ligne n'existe sur ce site.
+    for (const interdit of ['achat', 'checkout', 'panier']) {
       expect(texte, `mot interdit trouvé : ${interdit}`).not.toContain(interdit)
     }
     // Les deux prix indicatifs individuels, et leur somme (3800 $).

@@ -3,26 +3,30 @@
 import { useActionState, useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 
-import { creerCommande, type EtatCommande } from '@/app/(marketing)/[locale]/boutique/demande/actions'
+import { creerCommande, type EtatCommande } from '@/app/(marketing)/[locale]/boutique/commande/details/actions'
 import { buttonVariants } from '@/components/ui/Button'
 import { useRouter } from '@/i18n/navigation'
-import { usePanier, type ArticlePanier } from '@/lib/panier/PanierContext'
-import { routeCommande } from '@/lib/routes'
+import { usePanier } from '@/lib/panier/PanierContext'
+import { ROUTES, routeCommande } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
 /**
- * Formulaire de confirmation — migration 0021.
+ * Étape 2 de la commande — téléphone, organisation, mode de livraison,
+ * adresse si expédition. Remplace FormulaireCommande.tsx (supprimé) : nom et
+ * courriel n'y figurent plus, tirés de la session par creerCommande.
  *
  * ---------------------------------------------------------------------------
- * NE REDIRIGE PAS DEPUIS LA SERVER ACTION — ET C'EST DÉLIBÉRÉ
+ * PANIER LU ICI, PAS REÇU EN PROP
  *
- * `creerCommande` renvoie `{ succes, token }` plutôt que d'appeler `redirect()`
- * elle-même. Un `redirect()` côté serveur interrompt le rendu AVANT que ce
- * composant ne voie jamais `etat.succes` passer à `true` — il n'y aurait donc
- * aucun moment où VIDER LE PANIER serait possible, puisque `vider()` est un
- * effet strictement client (il écrit dans localStorage). En renvoyant l'état
- * au lieu de rediriger, c'est CE composant qui enchaîne les deux effets dans
- * le bon ordre : vider, puis naviguer.
+ * Contrairement à l'ancien FormulaireCommande (monté par PagePanier, qui
+ * connaît déjà les articles), cette page est atteinte par une VRAIE
+ * navigation depuis /connexion ou /inscription — le composant a donc besoin
+ * de son propre accès à PanierContext plutôt que de recevoir les articles en
+ * prop depuis un parent qui ne les a pas non plus à ce stade.
+ *
+ * Un panier vide ici (lien direct, retour arrière après une commande déjà
+ * confirmée) renvoie vers /boutique/demande plutôt que d'afficher un
+ * formulaire pour rien à commander.
  * ---------------------------------------------------------------------------
  */
 
@@ -60,49 +64,51 @@ function Champ({
   )
 }
 
-export function FormulaireCommande({
-  locale,
-  articles,
-}: {
-  locale: string
-  articles: readonly ArticlePanier[]
-}) {
+export function FormulaireDetailsCommande({ locale }: { locale: string }) {
   const t = useTranslations('Commande')
-  const { vider } = usePanier()
   const router = useRouter()
+  const { articles, pret, vider } = usePanier()
 
   const [etat, action, enCours] = useActionState<EtatCommande, FormData>(creerCommande, {})
   const [modeLivraison, setModeLivraison] = useState<'expedition' | 'ramassage'>('ramassage')
 
+  // Panier vide (lien direct, actualisation après une commande déjà
+  // confirmée) : rien à livrer, retour au récapitulatif plutôt qu'un
+  // formulaire orphelin.
+  useEffect(() => {
+    if (pret && articles.length === 0 && !etat.succes) {
+      router.replace(ROUTES.boutiqueDemande)
+    }
+  }, [pret, articles.length, etat.succes, router])
+
   // Effet strictement client, déclenché UNE fois par succès — voir la note
-  // d'en-tête sur pourquoi ça ne peut pas vivre dans la Server Action.
+  // d'en-tête de FormulaireCommande (supprimé) sur pourquoi ça ne peut pas
+  // vivre dans la Server Action : vider() écrit dans localStorage, un
+  // redirect() côté serveur empêcherait ce composant de jamais voir
+  // etat.succes passer à true.
   useEffect(() => {
     if (!etat.succes || !etat.id) return
     vider()
     router.push(routeCommande(etat.id))
-    // `vider`/`router` sont stables (useCallback / next-intl) ; les omettre
-    // évite de rejouer l'effet à chaque rendu du panier qui vient de se vider.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [etat.succes, etat.id])
 
   const messages: Record<string, string> = {
     donnees: t('erreur_donnees'),
     lignes: t('erreur_lignes'),
-    // Ne devrait jamais s'afficher par le parcours normal (PagePanier ne
-    // montre ce formulaire qu'une fois connecté) — message tout de même
-    // fourni pour l'appel direct de l'action, voir sa note d'en-tête.
+    // Ne devrait jamais s'afficher par le parcours normal (cette page redirige
+    // déjà vers /connexion si personne n'est authentifié) — message tout de
+    // même fourni pour l'appel direct de l'action, voir sa note d'en-tête.
     refuse: t('erreur_refuse'),
     trop_de_requetes: t('erreur_trop'),
     serveur: t('erreur_serveur'),
   }
   const erreur = etat.erreur ? (messages[etat.erreur] ?? t('erreur_serveur')) : null
 
-  // Redirection en cours : éviter un aller-retour visuel où le formulaire
-  // clignote vide avant que la navigation ne parte.
-  if (etat.succes) return null
+  if (!pret || articles.length === 0 || etat.succes) return null
 
   return (
-    <form action={action} className="max-w-[520px] space-y-6 border-t border-ko-line pt-8">
+    <form action={action} className="max-w-[520px] space-y-6">
       <input type="hidden" name="locale" value={locale} />
       <input
         type="hidden"
@@ -117,23 +123,6 @@ export function FormulaireCommande({
       </label>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <Champ id="cmd-nom" libelle={t('nom')} obligatoire marqueur={t('champ_obligatoire')}>
-          <input id="cmd-nom" name="nom" required minLength={2} maxLength={120} autoComplete="name" className={CHAMP} />
-        </Champ>
-        <Champ id="cmd-email" libelle={t('email')} obligatoire marqueur={t('champ_obligatoire')}>
-          <input
-            id="cmd-email"
-            name="email"
-            type="email"
-            required
-            maxLength={200}
-            autoComplete="email"
-            className={CHAMP}
-          />
-        </Champ>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <Champ id="cmd-tel" libelle={t('telephone')} marqueur={t('champ_obligatoire')}>
           <input id="cmd-tel" name="telephone" type="tel" maxLength={40} autoComplete="tel" className={CHAMP} />
         </Champ>
@@ -142,9 +131,6 @@ export function FormulaireCommande({
         </Champ>
       </div>
 
-      {/* Mode de livraison — deux segments, même vocabulaire visuel que
-          ChoixOuiNon (FormulaireCandidature.tsx), sans le partager : deux
-          valeurs différentes, un seul endroit qui s'en sert. */}
       <fieldset>
         <legend className="label-mono mb-2 text-ko-muted">
           {t('mode_livraison')}
@@ -174,22 +160,22 @@ export function FormulaireCommande({
       </fieldset>
 
       {modeLivraison === 'expedition' && (
-        <Champ
-          id="cmd-adresse"
-          libelle={t('adresse_livraison')}
-          aide={t('adresse_livraison_aide')}
-          obligatoire
-          marqueur={t('champ_obligatoire')}
-        >
-          <textarea
-            id="cmd-adresse"
-            name="adresseLivraison"
-            required
-            rows={3}
-            maxLength={500}
-            className={cn(CHAMP, 'resize-y')}
-          />
-        </Champ>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <div className="sm:col-span-2">
+            <Champ id="cmd-adresse" libelle={t('adresse')} obligatoire marqueur={t('champ_obligatoire')}>
+              <input id="cmd-adresse" name="adresse" required maxLength={200} autoComplete="street-address" className={CHAMP} />
+            </Champ>
+          </div>
+          <Champ id="cmd-ville" libelle={t('ville')} obligatoire marqueur={t('champ_obligatoire')}>
+            <input id="cmd-ville" name="ville" required maxLength={100} autoComplete="address-level2" className={CHAMP} />
+          </Champ>
+          <Champ id="cmd-province" libelle={t('province')} obligatoire marqueur={t('champ_obligatoire')}>
+            <input id="cmd-province" name="province" required maxLength={100} autoComplete="address-level1" className={CHAMP} />
+          </Champ>
+          <Champ id="cmd-code-postal" libelle={t('code_postal')} obligatoire marqueur={t('champ_obligatoire')}>
+            <input id="cmd-code-postal" name="codePostal" required maxLength={20} autoComplete="postal-code" className={CHAMP} />
+          </Champ>
+        </div>
       )}
 
       {erreur && (
@@ -198,7 +184,7 @@ export function FormulaireCommande({
         </p>
       )}
 
-      <button type="submit" disabled={enCours} className={buttonVariants({ variant: 'primary' })}>
+      <button type="submit" disabled={enCours} className={cn(buttonVariants({ variant: 'primary' }))}>
         {enCours ? t('en_cours') : t('confirmer')}
         <span aria-hidden="true">→</span>
       </button>

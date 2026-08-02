@@ -10,16 +10,27 @@ import { rateLimit } from '@/lib/utils/rateLimit'
 import { schemaCommande } from '@/lib/validation'
 
 /**
- * Confirmation de commande — migration 0021.
+ * Confirmation de commande — migration 0021, déplacée ici lors de la
+ * simplification du parcours (Christian, 1er août 2026).
  *
  * ---------------------------------------------------------------------------
- * REMPLACE L'ENVOI VERS demandes_contact POUR CE PARCOURS
+ * POURQUOI CE FICHIER A DÉMÉNAGÉ DE boutique/demande/
  *
- * Avant cette tâche, « Confirmer ma sélection » menait à /contact?type=boutique
- * et le panier finissait en texte libre dans demandes_contact.message. Ça
- * reste le chemin des AUTRES types de demande (mandat, location, carrière,
- * autre) — inchangé. Ici seulement, le panier écrit désormais des lignes
- * réelles dans `commandes` / `lignes_commande`.
+ * /boutique/demande ne montre plus qu'un récapitulatif et un bouton — le
+ * formulaire (autrefois FormulaireCommande.tsx, supprimé) vit désormais sur
+ * CETTE route, /boutique/commande/details, une fois la connexion faite. Cette
+ * Server Action suit la page qui l'appelle réellement.
+ *
+ * ---------------------------------------------------------------------------
+ * NOM ET COURRIEL : LUS DEPUIS LA SESSION, PLUS DEPUIS LE FORMULAIRE
+ *
+ * FormulaireDetailsCommande ne les demande plus — ils viennent de
+ * `auth.getUser()`. Le nom est capturé UNE SEULE FOIS, à l'inscription
+ * (`user_metadata.nom`, voir connexion/actions-compte.ts) ; le courriel est
+ * celui du compte, immuable ici. Un compte créé AVANT ce changement n'a pas
+ * ce metadata — `nomClient()` s'en tire par le préfixe du courriel plutôt que
+ * de bloquer la commande pour un problème qui ne concerne aujourd'hui qu'un
+ * seul compte existant (voir le rapport de tâche).
  *
  * ---------------------------------------------------------------------------
  * CLIENT DE SESSION, PAS LA SERVICE ROLE KEY
@@ -49,6 +60,21 @@ function origine(): string {
   return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 }
 
+/**
+ * Nom à écrire dans commandes.nom (contrainte : 2 à 120 caractères).
+ *
+ * `user_metadata.nom` est la source normale depuis l'ajout du champ à
+ * l'inscription. Le repli sur la partie locale du courriel ne sert qu'aux
+ * comptes créés avant ce changement — un seul à ce jour.
+ */
+function nomClient(user: { email?: string; user_metadata?: Record<string, unknown> }): string {
+  const nom = user.user_metadata?.nom
+  if (typeof nom === 'string' && nom.trim().length >= 2) return nom.trim()
+
+  const local = user.email?.split('@')[0]?.trim()
+  return local && local.length >= 2 ? local : 'Client'
+}
+
 export async function creerCommande(
   _precedent: EtatCommande,
   donnees: FormData,
@@ -68,14 +94,15 @@ export async function creerCommande(
   /**
    * ⚠️ SESSION VÉRIFIÉE ICI — PAS SEULEMENT SUPPOSÉE PAR L'ÉCRAN.
    *
-   * PagePanier ne montre ce formulaire qu'une fois `connecte === true`, mais
-   * une Server Action reste invocable indépendamment de l'écran qui la
-   * déclare (voir lib/auth/garde.ts pour le même principe côté admin) : rien
-   * de ce qui vient du client n'est digne de confiance, y compris « cet écran
-   * ne s'affiche que si ». Sans session, la politique RLS `commandes_
-   * insertion_client` aurait de toute façon refusé l'écriture — ce contrôle
-   * ne fait que répondre proprement plutôt que de laisser échouer l'insertion
-   * plus bas avec un message technique.
+   * /boutique/commande/details redirige déjà vers /connexion si personne
+   * n'est authentifié (voir son page.tsx), mais une Server Action reste
+   * invocable indépendamment de l'écran qui la déclare (voir lib/auth/garde.ts
+   * pour le même principe côté admin) : rien de ce qui vient du client n'est
+   * digne de confiance, y compris « cette page ne s'affiche que si ». Sans
+   * session, la politique RLS `commandes_insertion_client` aurait de toute
+   * façon refusé l'écriture — ce contrôle ne fait que répondre proprement
+   * plutôt que de laisser échouer l'insertion plus bas avec un message
+   * technique.
    */
   const supabase = await createClient()
   const {
@@ -92,12 +119,13 @@ export async function creerCommande(
   }
 
   const analyse = schemaCommande.safeParse({
-    nom: donnees.get('nom'),
-    email: donnees.get('email'),
     telephone: donnees.get('telephone'),
     organisation: donnees.get('organisation'),
     modeLivraison: donnees.get('modeLivraison'),
-    adresseLivraison: donnees.get('adresseLivraison'),
+    adresse: donnees.get('adresse'),
+    ville: donnees.get('ville'),
+    codePostal: donnees.get('codePostal'),
+    province: donnees.get('province'),
     lignes: lignesBrutes,
     _hp: donnees.get('_hp'),
   })
@@ -131,6 +159,18 @@ export async function creerCommande(
 
   if (lignesValidees.length === 0) return { erreur: 'lignes' }
 
+  // Quatre champs distincts dans le formulaire, une seule colonne texte en
+  // base (commandes.adresse_livraison, 0021) — composée ici, jamais côté
+  // client, pour ne dépendre d'aucun format que le navigateur prétendrait
+  // avoir déjà assemblé.
+  const adresseLivraison =
+    analyse.data.modeLivraison === 'expedition'
+      ? `${analyse.data.adresse}, ${analyse.data.ville} (${analyse.data.province}) ${analyse.data.codePostal}`
+      : null
+
+  const nom = nomClient(user)
+  const email = user.email ?? ''
+
   let idCommande: string | null = null
 
   try {
@@ -138,12 +178,12 @@ export async function creerCommande(
       .from('commandes')
       .insert({
         client_id: user.id,
-        nom: analyse.data.nom,
-        email: analyse.data.email,
+        nom,
+        email,
         telephone: analyse.data.telephone ?? null,
         organisation: analyse.data.organisation ?? null,
         mode_livraison: analyse.data.modeLivraison,
-        adresse_livraison: analyse.data.adresseLivraison ?? null,
+        adresse_livraison: adresseLivraison,
       })
       .select('id, numero')
       .single()
@@ -176,7 +216,7 @@ export async function creerCommande(
     const cleResend = process.env.RESEND_API_KEY
 
     if (!cleResend) {
-      console.warn('[boutique/demande] RESEND_API_KEY absente — confirmation non envoyée')
+      console.warn('[boutique/commande/details] RESEND_API_KEY absente — confirmation non envoyée')
     } else {
       try {
         const { Resend } = await import('resend')
@@ -190,7 +230,7 @@ export async function creerCommande(
 
         await new Resend(cleResend).emails.send({
           from: 'KO-LAB <site@ko-lab.ca>',
-          to: analyse.data.email,
+          to: email,
           subject: `Confirmation de commande — ${data.numero}`,
           text: [
             `Commande ${data.numero}`,
@@ -209,11 +249,11 @@ export async function creerCommande(
           ].join('\n'),
         })
       } catch (err) {
-        console.error('[boutique/demande] échec envoi confirmation', err)
+        console.error('[boutique/commande/details] échec envoi confirmation', err)
       }
     }
   } catch (err) {
-    console.error('[boutique/demande] échec création commande', err)
+    console.error('[boutique/commande/details] échec création commande', err)
     return { erreur: 'serveur' }
   }
 

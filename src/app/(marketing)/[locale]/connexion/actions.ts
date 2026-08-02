@@ -34,9 +34,24 @@ const schema = z.object({
  * connexion en tremplin de redirection — le visiteur se connecte sur un
  * domaine qu'il reconnaît, puis atterrit ailleurs. On n'accepte donc qu'un
  * chemin interne commençant par une langue connue, jamais une URL absolue.
+ *
+ * ⚠️ Le défaut dépend du RÔLE, pas seulement de l'absence de `suivant`.
+ *
+ * Avant la simplification du parcours boutique : un compte 'client' sans
+ * `suivant` partait toujours vers `/compte`, ce qui était correct SEULEMENT
+ * parce que rien ne fournissait encore de `suivant` pour un client ordinaire.
+ * Depuis /boutique/commande/details, un vrai client arrive ICI avec un
+ * `suivant` bien réel — et il doit être honoré, pas ignoré au seul motif
+ * qu'il n'a pas de rôle d'équipe. Ce que le rôle décide encore, c'est le
+ * DÉFAUT en l'absence de `suivant`, pas si `suivant` compte.
+ *
+ * Ça n'ouvre rien de nouveau : un `suivant` pointant vers /admin resterait de
+ * toute façon bloqué par le layout et le proxy admin, qui protègent l'accès
+ * direct par URL — ce chemin-ci ne fait que choisir où rediriger APRÈS une
+ * connexion déjà réussie.
  */
-function destination(suivant: string | undefined, locale: string): string {
-  const defaut = `/${locale}/admin`
+function destination(suivant: string | undefined, locale: string, estEquipe: boolean): string {
+  const defaut = estEquipe ? `/${locale}/admin` : `/${locale}/compte`
   if (!suivant) return defaut
 
   // `//exemple.test` est un chemin relatif au protocole : il sort du site tout
@@ -103,8 +118,10 @@ export async function connecter(
      * chemin-ci.
      *
      * Un compte sans rôle d'équipe n'est PAS une erreur depuis l'ouverture de
-     * l'inscription publique : c'est le cas normal. Il part donc vers /compte,
-     * pas vers un écran de refus.
+     * l'inscription publique : c'est le cas normal. Sans `suivant`, il part
+     * vers /compte, pas vers un écran de refus — voir destination() ci-dessus
+     * pour le cas, désormais courant, où un `suivant` réel accompagne un
+     * compte client (retour vers /boutique/commande/details).
      */
     const { data: profil } = await supabase
       .from('profils')
@@ -113,10 +130,8 @@ export async function connecter(
       .single()
 
     const role = profil?.role
-    cible =
-      role && ROLES_EQUIPE.some((r) => r === role)
-        ? destination(String(donnees.get('suivant') ?? ''), locale)
-        : `/${locale}/compte`
+    const estEquipe = Boolean(role && ROLES_EQUIPE.some((r) => r === role))
+    cible = destination(String(donnees.get('suivant') ?? ''), locale, estEquipe)
   } catch (err) {
     console.error('[connexion] échec', err)
     return { erreur: 'serveur' }

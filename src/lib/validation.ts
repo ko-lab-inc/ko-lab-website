@@ -74,10 +74,18 @@ export const schemaLigneCommande = z.object({
  * Même discipline que schemaContact : partagé entre le formulaire et la
  * Server Action, bornes appliquées aux deux bouts.
  */
+/**
+ * ⚠️ NOM ET COURRIEL NE FONT PLUS PARTIE DE CE SCHÉMA.
+ *
+ * Depuis la simplification du parcours (Christian) : /boutique/commande/details
+ * ne les demande plus, creerCommande les lit directement depuis
+ * `auth.getUser()` — la session authentifiée, jamais un champ de formulaire
+ * que le navigateur pourrait omettre ou falsifier. Voir schemaInscription
+ * ci-dessus pour où le nom est désormais capturé (une seule fois, à
+ * l'inscription).
+ */
 export const schemaCommande = z
   .object({
-    nom: z.string().trim().min(2).max(120),
-    email: z.string().trim().email().max(200),
     telephone: z
       .string()
       .trim()
@@ -92,16 +100,45 @@ export const schemaCommande = z
       .transform((v) => (v === '' ? undefined : v)),
 
     modeLivraison: z.enum(MODES_LIVRAISON),
-    // ⚠️ `.nullish()`, pas `.optional()` — FormulaireCommande ne rend ce champ
-    // que si `modeLivraison === 'expedition'` : en ramassage, l'élément
-    // n'existe pas dans le DOM et `FormData.get('adresseLivraison')` renvoie
-    // `null` (pas `undefined`). `.optional()` seul rejette `null`
-    // (invalid_type), ce qui faisait échouer TOUTE commande en ramassage —
-    // le mode par défaut — à la validation, avant même d'atteindre la base.
-    adresseLivraison: z
+
+    /**
+     * Quatre champs distincts plutôt qu'un seul bloc libre — meilleure
+     * validation (un champ manquant se signale précisément) et meilleure UX
+     * qu'un pavé de texte. `creerCommande` les recompose en une seule chaîne
+     * avant l'écriture : `commandes.adresse_livraison` reste une colonne
+     * texte unique (0021), aucune migration nécessaire pour ce découpage
+     * côté formulaire.
+     *
+     * ⚠️ `.nullish()` sur les quatre, pas `.optional()` — même raison que
+     * l'ancien champ adresseLivraison unique (voir historique) :
+     * FormulaireDetailsCommande ne les rend dans le DOM QUE si
+     * `modeLivraison === 'expedition'`. En ramassage, `FormData.get()` sur un
+     * champ absent renvoie `null`, jamais `undefined` — `.optional()` seul
+     * rejette `null` et ferait échouer TOUTE commande en ramassage, le mode
+     * par défaut, exactement le bug déjà corrigé une fois sur l'ancien champ.
+     */
+    adresse: z
       .string()
       .trim()
-      .max(500)
+      .max(200)
+      .nullish()
+      .transform((v) => (v === '' || v === null ? undefined : v)),
+    ville: z
+      .string()
+      .trim()
+      .max(100)
+      .nullish()
+      .transform((v) => (v === '' || v === null ? undefined : v)),
+    codePostal: z
+      .string()
+      .trim()
+      .max(20)
+      .nullish()
+      .transform((v) => (v === '' || v === null ? undefined : v)),
+    province: z
+      .string()
+      .trim()
+      .max(100)
       .nullish()
       .transform((v) => (v === '' || v === null ? undefined : v)),
 
@@ -113,11 +150,24 @@ export const schemaCommande = z
     // testé dans l'action, jamais annoncé par un refus de validation.
     _hp: z.string().max(200).optional(),
   })
-  // Adresse exigée UNIQUEMENT si expédition — c'est la validation
-  // « côté application, pas contrainte SQL trop rigide » demandée pour 0021.
-  .refine((d) => d.modeLivraison !== 'expedition' || (d.adresseLivraison?.length ?? 0) >= 5, {
-    path: ['adresseLivraison'],
+  // Chacun des quatre champs d'adresse est exigé, mais SEULEMENT en
+  // expédition — un `.refine()` par champ pour que l'erreur pointe le champ
+  // précis (`path`) plutôt qu'un message générique sur toute l'adresse.
+  .refine((d) => d.modeLivraison !== 'expedition' || (d.adresse?.length ?? 0) >= 3, {
+    path: ['adresse'],
     message: 'adresse_requise',
+  })
+  .refine((d) => d.modeLivraison !== 'expedition' || (d.ville?.length ?? 0) >= 2, {
+    path: ['ville'],
+    message: 'ville_requise',
+  })
+  .refine((d) => d.modeLivraison !== 'expedition' || (d.codePostal?.length ?? 0) >= 3, {
+    path: ['codePostal'],
+    message: 'code_postal_requis',
+  })
+  .refine((d) => d.modeLivraison !== 'expedition' || (d.province?.length ?? 0) >= 2, {
+    path: ['province'],
+    message: 'province_requise',
   })
 
 export type DonneesCommande = z.infer<typeof schemaCommande>
@@ -176,6 +226,12 @@ export function motDePasseReprendCourriel(motDePasse: string, email: string): bo
 
 export const schemaInscription = z
   .object({
+    // Requis depuis la simplification du parcours commande (Christian) :
+    // creerCommande lit désormais nom/email depuis la session plutôt que
+    // depuis un formulaire de commande, donc le nom doit exister quelque part
+    // AVANT ce moment-là — nulle part ailleurs qu'ici, puisqu'il n'existe pas
+    // de page « profil » distincte pour le demander après coup.
+    nom: z.string().trim().min(2).max(120),
     email: z.string().trim().email().max(200),
     motDePasse: schemaMotDePasse,
     confirmation: z.string().max(200),

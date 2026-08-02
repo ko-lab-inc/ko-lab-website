@@ -52,6 +52,7 @@ export function FormulaireInscription({
    */
   suivant?: string
   libelles: {
+    nom: string
     courriel: string
     motDePasse: string
     aideMotDePasse: string
@@ -98,6 +99,16 @@ export function FormulaireInscription({
     <form action={action} className="mt-8 space-y-4">
       <input type="hidden" name="locale" value={locale} />
       {suivant && <input type="hidden" name="suivant" value={suivant} />}
+      <ChampAuth
+        id="nom"
+        name="nom"
+        type="text"
+        required
+        minLength={2}
+        maxLength={120}
+        autoComplete="name"
+        libelle={libelles.nom}
+      />
       <ChampAuth
         id="email"
         name="email"
