@@ -1,0 +1,72 @@
+-- =============================================================================
+-- 0027 — Retire TRUNCATE, TRIGGER, REFERENCES à anon et authenticated
+-- =============================================================================
+--
+-- ⚠️ À EXÉCUTER PAR MOUSSA DANS LE SQL EDITOR SUPABASE, projet ko-lab-site.
+--
+-- Trouvé le 2 août 2026, requête Zone 1 de `SKILL-securite-audit.md`
+-- (`information_schema.role_table_grants` pour `grantee = 'anon'`) : TRUNCATE,
+-- TRIGGER et/ou REFERENCES apparaissent sur au moins une table.
+--
+-- -----------------------------------------------------------------------------
+-- AUCUNE MIGRATION DE CE DÉPÔT NE LES A ACCORDÉS
+-- -----------------------------------------------------------------------------
+-- Vérifié en relisant les 26 migrations : chaque `grant` explicite à `anon`
+-- ou `authenticated` se limite à SELECT/INSERT/UPDATE/DELETE (`usage` pour la
+-- séquence de numérotation des commandes) — jamais TRUNCATE, TRIGGER ni
+-- REFERENCES, et aucun `grant ... to public` (le rôle, pas le schéma) qui
+-- aurait pu se répercuter sur `anon` par ce biais. Seul `service_role` reçoit
+-- `ALL PRIVILEGES` (0004), et c'est voulu — serveur uniquement, contourne déjà
+-- le RLS par construction. Ces trois privilèges viennent donc d'ailleurs :
+-- réglage par défaut du projet à sa création, ou un GRANT fait à la main hors
+-- migration, jamais tracé. Comme `rls_auto_enable` (0020) : origine inconnue,
+-- traité ici en le retirant plutôt qu'en cherchant à l'expliquer.
+--
+-- -----------------------------------------------------------------------------
+-- POURQUOI CES TROIS PRIVILÈGES PRÉCISÉMENT
+-- -----------------------------------------------------------------------------
+-- TRUNCATE  : vide une table entière d'un coup, sans passer par aucune policy
+--             RLS de suppression ligne par ligne — RLS ne s'applique qu'aux
+--             commandes DML normales (SELECT/INSERT/UPDATE/DELETE), pas à
+--             TRUNCATE. Un `anon` qui l'aurait pourrait vider `commandes` ou
+--             `demandes_contact` intégralement, RLS ou pas.
+-- REFERENCES: permet de créer une contrainte de clé étrangère POINTANT VERS
+--             cette table — sans usage légitime pour `anon`/`authenticated`
+--             sur ce projet, qui ne créent jamais de schéma.
+-- TRIGGER   : permet de créer un déclencheur SUR la table — un `anon` avec ce
+--             droit pourrait poser son propre trigger, y compris un trigger
+--             malveillant qui s'exécute à chaque écriture légitime.
+--
+-- -----------------------------------------------------------------------------
+-- POURQUOI SUR TOUTES LES TABLES, SANS CONNAÎTRE LA LISTE EXACTE
+-- -----------------------------------------------------------------------------
+-- `REVOKE` sur un privilège jamais accordé ne fait rien — ni erreur, ni effet.
+-- Le poser sur `all tables in schema public` est donc sûr même sans avoir
+-- sous les yeux le détail exact de la requête Zone 1 : ça ferme le trou
+-- partout où il existe, et ne casse rien là où il n'existait pas.
+-- =============================================================================
+
+revoke truncate, trigger, references on all tables in schema public from anon, authenticated;
+
+-- Pour que ce même trou ne réapparaisse pas sur une table créée par une
+-- future migration — même logique que le `alter default privileges ... grant
+-- select` de 0004, en sens inverse.
+alter default privileges in schema public
+  revoke truncate, trigger, references on tables from anon, authenticated;
+
+-- =============================================================================
+-- VÉRIFICATION
+-- =============================================================================
+--
+--   select table_name, privilege_type
+--   from information_schema.role_table_grants
+--   where grantee in ('anon', 'authenticated') and table_schema = 'public'
+--     and privilege_type in ('TRUNCATE', 'TRIGGER', 'REFERENCES')
+--   order by table_name, grantee;
+--
+-- Attendu : 0 ligne.
+--
+-- Non-régression — un test qui touche SELECT/INSERT/UPDATE/DELETE (audit-
+-- supabase.mjs, les tests e2e de commande) ne doit rien signaler de nouveau :
+-- ce correctif ne touche à aucun de ces quatre privilèges.
+-- =============================================================================

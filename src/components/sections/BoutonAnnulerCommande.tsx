@@ -28,7 +28,6 @@ export function BoutonAnnulerCommande({ id, locale }: { id: string; locale: stri
     <form
       action={action}
       onSubmit={(e) => {
-        // eslint-disable-next-line no-alert
         if (!window.confirm(t('confirmer_annulation'))) e.preventDefault()
       }}
     >

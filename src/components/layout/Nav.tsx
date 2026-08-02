@@ -43,10 +43,18 @@ export function Nav({
 
   // Referme les panneaux à chaque navigation : sans ça, le menu mobile reste
   // ouvert par-dessus la nouvelle page.
-  useEffect(() => {
+  //
+  // ⚠️ PENDANT LE RENDU, PAS DANS UN EFFET — motif recommandé par React pour
+  // « réinitialiser un état quand une prop change » (ici, le chemin) : un
+  // `setState` synchrone dans un effet déclenche un rendu superflu (rendu →
+  // effet → re-rendu), alors qu'un `setState` conditionnel pendant le rendu
+  // fait l'aller-retour en un seul passage.
+  const [cheminPrecedent, setCheminPrecedent] = useState(pathname)
+  if (pathname !== cheminPrecedent) {
+    setCheminPrecedent(pathname)
     setMenuOuvert(false)
     setCapacitesOuvert(false)
-  }, [pathname])
+  }
 
   // Bloque le défilement de l'arrière-plan pendant que le panneau mobile occupe
   // l'écran — sinon le contenu glisse derrière le menu au toucher.

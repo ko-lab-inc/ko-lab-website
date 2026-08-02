@@ -78,18 +78,23 @@ export function NavAdmin({
    * contenu de la page — il fallait les faire défiler pour atteindre
    * l'écran demandé. Relevé par Christian : « il n'y a pas de menu burger ».
    * Repliée par défaut et dépliée au clic, exactement comme Nav.tsx côté
-   * vitrine — mais SANS l'overlay plein écran de celle-ci : ici la nav vit
-   * dans le fil du document (elle pousse le contenu, elle ne le recouvre
-   * pas), ce qui suffit pour une aside qui n'a jamais à rivaliser avec un
-   * hero en dessous.
+   * vitrine — ET, depuis la demande de Christian du 2 août, avec le même
+   * overlay `fixed` plein écran que celle-ci (voir le panneau
+   * `#nav-admin-groupes` plus bas) : une aside qui pousse le contenu ne
+   * suffisait plus une fois la barre d'identité elle-même passée en `fixed`.
    */
   const [ouvert, setOuvert] = useState(false)
 
   // Repliée à chaque navigation : sinon elle reste ouverte par-dessus le
   // nouvel écran, même défaut que la nav publique sans cette synchronisation.
-  useEffect(() => {
+  //
+  // ⚠️ PENDANT LE RENDU, PAS DANS UN EFFET — voir Nav.tsx pour le détail du
+  // motif (React, « reset state on prop change ») : évite un rendu superflu.
+  const [cheminPrecedent, setCheminPrecedent] = useState(pathname)
+  if (pathname !== cheminPrecedent) {
+    setCheminPrecedent(pathname)
     setOuvert(false)
-  }, [pathname])
+  }
 
   /**
    * Bloque le défilement de l'arrière-plan pendant que le menu déplié occupe

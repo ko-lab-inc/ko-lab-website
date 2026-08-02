@@ -182,10 +182,14 @@ Tant qu'un outil est absent, la ligne correspondante du rapport est
   `information_schema.role_table_grants` dans l'éditeur SQL.
 - `rls_auto_enable` : origine inconnue. Lire sa définition avant tout appel ;
   si `SECURITY DEFINER` et exécutable par `anon`, révoquer.
-- Cloudflare strictement en frontal : à confirmer. Si oui, `cf-connecting-ip` est
-  fiable et le repli de `adresseDepuis()` sur `x-forwarded-for` n'est plus
-  exploitable — ce qui clôt le risque d'usurpation d'IP sur le rate limiting.
-- `/api/auth/confirmer` : aucun plafond de débit.
+- Cloudflare N'est PAS en frontal : `ko-lab-center.ca` est en DNS only (nuage
+  gris) sur son enregistrement Vercel — nécessaire pour le certificat SSL de
+  Vercel, mais `cf-connecting-ip` ne sera donc jamais présent. Testé quand
+  même le 2 août 2026 (`docs/audits/2026-08-02.md`) : 8 requêtes vers
+  `/api/contact` en production avec un `x-forwarded-for` FALSIFIÉ différent à
+  chaque appel se sont fait plafonner identiquement à une seule IP — Vercel
+  semble réécrire cet en-tête lui-même. Observé, pas garanti contractuellement :
+  ne pas construire de nouvelle défense qui en dépende sans re-tester.
 
 ---
 

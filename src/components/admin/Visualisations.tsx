@@ -159,33 +159,42 @@ export function AnneauSegments({
   // stroke-dasharray. Plus lisible que de calculer des arcs.
   const R = 15.915
   const CIRC = 100
-  let offset = 25 // décalage qui place le départ à midi plutôt qu'à 3 heures
+  const DEPART = 25 // décalage qui place le départ à midi plutôt qu'à 3 heures
+
+  // Décalages calculés à l'avance plutôt qu'en mutant une variable pendant le
+  // `.map()` de rendu : une variable modifiée pendant le rendu est fragile
+  // (React ne garantit ni l'ordre ni l'unicité d'exécution d'un rendu), même
+  // si ça fonctionnait ici en pratique. `reduce` construit la liste AVANT le
+  // JSX, le rendu lui-même reste pur.
+  const segmentsAvecDecalage = presents.reduce<{ segment: Segment; part: number; decalage: number }[]>(
+    (acc, segment) => {
+      const part = (segment.valeur / total) * CIRC
+      const precedent = acc.at(-1)
+      // L'offset se décale du segment précédent. Négatif parce que
+      // stroke-dashoffset avance dans le sens inverse du tracé.
+      const decalage = precedent ? precedent.decalage - precedent.part : DEPART
+      return [...acc, { segment, part, decalage }]
+    },
+    [],
+  )
 
   return (
     <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
       <div className="relative h-[140px] w-[140px] shrink-0">
         <svg viewBox="0 0 40 40" role="img" aria-label={`${libelleTotal} : ${total}`}>
-          {presents.map((s, i) => {
-            const part = (s.valeur / total) * CIRC
-            const dash = `${part} ${CIRC - part}`
-            const el = (
-              <circle
-                key={s.libelle}
-                cx="20"
-                cy="20"
-                r={R}
-                fill="none"
-                strokeWidth={5}
-                strokeDasharray={dash}
-                strokeDashoffset={offset}
-                className={trait(i)}
-              />
-            )
-            // L'offset se décale du segment précédent. Négatif parce que
-            // stroke-dashoffset avance dans le sens inverse du tracé.
-            offset -= part
-            return el
-          })}
+          {segmentsAvecDecalage.map(({ segment: s, part, decalage }, i) => (
+            <circle
+              key={s.libelle}
+              cx="20"
+              cy="20"
+              r={R}
+              fill="none"
+              strokeWidth={5}
+              strokeDasharray={`${part} ${CIRC - part}`}
+              strokeDashoffset={decalage}
+              className={trait(i)}
+            />
+          ))}
         </svg>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
           <span className="font-mono text-2xl text-ko-ink">{total}</span>

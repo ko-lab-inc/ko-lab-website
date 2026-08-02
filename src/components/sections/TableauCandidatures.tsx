@@ -18,6 +18,47 @@ import { cn } from '@/lib/utils/cn'
  * un fichier privé, téléchargeable par URL signée (voir actions.ts).
  */
 
+/**
+ * Bouton de téléchargement — un <form> : l'action renvoie une URL signée.
+ *
+ * On envoie l'IDENTIFIANT de la candidature, pas le chemin du fichier :
+ * l'action relit `cv_chemin` en base sous le RLS. Un chemin transmis d'ici
+ * serait une entrée utilisateur comme une autre.
+ *
+ * `rel="noopener"` : un `target="_blank"` ouvre un contexte qui garde une
+ * référence `window.opener`. Tous les autres liens du projet le posent ;
+ * ce formulaire était la seule exception.
+ *
+ * ⚠️ Défini ICI, hors de TableauCandidatures — un composant recréé à chaque
+ * rendu perd son état à chaque fois (react-hooks/static-components). `locale`
+ * et le libellé arrivent donc en props plutôt que par fermeture.
+ */
+function BoutonCv({
+  id,
+  nom,
+  locale,
+  libelle,
+}: {
+  id: string
+  nom: string
+  locale: string
+  libelle: string
+}) {
+  return (
+    <form action={telechargerCv} target="_blank" rel="noopener">
+      <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="id" value={id} />
+      <button
+        type="submit"
+        className="min-h-[36px] border-b border-ko-line pb-0.5 text-sm text-ko-blue transition-colors duration-200 hover:border-ko-blue"
+        title={`${libelle} — ${nom}`}
+      >
+        {libelle}
+      </button>
+    </form>
+  )
+}
+
 export type Candidature = {
   id: string
   nom: string
@@ -120,31 +161,6 @@ export function TableauCandidatures({
     el.addEventListener('close', fermer)
     return () => el.removeEventListener('close', fermer)
   }, [])
-
-  /**
-   * Bouton de téléchargement — un <form> : l'action renvoie une URL signée.
-   *
-   * On envoie l'IDENTIFIANT de la candidature, pas le chemin du fichier :
-   * l'action relit `cv_chemin` en base sous le RLS. Un chemin transmis d'ici
-   * serait une entrée utilisateur comme une autre.
-   *
-   * `rel="noopener"` : un `target="_blank"` ouvre un contexte qui garde une
-   * référence `window.opener`. Tous les autres liens du projet le posent ;
-   * ce formulaire était la seule exception.
-   */
-  const BoutonCv = ({ id, nom }: { id: string; nom: string }) => (
-    <form action={telechargerCv} target="_blank" rel="noopener">
-      <input type="hidden" name="locale" value={locale} />
-      <input type="hidden" name="id" value={id} />
-      <button
-        type="submit"
-        className="min-h-[36px] border-b border-ko-line pb-0.5 text-sm text-ko-blue transition-colors duration-200 hover:border-ko-blue"
-        title={`${textes.telecharger} — ${nom}`}
-      >
-        {textes.telecharger}
-      </button>
-    </form>
-  )
 
   return (
     <>
@@ -402,7 +418,7 @@ export function TableauCandidatures({
             <div className="mt-5 border-t border-ko-line pt-5">
               <p className="label-mono mb-2 text-ko-muted">{textes.cv}</p>
               {voir.cv_chemin ? (
-                <BoutonCv id={voir.id} nom={voir.nom} />
+                <BoutonCv id={voir.id} nom={voir.nom} locale={locale} libelle={textes.telecharger} />
               ) : (
                 <p className="text-sm text-ko-muted">{textes.cvAucun}</p>
               )}

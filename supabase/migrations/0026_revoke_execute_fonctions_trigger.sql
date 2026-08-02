@@ -1,0 +1,86 @@
+-- =============================================================================
+-- 0026 — Retire l'EXECUTE public sur les fonctions déclencheurs
+-- =============================================================================
+--
+-- ⚠️ À EXÉCUTER PAR MOUSSA DANS LE SQL EDITOR SUPABASE, projet ko-lab-site.
+--
+-- Trouvé le 2 août 2026 en exécutant la requête Zone 1 de
+-- `SKILL-securite-audit.md` (`select proname, proacl from pg_proc where ...
+-- prosecdef`) : `ajuster_stock_ligne_commande` (0023), `restaurer_stock_commande_annulee`
+-- (0023/0025) et `interdire_auto_promotion` (0019) ont un `proacl` NULL —
+-- Postgres l'interprète comme le privilège par défaut, EXECUTE accordé à
+-- PUBLIC (donc `anon` et `authenticated` via PostgREST). Les trois sont
+-- `SECURITY DEFINER` : elles s'exécutent avec les privilèges du propriétaire
+-- de la fonction, pas de l'appelant — exactement le motif d'escalade que
+-- `SKILL-securite-audit.md` demande de fermer.
+--
+-- -----------------------------------------------------------------------------
+-- CE QUE LA SONDE RÉELLE A MONTRÉ, ET POURQUOI ÇA NUANCE LE CORRECTIF
+-- -----------------------------------------------------------------------------
+-- Avant d'écrire ce fichier, sonde anon réelle sur les trois fonctions :
+--
+--   POST /rest/v1/rpc/ajuster_stock_ligne_commande      -> 404 PGRST202
+--   POST /rest/v1/rpc/interdire_auto_promotion          -> 404 PGRST202
+--   POST /rest/v1/rpc/restaurer_stock_commande_annulee  -> 404 PGRST202
+--
+-- Pas 401/403 — 404, « fonction introuvable ». PostgREST EXCLUT les fonctions
+-- `RETURNS TRIGGER` de son catalogue RPC exposé, indépendamment de tout GRANT :
+-- ce ne sont pas des fonctions qu'il sait appeler comme un `SELECT` normal
+-- (`NEW`/`OLD`/`TG_OP` n'existent que dans un contexte de déclencheur réel).
+-- PostgreSQL lui-même refuserait un appel direct avec la même erreur
+-- (« trigger functions can only be called as triggers »), et ce indépendamment
+-- des droits d'exécution.
+--
+-- Verdict : **pas exploitable aujourd'hui via /rpc/**, ni via PostgREST ni via
+-- un appel SQL direct. Ce correctif est de la défense en profondeur, pas la
+-- fermeture d'une faille active — il retire un privilège qui ne devrait
+-- jamais avoir été accordé, pour que `proacl` cesse de laisser croire le
+-- contraire au prochain audit, et pour rester protégé si un jour l'une de ces
+-- fonctions perdait son type `trigger` (une réécriture qui la transformerait
+-- en fonction normale réactiverait alors l'exposition RPC, SAUF si l'EXECUTE
+-- a déjà été retiré ici).
+--
+-- -----------------------------------------------------------------------------
+-- CE QUE CE CORRECTIF NE CASSE PAS
+-- -----------------------------------------------------------------------------
+-- Les déclencheurs eux-mêmes (`lignes_commande_ajuster_stock`,
+-- `commandes_restaurer_stock_annulee`, `profils_pas_auto_promotion`)
+-- continuent de fonctionner : le mécanisme de déclenchement de Postgres
+-- n'emprunte PAS le chemin GRANT/EXECUTE normal, il invoque directement la
+-- fonction pour le compte du moteur de triggers. Aucun test de ce projet
+-- (stock, annulation, anti-auto-promotion) n'est affecté.
+-- =============================================================================
+
+revoke execute on function public.ajuster_stock_ligne_commande() from public, anon, authenticated;
+revoke execute on function public.restaurer_stock_commande_annulee() from public, anon, authenticated;
+revoke execute on function public.interdire_auto_promotion() from public, anon, authenticated;
+
+-- =============================================================================
+-- VÉRIFICATION
+-- =============================================================================
+--
+-- 1. En SQL Editor — `proacl` ne doit plus être NULL pour les trois :
+--
+--      select proname, proacl from pg_proc
+--      where pronamespace = 'public'::regnamespace
+--        and proname in ('ajuster_stock_ligne_commande', 'restaurer_stock_commande_annulee', 'interdire_auto_promotion');
+--
+--    Attendu : un `proacl` non NULL, sans entrée pour `anon` ni `authenticated`.
+--
+-- 2. Sonde anon — le résultat attendu est le MÊME qu'avant ce correctif, 404,
+--    PAS 401/403 : PostgREST exclut ces fonctions de son catalogue RPC à
+--    cause de leur type `trigger`, ce que ce REVOKE ne change pas. Un 401/403
+--    ici indiquerait que PostgREST a changé de comportement, pas que ce
+--    correctif a échoué.
+--
+--      curl -s -o /dev/null -w '%{http_code}\n' \
+--        -X POST "$NEXT_PUBLIC_SUPABASE_URL/rest/v1/rpc/ajuster_stock_ligne_commande" \
+--        -H "apikey: $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+--        -H "Authorization: Bearer $NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+--        -H "Content-Type: application/json" -d '{}'
+--
+-- 3. Non-régression — vérifier qu'une vraie commande décrémente toujours le
+--    stock et qu'une annulation le restaure toujours (voir 0023, section
+--    VÉRIFICATION) : le REVOKE ne doit rien changer à ce comportement, les
+--    triggers ne passent pas par EXECUTE.
+-- =============================================================================

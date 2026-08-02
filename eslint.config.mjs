@@ -40,7 +40,7 @@ import nextTypeScript from 'eslint-config-next/typescript'
 
 const racine = dirname(fileURLToPath(import.meta.url))
 
-export default [
+const config = [
   {
     // Artefacts de build et sorties d'outils : jamais du code qu'on écrit.
     // `next-env.d.ts` est généré par Next et sa première ligne interdit de
@@ -67,6 +67,19 @@ export default [
     files: ['scripts/**/*.mjs', '*.config.{js,mjs,ts}'],
     rules: {
       'no-console': 'off',
+    },
+  },
+
+  {
+    // Convention déjà en usage dans le code (ex. `{ image: _image, ...l }`
+    // pour retirer un champ par déstructuration avant un insert) : un nom
+    // préfixé `_` dit explicitement « obligatoire ici, jamais lu ». Sans ce
+    // réglage, `@typescript-eslint/no-unused-vars` le signale quand même.
+    rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', destructuredArrayIgnorePattern: '^_' },
+      ],
     },
   },
 
@@ -98,3 +111,5 @@ export default [
     },
   },
 ]
+
+export default config

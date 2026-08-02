@@ -84,6 +84,12 @@ export default async function TableauDeBordPage({ params }: Props) {
   const format = await getFormatter({ locale })
   const supabase = await createClient()
 
+  // `react-hooks/purity` cible les composants CLIENT : un appel impur y
+  // produirait un rendu incohérent d'une reconciliation à l'autre. Ceci est
+  // un Server Component, exécuté une fois par requête, jamais réconcilié —
+  // relire l'heure actuelle pour une fenêtre glissante est le comportement
+  // voulu, pas un bug.
+  // eslint-disable-next-line react-hooks/purity
   const debutFenetre = new Date(Date.now() - (JOURS - 1) * 86_400_000)
   debutFenetre.setHours(0, 0, 0, 0)
 

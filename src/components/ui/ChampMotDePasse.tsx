@@ -39,7 +39,6 @@ export function ChampMotDePasse({
   aide,
   libelleAfficher,
   libelleMasquer,
-  className,
   ...props
 }: ComponentProps<'input'> & {
   id: string
