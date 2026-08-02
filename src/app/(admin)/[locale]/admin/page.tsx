@@ -189,9 +189,6 @@ export default async function TableauDeBordPage({ params }: Props) {
 
   const alertes = [
     produitsCatalogue.filter((p) => p.prix === null).length > 0 ? t('alerte_prix_absents') : null,
-    // Trois prix restent provisoires : X1-Carbon, xTool P2, xTool F1 — jamais
-    // confirmés sur une source officielle (voir 0007_catalogue_en_base.sql).
-    t('alerte_prix_provisoires'),
     process.env.RESEND_API_KEY ? null : t('alerte_smtp'),
     (nouvelles ?? 0) > 0 ? t('alerte_demandes', { n: nouvelles ?? 0 }) : null,
     produitsEnAttention > 0 ? t('alerte_stock', { n: produitsEnAttention }) : null,

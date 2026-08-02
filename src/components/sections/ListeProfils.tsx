@@ -116,6 +116,8 @@ export async function ListeProfils({
                     erreurRefuse: t('reserve_admin_texte'),
                     erreurSoiMeme: t('erreur_soi_meme'),
                     erreurServeur: t('erreur_lecture'),
+                    supprimer: t('action_supprimer_compte'),
+                    confirmerSuppression: t('confirmer_suppression_utilisateur'),
                   }}
                 />
               ))}

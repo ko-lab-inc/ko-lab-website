@@ -63,7 +63,8 @@ export type LibellesRealisation = {
   imagesTitre: string
   imagesVide: string
   imageAlt: string
-  imageOrdre: string
+  imageMonter: string
+  imageDescendre: string
   imageRetirer: string
   enregistrer: string
   creer: string
@@ -133,6 +134,26 @@ export function FormulaireRealisation({
     if (!image) return
     setSupprimees((urls) => [...urls, image.url])
     setImages((imgs) => imgs.filter((_, i) => i !== index))
+  }
+
+  /**
+   * Réordonne par échange avec la voisine — même geste que TableauVideos
+   * (deux flèches), pas un champ numérique : Christian l'avait déjà trouvé
+   * obscur sur le catalogue et il avait été retiré à cet endroit-là pour
+   * cette raison. `ordre` est renumérité par pas de 10 sur toute la série
+   * pour rester l'exact reflet de l'ordre d'affichage, jamais un nombre
+   * saisi à la main qui pourrait diverger de la position réelle.
+   */
+  function deplacerImage(index: number, sens: 'haut' | 'bas') {
+    setImages((imgs) => {
+      const cible = sens === 'haut' ? index - 1 : index + 1
+      if (cible < 0 || cible >= imgs.length) return imgs
+      const copie = [...imgs]
+      const tmp = copie[index]!
+      copie[index] = copie[cible]!
+      copie[cible] = tmp
+      return copie.map((img, i) => ({ ...img, ordre: i * 10 }))
+    })
   }
 
   const messages: Record<string, string> = {
@@ -214,38 +235,52 @@ export function FormulaireRealisation({
                 className="flex flex-wrap items-start gap-3 border border-ko-line p-3 sm:flex-nowrap"
               >
                 <input type="hidden" name={`image_url_${i}`} value={img.url} />
+                <input type="hidden" name={`image_ordre_${i}`} value={img.ordre} />
 
                 <div className="relative h-14 w-14 shrink-0 overflow-hidden border border-ko-line bg-ko-photo">
                   <Image src={img.url} alt="" fill sizes="56px" className="object-cover" />
                 </div>
 
-                <div className="grid min-w-0 flex-1 grid-cols-1 gap-2 sm:grid-cols-2">
-                  <label className="block">
-                    <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-ko-muted">
-                      {libelles.imageAlt}
-                    </span>
-                    <input
-                      name={`image_alt_${i}`}
-                      value={img.alt}
-                      onChange={(e) => actualiserImage(i, 'alt', e.target.value)}
-                      maxLength={200}
-                      className={CHAMP_PETIT}
-                    />
-                  </label>
+                <label className="block min-w-0 flex-1">
+                  <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-ko-muted">
+                    {libelles.imageAlt}
+                  </span>
+                  <input
+                    name={`image_alt_${i}`}
+                    value={img.alt}
+                    onChange={(e) => actualiserImage(i, 'alt', e.target.value)}
+                    maxLength={200}
+                    className={CHAMP_PETIT}
+                  />
+                </label>
 
-                  <label className="block">
-                    <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-ko-muted">
-                      {libelles.imageOrdre}
-                    </span>
-                    <input
-                      type="number"
-                      name={`image_ordre_${i}`}
-                      value={img.ordre}
-                      onChange={(e) => actualiserImage(i, 'ordre', Number(e.target.value))}
-                      step={10}
-                      className={CHAMP_PETIT}
-                    />
-                  </label>
+                {/* Ordre — deux flèches, comme TableauVideos : un champ
+                    numérique s'était déjà révélé obscur pour Christian sur le
+                    catalogue. Échange avec la voisine, jamais une valeur à
+                    deviner. */}
+                <div className="flex shrink-0 items-center gap-1">
+                  {[
+                    { sens: 'haut' as const, desactive: i === 0, label: libelles.imageMonter, rotation: '-rotate-45 border-l-2 border-t-2 mt-1' },
+                    { sens: 'bas' as const, desactive: i === images.length - 1, label: libelles.imageDescendre, rotation: 'rotate-45 border-b-2 border-r-2 mb-1' },
+                  ].map(({ sens, desactive, label, rotation }) => (
+                    <button
+                      key={sens}
+                      type="button"
+                      onClick={() => deplacerImage(i, sens)}
+                      disabled={desactive}
+                      aria-label={`${label} — ${img.alt || img.url}`}
+                      title={label}
+                      className="group flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue disabled:cursor-not-allowed disabled:text-ko-line"
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          'h-2 w-2 border-ko-muted transition-colors duration-200 group-hover:border-ko-blue group-disabled:border-ko-line',
+                          rotation,
+                        )}
+                      />
+                    </button>
+                  ))}
                 </div>
 
                 <button

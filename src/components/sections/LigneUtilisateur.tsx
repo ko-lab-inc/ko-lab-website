@@ -2,8 +2,13 @@
 
 import { useActionState } from 'react'
 
-import { changerRole, type EtatRole } from '@/app/(admin)/[locale]/admin/utilisateurs/actions'
+import {
+  changerRole,
+  supprimerUtilisateur,
+  type EtatRole,
+} from '@/app/(admin)/[locale]/admin/utilisateurs/actions'
 import { buttonVariants } from '@/components/ui/Button'
+import { IconePoubelle } from '@/components/ui/Icones'
 import { cn } from '@/lib/utils/cn'
 import type { Role } from '@/types'
 
@@ -44,6 +49,8 @@ export function LigneUtilisateur({
     erreurRefuse: string
     erreurSoiMeme: string
     erreurServeur: string
+    supprimer: string
+    confirmerSuppression: string
   }
 }) {
   const [etat, action, enCours] = useActionState<EtatRole, FormData>(changerRole, {})
@@ -71,32 +78,57 @@ export function LigneUtilisateur({
       </div>
 
       {peutModifier && !estSoi ? (
-        <form action={action} className="flex shrink-0 items-center gap-2">
-          <input type="hidden" name="id" value={id} />
-          <input type="hidden" name="locale" value={locale} />
-          <label htmlFor={`role-${id}`} className="sr-only">
-            {libelles.roles[role]}
-          </label>
-          <select
-            id={`role-${id}`}
-            name="role"
-            defaultValue={role}
-            className="min-h-[44px] border border-ko-line bg-ko-white px-3 text-sm text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none"
+        <div className="flex shrink-0 items-center gap-2">
+          <form action={action} className="flex items-center gap-2">
+            <input type="hidden" name="id" value={id} />
+            <input type="hidden" name="locale" value={locale} />
+            <label htmlFor={`role-${id}`} className="sr-only">
+              {libelles.roles[role]}
+            </label>
+            <select
+              id={`role-${id}`}
+              name="role"
+              defaultValue={role}
+              className="min-h-[44px] border border-ko-line bg-ko-white px-3 text-sm text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none"
+            >
+              {(Object.keys(libelles.roles) as Role[]).map((r) => (
+                <option key={r} value={r}>
+                  {libelles.roles[r]}
+                </option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              disabled={enCours}
+              className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+            >
+              {libelles.enregistrer}
+            </button>
+          </form>
+
+          {/* Suppression — même geste que TableauRealisations/TableauVideos :
+              un `confirm()` qui bloque la soumission au clic sur « Annuler ».
+              L'action elle-même revérifie admin + anti-auto-suppression côté
+              serveur (voir supprimerUtilisateur) : ce contrôle client n'est
+              qu'un confort d'affichage, pas la barrière. */}
+          <form
+            action={supprimerUtilisateur}
+            onSubmit={(e) => {
+              if (!confirm(`${libelles.confirmerSuppression}\n\n${courriel}`)) e.preventDefault()
+            }}
           >
-            {(Object.keys(libelles.roles) as Role[]).map((r) => (
-              <option key={r} value={r}>
-                {libelles.roles[r]}
-              </option>
-            ))}
-          </select>
-          <button
-            type="submit"
-            disabled={enCours}
-            className={buttonVariants({ variant: 'ghost', size: 'sm' })}
-          >
-            {libelles.enregistrer}
-          </button>
-        </form>
+            <input type="hidden" name="id" value={id} />
+            <input type="hidden" name="locale" value={locale} />
+            <button
+              type="submit"
+              aria-label={`${libelles.supprimer} — ${courriel}`}
+              title={libelles.supprimer}
+              className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
+            >
+              <IconePoubelle taille={17} />
+            </button>
+          </form>
+        </div>
       ) : (
         // Son propre compte, ou un éditeur qui regarde : le rôle reste lisible,
         // il n'est simplement pas modifiable ici.

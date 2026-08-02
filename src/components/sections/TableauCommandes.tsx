@@ -1,7 +1,7 @@
 'use client'
 
 import { changerStatutCommande } from '@/app/(admin)/[locale]/admin/commandes/actions'
-import { EnteteTableau, PanneauAdmin } from '@/components/layout/CadreAdmin'
+import { PanneauAdmin } from '@/components/layout/CadreAdmin'
 import type { StatutCommande } from '@/types'
 
 export type LigneTableauCommande = {
@@ -52,34 +52,52 @@ export function TableauCommandes({
         <p className="p-6 text-base leading-relaxed text-ko-muted">{textes.vide}</p>
       ) : (
         <>
-          <EnteteTableau
-            colonnes={[
-              textes.colonneNumero,
-              textes.colonneClient,
-              textes.colonneLivraison,
-              textes.colonneTotal,
-              textes.colonneCree,
-              textes.colonneStatut,
-            ]}
-          />
+          {/*
+            ⚠️ EN-TÊTE SUR MESURE, PAS EnteteTableau.
+
+            EnteteTableau donne toujours le `flex-1` à sa PREMIÈRE colonne —
+            convient à une liste à deux colonnes (voir ListeProfils.tsx), mais
+            ici c'est la DEUXIÈME (client) qui doit s'étirer, le numéro restant
+            de largeur fixe. Avec EnteteTableau, les libellés d'en-tête
+            (Client, Livraison, Total, Créé le, Statut) se retrouvaient tous
+            tassés à droite, décalés par rapport aux valeurs qu'ils décrivent
+            — constaté par Christian. Chaque colonne ci-dessous reprend
+            EXACTEMENT la largeur et les points de rupture (lg:/xl:) de sa
+            cellule dans <li> plus bas, pour que l'alignement tienne à tous
+            les gabarits d'écran.
+          */}
+          <div className="hidden border-b border-ko-line px-6 py-3 sm:flex sm:items-center sm:gap-x-4">
+            <span className="label-mono w-32 shrink-0 text-ko-muted">{textes.colonneNumero}</span>
+            <span className="label-mono min-w-0 flex-1 text-ko-muted">{textes.colonneClient}</span>
+            <span className="label-mono hidden w-32 shrink-0 text-ko-muted lg:block">
+              {textes.colonneLivraison}
+            </span>
+            <span className="label-mono hidden w-32 shrink-0 text-ko-muted xl:block">
+              {textes.colonneTotal}
+            </span>
+            <span className="label-mono hidden w-40 shrink-0 text-ko-muted xl:block">
+              {textes.colonneCree}
+            </span>
+            <span className="label-mono w-40 shrink-0 text-ko-muted">{textes.colonneStatut}</span>
+          </div>
           <ul className="divide-y divide-ko-line">
             {commandes.map((c) => (
               <li
                 key={c.id}
                 className="flex flex-wrap items-center gap-x-4 gap-y-3 px-6 py-4 transition-colors duration-200 hover:bg-ko-cream"
               >
-                <span className="min-w-0 shrink-0 font-mono text-sm text-ko-ink">{c.numero}</span>
+                <span className="w-32 shrink-0 truncate font-mono text-sm text-ko-ink">{c.numero}</span>
 
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-base text-ko-ink">{c.nom}</span>
                   <span className="block truncate font-mono text-xs text-ko-muted">{c.email}</span>
                 </span>
 
-                <span className="hidden shrink-0 text-sm text-ko-muted lg:block">
+                <span className="hidden w-32 shrink-0 text-sm text-ko-muted lg:block">
                   {c.mode_livraison === 'expedition' ? '↗' : '↓'} {c.mode_livraison}
                 </span>
 
-                <span className="hidden shrink-0 font-mono text-sm text-ko-ink xl:block">
+                <span className="hidden w-32 shrink-0 font-mono text-sm text-ko-ink xl:block">
                   {c.totalFormate ?? textes.totalSurDemande}
                 </span>
 
