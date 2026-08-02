@@ -65,11 +65,19 @@ export default async function CommandesPage({ params }: Props) {
     STATUTS_COMMANDE.map((s) => [s, t(`commande_statut_${s}`)]),
   )
 
-  const donnees = (commandes ?? []).map((c) => ({
-    ...c,
-    totalIndicatif: totauxParCommande.get(c.id) ?? null,
-    dateFormatee: format.dateTime(new Date(c.created_at), { dateStyle: 'medium', timeStyle: 'short' }),
-  }))
+  const donnees = (commandes ?? []).map((c) => {
+    const total = totauxParCommande.get(c.id) ?? null
+    return {
+      ...c,
+      // Formaté ICI, côté serveur — voir la note dans TableauCommandes.tsx
+      // sur pourquoi un useFormatter() client y provoquait un 500.
+      totalFormate:
+        total != null
+          ? format.number(total, { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })
+          : null,
+      dateFormatee: format.dateTime(new Date(c.created_at), { dateStyle: 'medium', timeStyle: 'short' }),
+    }
+  })
 
   return (
     <>

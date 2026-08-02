@@ -215,10 +215,13 @@ export function PagePanier({
         connexion, sur /boutique/commande/details.
 
         `connecte` vient de PanierContext (dérivé de /api/session) : déjà
-        connecté → direction la page de détails ; sinon → /connexion, avec
-        `suivant` pour revenir automatiquement une fois authentifié. Le
-        panier n'est jamais touché par cette navigation — seule
-        creerCommande, à la toute fin, le vide.
+        connecté → direction la page de détails. Sinon → /inscription
+        d'abord, pas /connexion — décision de Christian : la majorité des
+        visiteurs qui arrivent jusqu'ici n'ont pas encore de compte, autant
+        leur épargner un clic. /inscription porte son propre lien « Déjà un
+        compte ? Se connecter » qui reporte le même `suivant` (voir son
+        page.tsx) pour le sens inverse. Le panier n'est jamais touché par
+        cette navigation — seule creerCommande, à la toute fin, le vide.
       */}
       <div className="mt-10 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
         <button
@@ -229,7 +232,7 @@ export function PagePanier({
               return
             }
             const cible = `/${locale}${ROUTES.boutiqueCommandeDetails}`
-            router.push(`${ROUTES.connexion}?suivant=${encodeURIComponent(cible)}`)
+            router.push(`${ROUTES.inscription}?suivant=${encodeURIComponent(cible)}`)
           }}
           className={buttonVariants({ variant: 'primary' })}
         >

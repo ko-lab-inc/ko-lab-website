@@ -7,6 +7,7 @@ import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import { schemaInscription, schemaMotDePasse } from '@/lib/validation'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
+import { origine } from '@/lib/utils/origine'
 import { rateLimit } from '@/lib/utils/rateLimit'
 
 /**
@@ -44,11 +45,6 @@ export type EtatMotDePasse = { erreur?: 'donnees' | 'trop_de_tentatives' | 'serv
 
 async function adresse(): Promise<string> {
   return adresseDepuis(await headers())
-}
-
-/** URL de base pour les liens envoyés par courriel. */
-function origine(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 }
 
 /**
@@ -112,16 +108,22 @@ export async function inscrire(
         // depuis `auth.getUser().user_metadata.nom`, jamais depuis un
         // formulaire de commande, qui ne le demande plus.
         data: { nom: analyse.data.nom },
-        // Où Supabase renvoie après le clic sur le lien de validation. Cette
-        // URL doit figurer dans Authentication -> URL Configuration ->
-        // Redirect URLs, sinon Supabase refuse la redirection.
-        //
-        // `suivant` peut porter son propre `?type=boutique` (retour au panier
-        // après création de compte) : encodé ici, sinon son `?` casserait la
-        // query string de cette URL-ci. `/api/auth/confirmer` le décode et le
-        // revalide de toute façon avant de rediriger — cet encodage ne fait
-        // que le faire voyager intact jusque-là.
-        emailRedirectTo: `${origine()}/api/auth/confirmer?suivant=${encodeURIComponent(suivant ?? `/${locale}/compte`)}`,
+        /**
+         * ⚠️ CHEMIN PLAT — PAS /api/auth/confirmer ICI.
+         *
+         * Depuis le passage au gabarit token_hash (Supabase → Authentication
+         * → Emails → Templates → « Confirm signup »), c'est CE GABARIT qui
+         * construit l'URL vers /api/auth/confirmer avec token_hash, type=signup
+         * et suivant={{ .RedirectTo }} — cette valeur-ci EST le {{ .RedirectTo }}
+         * du gabarit, donc la destination finale, telle quelle, sans rien
+         * emballer autour. C'est /api/auth/confirmer lui-même qui décide
+         * d'imbriquer un passage par /connexion pour `type=signup` — voir sa
+         * note d'en-tête.
+         *
+         * Cette URL doit figurer dans Authentication -> URL Configuration ->
+         * Redirect URLs, sinon Supabase refuse la redirection.
+         */
+        emailRedirectTo: `${origine()}${suivant ?? `/${locale}/compte`}`,
       },
     })
 
@@ -178,8 +180,12 @@ export async function demanderReinitialisation(
 
   try {
     const supabase = await createClient()
+    // Chemin plat — même raison que emailRedirectTo dans inscrire() : le
+    // gabarit Supabase « Reset Password » construit désormais l'URL vers
+    // /api/auth/confirmer (token_hash, type=recovery, suivant={{ .RedirectTo }}),
+    // cette valeur-ci EST ce {{ .RedirectTo }}.
     await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${origine()}/api/auth/confirmer?suivant=/${locale}/mot-de-passe/nouveau`,
+      redirectTo: `${origine()}/${locale}/mot-de-passe/nouveau`,
     })
   } catch (err) {
     console.error('[reinitialisation] échec', err)

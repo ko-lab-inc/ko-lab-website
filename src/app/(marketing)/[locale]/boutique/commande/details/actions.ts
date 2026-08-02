@@ -2,6 +2,7 @@
 
 import { headers } from 'next/headers'
 
+import { gabaritConfirmationCommande } from '@/lib/email/gabaritCommande'
 import { lireProduitsPublies } from '@/lib/produits'
 import { routeCommande } from '@/lib/routes'
 import { createClient } from '@/lib/supabase/server'
@@ -153,6 +154,9 @@ export async function creerCommande(
         categorie: produit.categorie,
         quantite,
         prix_indicatif: produit.prixIndicatif,
+        // Uniquement pour le courriel de confirmation ci-dessous — pas une
+        // colonne de lignes_commande, exclue explicitement avant l'insertion.
+        image: produit.src,
       },
     ]
   })
@@ -193,7 +197,10 @@ export async function creerCommande(
 
     const { error: erreurLignes } = await supabase
       .from('lignes_commande')
-      .insert(lignesValidees.map((l) => ({ ...l, commande_id: idCommande! })))
+      // `image` retiré ici : c'est un champ pour le courriel plus bas, pas
+      // une colonne de la table — un insert qui la porterait échouerait
+      // (PostgREST refuse une colonne inconnue).
+      .insert(lignesValidees.map(({ image: _image, ...l }) => ({ ...l, commande_id: idCommande! })))
 
     if (erreurLignes) {
       // La commande existe déjà sans ses lignes : mieux vaut la marquer
@@ -222,31 +229,30 @@ export async function creerCommande(
         const { Resend } = await import('resend')
 
         const lienCommande = `${origine()}/${locale}${routeCommande(idCommande)}`
-        const resumeLignes = lignesValidees
-          .map((l) => `— ${l.nom_produit} × ${l.quantite}`)
-          .join('\n')
-        const libelleLivraison =
-          analyse.data.modeLivraison === 'expedition' ? 'Expédition' : 'Ramassage sur place'
+
+        // Gabarit illustré (produits, images, prix, politique de 48h) —
+        // demande de Christian après le premier courriel en texte brut.
+        const { html, text } = gabaritConfirmationCommande({
+          numero: data.numero,
+          lignes: lignesValidees.map((l) => ({
+            nom: l.nom_produit,
+            categorie: l.categorie,
+            quantite: l.quantite,
+            prix: l.prix_indicatif,
+            image: l.image,
+          })),
+          modeLivraison: analyse.data.modeLivraison,
+          adresseLivraison,
+          lienCommande,
+          origine: origine(),
+        })
 
         await new Resend(cleResend).emails.send({
           from: 'KO-LAB <site@ko-lab.ca>',
           to: email,
           subject: `Confirmation de commande — ${data.numero}`,
-          text: [
-            `Commande ${data.numero}`,
-            '',
-            resumeLignes,
-            '',
-            `Mode de livraison : ${libelleLivraison}`,
-            '',
-            `Vous pouvez ajouter des articles ou modifier les quantités pendant`,
-            `48 heures depuis votre compte — les prix ne sont pas encore`,
-            `finaux, on revient vers vous pour les confirmer :`,
-            lienCommande,
-            '',
-            `Si vous n'étiez pas connecté au moment d'ouvrir ce lien, on vous`,
-            `demandera de vous connecter avant d'afficher la commande.`,
-          ].join('\n'),
+          html,
+          text,
         })
       } catch (err) {
         console.error('[boutique/commande/details] échec envoi confirmation', err)

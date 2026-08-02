@@ -48,8 +48,26 @@ export default async function DemandesPage({ params }: Props) {
 
   const estAdmin = moi?.role === 'admin'
 
+  /**
+   * ⚠️ « boutique » et « carriere » retirés du FILTRE — pas de TYPES_DEMANDE
+   * lui-même.
+   *
+   * Demande de Christian : ces deux catégories sont désormais traitées par
+   * leurs propres écrans (/admin/commandes pour les commandes réelles,
+   * migration 0021 ; /admin/candidatures pour les candidatures, 0017),
+   * inutile de les proposer dans le filtre de cette boîte de réception
+   * générale.
+   *
+   * TYPES_DEMANDE lui-même reste INCHANGÉ : le lien « Demander le prix » des
+   * fiches produit (prix sur demande, sans passer par le panier) écrit encore
+   * `type: 'boutique'` dans demandes_contact — voir boutique/[slug]/page.tsx
+   * et CatalogueBoutique.tsx. Le rétrécir ici casserait ce mécanisme, distinct
+   * du parcours panier/commande. Une ligne existante de type boutique ou
+   * carriere continue de s'afficher (repli sur le mot brut, voir
+   * TableauDemandes.tsx), seule l'option de FILTRE disparaît.
+   */
   const libellesTypes: Record<string, string> = Object.fromEntries(
-    TYPES_DEMANDE.map((v) => [v, t(`type_${v}`)]),
+    TYPES_DEMANDE.filter((v) => v !== 'boutique' && v !== 'carriere').map((v) => [v, t(`type_${v}`)]),
   )
   const libellesStatuts: Record<string, string> = Object.fromEntries(
     STATUTS_DEMANDE.map((v) => [v, t(`statut_${v}`)]),

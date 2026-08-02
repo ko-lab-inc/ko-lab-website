@@ -1,7 +1,5 @@
 'use client'
 
-import { useFormatter } from 'next-intl'
-
 import { changerStatutCommande } from '@/app/(admin)/[locale]/admin/commandes/actions'
 import { EnteteTableau, PanneauAdmin } from '@/components/layout/CadreAdmin'
 import type { StatutCommande } from '@/types'
@@ -13,8 +11,14 @@ export type LigneTableauCommande = {
   email: string
   statut: string
   mode_livraison: string
-  totalIndicatif: number | null
-  /** Déjà formatée côté serveur — jamais une fonction en prop (RSC). */
+  /**
+   * ⚠️ Déjà formaté côté serveur, comme `dateFormatee` — PAS un `useFormatter()`
+   * ici. La section admin ne pose aucun `NextIntlClientProvider` (contrairement
+   * au site public) : tout composant client y appelant un hook next-intl
+   * échoue avec « context from NextIntlClientProvider was not found » — ce qui
+   * a produit un 500 sur /admin/commandes, constaté en reproduisant le bug.
+   */
+  totalFormate: string | null
   dateFormatee: string
 }
 
@@ -42,8 +46,6 @@ export function TableauCommandes({
     totalSurDemande: string
   }
 }) {
-  const format = useFormatter()
-
   return (
     <PanneauAdmin sansPadding>
       {commandes.length === 0 ? (
@@ -78,9 +80,7 @@ export function TableauCommandes({
                 </span>
 
                 <span className="hidden shrink-0 font-mono text-sm text-ko-ink xl:block">
-                  {c.totalIndicatif != null
-                    ? format.number(c.totalIndicatif, { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })
-                    : textes.totalSurDemande}
+                  {c.totalFormate ?? textes.totalSurDemande}
                 </span>
 
                 <span className="hidden w-40 shrink-0 font-mono text-xs text-ko-muted xl:block">

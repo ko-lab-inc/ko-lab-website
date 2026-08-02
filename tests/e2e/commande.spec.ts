@@ -9,12 +9,14 @@ import { expect, test, type APIRequestContext, type Page } from '@playwright/tes
  * CE QUI A CHANGÉ DEPUIS LA VERSION PRÉCÉDENTE DE CE FICHIER
  *
  * Plus de modale : /boutique/demande ne montre qu'un récapitulatif et un
- * bouton « Confirmer ma commande ». La connexion/inscription se fait par
- * VRAIE navigation de page (/connexion, /inscription), avec un `suivant` qui
- * ramène automatiquement vers /boutique/commande/details — la nouvelle page
- * qui demande téléphone, organisation, mode de livraison et adresse
- * (uniquement si expédition). Nom et courriel ne sont plus demandés nulle
- * part dans ce parcours : creerCommande les lit depuis la session.
+ * bouton « Valider ma commande ». La connexion/inscription se fait par VRAIE
+ * navigation de page — /inscription EN PREMIER (la majorité des visiteurs
+ * n'ont pas encore de compte), /connexion accessible par son lien réciproque
+ * — avec un `suivant` qui ramène automatiquement vers
+ * /boutique/commande/details une fois authentifié — la nouvelle page qui
+ * demande téléphone, organisation, mode de livraison et adresse (uniquement
+ * si expédition). Nom et courriel ne sont plus demandés nulle part dans ce
+ * parcours : creerCommande les lit depuis la session.
  *
  * ---------------------------------------------------------------------------
  * POURQUOI DES COMPTES RÉELS CRÉÉS PAR L'API ADMIN, PAS PAR /inscription
@@ -117,6 +119,22 @@ async function seConnecterViaPage(page: Page, email: string) {
   await page.getByRole('button', { name: /^Se connecter$/ }).click()
 }
 
+/**
+ * Clique « Valider ma commande » sur /boutique/demande, PUIS bascule de
+ * /inscription vers /connexion via le lien réciproque — décision de
+ * Christian : le clic mène d'abord à la CRÉATION de compte (la majorité des
+ * visiteurs n'en ont pas), avec un lien « Déjà un compte ? Se connecter » qui
+ * reporte le même `suivant`, pas l'inverse. Les comptes de ces tests étant
+ * déjà confirmés par l'API admin, on emprunte ce lien plutôt que de créer un
+ * second compte.
+ */
+async function allerVersConnexionDepuisLePanier(page: Page) {
+  await page.getByRole('button', { name: /Valider ma commande/ }).click()
+  await page.waitForURL('**/inscription**', { timeout: 10_000 })
+  await page.getByRole('link', { name: /Se connecter/i }).click()
+  await page.waitForURL('**/connexion**', { timeout: 10_000 })
+}
+
 test.describe('Confirmation de commande — parcours simplifié par navigation', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/fr/boutique')
@@ -128,7 +146,7 @@ test.describe('Confirmation de commande — parcours simplifié par navigation',
     await page.reload()
   })
 
-  test('1 · anonyme — Confirmer envoie vers /connexion avec suivant, panier intact', async ({ page }) => {
+  test('1 · anonyme — Valider envoie vers /inscription avec suivant, panier intact', async ({ page }) => {
     await ajouterUnProduit(page)
     await page.goto('/fr/boutique/demande')
 
@@ -136,35 +154,39 @@ test.describe('Confirmation de commande — parcours simplifié par navigation',
     // et le bouton, exactement la simplification demandée.
     await expect(page.getByLabel(/Téléphone/i)).toHaveCount(0)
 
-    await page.getByRole('button', { name: /Confirmer ma commande/ }).click()
-    await page.waitForURL('**/connexion**', { timeout: 10_000 })
+    await page.getByRole('button', { name: /Valider ma commande/ }).click()
+    // /inscription d'ABORD, pas /connexion — décision de Christian : la
+    // majorité des visiteurs qui arrivent ici n'ont pas encore de compte.
+    await page.waitForURL('**/inscription**', { timeout: 10_000 })
 
-    expect(page.url()).toContain('/connexion')
+    expect(page.url()).toContain('/inscription')
     expect(decodeURIComponent(page.url())).toContain('/boutique/commande/details')
 
-    // Le panier survit à l'aller vers /connexion — aucune navigation ne le vide.
+    // Le panier survit à cette navigation — aucune navigation ne le vide.
     const panier = await page.evaluate(() => {
       const cle = Object.keys(window.localStorage).find((c) => c.startsWith('kolab_panier'))
       return cle ? JSON.parse(window.localStorage.getItem(cle) ?? '[]') : []
     })
     expect(panier).toHaveLength(1)
 
-    // Le lien « Créer un compte » de /connexion doit reporter le même suivant.
-    const lienInscription = page.getByRole('link', { name: /Créer un compte/i })
-    await expect(lienInscription).toBeVisible()
-    expect(decodeURIComponent(await lienInscription.getAttribute('href') ?? '')).toContain(
+    // Le lien réciproque « Déjà un compte ? Se connecter » doit reporter le
+    // même suivant, pour le sens inverse.
+    const lienConnexion = page.getByRole('link', { name: /Se connecter/i })
+    await expect(lienConnexion).toBeVisible()
+    expect(decodeURIComponent(await lienConnexion.getAttribute('href') ?? '')).toContain(
       '/boutique/commande/details',
     )
   })
 
-  test('2 · anonyme → connexion → retour automatique → commande créée (ramassage)', async ({ page, request }) => {
+  test('2 · anonyme → inscription → connexion → retour automatique → commande créée (ramassage)', async ({
+    page,
+    request,
+  }) => {
     const compte = await creerCompteConfirme(request, 'flux')
 
     await ajouterUnProduit(page)
     await page.goto('/fr/boutique/demande')
-    await page.getByRole('button', { name: /Confirmer ma commande/ }).click()
-    await page.waitForURL('**/connexion**', { timeout: 10_000 })
-
+    await allerVersConnexionDepuisLePanier(page)
     await seConnecterViaPage(page, compte.email)
 
     // Retour AUTOMATIQUE sur la page de détails — pas de second clic, pas de
@@ -172,7 +194,7 @@ test.describe('Confirmation de commande — parcours simplifié par navigation',
     await page.waitForURL('**/boutique/commande/details', { timeout: 10_000 })
     await expect(page.getByRole('radio', { name: /Ramassage/i })).toBeChecked()
 
-    await page.getByRole('button', { name: /Confirmer ma commande/ }).click()
+    await page.getByRole('button', { name: /Valider ma commande/ }).click()
     await page.waitForURL('**/compte/commandes/**', { timeout: 15_000 })
     await expect(page.getByRole('heading', { name: /CMD-/ })).toBeVisible()
 
@@ -187,7 +209,7 @@ test.describe('Confirmation de commande — parcours simplifié par navigation',
     expect(panierRestant).toHaveLength(0)
   })
 
-  test('3 · déjà connecté — clic direct vers la page de détails, sans passer par /connexion', async ({
+  test('3 · déjà connecté — clic direct vers la page de détails, sans passer par /inscription ni /connexion', async ({
     browser,
     request,
   }) => {
@@ -208,9 +230,10 @@ test.describe('Confirmation de commande — parcours simplifié par navigation',
     await ajouterUnProduit(onglet2)
     await onglet2.goto('/fr/boutique/demande')
 
-    await onglet2.getByRole('button', { name: /Confirmer ma commande/ }).click()
+    await onglet2.getByRole('button', { name: /Valider ma commande/ }).click()
     await onglet2.waitForURL('**/boutique/commande/details', { timeout: 10_000 })
     expect(onglet2.url()).not.toContain('/connexion')
+    expect(onglet2.url()).not.toContain('/inscription')
 
     await contexte.close()
   })
@@ -220,8 +243,7 @@ test.describe('Confirmation de commande — parcours simplifié par navigation',
 
     await ajouterUnProduit(page)
     await page.goto('/fr/boutique/demande')
-    await page.getByRole('button', { name: /Confirmer ma commande/ }).click()
-    await page.waitForURL('**/connexion**', { timeout: 10_000 })
+    await allerVersConnexionDepuisLePanier(page)
     await seConnecterViaPage(page, compte.email)
     await page.waitForURL('**/boutique/commande/details', { timeout: 10_000 })
 
@@ -235,7 +257,7 @@ test.describe('Confirmation de commande — parcours simplifié par navigation',
     await page.getByLabel(/Province/i).fill('Québec')
     await page.getByLabel(/Code postal/i).fill('J8X 1A1')
 
-    await page.getByRole('button', { name: /Confirmer ma commande/ }).click()
+    await page.getByRole('button', { name: /Valider ma commande/ }).click()
 
     // `p[role="alert"]`, pas getByRole('alert') seul : Next.js injecte son
     // propre annonceur de route (`__next-route-announcer__`), lui aussi

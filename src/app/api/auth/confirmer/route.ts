@@ -5,9 +5,39 @@ import { createClient } from '@/lib/supabase/server'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
 
+import type { EmailOtpType } from '@supabase/supabase-js'
+
+/** Seules ces valeurs sont acceptées par verifyOtp — un `type` arbitraire venu de l'URL est une entrée hostile. */
+const TYPES_OTP_ACCEPTES = ['signup', 'invite', 'magiclink', 'recovery', 'email_change', 'email'] as const
+
 /**
  * Retour des liens envoyés par courriel — validation d'adresse et
  * réinitialisation de mot de passe.
+ *
+ * ---------------------------------------------------------------------------
+ * ⚠️ DEUX MÉCANISMES COEXISTENT ICI — token_hash (verifyOtp) ET code (PKCE)
+ *
+ * Constaté par Christian en testant réellement : un lien de confirmation
+ * ouvert sur un AUTRE appareil que celui où le compte a été créé échouait.
+ * Cause — documentée par Supabase : le flux PKCE (`{{ .ConfirmationURL }}`,
+ * `exchangeCodeForSession`) exige un cookie `code_verifier` posé sur LE MÊME
+ * navigateur au moment de l'inscription. Créer un compte au bureau et relever
+ * ses courriels sur téléphone — le cas courant chez KO-LAB — casse cette
+ * exigence par construction.
+ *
+ * `verifyOtp({ token_hash, type })` n'a besoin d'aucun cookie : le jeton se
+ * suffit à lui-même, vérifiable depuis n'importe quel appareil. C'est le
+ * mécanisme que les gabarits Supabase (Confirm signup, Reset Password)
+ * doivent désormais construire à la main avec `{{ .TokenHash }}` — voir le
+ * rapport de tâche pour le texte exact à coller dans le tableau de bord.
+ *
+ * Le chemin `code` reste géré, INCHANGÉ, pour les courriels déjà envoyés
+ * avant ce changement de gabarit : un lien qu'une personne n'a pas encore
+ * cliqué au moment du déploiement ne doit pas se retrouver mort. Une fois
+ * les deux gabarits Supabase basculés sur token_hash, plus aucun nouveau
+ * courriel n'emprunte ce chemin — il ne s'éteint jamais tout seul, il devient
+ * simplement inutilisé.
+ * ---------------------------------------------------------------------------
  *
  * ---------------------------------------------------------------------------
  * POURQUOI SOUS /api ET NON SOUS /[locale]
@@ -26,6 +56,8 @@ import { rateLimit } from '@/lib/utils/rateLimit'
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl
   const code = searchParams.get('code')
+  const tokenHash = searchParams.get('token_hash')
+  const typeBrut = searchParams.get('type')
 
   /**
    * ⚠️ PLAFOND DE DÉBIT — AVANT TOUT TRAITEMENT.
@@ -93,11 +125,43 @@ export async function GET(request: NextRequest) {
 
   const langue = routing.locales.some((l) => l === premier) ? premier : routing.defaultLocale
 
+  const supabase = await createClient()
+
+  /**
+   * ⚠️ token_hash EN PREMIER — c'est le mécanisme insensible à l'appareil.
+   *
+   * `type` conditionne aussi la redirection : `recovery` va DIRECTEMENT vers
+   * `suivant` (la page /mot-de-passe/nouveau a besoin de la session
+   * temporaire tout de suite — imposer une reconnexion manuelle n'aurait pas
+   * de sens, la personne ne connaît justement pas son mot de passe actuel).
+   * Tout le reste, `signup` en tête, passe par /connexion — décision de
+   * Christian, revue le 1er août 2026 : jamais enchaîner tout seul après une
+   * confirmation, même si verifyOtp vient d'établir une session valide.
+   */
+  if (tokenHash && typeBrut && (TYPES_OTP_ACCEPTES as readonly string[]).includes(typeBrut)) {
+    const { error } = await supabase.auth.verifyOtp({
+      token_hash: tokenHash,
+      type: typeBrut as EmailOtpType,
+    })
+
+    if (error) {
+      console.error('[auth/confirmer] verifyOtp refusé', error.message)
+      return NextResponse.redirect(`${origin}/${langue}/connexion?lien=invalide`)
+    }
+
+    const destination =
+      typeBrut === 'recovery' ? suivant : `/${langue}/connexion?suivant=${encodeURIComponent(suivant)}`
+    return NextResponse.redirect(`${origin}${destination}`)
+  }
+
   if (!code) {
     return NextResponse.redirect(`${origin}/${langue}/connexion?lien=invalide`)
   }
 
-  const supabase = await createClient()
+  // Mécanisme PKCE hérité — voir la note d'en-tête sur pourquoi il reste ici,
+  // inchangé, plutôt que d'être retiré. Toujours direct vers `suivant` tel
+  // quel : sans `type` disponible ici, impossible de distinguer signup de
+  // recovery pour décider d'un passage par /connexion.
   const { error } = await supabase.auth.exchangeCodeForSession(code)
 
   if (error) {
