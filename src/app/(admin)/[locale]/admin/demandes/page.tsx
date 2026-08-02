@@ -98,7 +98,7 @@ export default async function DemandesPage({ params }: Props) {
 
   return (
     <>
-      <EnteteAdmin titre={t('demandes_titre')} intro={t('demandes_intro')} />
+      <EnteteAdmin titre={t('demandes_titre')} />
 
       <TableauDemandes
         locale={locale}

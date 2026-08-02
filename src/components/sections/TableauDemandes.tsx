@@ -214,7 +214,25 @@ export function TableauDemandes({
                 <form action={changerStatutDemande} className="w-36 shrink-0">
                   <input type="hidden" name="locale" value={locale} />
                   <input type="hidden" name="id" value={d.id} />
+                  {/*
+                    ⚠️ `key={d.statut}` — constaté par Christian : après avoir
+                    choisi « Traité », le menu revenait tout seul sur « Lu »
+                    (l'écriture en base avait pourtant réussi, visible en
+                    changeant d'écran puis en revenant). Cause : React
+                    RÉINITIALISE un formulaire non contrôlé après qu'une
+                    Server Action a résolu — mais ce reset applique le
+                    `defaultValue` du rendu PRÉCÉDENT la révalidation, pas
+                    encore la valeur fraîche. Un `<select>` non contrôlé
+                    ignore aussi tout changement de `defaultValue` une fois
+                    monté (comportement React documenté), donc rien ne le
+                    corrigeait ensuite — jusqu'à un remontage complet (changer
+                    d'écran). En liant `key` à la valeur, React démonte et
+                    remonte le `<select>` dès que `d.statut` change réellement
+                    (données fraîches après révalidation), qui applique alors
+                    le bon `defaultValue` sans attendre une navigation.
+                  */}
                   <select
+                    key={d.statut}
                     name="statut"
                     defaultValue={d.statut}
                     onChange={(e) => e.currentTarget.form?.requestSubmit()}

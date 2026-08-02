@@ -211,7 +211,13 @@ export function TableauCandidatures({
                 <form action={changerStatutCandidature} className="w-36 shrink-0">
                   <input type="hidden" name="locale" value={locale} />
                   <input type="hidden" name="id" value={c.id} />
+                  {/* `key={c.statut}` — voir TableauDemandes.tsx pour le
+                      détail : sans lui, le menu revient visuellement sur
+                      l'ancien statut après un changement, même si l'écriture
+                      a réussi (comportement de reset des formulaires non
+                      contrôlés de React). */}
                   <select
+                    key={c.statut}
                     name="statut"
                     defaultValue={c.statut}
                     onChange={(e) => e.currentTarget.form?.requestSubmit()}

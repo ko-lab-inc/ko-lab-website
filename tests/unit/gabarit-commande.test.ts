@@ -45,8 +45,8 @@ describe('gabaritConfirmationCommande', () => {
       lignes: LIGNES,
       modeLivraison: 'expedition',
       adresseLivraison: '123 rue Test, Gatineau (Québec) J8X 1A1',
-      lienCommande: 'https://ko-lab.ca/fr/compte/commandes/abc-123',
-      origine: 'https://ko-lab.ca',
+      lienCommande: 'https://ko-lab-center.ca/fr/compte/commandes/abc-123',
+      origine: 'https://ko-lab-center.ca',
     })
 
     // Numéro en gros titre — même traitement que /compte/commandes/[id].
@@ -71,10 +71,10 @@ describe('gabaritConfirmationCommande', () => {
     }).format(5800)
     expect(html).toContain(totalAttendu)
     expect(html).toContain('123 rue Test')
-    expect(html).toContain('https://ko-lab.ca/fr/compte/commandes/abc-123')
-    expect(html).toContain('https://ko-lab.ca/images/produits/bambu-x1-carbon.webp')
+    expect(html).toContain('https://ko-lab-center.ca/fr/compte/commandes/abc-123')
+    expect(html).toContain('https://ko-lab-center.ca/images/produits/bambu-x1-carbon.webp')
     expect(html).toContain('https://exemple.supabase.co/storage/v1/object/public/produits/conteneur.webp')
-    expect(html).not.toContain('https://ko-lab.cahttps://')
+    expect(html).not.toContain('https://ko-lab-center.cahttps://')
     expect(html).not.toMatch(/<script/i)
 
     // Rien qui n'est vrai pour KO-LAB aujourd'hui — voir la note d'en-tête.
@@ -101,8 +101,8 @@ describe('gabaritConfirmationCommande', () => {
       lignes: [LIGNES[0]!],
       modeLivraison: 'ramassage',
       adresseLivraison: null,
-      lienCommande: 'https://ko-lab.ca/fr/compte/commandes/xyz',
-      origine: 'https://ko-lab.ca',
+      lienCommande: 'https://ko-lab-center.ca/fr/compte/commandes/xyz',
+      origine: 'https://ko-lab-center.ca',
     })
 
     expect(html).toContain('Ramassage sur place')
@@ -117,8 +117,8 @@ describe('gabaritConfirmationCommande', () => {
       lignes: [{ nom: '<b>Injecté</b> & Cie', categorie: 'Test', quantite: 1, prix: 10, image: null }],
       modeLivraison: 'ramassage',
       adresseLivraison: null,
-      lienCommande: 'https://ko-lab.ca/fr/compte/commandes/xyz',
-      origine: 'https://ko-lab.ca',
+      lienCommande: 'https://ko-lab-center.ca/fr/compte/commandes/xyz',
+      origine: 'https://ko-lab-center.ca',
     })
 
     expect(html).not.toContain('<b>Injecté</b>')

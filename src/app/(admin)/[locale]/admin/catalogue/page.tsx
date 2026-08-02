@@ -101,7 +101,7 @@ export default async function CataloguePage({ params }: Props) {
 
   return (
     <>
-      <EnteteAdmin titre={t('catalogue_titre')} intro={t('catalogue_intro')} />
+      <EnteteAdmin titre={t('catalogue_titre')} />
 
       <TableauProduits
         locale={locale}

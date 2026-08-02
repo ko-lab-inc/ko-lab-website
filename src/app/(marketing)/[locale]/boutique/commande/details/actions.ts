@@ -280,7 +280,7 @@ export async function creerCommande(
         })
 
         await new Resend(cleResend).emails.send({
-          from: 'KO-LAB <site@ko-lab.ca>',
+          from: 'KO-LAB <site@ko-lab-center.ca>',
           to: email,
           subject: `Confirmation de commande — ${data.numero}`,
           html,

@@ -91,6 +91,25 @@ export function NavAdmin({
     setOuvert(false)
   }, [pathname])
 
+  /**
+   * Bloque le défilement de l'arrière-plan pendant que le menu déplié occupe
+   * l'écran — même motif que Nav.tsx (nav publique). Demande de Christian :
+   * ouvrir le menu affichait la liste au milieu d'un défilement de PAGE déjà
+   * en cours (ex. Tableau de bord scrollé), donc une moitié de sous-menu
+   * mélangée à du contenu de page — plutôt qu'une liste complète, depuis le
+   * haut. `max-h-[calc(100svh-60px)] overflow-y-auto` sur le panneau
+   * ci-dessous (60px = hauteur de la barre fixe) fait que c'est LUI qui
+   * défile en interne si la liste dépasse, jamais la page derrière.
+   */
+  useEffect(() => {
+    if (!ouvert) return
+    const precedent = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = precedent
+    }
+  }, [ouvert])
+
   return (
     <nav className="lg:sticky lg:top-8">
       {/*
@@ -151,11 +170,25 @@ export function NavAdmin({
         </button>
       </div>
 
+      {/*
+        ⚠️ `fixed`, PAS un panneau en fil du document — deuxième correction
+        du même problème. Un premier essai (hauteur plafonnée + défilement de
+        la PAGE bloqué) ne suffisait pas : si la page était déjà défilée
+        avant l'ouverture (ex. au milieu du tableau de bord), le panneau
+        s'ouvrait bien, mais à SA position naturelle dans le document — plus
+        haut que ce que l'écran montrait à ce moment-là. Constaté en testant
+        un vrai scroll AVANT d'ouvrir le menu, pas juste menu fermé → ouvert
+        depuis le haut de page. `fixed inset-x-0 top-[60px] bottom-0` ancre
+        le panneau au VIEWPORT, jamais à la position de défilement du
+        document — il apparaît systématiquement en entier, quel que soit
+        l'endroit de la page où on se trouvait.
+      */}
       <div
         id="nav-admin-groupes"
         className={cn(
           !ouvert && 'hidden',
-          'border-b border-ko-line-d px-4 py-6 lg:block lg:border-b-0 lg:p-0 lg:pt-6',
+          'fixed inset-x-0 top-[60px] bottom-0 z-20 overflow-y-auto border-b border-ko-line-d bg-ko-black px-4 py-6',
+          'lg:static lg:inset-auto lg:z-auto lg:block lg:h-auto lg:overflow-visible lg:border-b-0 lg:bg-transparent lg:p-0 lg:pt-6',
         )}
       >
         {groupes.map((groupe) => (

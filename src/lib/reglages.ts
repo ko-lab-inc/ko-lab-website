@@ -61,7 +61,7 @@ export type Reglages = {
  */
 function repli(): Reglages {
   return {
-    contactCourriel: 'info@ko-lab.ca',
+    contactCourriel: 'info@ko-lab-center.ca',
     contactTelephone: '',
     contactRegion: 'Outaouais, Québec',
     // Comparaison stricte à 'true' : une variable absente, vide ou mal

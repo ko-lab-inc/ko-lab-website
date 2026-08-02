@@ -450,7 +450,7 @@
     "rh_label": "Ressources humaines",
     "rh_titre": "Des questions concernant le recrutement ?",
     "rh_texte": "Écrivez-nous directement : nous répondons habituellement dans les 48 heures ouvrables.",
-    "rh_courriel": "rh@ko-lab.ca",
+    "rh_courriel": "rh@ko-lab-center.ca",
     "postuler_titre": "Candidature",
     "postuler_intro": "Nous ne bâtissons pas seulement des projets. Nous bâtissons une équipe. Prenez quelques minutes pour nous parler de vous, de votre expérience et du type de projets qui vous intéressent.",
     "postuler_retour": "Retour aux postes",
@@ -487,7 +487,7 @@
       "erreur_donnees": "Vérifiez les champs obligatoires : il en manque un, ou l'un d'eux est mal rempli.",
       "erreur_cv": "Le CV n'a pas pu être envoyé. Vérifiez que c'est un PDF, un DOC ou un DOCX de moins de 10 Mo.",
       "erreur_trop": "Trop de candidatures envoyées depuis cet appareil. Patientez quelques minutes.",
-      "erreur_serveur": "L'envoi a échoué. Réessayez, ou écrivez-nous à rh@ko-lab.ca."
+      "erreur_serveur": "L'envoi a échoué. Réessayez, ou écrivez-nous à rh@ko-lab-center.ca."
     },
     "type_temps_plein": "Temps plein",
     "type_temps_partiel": "Temps partiel",
@@ -671,7 +671,6 @@
     "commande_statut_completee": "Complétée",
     "commande_statut_annulee": "Annulée",
     "demandes_titre": "Demandes",
-    "demandes_intro": "Les messages reçus depuis le formulaire de contact et les demandes de prix de la boutique. Changez le statut pour suivre où vous en êtes.",
     "demandes_vide_filtre": "Aucune demande ne correspond à ce filtre.",
     "demandes_recherche_placeholder": "Rechercher (nom, courriel, message)…",
     "demandes_recherche_label": "Rechercher dans les demandes",
@@ -757,7 +756,6 @@
     "livreurs_intro": "Personnel de livraison, interne ou externe. Le rôle s'attribue ici ; ses droits d'accès restent à définir (voir la migration 0006).",
     "livreurs_vide": "Aucun livreur. Attribuez le rôle depuis la liste des utilisateurs.",
     "nb_comptes": "{n, plural, one {# compte} other {# comptes}}.",
-    "catalogue_intro": "Les douze produits de la boutique. La publication décide de ce que voit le public : un produit incomplet reste hors ligne.",
     "catalogue_vide": "Aucun produit. Ajoutez-en un avec le formulaire ci-dessous.",
     "catalogue_recherche_label": "Rechercher dans le catalogue",
     "catalogue_recherche_placeholder": "Rechercher un produit…",
@@ -935,7 +933,7 @@
     "envoi": "Envoi…",
     "succes_titre": "Message reçu.",
     "succes_texte": "On revient vers vous à l'adresse indiquée.",
-    "erreur": "L'envoi a échoué. Réessayez, ou écrivez directement à info@ko-lab.ca."
+    "erreur": "L'envoi a échoué. Réessayez, ou écrivez directement à info@ko-lab-center.ca."
   },
   "Compte": {
     "titre": "Mon compte",
@@ -966,7 +964,7 @@
     "erreur_faible": "Ce mot de passe est trop facile à deviner. Évitez les mots courants et votre adresse courriel.",
     "erreur_tentatives": "Trop de tentatives. Réessayez dans une heure.",
     "erreur_refuse": "La création de compte est momentanément fermée.",
-    "erreur_courriel": "Le courriel de validation n'a pas pu être envoyé. Ce n'est pas vous : réessayez plus tard, ou écrivez à info@ko-lab.ca.",
+    "erreur_courriel": "Le courriel de validation n'a pas pu être envoyé. Ce n'est pas vous : réessayez plus tard, ou écrivez à info@ko-lab-center.ca.",
     "erreur_serveur": "La création a échoué. Réessayez plus tard.",
     "deja_compte": "Vous avez déjà un compte ?",
     "se_connecter": "Se connecter",
@@ -1014,7 +1012,7 @@
     "erreur_tentatives": "Trop de tentatives. Réessayez dans quelques minutes.",
     "erreur_serveur": "La connexion a échoué. Réessayez, ou prévenez Moussa si ça persiste.",
     "refus_role_titre": "Accès non ouvert",
-    "refus_role_texte": "Votre compte fonctionne, mais l'espace de gestion n'est pas encore ouvert pour lui. Écrivez à info@ko-lab.ca si c'est une erreur.",
+    "refus_role_texte": "Votre compte fonctionne, mais l'espace de gestion n'est pas encore ouvert pour lui. Écrivez à info@ko-lab-center.ca si c'est une erreur.",
     "retour": "Retour au site",
     "afficher_mot_de_passe": "Afficher le mot de passe",
     "masquer_mot_de_passe": "Masquer le mot de passe"

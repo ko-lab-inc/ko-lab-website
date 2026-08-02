@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
       const { contactCourriel } = await lireReglages()
 
       await new Resend(cleResend).emails.send({
-        from: 'KO-LAB <site@ko-lab.ca>',
+        from: 'KO-LAB <site@ko-lab-center.ca>',
         to: contactCourriel,
         replyTo: donnees.email,
         subject: `Nouvelle demande — ${donnees.type}`,

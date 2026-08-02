@@ -200,7 +200,7 @@ const nextConfig: NextConfig = {
         // CORS restrictif sur les API — skill 25.
         source: '/api/:path*',
         headers: [
-          { key: 'Access-Control-Allow-Origin', value: 'https://ko-lab.ca' },
+          { key: 'Access-Control-Allow-Origin', value: 'https://ko-lab-center.ca' },
           { key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
         ],

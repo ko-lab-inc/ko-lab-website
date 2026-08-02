@@ -20,7 +20,7 @@
  * produit un lien qui pointe au moins vers le bon déploiement, sans
  * intervention. `NEXT_PUBLIC_SITE_URL` reste néanmoins la source à
  * PRIVILÉGIER en production : `VERCEL_URL` y vaut le nom `*.vercel.app`
- * généré automatiquement, jamais ko-lab.ca.
+ * généré automatiquement, jamais ko-lab-center.ca.
  * ---------------------------------------------------------------------------
  */
 export function origine(): string {

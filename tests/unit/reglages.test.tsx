@@ -51,7 +51,7 @@ const LIBELLES = {
 }
 
 const REGLAGES = {
-  contactCourriel: 'info@ko-lab.ca',
+  contactCourriel: 'info@ko-lab-center.ca',
   contactTelephone: '',
   contactRegion: 'Outaouais, Québec',
   panierActif: true,
@@ -66,7 +66,7 @@ describe('FormulaireReglages', () => {
   it('présente les valeurs en vigueur', () => {
     monter()
 
-    expect(screen.getByLabelText('Courriel de contact')).toHaveValue('info@ko-lab.ca')
+    expect(screen.getByLabelText('Courriel de contact')).toHaveValue('info@ko-lab-center.ca')
     expect(screen.getByLabelText('Secteur')).toHaveValue('Outaouais, Québec')
     // Téléphone vide : c'est une valeur voulue, pas une absence.
     expect(screen.getByLabelText('Téléphone')).toHaveValue('')

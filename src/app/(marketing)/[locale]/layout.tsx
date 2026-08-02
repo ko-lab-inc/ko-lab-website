@@ -70,7 +70,7 @@ const jetbrainsMono = JetBrains_Mono({
 // `new URL('')` lèverait ERR_INVALID_URL au chargement du module — donc un 500
 // sur toutes les pages, y compris en production si la variable est oubliée
 // sur Vercel.
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab.ca'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab-center.ca'
 
 // Accès littéral à process.env, comme dans ChatCrisp : Next substitue ces
 // expressions au build par analyse statique du texte, un accès dynamique

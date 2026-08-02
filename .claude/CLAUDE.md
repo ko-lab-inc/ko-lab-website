@@ -218,4 +218,10 @@ vérifier qu'elle n'existe pas déjà.
 - **Tous les comptes** (GitHub, Vercel, Cloudflare, Supabase) appartiennent à KO-LAB
 
 ## Domaine
-ko-lab.ca (production) | develop.ko-lab.ca (preview)
+ko-lab-center.ca (production) | develop.ko-lab-center.ca (preview)
+
+⚠️ Corrigé le 2 août 2026 : `ko-lab.ca` n'a jamais été acheté. Le domaine
+réellement enregistré (Cloudflare) est `ko-lab-center.ca` — c'est ce qui
+bloquait Resend (« Domain not verified ») sur tous les courriels sortants
+(confirmation de commande, changement de statut, contact). Si ce fichier dit
+encore `ko-lab.ca` ailleurs qu'ici, c'est qu'il ment : signaler l'écart.

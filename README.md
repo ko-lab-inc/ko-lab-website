@@ -37,8 +37,8 @@ npm run test:e2e     # tests end-to-end
 ```
 
 ## Branches
-- `main` → production (ko-lab.ca)
-- `develop` → preview (develop.ko-lab.ca)
+- `main` → production (ko-lab-center.ca)
+- `develop` → preview (develop.ko-lab-center.ca)
 - `feature/*` → développement
 
 ## Contacts

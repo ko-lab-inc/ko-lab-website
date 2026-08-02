@@ -94,7 +94,7 @@ async function notifierClient({
     const { html, text } = gabaritChangementStatut({ numero, statutLabel, lienCommande })
 
     await new Resend(cleResend).emails.send({
-      from: 'KO-LAB <site@ko-lab.ca>',
+      from: 'KO-LAB <site@ko-lab-center.ca>',
       to: email,
       subject: `Commande ${numero} — ${statutLabel}`,
       html,
