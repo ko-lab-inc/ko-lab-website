@@ -189,7 +189,7 @@ export async function creerCommande(
         mode_livraison: analyse.data.modeLivraison,
         adresse_livraison: adresseLivraison,
       })
-      .select('id, numero')
+      .select('id, numero, created_at, fenetre_modification_expire_at')
       .single()
 
     if (error || !data) throw error ?? new Error('insertion sans ligne renvoyée')
@@ -214,6 +214,31 @@ export async function creerCommande(
       throw erreurLignes
     }
 
+    /**
+     * ⚠️ PASSAGE À 'confirmee' ICI — décision de Christian.
+     *
+     * L'INSERT reste bridé à `statut = 'nouvelle'` par la politique
+     * `commandes_insertion_client` (0021) — voir sa note : jamais laisser un
+     * statut fabriqué sauter la file d'attente dès l'écriture. Mais il n'y a
+     * plus, dans ce parcours, d'étape distincte où le client « confirmerait »
+     * une seconde fois après coup : le clic sur « Valider ma commande » EST
+     * la confirmation. « Nouvelle » ne doit donc pas rester affichée dans
+     * /admin/commandes une fois la commande réellement passée — ce UPDATE
+     * l'y fait passer tout de suite, autorisé par `commandes_maj_client`
+     * (`statut in ('nouvelle','confirmee')`, encore vrai à cet instant).
+     *
+     * Échec ici : dégradation propre, comme le courriel plus bas — la
+     * commande existe et reste consultable, seul le statut affiché resterait
+     * « Nouvelle » au lieu de « Confirmée ».
+     */
+    const { error: erreurConfirmation } = await supabase
+      .from('commandes')
+      .update({ statut: 'confirmee' })
+      .eq('id', idCommande)
+    if (erreurConfirmation) {
+      console.error('[boutique/commande/details] passage à confirmee échoué', erreurConfirmation.message)
+    }
+
     // ------------------------------------------------- courriel de confirmation
     // DÉGRADATION VOLONTAIRE — même motif que api/contact/route.ts. La
     // commande est déjà en base à ce stade ; si Resend n'est pas configuré ou
@@ -234,6 +259,8 @@ export async function creerCommande(
         // demande de Christian après le premier courriel en texte brut.
         const { html, text } = gabaritConfirmationCommande({
           numero: data.numero,
+          creeLe: new Date(data.created_at),
+          fenetreExpireLe: new Date(data.fenetre_modification_expire_at),
           lignes: lignesValidees.map((l) => ({
             nom: l.nom_produit,
             categorie: l.categorie,

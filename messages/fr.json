@@ -612,6 +612,7 @@
     "retour_liste": "Retour à mes commandes",
     "fenetre_ouverte_texte": "Vous pouvez ajouter des articles ou modifier les quantités jusqu'au {date}. Les prix affichés restent indicatifs — on revient vers vous pour les confirmer.",
     "fenetre_fermee_texte": "La fenêtre de modification est fermée, contactez-nous pour tout changement.",
+    "commande_annulee_texte": "Cette commande a été annulée.",
     "produits_indisponibles_texte": "Ces produits ne sont plus disponibles et seront retirés si vous enregistrez une modification :",
     "editeur_vide": "Votre commande ne contient plus aucun produit disponible.",
     "quantite": "Quantité",
@@ -619,7 +620,9 @@
     "ajouter_produit": "Ajouter un produit",
     "ajouter": "Ajouter",
     "enregistrer": "Enregistrer les modifications",
-    "modification_enregistree": "Modifications enregistrées."
+    "modification_enregistree": "Modifications enregistrées.",
+    "annuler_commande": "Annuler ma commande",
+    "confirmer_annulation": "Annuler cette commande ? Cette action est définitive."
   },
   "Commun": {
     "chargement": "Chargement…",
@@ -743,7 +746,8 @@
     "commandes": "Commandes",
     "clients": "Clients",
     "conversion": "Taux de conversion",
-    "des_commandes": "Dès les premières commandes",
+    "chiffre_affaires_precision": "Prix indicatifs — commandes annulées exclues",
+    "commandes_precision": "Commandes annulées exclues",
     "sans_mesure": "Aucune mesure de visites",
     "role_client": "Client",
     "utilisateurs_vide": "Aucun compte client pour l'instant.",
@@ -936,9 +940,10 @@
     "intro": "Vous êtes connecté.",
     "courriel": "Courriel",
     "statut": "Statut du compte",
-    "statut_invite": "Compte actif. L'accès à l'espace de gestion doit être ouvert par KO-LAB.",
+    "statut_invite": "Compte actif.",
     "statut_equipe": "Accès à l'espace de gestion.",
     "aller_admin": "Ouvrir l'espace de gestion",
+    "voir_commandes": "Voir mes commandes",
     "deconnexion": "Se déconnecter",
     "retour": "Retour au site"
   },

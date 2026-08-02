@@ -2,6 +2,7 @@ import { hasLocale } from 'next-intl'
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { notFound, redirect } from 'next/navigation'
 
+import { BoutonAnnulerCommande } from '@/components/sections/BoutonAnnulerCommande'
 import { EditeurLignesCommande } from '@/components/sections/EditeurLignesCommande'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
@@ -147,11 +148,20 @@ export default async function DetailCommandePage({ params }: Props) {
                   quantiteDisponible: p.quantiteDisponible,
                 }))}
               />
+              <div className="mt-8 border-t border-ko-line pt-6">
+                <BoutonAnnulerCommande id={commande.id} locale={locale} />
+              </div>
             </>
           ) : (
             <>
               <div className="mb-8 border border-ko-line bg-ko-cream p-5">
-                <p className="text-sm leading-relaxed text-ko-ink">{t('fenetre_fermee_texte')}</p>
+                <p className="text-sm leading-relaxed text-ko-ink">
+                  {/* Message précis pour une annulation — distinct de la fenêtre
+                      simplement fermée ou d'un statut déjà avancé par l'équipe :
+                      la RAISON pour laquelle ce n'est plus modifiable compte pour
+                      qui lit, pas seulement le fait que ça ne le soit plus. */}
+                  {commande.statut === 'annulee' ? t('commande_annulee_texte') : t('fenetre_fermee_texte')}
+                </p>
               </div>
               <ul className="divide-y divide-ko-line border-y border-ko-line">
                 {(lignes ?? []).map((l) => (

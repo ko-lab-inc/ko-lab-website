@@ -4,6 +4,14 @@ import { describe, expect, it } from 'vitest'
 
 import { gabaritConfirmationCommande } from '@/lib/email/gabaritCommande'
 
+const CREE_LE = new Date('2026-08-02T14:18:00')
+const FENETRE_EXPIRE_LE = new Date('2026-08-04T14:18:00')
+
+const DATE_LONGUE = new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium' }).format(CREE_LE)
+const DATE_HEURE_EXPIRATION = new Intl.DateTimeFormat('fr-CA', { dateStyle: 'medium', timeStyle: 'short' }).format(
+  FENETRE_EXPIRE_LE,
+)
+
 const LIGNES = [
   {
     nom: 'Bambu Lab X1-Carbon',
@@ -29,9 +37,11 @@ const LIGNES = [
 ]
 
 describe('gabaritConfirmationCommande', () => {
-  it('inclut le numéro, les produits, le total et le lien — jamais un <script>', () => {
+  it('inclut le numéro en titre, la date de réception, le rappel 48h, les produits, le total et le lien — jamais un <script>', () => {
     const { html, text } = gabaritConfirmationCommande({
       numero: 'CMD-2026-0099',
+      creeLe: CREE_LE,
+      fenetreExpireLe: FENETRE_EXPIRE_LE,
       lignes: LIGNES,
       modeLivraison: 'expedition',
       adresseLivraison: '123 rue Test, Gatineau (Québec) J8X 1A1',
@@ -39,13 +49,21 @@ describe('gabaritConfirmationCommande', () => {
       origine: 'https://ko-lab.ca',
     })
 
-    expect(html).toContain('CMD-2026-0099')
+    // Numéro en gros titre — même traitement que /compte/commandes/[id].
+    expect(html).toContain('<h1 style="margin:8px 0 0;font-family:Georgia,\'Times New Roman\',serif;font-weight:400;font-size:32px;color:#111210;">CMD-2026-0099</h1>')
+
+    // Ligne de statut : reçue le [date], même vocabulaire que la page.
+    expect(html).toContain(`Commande reçue le ${DATE_LONGUE}`)
+
+    // Rappel de la fenêtre de 48h avec la date/heure EXACTE d'expiration —
+    // pas « dans 48h », le même texte que Commande.fenetre_ouverte_texte.
+    expect(html).toContain(`jusqu'au`)
+    expect(html).toContain(DATE_HEURE_EXPIRATION)
+
     expect(html).toContain('Bambu Lab X1-Carbon')
     expect(html).toContain('Conteneur 2 pieds')
     expect(html).toContain('Solution sur mesure')
     expect(html).toContain('Sur demande')
-    // Espace insécable (U+202F/U+00A0) entre les milliers, pas une espace
-    // normale — même piège documenté dans panier.spec.ts.
     const totalAttendu = new Intl.NumberFormat('fr-CA', {
       style: 'currency',
       currency: 'CAD',
@@ -54,14 +72,18 @@ describe('gabaritConfirmationCommande', () => {
     expect(html).toContain(totalAttendu)
     expect(html).toContain('123 rue Test')
     expect(html).toContain('https://ko-lab.ca/fr/compte/commandes/abc-123')
-    // Image locale préfixée avec `origine`, jamais laissée relative.
     expect(html).toContain('https://ko-lab.ca/images/produits/bambu-x1-carbon.webp')
-    // Image déjà absolue laissée telle quelle, jamais doublement préfixée.
     expect(html).toContain('https://exemple.supabase.co/storage/v1/object/public/produits/conteneur.webp')
     expect(html).not.toContain('https://ko-lab.cahttps://')
     expect(html).not.toMatch(/<script/i)
 
+    // Rien qui n'est vrai pour KO-LAB aujourd'hui — voir la note d'en-tête.
+    expect(html.toLowerCase()).not.toContain('paiement sécurisé')
+    expect(html.toLowerCase()).not.toContain('retour')
+
     expect(text).toContain('CMD-2026-0099')
+    expect(text).toContain(DATE_LONGUE)
+    expect(text).toContain(DATE_HEURE_EXPIRATION)
     expect(text).toContain(totalAttendu)
 
     // Aperçu visuel manuel — écrit dans le scratchpad, jamais commité.
@@ -74,6 +96,8 @@ describe('gabaritConfirmationCommande', () => {
   it('mode ramassage : aucune adresse affichée', () => {
     const { html } = gabaritConfirmationCommande({
       numero: 'CMD-2026-0100',
+      creeLe: CREE_LE,
+      fenetreExpireLe: FENETRE_EXPIRE_LE,
       lignes: [LIGNES[0]!],
       modeLivraison: 'ramassage',
       adresseLivraison: null,
@@ -88,6 +112,8 @@ describe('gabaritConfirmationCommande', () => {
   it('échappe les caractères HTML dans un nom de produit', () => {
     const { html } = gabaritConfirmationCommande({
       numero: 'CMD-2026-0101',
+      creeLe: CREE_LE,
+      fenetreExpireLe: FENETRE_EXPIRE_LE,
       lignes: [{ nom: '<b>Injecté</b> & Cie', categorie: 'Test', quantite: 1, prix: 10, image: null }],
       modeLivraison: 'ramassage',
       adresseLivraison: null,

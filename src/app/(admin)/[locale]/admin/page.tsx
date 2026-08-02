@@ -38,25 +38,31 @@ const JOURS = 30
  * CE QU'IL N'AFFICHE PAS, ET POURQUOI
  *
  * La maquette de référence (tableau de bord e-commerce) montre Total Revenue,
- * Orders, Conversion Rate et Inventory Alerts. Les trois premières n'existent
- * toujours pas ici, et il ne faut pas les inventer :
+ * Orders, Conversion Rate et Inventory Alerts.
  *
- *   - aucun paiement n'a jamais transité par ce site ;
- *   - il n'existe pas de table `commandes` — la boutique fonctionne en demande
- *     de prix, pas en achat ;
- *   - rien ne mesure les visites, donc aucun taux de conversion n'est calculable.
+ * Depuis la migration 0021, « Chiffre d'affaires » et « Commandes » sont
+ * RÉELS — calculés sur `commandes`/`lignes_commande`, PAS sur un placeholder.
+ * Les deux EXCLUENT les commandes `annulee` : une commande annulée n'est ni
+ * un revenu ni une commande active, et la compter gonflerait artificiellement
+ * les deux tuiles. Le détail (y compris les commandes annulées elles-mêmes)
+ * reste consultable sur /admin/commandes — le tableau de bord n'a pas à
+ * lister chaque commande, seulement à donner le nombre qui compte au premier
+ * coup d'œil. « Chiffre d'affaires » reste construit sur des prix INDICATIFS
+ * (voir `precision` sous la tuile) : ce n'est pas un montant facturé, KO-LAB
+ * ne prend toujours aucun paiement en ligne.
+ *
+ * « Taux de conversion » reste non calculable : rien ne mesure les visites.
+ * Un tiret, pas un 0 % — voir plus bas pourquoi les deux ne disent pas la
+ * même chose.
  *
  * Inventory Alerts, elle, a une vraie contrepartie depuis la migration 0013 :
  * le panneau « Points d'attention » plus bas signale les produits en rupture
  * ou en stock faible, calculés sur `produits_boutique` (voir lib/stock.ts).
  *
- * Afficher « 128 430 $ · +18,6 % » sur un écran de gestion, c'est fabriquer un
- * chiffre d'affaires. Montré à un partenaire ou à un prêteur, il serait lu
- * comme réel.
- *
  * La DISPOSITION de la référence est reprise à l'identique — quatre tuiles,
  * courbe, tableau récent, anneau, classement, alertes — mais remplie avec ce
- * que KO-LAB produit vraiment : des demandes, des comptes, un catalogue.
+ * que KO-LAB produit vraiment : des demandes, des commandes, des comptes, un
+ * catalogue.
  *
  * ---------------------------------------------------------------------------
  * SÉCURITÉ (skill sécurité production, § 2 et 3)
@@ -81,34 +87,57 @@ export default async function TableauDeBordPage({ params }: Props) {
   const debutFenetre = new Date(Date.now() - (JOURS - 1) * 86_400_000)
   debutFenetre.setHours(0, 0, 0, 0)
 
-  const [{ count: total }, { count: nouvelles }, { count: comptes }, fenetre, recentes, catalogue] =
-    await Promise.all([
-      // `head: true` : on veut le compte, pas les lignes. Ramener la table
-      // entière pour en mesurer la longueur deviendrait coûteux dès quelques
-      // centaines de demandes.
-      supabase.from('demandes_contact').select('*', { count: 'exact', head: true }),
-      supabase
-        .from('demandes_contact')
-        .select('*', { count: 'exact', head: true })
-        .eq('statut', 'nouveau'),
-      supabase.from('profils').select('*', { count: 'exact', head: true }),
-      // Une seule requête sert à la fois la courbe et l'anneau : deux
-      // requêtes agrégées séparées liraient la même plage deux fois.
-      supabase
-        .from('demandes_contact')
-        .select('type, created_at')
-        .gte('created_at', debutFenetre.toISOString()),
-      supabase
-        .from('demandes_contact')
-        .select('id, created_at, type, nom, email, statut')
-        .order('created_at', { ascending: false })
-        .limit(8),
-      // Catalogue réel (migration 0013) — une douzaine de lignes, agrégées
-      // ici même plutôt qu'en SQL : sert le compte, la répartition par
-      // catégorie, l'alerte de stock ET l'alerte de prix manquants, sans
-      // quatre requêtes séparées.
-      supabase.from('produits_boutique').select('categorie, prix, quantite, statut_stock, publie'),
-    ])
+  const [
+    { count: total },
+    { count: nouvelles },
+    { count: comptes },
+    fenetre,
+    recentes,
+    catalogue,
+    commandesTuiles,
+    lignesCommandeTuiles,
+  ] = await Promise.all([
+    // `head: true` : on veut le compte, pas les lignes. Ramener la table
+    // entière pour en mesurer la longueur deviendrait coûteux dès quelques
+    // centaines de demandes.
+    supabase.from('demandes_contact').select('*', { count: 'exact', head: true }),
+    supabase
+      .from('demandes_contact')
+      .select('*', { count: 'exact', head: true })
+      .eq('statut', 'nouveau'),
+    supabase.from('profils').select('*', { count: 'exact', head: true }),
+    // Une seule requête sert à la fois la courbe et l'anneau : deux
+    // requêtes agrégées séparées liraient la même plage deux fois.
+    supabase
+      .from('demandes_contact')
+      .select('type, created_at')
+      .gte('created_at', debutFenetre.toISOString()),
+    supabase
+      .from('demandes_contact')
+      .select('id, created_at, type, nom, email, statut')
+      .order('created_at', { ascending: false })
+      .limit(8),
+    // Catalogue réel (migration 0013) — une douzaine de lignes, agrégées
+    // ici même plutôt qu'en SQL : sert le compte, la répartition par
+    // catégorie, l'alerte de stock ET l'alerte de prix manquants, sans
+    // quatre requêtes séparées.
+    supabase.from('produits_boutique').select('categorie, prix, quantite, statut_stock, publie'),
+    // Tuiles « Commandes » / « Chiffre d'affaires » — migration 0021.
+    supabase.from('commandes').select('id, statut'),
+    supabase.from('lignes_commande').select('commande_id, quantite, prix_indicatif'),
+  ])
+
+  /**
+   * Commandes actives et chiffre d'affaires — EXCLUENT `annulee` des deux
+   * côtés (voir la note d'en-tête). `PGRST205` = migration pas encore jouée
+   * dans cet environnement : traité comme « aucune commande », jamais comme
+   * une erreur qui casserait le tableau de bord.
+   */
+  const commandesActives = (commandesTuiles.data ?? []).filter((c) => c.statut !== 'annulee')
+  const idsCommandesActives = new Set(commandesActives.map((c) => c.id))
+  const chiffreAffaires = (lignesCommandeTuiles.data ?? [])
+    .filter((l) => idsCommandesActives.has(l.commande_id) && l.prix_indicatif != null)
+    .reduce((somme, l) => somme + l.prix_indicatif! * l.quantite, 0)
 
   const lignes = fenetre.data ?? []
 
@@ -177,24 +206,24 @@ export default async function TableauDeBordPage({ params }: Props) {
         d'affaires, commandes, clients, taux de conversion — et leurs VRAIES
         valeurs.
 
-        Trois sont à zéro et la quatrième n'est pas mesurable, parce qu'aucune
-        commande n'a jamais été passée : la boutique fonctionne en demande de
-        prix, il n'y a ni paiement, ni table `commandes`, ni suivi de visites.
-        Un zéro n'est pas un écran vide, c'est le chiffre exact — et le jour où
-        le module de commandes existe, ces mêmes tuiles se remplissent sans
-        toucher à cette page.
-
-        Ce qui est refusé, c'est d'écrire 128 430 $. Montré à un partenaire ou
-        à un prêteur, ce nombre serait lu comme réel.
+        Chiffre d'affaires et Commandes sont RÉELS depuis la migration 0021
+        (voir la note d'en-tête) — plus des placeholders à zéro. Taux de
+        conversion reste un tiret : rien ne mesure les visites, et zéro pour
+        cent affirmerait une mesure qui n'existe pas.
       */}
       <GrilleStats>
         <TuileStat
           libelle={t('chiffre_affaires')}
-          valeur={format.number(0, { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })}
-          precision={t('des_commandes')}
+          valeur={format.number(chiffreAffaires, { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })}
+          precision={t('chiffre_affaires_precision')}
           Icone={IconeMonnaie}
         />
-        <TuileStat libelle={t('commandes')} valeur={0} precision={t('des_commandes')} Icone={IconePanier} />
+        <TuileStat
+          libelle={t('commandes')}
+          valeur={commandesActives.length}
+          precision={t('commandes_precision')}
+          Icone={IconePanier}
+        />
         <TuileStat libelle={t('clients')} valeur={comptes ?? 0} Icone={IconeProfil} />
         <TuileStat
           libelle={t('conversion')}

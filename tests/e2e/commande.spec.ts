@@ -198,6 +198,11 @@ test.describe('Confirmation de commande — parcours simplifié par navigation',
     await page.waitForURL('**/compte/commandes/**', { timeout: 15_000 })
     await expect(page.getByRole('heading', { name: /CMD-/ })).toBeVisible()
 
+    // Passe directement à « Confirmée », jamais « Nouvelle » — décision de
+    // Christian : le clic sur « Valider ma commande » EST la confirmation,
+    // il n'y a plus d'étape distincte après coup.
+    await expect(page.getByText('Confirmée', { exact: true })).toBeVisible()
+
     const idCommande = page.url().split('/').pop()
     if (idCommande) commandesDeCetEssai.push(idCommande)
 
@@ -317,5 +322,43 @@ test.describe('Confirmation de commande — parcours simplifié par navigation',
     )
     const [releA] = await relectureParA.json()
     expect(releA?.statut).toBe('nouvelle')
+  })
+
+  test('6 · le client annule sa propre commande dans la fenêtre de 48h', async ({ page, request }) => {
+    const compte = await creerCompteConfirme(request, 'annulation')
+
+    await ajouterUnProduit(page)
+    await page.goto('/fr/boutique/demande')
+    await allerVersConnexionDepuisLePanier(page)
+    await seConnecterViaPage(page, compte.email)
+    await page.waitForURL('**/boutique/commande/details', { timeout: 10_000 })
+    await page.getByRole('button', { name: /Valider ma commande/ }).click()
+    await page.waitForURL('**/compte/commandes/**', { timeout: 15_000 })
+
+    const idCommande = page.url().split('/').pop()
+    if (idCommande) commandesDeCetEssai.push(idCommande)
+
+    // `window.confirm` accepté automatiquement — Playwright l'intercepte par défaut en le refusant sinon.
+    page.on('dialog', (dialog) => dialog.accept())
+    await page.getByRole('button', { name: /Annuler ma commande/ }).click()
+
+    await expect(page.getByText('Cette commande a été annulée.')).toBeVisible({ timeout: 10_000 })
+    // Le bouton d'annulation et l'éditeur de lignes disparaissent — la
+    // commande n'est plus modifiable une fois annulée.
+    await expect(page.getByRole('button', { name: /Annuler ma commande/ })).toHaveCount(0)
+  })
+
+  test('7 · /compte n\'affiche jamais le message « espace de gestion » à un client ordinaire', async ({
+    page,
+    request,
+  }) => {
+    const compte = await creerCompteConfirme(request, 'compte')
+
+    await page.goto('/fr/connexion')
+    await seConnecterViaPage(page, compte.email)
+    await page.waitForURL('**/compte', { timeout: 10_000 })
+
+    await expect(page.getByText(/espace de gestion doit être ouvert/i)).toHaveCount(0)
+    await expect(page.getByRole('link', { name: /Voir mes commandes/i })).toBeVisible()
   })
 })

@@ -141,3 +141,61 @@ export async function modifierCommande(
   revalidatePath(`/${locale}/compte/commandes/${id}`)
   return { succes: true }
 }
+
+export type EtatAnnulation = {
+  erreur?: 'refuse' | 'fenetre_fermee' | 'trop_de_requetes' | 'serveur'
+  succes?: boolean
+}
+
+/**
+ * Annulation par le client — même fenêtre que la modification (48h, statuts
+ * 'nouvelle'/'confirmee'). Demande de Christian : le client doit pouvoir
+ * annuler lui-même, et le statut doit refléter cette annulation — pas de
+ * suppression, `annulee` est un UPDATE comme tout autre changement de
+ * statut, déjà couvert par `commandes_maj_client` (0021).
+ */
+export async function annulerCommande(
+  _precedent: EtatAnnulation,
+  donnees: FormData,
+): Promise<EtatAnnulation> {
+  const locale = String(donnees.get('locale') ?? 'fr')
+  const id = String(donnees.get('id') ?? '')
+  if (!estUuid(id)) return { erreur: 'refuse' }
+
+  const ip = adresseDepuis(await headers())
+  if (rateLimit(`annuler-commande:${ip}`, { max: 10, windowMs: 600_000 })) {
+    return { erreur: 'trop_de_requetes' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { erreur: 'refuse' }
+
+  // Relecture SOUS RLS — même raison que modifierCommande : distinguer un id
+  // inventé d'une commande qui n'est pas la sienne n'a pas de sens ici, RLS
+  // rend les deux également invisibles.
+  const { data: commande } = await supabase
+    .from('commandes')
+    .select('statut, fenetre_modification_expire_at')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (!commande) return { erreur: 'refuse' }
+
+  const modifiable =
+    STATUTS_MODIFIABLES.some((s) => s === (commande.statut as StatutCommande)) &&
+    new Date(commande.fenetre_modification_expire_at) > new Date()
+
+  if (!modifiable) return { erreur: 'fenetre_fermee' }
+
+  const { error } = await supabase.from('commandes').update({ statut: 'annulee' }).eq('id', id)
+  if (error) {
+    console.error('[compte/commandes] échec annulation', error.message)
+    return { erreur: 'serveur' }
+  }
+
+  revalidatePath(`/${locale}/compte/commandes/${id}`)
+  return { succes: true }
+}

@@ -60,9 +60,17 @@ export default async function ComptePage({ params }: Props) {
       />
 
       <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-        {equipe && (
+        {equipe ? (
           <Link href="/admin" className={buttonVariants({ variant: 'primary' })}>
             {t('aller_admin')}
+            <span aria-hidden="true">→</span>
+          </Link>
+        ) : (
+          // Un compte 'client' — le cas courant depuis l'ouverture de la
+          // boutique — n'a rien à faire dans /admin : sa destination utile
+          // d'ici, ce sont ses commandes, pas un lien vers l'espace équipe.
+          <Link href={ROUTES.compteCommandes} className={buttonVariants({ variant: 'primary' })}>
+            {t('voir_commandes')}
             <span aria-hidden="true">→</span>
           </Link>
         )}
