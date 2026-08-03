@@ -6,8 +6,8 @@ import { Reveal } from '@/components/ui/Reveal'
 /**
  * Avis clients — accueil, entre l'écosystème (sombre) et les offres (crème).
  *
- * Contenu volontairement générique — voir `secteur_*` et `texte_a_venir` dans
- * les traductions. Aucun vrai nom, citation ou entreprise n'est inventé ici :
+ * Contenu volontairement générique — voir `avis_1_*`, `avis_2_*`, `avis_3_*`
+ * dans les traductions. Aucun vrai nom, citation ou entreprise n'est inventé :
  * un faux témoignage attribué à un client fictif serait trompeur une fois en
  * ligne, contrairement à une photo de chantier générique. Christian fournira
  * les vrais avis à coder en dur par-dessus cette structure.
@@ -19,11 +19,7 @@ import { Reveal } from '@/components/ui/Reveal'
 export async function Avis() {
   const t = await getTranslations('Home.avis')
 
-  const avis = [
-    { cle: 'evenementiel' },
-    { cle: 'municipal' },
-    { cle: 'commercial' },
-  ] as const
+  const avis = [{ cle: 'avis_1' }, { cle: 'avis_2' }, { cle: 'avis_3' }] as const
 
   return (
     <section className="bg-ko-white py-16 lg:py-28">
@@ -44,9 +40,9 @@ export async function Avis() {
 
                   <div>
                     <p className="font-serif text-base leading-tight text-ko-ink">
-                      {t('nom_a_venir')}
+                      {t(`${cle}_nom`)}
                     </p>
-                    <p className="label-mono text-[10px]">{t(`secteur_${cle}`)}</p>
+                    <p className="label-mono text-[10px]">{t(`${cle}_role`)}</p>
                   </div>
                 </div>
 
@@ -57,7 +53,7 @@ export async function Avis() {
                 </div>
 
                 <p className="mt-4 text-sm leading-relaxed text-ko-muted">
-                  {t('texte_a_venir')}
+                  {t(`${cle}_texte`)}
                 </p>
               </div>
             </Reveal>

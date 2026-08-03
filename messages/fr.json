@@ -180,12 +180,16 @@
     "avis": {
       "label": "Avis clients",
       "title": "Ce que nos clients disent du terrain",
-      "nom_a_venir": "Client à venir",
-      "secteur_evenementiel": "Secteur événementiel",
-      "secteur_municipal": "Secteur municipal",
-      "secteur_commercial": "Secteur commercial",
-      "texte_a_venir": "Témoignage à venir.",
-      "etoiles_aria": "5 étoiles sur 5"
+      "etoiles_aria": "5 étoiles sur 5",
+      "avis_1_nom": "Client à venir",
+      "avis_1_role": "Secteur événementiel",
+      "avis_1_texte": "Témoignage à venir.",
+      "avis_2_nom": "Client à venir",
+      "avis_2_role": "Secteur municipal",
+      "avis_2_texte": "Témoignage à venir.",
+      "avis_3_nom": "Client à venir",
+      "avis_3_role": "Secteur commercial",
+      "avis_3_texte": "Témoignage à venir."
     },
     "offres": {
       "label": "Aussi disponible",
