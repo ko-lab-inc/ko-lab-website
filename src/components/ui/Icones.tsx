@@ -487,3 +487,25 @@ export function IconeMallette(props: IconeProps) {
     </Icone>
   )
 }
+
+/* =============================================================================
+ * Avis clients — accueil
+ * ========================================================================== */
+
+/**
+ * Note en étoile. PLEINE, pas en trait — troisième exception au « stroke
+ * uniquement » du fichier (avec la manette et le bouton lecture) : une rangée
+ * de cinq étoiles à 14px en contour se lit comme un gribouillis flou, pas
+ * comme une note.
+ */
+export function IconeEtoile(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path
+        d="M12 3.2l2.4 5.2 5.6.6-4.2 4 1.1 5.6-5-2.9-5 2.9 1.1-5.6-4.2-4 5.6-.6z"
+        fill="currentColor"
+        stroke="none"
+      />
+    </Icone>
+  )
+}

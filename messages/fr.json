@@ -177,6 +177,16 @@
       "vip_nom": "Centre de l'auto VIP",
       "vip_role": "Entretien mécanique, soutien aux véhicules et besoins liés à la flotte."
     },
+    "avis": {
+      "label": "Avis clients",
+      "title": "Ce que nos clients disent du terrain",
+      "nom_a_venir": "Client à venir",
+      "secteur_evenementiel": "Secteur événementiel",
+      "secteur_municipal": "Secteur municipal",
+      "secteur_commercial": "Secteur commercial",
+      "texte_a_venir": "Témoignage à venir.",
+      "etoiles_aria": "5 étoiles sur 5"
+    },
     "offres": {
       "label": "Aussi disponible",
       "location_tag": "Rentman",
