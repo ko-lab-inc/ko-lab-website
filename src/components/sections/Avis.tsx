@@ -1,16 +1,19 @@
 import { getTranslations } from 'next-intl/server'
 
-import { IconeEtoile, IconeProfil } from '@/components/ui/Icones'
+import { IconeBadgeOfficiel, IconeProfil } from '@/components/ui/Icones'
 import { Reveal } from '@/components/ui/Reveal'
 
 /**
  * Avis clients — accueil, entre l'écosystème (sombre) et les offres (crème).
  *
- * Contenu volontairement générique — voir `avis_1_*`, `avis_2_*`, `avis_3_*`
- * dans les traductions. Aucun vrai nom, citation ou entreprise n'est inventé :
- * un faux témoignage attribué à un client fictif serait trompeur une fois en
- * ligne, contrairement à une photo de chantier générique. Christian fournira
- * les vrais avis à coder en dur par-dessus cette structure.
+ * Trois vrais mandats (PCH — Fête du Canada et Bal de Neige, Bluesfest,
+ * Devcore — DevFest Cornwall), tous confirmés par Christian. Pas de citation
+ * mise dans la bouche du client : aucun des trois n'a fourni de phrase écrite
+ * exacte, seulement un bon retour informel. Attribuer une citation inventée à
+ * une vraie organisation identifiable serait trompeur d'une façon différente
+ * — mais tout aussi réelle — qu'un faux client fictif. D'où un texte factuel
+ * à la 3e personne plutôt qu'un guillemet, et un badge « mandat confirmé »
+ * plutôt qu'une note en étoiles jamais donnée par ces clients.
  *
  * Pas d'avatar en cercle ni de guillemets géants stylisés : le skill 08 les
  * interdit nommément pour les témoignages. À la place, un carré bordé avec
@@ -46,10 +49,9 @@ export async function Avis() {
                   </div>
                 </div>
 
-                <div className="mt-5 flex gap-1" aria-label={t('etoiles_aria')}>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <IconeEtoile key={i} taille={14} className="text-ko-blue" />
-                  ))}
+                <div className="mt-5 flex items-center gap-2">
+                  <IconeBadgeOfficiel taille={14} className="text-ko-blue" />
+                  <p className="label-mono text-[10px]">{t('mandat_confirme')}</p>
                 </div>
 
                 <p className="mt-4 text-sm leading-relaxed text-ko-muted">
