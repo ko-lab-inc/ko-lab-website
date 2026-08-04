@@ -211,6 +211,13 @@ export function NavAdmin({
                   <li key={href}>
                     <Link
                       href={href}
+                      // `replace`, pas un push : ces liens changent d'ONGLET
+                      // du même menu, pas de « page suivante ». Sans ça,
+                      // visiter 4 onglets empile 4 entrées d'historique — le
+                      // retour du téléphone doit alors être pressé 4 fois
+                      // pour ressortir du menu, une fois par onglet visité,
+                      // plutôt qu'une seule. Relevé par Christian.
+                      replace
                       aria-current={actif ? 'page' : undefined}
                       // Entrée active sur un aplat plutôt qu'un simple filet à
                       // gauche : dans une barre pleine hauteur, un trait de
