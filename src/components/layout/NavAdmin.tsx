@@ -211,13 +211,16 @@ export function NavAdmin({
                   <li key={href}>
                     <Link
                       href={href}
-                      // `replace`, pas un push : ces liens changent d'ONGLET
-                      // du même menu, pas de « page suivante ». Sans ça,
-                      // visiter 4 onglets empile 4 entrées d'historique — le
-                      // retour du téléphone doit alors être pressé 4 fois
-                      // pour ressortir du menu, une fois par onglet visité,
-                      // plutôt qu'une seule. Relevé par Christian.
-                      replace
+                      // `replace` seulement en changeant d'onglet À onglet.
+                      // En quittant le tableau de bord (pathname === racine),
+                      // un push normal garde cette entrée comme marche fixe —
+                      // sans ce cas, remplacer directement l'entrée du
+                      // tableau de bord la faisait disparaître de
+                      // l'historique : le retour sautait PAR-DESSUS lui
+                      // plutôt que de s'y arrêter. Relevé par Christian : le
+                      // retour doit toujours finir sur le tableau de bord,
+                      // peu importe le nombre d'onglets visités entre-temps.
+                      replace={pathname !== racine}
                       aria-current={actif ? 'page' : undefined}
                       // Entrée active sur un aplat plutôt qu'un simple filet à
                       // gauche : dans une barre pleine hauteur, un trait de
