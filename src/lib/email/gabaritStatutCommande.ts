@@ -17,6 +17,8 @@
  * ---------------------------------------------------------------------------
  */
 
+import { ROUTES } from '@/lib/routes'
+
 const NOIR = '#111210'
 const CREME = '#f0ede6'
 const BLANC = '#f8f6f1'
@@ -31,10 +33,13 @@ export function gabaritChangementStatut({
   numero,
   statutLabel,
   lienCommande,
+  origine,
 }: {
   numero: string
   statutLabel: string
   lienCommande: string
+  /** Base absolue du site — même paramètre que gabaritCommande.ts, pour les liens légaux du pied. */
+  origine: string
 }): { html: string; text: string } {
   const html = `<!doctype html>
 <html lang="fr">
@@ -76,6 +81,11 @@ export function gabaritChangementStatut({
                 Outaouais, Québec · <a href="mailto:info@ko-lab-center.ca" style="color:${MUET};">info@ko-lab-center.ca</a>
               </p>
               <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:${MUET};">
+                <a href="${origine}/fr${ROUTES.politiqueConfidentialite}" style="color:${MUET};">Politique de confidentialité</a>
+                &nbsp;·&nbsp;
+                <a href="${origine}/fr${ROUTES.conditionsUtilisation}" style="color:${MUET};">Conditions d'utilisation</a>
+              </p>
+              <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:${MUET};">
                 Courriel envoyé automatiquement, inutile d'y répondre.
               </p>
             </td>
@@ -96,6 +106,9 @@ export function gabaritChangementStatut({
     '',
     `Si vous n'étiez pas connecté au moment d'ouvrir ce lien, on vous demandera`,
     `de vous connecter avant d'afficher la commande.`,
+    '',
+    `Politique de confidentialité : ${origine}/fr${ROUTES.politiqueConfidentialite}`,
+    `Conditions d'utilisation : ${origine}/fr${ROUTES.conditionsUtilisation}`,
   ].join('\n')
 
   return { html, text }

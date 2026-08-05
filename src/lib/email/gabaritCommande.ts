@@ -45,6 +45,8 @@
  * ---------------------------------------------------------------------------
  */
 
+import { ROUTES } from '@/lib/routes'
+
 export type LigneEmailCommande = {
   nom: string
   categorie: string
@@ -238,6 +240,11 @@ export function gabaritConfirmationCommande({
                 Outaouais, Québec · <a href="mailto:info@ko-lab-center.ca" style="color:${MUET};">info@ko-lab-center.ca</a>
               </p>
               <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:${MUET};">
+                <a href="${origine}/fr${ROUTES.politiqueConfidentialite}" style="color:${MUET};">Politique de confidentialité</a>
+                &nbsp;·&nbsp;
+                <a href="${origine}/fr${ROUTES.conditionsUtilisation}" style="color:${MUET};">Conditions d'utilisation</a>
+              </p>
+              <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:${MUET};">
                 Courriel envoyé automatiquement, inutile d'y répondre.
               </p>
             </td>
@@ -271,6 +278,9 @@ export function gabaritConfirmationCommande({
     '',
     `Si vous n'étiez pas connecté au moment d'ouvrir ce lien, on vous demandera`,
     `de vous connecter avant d'afficher la commande.`,
+    '',
+    `Politique de confidentialité : ${origine}/fr${ROUTES.politiqueConfidentialite}`,
+    `Conditions d'utilisation : ${origine}/fr${ROUTES.conditionsUtilisation}`,
   ].join('\n')
 
   return { html, text }

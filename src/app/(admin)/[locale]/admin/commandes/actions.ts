@@ -91,7 +91,7 @@ async function notifierClient({
     const lienCommande = `${origine()}/${locale}${routeCommande(id)}`
 
     const { Resend } = await import('resend')
-    const { html, text } = gabaritChangementStatut({ numero, statutLabel, lienCommande })
+    const { html, text } = gabaritChangementStatut({ numero, statutLabel, lienCommande, origine: origine() })
 
     await new Resend(cleResend).emails.send({
       from: 'KO-LAB <site@ko-lab-center.ca>',

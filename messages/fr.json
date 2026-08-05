@@ -47,6 +47,14 @@
     "contact": {
       "title": "Contact — KO-LAB",
       "description": "Démarrer un projet, demander une soumission ou poser une question à l'équipe KO-LAB."
+    },
+    "politiqueConfidentialite": {
+      "title": "Politique de confidentialité — KO-LAB",
+      "description": "Comment KO-LAB Inc. recueille, utilise et protège les renseignements personnels des visiteurs et clients du site."
+    },
+    "conditionsUtilisation": {
+      "title": "Conditions d'utilisation — KO-LAB",
+      "description": "Conditions d'utilisation du site KO-LAB Inc. : comptes, commandes, propriété intellectuelle et responsabilité."
     }
   },
   "Nav": {
@@ -561,13 +569,64 @@
     "methode_3_texte": "Montage, soutien pendant l'opération, démontage, retrait et entreposage. Le mandat se termine quand le site est rendu.",
     "chiffres_label": "En bref"
   },
+  "PolitiqueConfidentialite": {
+    "eyebrow": "Confidentialité",
+    "title": "Politique de confidentialité",
+    "intro": "Cette politique explique quels renseignements personnels KO-LAB Inc. recueille sur ce site, pourquoi, et comment ils sont protégés.",
+    "mise_a_jour": "Dernière mise à jour : 5 août 2026",
+    "section1_titre": "Qui recueille vos renseignements",
+    "section1_texte": "Cette politique s'applique au site ko-lab-center.ca, exploité par KO-LAB Inc., entreprise de déploiement terrain, fabrication et logistique basée en Outaouais, Québec. Pour toute question sur cette politique ou sur vos renseignements, écrivez-nous à {courriel} ou utilisez notre formulaire de contact.",
+    "section2_titre": "Renseignements que nous recueillons",
+    "section2_texte": "Selon vos interactions avec le site, nous pouvons recueillir : votre nom, votre adresse courriel et votre numéro de téléphone (formulaire de contact, création de compte, commande) ; le nom de votre organisation (contact, commande) ; votre adresse de livraison (commande avec expédition) ; votre mot de passe, conservé de façon chiffrée par notre fournisseur d'authentification, jamais en clair ; votre curriculum vitæ et vos renseignements de candidature (formulaire de carrières) ; le contenu de vos échanges dans la bulle de clavardage, si vous l'utilisez.",
+    "section3_titre": "Pourquoi nous les recueillons",
+    "section3_texte": "Ces renseignements servent uniquement à répondre à vos demandes, traiter vos commandes et devis, gérer votre compte client, étudier votre candidature, et vous tenir informé de l'avancement d'une commande. Nous ne les utilisons jamais à des fins publicitaires et ne les vendons à personne.",
+    "section4_titre": "Avec qui nous les partageons",
+    "section4_texte": "KO-LAB Inc. ne vend ni ne loue vos renseignements. Certains fournisseurs techniques y ont accès pour nous permettre d'exploiter le site : Supabase (base de données, authentification et stockage des fichiers), Resend (envoi des courriels transactionnels comme la confirmation de commande), Vercel (hébergement du site) et Cloudflare (gestion du nom de domaine). Si la bulle de clavardage est activée, Crisp héberge les conversations. Chacun de ces fournisseurs agit comme sous-traitant, dans le seul cadre de l'exploitation du site — aucun ne peut utiliser vos renseignements à ses propres fins.",
+    "section5_titre": "Témoins (cookies)",
+    "section5_texte": "Le site dépose un témoin technique nécessaire pour garder votre session ouverte lorsque vous êtes connecté à votre compte — rien de plus n'est utilisé pour la mesure d'audience ou la publicité. Si la bulle de clavardage Crisp est active, elle peut déposer ses propres témoins pour se souvenir de votre conversation.",
+    "section6_titre": "Combien de temps nous les conservons",
+    "section6_texte": "Vos renseignements sont conservés le temps nécessaire à la finalité pour laquelle ils ont été recueillis : le temps que votre compte reste actif, le temps de traiter une commande ou une candidature, ou jusqu'à ce que vous en demandiez la suppression.",
+    "section7_titre": "Vos droits",
+    "section7_texte": "En vertu de la Loi sur la protection des renseignements personnels dans le secteur privé (Québec), vous pouvez demander l'accès à vos renseignements, leur rectification, ou le retrait de votre consentement à leur utilisation, en écrivant à {courriel}. Vous pouvez également déposer une plainte auprès de la Commission d'accès à l'information du Québec si vous estimez que vos droits n'ont pas été respectés.",
+    "section8_titre": "Sécurité",
+    "section8_texte": "Nous appliquons des mesures raisonnables pour protéger vos renseignements : accès restreint par rôle, mots de passe jamais stockés en clair, et communications chiffrées (HTTPS). Aucune mesure de sécurité n'est infaillible ; en cas d'incident touchant vos renseignements, nous vous en informerons conformément à la loi.",
+    "section9_titre": "Modifications de cette politique",
+    "section9_texte": "Nous pouvons mettre à jour cette politique de temps à autre. La date de dernière mise à jour, en haut de cette page, indique la version en vigueur."
+  },
+  "ConditionsUtilisation": {
+    "eyebrow": "Conditions",
+    "title": "Conditions d'utilisation",
+    "intro": "En utilisant ce site, vous acceptez les conditions décrites ci-dessous.",
+    "mise_a_jour": "Dernière mise à jour : 5 août 2026",
+    "section1_titre": "Acceptation des conditions",
+    "section1_texte": "L'accès et l'utilisation du site ko-lab-center.ca impliquent l'acceptation pleine et entière des présentes conditions. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser le site.",
+    "section2_titre": "Ce que propose le site",
+    "section2_texte": "Ce site présente les capacités de KO-LAB Inc. — opérations terrain, installations, fabrication au LAB, équipements — et permet de soumettre une demande de prix pour un produit de la boutique ou une location d'équipement. Le site ne traite aucun paiement en ligne : les prix affichés sont indicatifs et sont confirmés directement par notre équipe avant toute commande ferme.",
+    "section3_titre": "Votre compte",
+    "section3_texte": "La création d'un compte demande un nom et une adresse courriel exacts. Vous êtes responsable de la confidentialité de votre mot de passe et de toute activité effectuée depuis votre compte. Informez-nous rapidement si vous soupçonnez un accès non autorisé.",
+    "section4_titre": "Commandes et demandes de prix",
+    "section4_texte": "Soumettre une commande ou une demande de prix ne constitue pas une vente conclue : notre équipe revient vers vous pour confirmer la disponibilité, le prix final et les modalités. Une commande soumise peut être modifiée pendant la fenêtre indiquée sur la confirmation ; passé ce délai, la préparation débute.",
+    "section5_titre": "Propriété intellectuelle",
+    "section5_texte": "Les textes, photos, logos et autres contenus de ce site appartiennent à KO-LAB Inc. ou sont utilisés avec l'autorisation de leurs propriétaires. Toute reproduction sans autorisation écrite est interdite.",
+    "section6_titre": "Utilisation acceptable",
+    "section6_texte": "Vous acceptez de ne pas utiliser le site à des fins illégales, de ne pas tenter d'en contourner les mesures de sécurité, et de ne pas perturber son fonctionnement normal.",
+    "section7_titre": "Limitation de responsabilité",
+    "section7_texte": "Le site est fourni tel quel, sans garantie de disponibilité continue. KO-LAB Inc. ne peut être tenue responsable des dommages indirects découlant de l'utilisation du site, dans la mesure permise par la loi.",
+    "section8_titre": "Droit applicable",
+    "section8_texte": "Les présentes conditions sont régies par les lois de la province de Québec et les lois applicables du Canada.",
+    "section9_titre": "Modifications",
+    "section9_texte": "Ces conditions peuvent être mises à jour de temps à autre. La date en haut de cette page indique la version en vigueur.",
+    "section10_titre": "Nous joindre",
+    "section10_texte": "Pour toute question sur ces conditions, écrivez à {courriel} ou utilisez notre formulaire de contact."
+  },
   "Footer": {
     "signature": "De l'idée au terrain.",
     "capacites_titre": "Capacités",
     "entreprise_titre": "Entreprise",
     "contact_titre": "Contact",
     "droits": "KO-LAB Inc. Tous droits réservés.",
-    "confidentialite": "Politique de confidentialité"
+    "confidentialite": "Politique de confidentialité",
+    "conditionsUtilisation": "Conditions d'utilisation"
   },
   "Panier": {
     "titre": "Ma sélection",

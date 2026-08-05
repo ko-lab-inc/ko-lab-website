@@ -50,6 +50,17 @@ export const ROUTES = {
   compte: '/compte',
   /** Commandes du client connecté — migration 0021. Accès par session, jamais par un token dans l'URL. */
   compteCommandes: '/compte/commandes',
+  /**
+   * Pages légales — accueil, pied de page, et courriels transactionnels.
+   *
+   * `mentionsLegales` et `politiqueRetour` restent à créer : la première a
+   * besoin de l'adresse d'affaires réelle et du NEQ, la seconde d'une vraie
+   * décision sur une politique de retour (aujourd'hui inexistante — voir
+   * gabaritCommande.ts). Les ajouter ici avant que ces pages existent
+   * romprait tous les liens qui les utiliseraient.
+   */
+  politiqueConfidentialite: '/politique-confidentialite',
+  conditionsUtilisation: '/conditions-utilisation',
 } as const
 
 export type RouteKey = keyof typeof ROUTES

@@ -34,6 +34,11 @@ export async function Footer() {
     { key: 'location', href: ROUTES.location },
   ] as const
 
+  const liensLegaux = [
+    { key: 'confidentialite', href: ROUTES.politiqueConfidentialite },
+    { key: 'conditionsUtilisation', href: ROUTES.conditionsUtilisation },
+  ] as const
+
   return (
     <footer className="bg-ko-black text-ko-white">
       <div className="mx-auto max-w-container px-6 py-16 lg:px-12 lg:py-24">
@@ -120,6 +125,23 @@ export async function Footer() {
           <p className="font-mono text-[11px] uppercase tracking-widest text-ko-muted-d">
             © {annee} {t('droits')}
           </p>
+
+          {/* Mentions légales à venir : demande le nom légal exact, l'adresse
+              d'affaires et le NEQ, absents du site aujourd'hui. Politique de
+              retour à venir également — aucune politique de retour formelle
+              n'existe encore (voir gabaritCommande.ts). */}
+          <ul className="flex flex-wrap gap-x-6 gap-y-2">
+            {liensLegaux.map(({ key, href }) => (
+              <li key={key}>
+                <Link
+                  href={href}
+                  className="inline-flex min-h-[44px] items-center text-[11px] text-ko-muted-d transition-colors duration-200 hover:text-ko-white sm:min-h-0"
+                >
+                  {t(key)}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
     </footer>
