@@ -37,7 +37,14 @@ export default async function ConditionsUtilisationPage({ params }: Props) {
   const reglages = await lireReglages()
   const valeurs = { courriel: reglages.contactCourriel }
 
-  const sections = Array.from({ length: 10 }, (_, i) => i + 1).map((n) => ({
+  // Tuple `as const`, pas Array.from : next-intl type ses clés à partir des
+  // littéraux exacts présents dans messages/fr.json. Array.from produit un
+  // `number[]` — `n` y est du type `number`, pas `1 | 2 | ... | 10` — et
+  // `section${number}_titre` ne correspond à aucune clé connue. Une erreur
+  // TypeScript qu'aucun outil local n'attrape : `next dev` ne type-checke
+  // pas, seul `next build` le fait (constaté sur l'échec Vercel).
+  const NUMEROS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const
+  const sections = NUMEROS.map((n) => ({
     titre: t(`section${n}_titre`),
     texte: t(`section${n}_texte`, valeurs),
   }))
