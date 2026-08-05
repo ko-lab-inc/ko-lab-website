@@ -1,9 +1,10 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useEffect } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { creerCommande, type EtatCommande } from '@/app/(marketing)/[locale]/boutique/commande/details/actions'
+import { ChampsLivraison } from '@/components/sections/ChampsLivraison'
 import { buttonVariants } from '@/components/ui/Button'
 import { useRouter } from '@/i18n/navigation'
 import { usePanier } from '@/lib/panier/PanierContext'
@@ -70,7 +71,6 @@ export function FormulaireDetailsCommande({ locale }: { locale: string }) {
   const { articles, pret, vider } = usePanier()
 
   const [etat, action, enCours] = useActionState<EtatCommande, FormData>(creerCommande, {})
-  const [modeLivraison, setModeLivraison] = useState<'expedition' | 'ramassage'>('ramassage')
 
   // Panier vide (lien direct, actualisation après une commande déjà
   // confirmée) : rien à livrer, retour au récapitulatif plutôt qu'un
@@ -131,63 +131,9 @@ export function FormulaireDetailsCommande({ locale }: { locale: string }) {
         </Champ>
       </div>
 
-      <fieldset>
-        <legend className="label-mono mb-2 text-ko-muted">
-          {t('mode_livraison')}
-          <span aria-label={t('champ_obligatoire')} className="ml-1 text-ko-blue">
-            *
-          </span>
-        </legend>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          {(['ramassage', 'expedition'] as const).map((valeur) => (
-            <label
-              key={valeur}
-              className="flex min-h-[44px] flex-1 cursor-pointer items-center gap-2.5 border border-ko-line bg-ko-white px-4 text-base text-ko-ink transition-colors duration-200 hover:border-ko-blue has-[:checked]:border-ko-blue has-[:checked]:text-ko-blue"
-            >
-              <input
-                type="radio"
-                name="modeLivraison"
-                value={valeur}
-                checked={modeLivraison === valeur}
-                onChange={() => setModeLivraison(valeur)}
-                required
-                className="accent-ko-blue"
-              />
-              {valeur === 'ramassage' ? t('ramassage') : t('expedition')}
-            </label>
-          ))}
-        </div>
-      </fieldset>
-
-      {modeLivraison === 'expedition' && (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Champ id="cmd-adresse" libelle={t('adresse')} obligatoire marqueur={t('champ_obligatoire')}>
-              <input id="cmd-adresse" name="adresse" required maxLength={200} autoComplete="street-address" className={CHAMP} />
-            </Champ>
-          </div>
-          {/* Jamais obligatoire — signalé par Christian comme manquant, mais
-              une maison ou une entreprise n'en a simplement pas besoin. */}
-          <Champ id="cmd-appartement" libelle={t('appartement')} marqueur={t('champ_obligatoire')}>
-            <input
-              id="cmd-appartement"
-              name="appartement"
-              maxLength={20}
-              autoComplete="address-line2"
-              className={CHAMP}
-            />
-          </Champ>
-          <Champ id="cmd-ville" libelle={t('ville')} obligatoire marqueur={t('champ_obligatoire')}>
-            <input id="cmd-ville" name="ville" required maxLength={100} autoComplete="address-level2" className={CHAMP} />
-          </Champ>
-          <Champ id="cmd-province" libelle={t('province')} obligatoire marqueur={t('champ_obligatoire')}>
-            <input id="cmd-province" name="province" required maxLength={100} autoComplete="address-level1" className={CHAMP} />
-          </Champ>
-          <Champ id="cmd-code-postal" libelle={t('code_postal')} obligatoire marqueur={t('champ_obligatoire')}>
-            <input id="cmd-code-postal" name="codePostal" required maxLength={20} autoComplete="postal-code" className={CHAMP} />
-          </Champ>
-        </div>
-      )}
+      {/* Pas d'adresse actuelle à la création : les champs restent
+          obligatoires en expédition, voir la note d'en-tête de ChampsLivraison. */}
+      <ChampsLivraison modeDefaut="ramassage" />
 
       {erreur && (
         <p role="alert" className="text-base text-ko-ink">

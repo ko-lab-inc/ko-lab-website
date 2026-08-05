@@ -131,7 +131,10 @@ export default async function DetailCommandePage({ params }: Props) {
               </p>
               <EditeurLignesCommande
                 idCommande={commande.id}
+                numero={commande.numero}
                 locale={locale}
+                modeLivraisonInitial={commande.mode_livraison as 'ramassage' | 'expedition'}
+                adresseLivraisonInitiale={commande.adresse_livraison}
                 lignesInitiales={(lignes ?? []).map((l) => ({
                   id: l.id,
                   slug: catalogue.find((p) => p.id === l.produit_id)?.slug ?? null,

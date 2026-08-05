@@ -4,12 +4,15 @@ import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
+import { gabaritConfirmationCommande } from '@/lib/email/gabaritCommande'
 import { lireProduitsPublies } from '@/lib/produits'
+import { routeCommande } from '@/lib/routes'
 import { createClient } from '@/lib/supabase/server'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { estUuid } from '@/lib/utils/identifiant'
+import { origine } from '@/lib/utils/origine'
 import { rateLimit } from '@/lib/utils/rateLimit'
-import { schemaLigneCommande } from '@/lib/validation'
+import { schemaLigneCommande, schemaLivraison } from '@/lib/validation'
 import { STATUTS_MODIFIABLES, type StatutCommande } from '@/types'
 
 /**
@@ -65,6 +68,16 @@ export async function modifierCommande(
   const analyse = z.array(schemaLigneCommande).min(1).max(50).safeParse(lignesBrutes)
   if (!analyse.success) return { erreur: 'donnees' }
 
+  const analyseLivraison = schemaLivraison.safeParse({
+    modeLivraison: donnees.get('modeLivraison'),
+    adresse: donnees.get('adresse'),
+    appartement: donnees.get('appartement'),
+    ville: donnees.get('ville'),
+    codePostal: donnees.get('codePostal'),
+    province: donnees.get('province'),
+  })
+  if (!analyseLivraison.success) return { erreur: 'donnees' }
+
   /**
    * Relecture SOUS RLS — si la commande n'est pas la sienne, ou n'existe pas,
    * `commandes_lecture_client` la rend invisible : `maybeSingle()` renvoie
@@ -74,7 +87,7 @@ export async function modifierCommande(
    */
   const { data: commande } = await supabase
     .from('commandes')
-    .select('statut, fenetre_modification_expire_at')
+    .select('numero, statut, mode_livraison, adresse_livraison, created_at, fenetre_modification_expire_at')
     .eq('id', id)
     .maybeSingle()
 
@@ -85,6 +98,33 @@ export async function modifierCommande(
     new Date(commande.fenetre_modification_expire_at) > new Date()
 
   if (!modifiable) return { erreur: 'fenetre_fermee' }
+
+  /**
+   * Garder l'adresse actuelle, ou la remplacer — jamais l'exiger à nouveau.
+   *
+   * ChampsLivraison rend les champs d'adresse FACULTATIFS ici (contrairement
+   * à la création) : une commande déjà en expédition a déjà une adresse, la
+   * retaper pour juste ajouter un produit serait absurde. `adresse` vide veut
+   * donc dire « garder l'actuelle », pas « adresse manquante » — sauf s'il
+   * n'y en a pas à garder (commande initialement en ramassage qui bascule en
+   * expédition sans rien fournir), seul cas où c'est vraiment une erreur.
+   */
+  let adresseLivraison: string | null
+  if (analyseLivraison.data.modeLivraison === 'ramassage') {
+    adresseLivraison = null
+  } else if (analyseLivraison.data.adresse) {
+    if (!analyseLivraison.data.ville || !analyseLivraison.data.province || !analyseLivraison.data.codePostal) {
+      return { erreur: 'donnees' }
+    }
+    const rue = analyseLivraison.data.appartement
+      ? `${analyseLivraison.data.adresse}, app. ${analyseLivraison.data.appartement}`
+      : analyseLivraison.data.adresse
+    adresseLivraison = `${rue}, ${analyseLivraison.data.ville} (${analyseLivraison.data.province}) ${analyseLivraison.data.codePostal}`
+  } else if (commande.mode_livraison === 'expedition' && commande.adresse_livraison) {
+    adresseLivraison = commande.adresse_livraison
+  } else {
+    return { erreur: 'donnees' }
+  }
 
   const catalogue = await lireProduitsPublies()
   const parSlug = new Map(catalogue.map((p) => [p.slug, p]))
@@ -102,6 +142,9 @@ export async function modifierCommande(
         categorie: produit.categorie,
         quantite,
         prix_indicatif: produit.prixIndicatif,
+        // Uniquement pour le courriel plus bas, jamais une colonne de
+        // lignes_commande — même exclusion que creerCommande avant l'insert.
+        image: produit.src,
       },
     ]
   })
@@ -121,7 +164,9 @@ export async function modifierCommande(
       .eq('commande_id', id)
     const idsAncien = (anciennes ?? []).map((l) => l.id)
 
-    const { error: erreurInsert } = await supabase.from('lignes_commande').insert(lignesValidees)
+    const { error: erreurInsert } = await supabase
+      .from('lignes_commande')
+      .insert(lignesValidees.map(({ image: _image, ...l }) => l))
     if (erreurInsert) throw erreurInsert
 
     if (idsAncien.length > 0) {
@@ -133,9 +178,60 @@ export async function modifierCommande(
         console.error('[compte/commandes] anciennes lignes non nettoyées', erreurSuppr.message)
       }
     }
+
+    const { error: erreurLivraison } = await supabase
+      .from('commandes')
+      .update({ mode_livraison: analyseLivraison.data.modeLivraison, adresse_livraison: adresseLivraison })
+      .eq('id', id)
+    if (erreurLivraison) {
+      console.error('[compte/commandes] mode de livraison non mis à jour', erreurLivraison.message)
+    }
   } catch (err) {
     console.error('[compte/commandes] échec modification', err)
     return { erreur: 'serveur' }
+  }
+
+  // --------------------------------------------- nouveau courriel de confirmation
+  // DÉGRADATION VOLONTAIRE — même motif que creerCommande : la modification
+  // est déjà enregistrée à ce stade, un échec d'envoi ne doit pas faire
+  // échouer l'enregistrement lui-même. Sujet distinct de la création
+  // (« mise à jour », pas « confirmation ») pour ne pas laisser croire qu'une
+  // seconde commande vient d'être passée.
+  const cleResend = process.env.RESEND_API_KEY
+  if (!cleResend) {
+    console.warn('[compte/commandes] RESEND_API_KEY absente — courriel de mise à jour non envoyé')
+  } else if (user.email) {
+    try {
+      const { Resend } = await import('resend')
+      const lienCommande = `${origine()}/${locale}${routeCommande(id)}`
+
+      const { html, text } = gabaritConfirmationCommande({
+        numero: commande.numero,
+        creeLe: new Date(commande.created_at),
+        fenetreExpireLe: new Date(commande.fenetre_modification_expire_at),
+        lignes: lignesValidees.map((l) => ({
+          nom: l.nom_produit,
+          categorie: l.categorie,
+          quantite: l.quantite,
+          prix: l.prix_indicatif,
+          image: l.image,
+        })),
+        modeLivraison: analyseLivraison.data.modeLivraison,
+        adresseLivraison,
+        lienCommande,
+        origine: origine(),
+      })
+
+      await new Resend(cleResend).emails.send({
+        from: 'KO-LAB <site@ko-lab-center.ca>',
+        to: user.email,
+        subject: `Commande mise à jour — ${commande.numero}`,
+        html,
+        text,
+      })
+    } catch (err) {
+      console.error('[compte/commandes] échec envoi du courriel de mise à jour', err)
+    }
   }
 
   revalidatePath(`/${locale}/compte/commandes/${id}`)

@@ -695,7 +695,12 @@
     "enregistrer": "Enregistrer les modifications",
     "modification_enregistree": "Modifications enregistrées.",
     "annuler_commande": "Annuler ma commande",
-    "confirmer_annulation": "Annuler cette commande ? Cette action est définitive."
+    "confirmer_annulation": "Annuler cette commande ? Cette action est définitive.",
+    "adresse_actuelle": "Adresse actuelle",
+    "adresse_conserver_aide": "Laissez les champs ci-dessous vides pour conserver cette adresse, ou remplissez-les pour la remplacer.",
+    "bandeau_texte": "Vous ajoutez des produits à la commande {numero}.",
+    "bandeau_terminer": "Terminer et revenir à ma commande",
+    "bandeau_annuler": "Annuler"
   },
   "Commun": {
     "chargement": "Chargement…",

@@ -1,12 +1,15 @@
 'use client'
 
-import { useActionState, useMemo, useState } from 'react'
+import { useActionState, useEffect, useMemo, useRef, useState } from 'react'
 import { useFormatter, useTranslations } from 'next-intl'
 
 import { modifierCommande, type EtatModification } from '@/app/(marketing)/[locale]/compte/commandes/[id]/actions'
+import { ChampsLivraison } from '@/components/sections/ChampsLivraison'
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeMoins, IconePlus } from '@/components/ui/Icones'
 import { Link } from '@/i18n/navigation'
+import { effacerMarquePourCommande, lireMarquePourCommande } from '@/lib/panier/pourCommande'
+import { usePanier } from '@/lib/panier/PanierContext'
 import { ROUTES } from '@/lib/routes'
 
 type LigneEditable = {
@@ -40,11 +43,15 @@ type LigneEditable = {
  */
 export function EditeurLignesCommande({
   idCommande,
+  numero,
   locale,
   lignesInitiales,
   catalogue,
+  modeLivraisonInitial,
+  adresseLivraisonInitiale,
 }: {
   idCommande: string
+  numero: string
   locale: string
   lignesInitiales: {
     id: string
@@ -61,9 +68,12 @@ export function EditeurLignesCommande({
     prixIndicatif: number | null
     quantiteDisponible: number
   }[]
+  modeLivraisonInitial: 'ramassage' | 'expedition'
+  adresseLivraisonInitiale: string | null
 }) {
   const t = useTranslations('Commande')
   const format = useFormatter()
+  const { articles: articlesPanier, vider: viderPanier } = usePanier()
 
   const parSlug = useMemo(() => new Map(catalogue.map((p) => [p.slug, p])), [catalogue])
 
@@ -79,6 +89,67 @@ export function EditeurLignesCommande({
       })),
   )
   const lignesIndisponibles = lignesInitiales.filter((l) => !l.slug || !parSlug.has(l.slug))
+
+  /**
+   * Fusion du panier « ajout à cette commande » — une seule fois au montage.
+   *
+   * ⚠️ Le marqueur doit correspondre à CETTE commande précisément : sans
+   * cette vérification, ouvrir une AUTRE commande pendant que le marqueur
+   * d'une précédente traîne encore fusionnerait le panier au mauvais
+   * endroit. `effectue` (ref, pas state) évite une double fusion en Strict
+   * Mode (montage/démontage/remontage immédiat en développement).
+   */
+  const effectue = useRef(false)
+  useEffect(() => {
+    if (effectue.current) return
+    effectue.current = true
+
+    // Fonction imbriquée, pas un appel direct dans le corps de l'effet — même
+    // motif que PanierContext.tsx et BandeauPourCommande : la règle
+    // react-hooks/set-state-in-effect exige un setState « en callback ».
+    const fusionner = () => {
+      const marque = lireMarquePourCommande()
+      if (!marque || marque.id !== idCommande || articlesPanier.length === 0) return
+
+      setLignes((actuelles) => {
+        // ⚠️ NE JAMAIS MUTER `existante` — un updater passé à setState doit
+        // rester pur. Muter l'objet en place a d'abord donné 1+1+1=3 au lieu
+        // de 1+1=2 : le Strict Mode de React invoque deux fois l'updater en
+        // développement pour détecter exactement ce genre d'impureté ; la
+        // seconde invocation relisait alors l'objet déjà modifié par la
+        // première. `{ ...existante, quantite: ... }` crée un objet neuf à
+        // chaque fois, donc les deux invocations partent du même état et
+        // produisent le même résultat.
+        const parSlugActuelles = new Map(actuelles.map((l) => [l.slug, l]))
+        for (const article of articlesPanier) {
+          const produit = parSlug.get(article.slug)
+          if (!produit) continue // produit dépublié entre-temps — ignoré, pas d'erreur silencieuse ailleurs
+          const existante = parSlugActuelles.get(article.slug)
+          const max = produit.quantiteDisponible
+          if (existante) {
+            parSlugActuelles.set(article.slug, {
+              ...existante,
+              quantite: Math.min(existante.quantite + article.quantite, max),
+            })
+          } else {
+            parSlugActuelles.set(article.slug, {
+              slug: article.slug,
+              nom: produit.nom,
+              categorie: produit.categorie,
+              prixIndicatif: produit.prixIndicatif,
+              quantite: Math.min(article.quantite, max),
+            })
+          }
+        }
+        return Array.from(parSlugActuelles.values())
+      })
+
+      effacerMarquePourCommande()
+      viderPanier()
+    }
+    fusionner()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const [etat, action, enCours] = useActionState<EtatModification, FormData>(modifierCommande, {})
 
@@ -175,13 +246,19 @@ export function EditeurLignesCommande({
         recréée dans ce formulaire.
       */}
       <div>
-        <Link href={ROUTES.boutique} className={buttonVariants({ variant: 'ghost' })}>
+        {/* `numero` porté dans l'URL uniquement pour le texte du bandeau
+            (BandeauPourCommande) — la fusion elle-même s'appuie sur `id`,
+            jamais sur le numéro affiché. */}
+        <Link
+          href={`${ROUTES.boutique}?pourCommande=${idCommande}&numero=${encodeURIComponent(numero)}`}
+          className={buttonVariants({ variant: 'ghost' })}
+        >
           {t('ajouter_produit')}
           <span aria-hidden="true">→</span>
         </Link>
       </div>
 
-      <form action={action}>
+      <form action={action} className="space-y-6">
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="id" value={idCommande} />
         <input
@@ -189,6 +266,8 @@ export function EditeurLignesCommande({
           name="lignes"
           value={JSON.stringify(lignes.map((l) => ({ slug: l.slug, quantite: l.quantite })))}
         />
+
+        <ChampsLivraison modeDefaut={modeLivraisonInitial} adresseActuelle={adresseLivraisonInitiale} />
 
         {erreur && (
           <p role="alert" className="mb-4 text-sm text-ko-ink">

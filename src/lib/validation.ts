@@ -182,6 +182,55 @@ export const schemaCommande = z
 export type DonneesCommande = z.infer<typeof schemaCommande>
 
 /**
+ * Mode de livraison + adresse — pour modifierCommande (compte/commandes/[id]),
+ * pas pour la création. Champs dupliqués de schemaCommande ci-dessus plutôt
+ * que composés depuis lui : zod ne permet pas d'`.extend()` un schéma déjà
+ * `.refine()`, et schemaCommande doit rester intact (encore utilisé tel quel
+ * par creerCommande).
+ *
+ * ⚠️ PAS DE `.refine()` EXIGEANT L'ADRESSE ICI, contrairement à schemaCommande.
+ * En modification, une adresse vide en expédition ne veut PAS dire « adresse
+ * manquante » — la commande peut déjà en avoir une. C'est modifierCommande,
+ * pas ce schéma, qui décide de garder l'existante ou d'exiger une adresse
+ * complète quand on tente d'en écrire une nouvelle : voir sa note d'en-tête.
+ */
+export const schemaLivraison = z.object({
+  modeLivraison: z.enum(MODES_LIVRAISON),
+  adresse: z
+    .string()
+    .trim()
+    .max(200)
+    .nullish()
+    .transform((v) => (v === '' || v === null ? undefined : v)),
+  appartement: z
+    .string()
+    .trim()
+    .max(20)
+    .nullish()
+    .transform((v) => (v === '' || v === null ? undefined : v)),
+  ville: z
+    .string()
+    .trim()
+    .max(100)
+    .nullish()
+    .transform((v) => (v === '' || v === null ? undefined : v)),
+  codePostal: z
+    .string()
+    .trim()
+    .max(20)
+    .nullish()
+    .transform((v) => (v === '' || v === null ? undefined : v)),
+  province: z
+    .string()
+    .trim()
+    .max(100)
+    .nullish()
+    .transform((v) => (v === '' || v === null ? undefined : v)),
+})
+
+export type DonneesLivraison = z.infer<typeof schemaLivraison>
+
+/**
  * Mots de passe les plus utilisés au monde, et leurs variantes « conformes ».
  *
  * Liste courte et volontairement ciblée : ce sont les premières entrées de
