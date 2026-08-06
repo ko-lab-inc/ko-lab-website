@@ -237,7 +237,7 @@ export function gabaritConfirmationCommande({
             <td style="background:${NOIR};padding:24px 32px;">
               <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${BLANC};">De l'idée au terrain.</p>
               <p style="margin:8px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${MUET};">
-                Outaouais, Québec · <a href="mailto:info@ko-lab-center.ca" style="color:${MUET};">info@ko-lab-center.ca</a>
+                Outaouais, Québec · <a href="mailto:info@ko-lab.ca" style="color:${MUET};">info@ko-lab.ca</a>
               </p>
               <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:${MUET};">
                 <a href="${origine}/fr${ROUTES.politiqueConfidentialite}" style="color:${MUET};">Politique de confidentialité</a>

@@ -224,8 +224,25 @@ vérifier qu'elle n'existe pas déjà.
 ## Domaine
 ko-lab-center.ca (production) | develop.ko-lab-center.ca (preview)
 
-⚠️ Corrigé le 2 août 2026 : `ko-lab.ca` n'a jamais été acheté. Le domaine
-réellement enregistré (Cloudflare) est `ko-lab-center.ca` — c'est ce qui
-bloquait Resend (« Domain not verified ») sur tous les courriels sortants
-(confirmation de commande, changement de statut, contact). Si ce fichier dit
-encore `ko-lab.ca` ailleurs qu'ici, c'est qu'il ment : signaler l'écart.
+⚠️ Corrigé le 2 août 2026 : `ko-lab.ca` n'a jamais été acheté comme site web.
+Le domaine réellement enregistré (Cloudflare) est `ko-lab-center.ca` — c'est
+ce qui bloquait Resend (« Domain not verified ») sur tous les courriels
+sortants (confirmation de commande, changement de statut, contact).
+
+⚠️ Précisé le 5 août 2026 — DEUX domaines, deux rôles distincts, aucun des
+deux n'est une erreur :
+- `ko-lab-center.ca` : le SITE WEB, et le seul domaine vérifié par Resend
+  pour ENVOYER (`from:`, en dur dans les gabarits de courriel — ne jamais le
+  rendre modifiable sans revérifier le domaine chez Resend).
+- `ko-lab.ca` : la vraie BOÎTE COURRIEL que l'équipe consulte
+  (`info@ko-lab.ca`), confirmée par Christian. C'est l'adresse affichée
+  partout où on s'adresse à un humain — pied de page, pages légales, texte
+  des courriels, `reply-to` — même si le site, lui, tourne sur
+  `ko-lab-center.ca`. KO-LAB n'a pas le DNS de `ko-lab.ca` : impossible de le
+  vérifier chez Resend, donc impossible d'y ENVOYER depuis ce domaine — d'où
+  le `from` sur `ko-lab-center.ca` et un `reply-to: info@ko-lab.ca` séparé.
+
+Si ce fichier dit encore `ko-lab-center.ca` dans un contexte de courriel
+(`info@ko-lab-center.ca`, `rh@ko-lab-center.ca`) ailleurs qu'ici, c'est qu'il
+ment : signaler l'écart. Une URL de site (`https://ko-lab-center.ca/...`),
+elle, reste correcte.
