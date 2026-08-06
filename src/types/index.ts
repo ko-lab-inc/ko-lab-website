@@ -82,6 +82,22 @@ export type StatutCommande = (typeof STATUTS_COMMANDE)[number]
 export const STATUTS_MODIFIABLES = ['nouvelle', 'confirmee'] as const satisfies readonly StatutCommande[]
 
 /**
+ * Statuts pertinents SELON le mode de livraison — /admin/commandes.
+ *
+ * `expediee` n'a pas de sens sur une commande à ramasser sur place, ni
+ * `prete` (au sens « prête à expédier ») sur une commande en expédition —
+ * jusqu'ici le même <select> proposait les sept statuts sans distinction,
+ * ce qui laissait choisir « Expédiée » sur un ramassage. Signalé par
+ * Christian. `nouvelle`/`confirmee`/`en_preparation`/`completee`/`annulee`
+ * restent communs aux deux : ce sont les points de divergence du cycle qui
+ * changent, pas tout le cycle.
+ */
+export const STATUTS_PAR_MODE: Record<ModeLivraison, readonly StatutCommande[]> = {
+  ramassage: ['nouvelle', 'confirmee', 'en_preparation', 'prete', 'completee', 'annulee'],
+  expedition: ['nouvelle', 'confirmee', 'en_preparation', 'expediee', 'completee', 'annulee'],
+}
+
+/**
  * profils.role — skill 24 (RBAC).
  *
  * ⚠️ 'client' ajouté par la migration 0004, et c'est désormais la valeur PAR

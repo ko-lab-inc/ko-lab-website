@@ -2,7 +2,22 @@
 
 import { changerStatutCommande } from '@/app/(admin)/[locale]/admin/commandes/actions'
 import { PanneauAdmin } from '@/components/layout/CadreAdmin'
-import type { StatutCommande } from '@/types'
+import { STATUTS_COMMANDE, STATUTS_PAR_MODE, type ModeLivraison, type StatutCommande } from '@/types'
+
+/**
+ * Statuts proposés pour CETTE commande : ceux pertinents pour son mode de
+ * livraison, plus son statut actuel s'il en sort (donnée historique déjà mal
+ * assignée avant ce correctif) — sinon le <select> n'aurait aucune option
+ * correspondant à sa valeur réelle, et masquerait l'incohérence au lieu de
+ * la montrer.
+ */
+function optionsStatut(mode: string, statutActuel: string): StatutCommande[] {
+  const base = STATUTS_PAR_MODE[mode as ModeLivraison] ?? STATUTS_COMMANDE
+  if (base.includes(statutActuel as StatutCommande)) return [...base]
+  return [...base, statutActuel as StatutCommande].sort(
+    (a, b) => STATUTS_COMMANDE.indexOf(a) - STATUTS_COMMANDE.indexOf(b),
+  )
+}
 
 export type LigneTableauCommande = {
   id: string
@@ -91,6 +106,13 @@ export function TableauCommandes({
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-base text-ko-ink">{c.nom}</span>
                   <span className="block truncate font-mono text-xs text-ko-muted">{c.email}</span>
+                  {/* Répété ici, visible en dessous de lg : la colonne dédiée
+                      (plus bas) disparaît sous ce seuil, et c'est justement
+                      l'information qui manquait sur mobile pour savoir
+                      comment traiter la commande. Signalé par Christian. */}
+                  <span className="mt-1 block text-xs text-ko-muted lg:hidden">
+                    {c.mode_livraison === 'expedition' ? '↗' : '↓'} {c.mode_livraison}
+                  </span>
                 </span>
 
                 <span className="hidden w-32 shrink-0 text-sm text-ko-muted lg:block">
@@ -121,7 +143,7 @@ export function TableauCommandes({
                     aria-label={`${textes.colonneStatut} — ${c.numero}`}
                     className="min-h-[40px] w-full border border-ko-line bg-ko-white px-2 text-sm text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none"
                   >
-                    {(Object.keys(libelles.statuts) as StatutCommande[]).map((s) => (
+                    {optionsStatut(c.mode_livraison, c.statut).map((s) => (
                       <option key={s} value={s}>
                         {libelles.statuts[s]}
                       </option>
