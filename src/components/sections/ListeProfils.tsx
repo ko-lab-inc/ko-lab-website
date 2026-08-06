@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import { EnteteAdmin, EnteteTableau, PanneauAdmin } from '@/components/layout/CadreAdmin'
 import { LigneUtilisateur } from '@/components/sections/LigneUtilisateur'
 import { createClient } from '@/lib/supabase/server'
-import { ROLES, type Role } from '@/types'
+import type { Role } from '@/types'
 
 /**
  * Liste de comptes filtrée par rôle — le moteur des trois écrans d'équipe.
@@ -136,6 +136,3 @@ export async function ListeProfils({
     </>
   )
 }
-
-/** Tous les rôles, pour l'écran d'équipe qui n'en filtre aucun. */
-export const TOUS_LES_ROLES = ROLES

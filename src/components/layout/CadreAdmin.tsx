@@ -169,36 +169,3 @@ export function EnteteTableau({ colonnes }: { colonnes: string[] }) {
   )
 }
 
-/**
- * Écran d'une section pas encore construite.
- *
- * Dit ce qui manque ET pourquoi. Un tableau vide se lirait comme une panne ;
- * une phrase qui nomme la décision bloquante se lit comme une étape.
- */
-export function SectionAVenir({
-  etiquette,
-  texte,
-  points,
-}: {
-  etiquette: string
-  texte: string
-  /** Ce qu'il faut obtenir ou décider avant de pouvoir construire. */
-  points?: string[]
-}) {
-  return (
-    <PanneauAdmin>
-      <p className="label-mono text-ko-blue">{etiquette}</p>
-      <p className="mt-3 max-w-[64ch] text-base leading-relaxed text-ko-ink">{texte}</p>
-      {points && points.length > 0 && (
-        <ul className="mt-6 space-y-2.5 border-t border-ko-line pt-5">
-          {points.map((p) => (
-            <li key={p} className="flex gap-3 text-sm leading-relaxed text-ko-muted">
-              <span aria-hidden="true" className="mt-2 h-px w-3 shrink-0 bg-ko-blue" />
-              <span className="max-w-[60ch]">{p}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </PanneauAdmin>
-  )
-}

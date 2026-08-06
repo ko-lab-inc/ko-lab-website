@@ -283,9 +283,17 @@ export default async function AdminLayout({ children, params }: Props) {
                   un bouton de suppression lui est refusé doit pouvoir le
                   constater sans ouvrir la base. Sur deux lignes plutôt qu'une
                   suite séparée par un point médian — une adresse longue et un
-                  rôle collés se lisaient comme une seule chaîne. */}
-              <span className="hidden text-right leading-tight sm:block">
-                <span className="block text-sm text-ko-ink">{profil.email}</span>
+                  rôle collés se lisaient comme une seule chaîne.
+
+                  ⚠️ Visible dès mobile, plus seulement à partir de `sm:` — un
+                  compte équipe resté connecté par erreur sur un téléphone
+                  personnel passait inaperçu, l'adresse n'apparaissant que sur
+                  écran large. Signalé par Christian après un mélange de
+                  comptes découvert seulement en creusant jusqu'à un autre
+                  écran. `max-w-[38vw] truncate` évite qu'une adresse longue
+                  ne pousse « Se déconnecter » hors de l'écran sur mobile. */}
+              <span className="max-w-[38vw] text-right leading-tight sm:max-w-none">
+                <span className="block truncate text-sm text-ko-ink">{profil.email}</span>
                 <span className="label-mono text-ko-blue">
                   {t(`role_${profil.role === 'admin' ? 'admin' : 'editor'}`)}
                 </span>

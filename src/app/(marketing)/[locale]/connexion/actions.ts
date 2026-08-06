@@ -142,9 +142,3 @@ export async function connecter(
   // s'afficherait comme une erreur serveur.
   redirect(cible)
 }
-
-export async function deconnecter(locale: string) {
-  const supabase = await createClient()
-  await supabase.auth.signOut()
-  redirect(`/${locale}/connexion`)
-}

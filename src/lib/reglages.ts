@@ -89,8 +89,6 @@ const CLES = {
 
 export type CleReglage = keyof typeof CLES
 
-export const CLES_REGLAGES = Object.keys(CLES) as readonly CleReglage[]
-
 /** Étiquette de cache, partagée avec l'action d'enregistrement. */
 export const ETIQUETTE_REGLAGES = 'reglages'
 
