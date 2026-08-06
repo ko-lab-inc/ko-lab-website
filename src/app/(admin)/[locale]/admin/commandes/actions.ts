@@ -6,11 +6,12 @@ import { getTranslations } from 'next-intl/server'
 
 import { routing } from '@/i18n/routing'
 import { gabaritChangementStatut } from '@/lib/email/gabaritStatutCommande'
+import { lireProduitsPublies } from '@/lib/produits'
 import { routeCommande } from '@/lib/routes'
-import { exigerRole } from '@/lib/auth/garde'
+import { exigerRole, type AccesAdmin } from '@/lib/auth/garde'
 import { estUuid } from '@/lib/utils/identifiant'
 import { origine } from '@/lib/utils/origine'
-import { ROLES_EQUIPE, STATUTS_COMMANDE, type StatutCommande } from '@/types'
+import { ROLES_EQUIPE, STATUTS_COMMANDE, STATUTS_PAR_MODE, type ModeLivraison, type StatutCommande } from '@/types'
 
 /**
  * Gestion des commandes — table commandes, migration 0021.
@@ -51,13 +52,21 @@ export async function changerStatutCommande(donnees: FormData): Promise<void> {
       .from('commandes')
       .update({ statut })
       .eq('id', id)
-      .select('numero, email')
+      .select('numero, email, mode_livraison')
       .single()
 
     if (error || !data) {
       console.error('[admin/commandes] changement de statut refusé', error?.message)
     } else {
-      await notifierClient({ locale, id, numero: data.numero, email: data.email, statut })
+      await notifierClient({
+        supabase,
+        locale,
+        id,
+        numero: data.numero,
+        email: data.email,
+        statut,
+        modeLivraison: data.mode_livraison as ModeLivraison,
+      })
     }
   } catch (err) {
     console.error('[admin/commandes] échec changement de statut', err)
@@ -67,17 +76,21 @@ export async function changerStatutCommande(donnees: FormData): Promise<void> {
 }
 
 async function notifierClient({
+  supabase,
   locale,
   id,
   numero,
   email,
   statut,
+  modeLivraison,
 }: {
+  supabase: AccesAdmin['supabase']
   locale: (typeof routing.locales)[number]
   id: string
   numero: string
   email: string
   statut: StatutCommande
+  modeLivraison: ModeLivraison
 }): Promise<void> {
   const cleResend = process.env.RESEND_API_KEY
   if (!cleResend) {
@@ -90,8 +103,38 @@ async function notifierClient({
     const statutLabel = t(`statut_${statut}`)
     const lienCommande = `${origine()}/${locale}${routeCommande(id)}`
 
+    const libellesStatuts: Record<string, string> = Object.fromEntries(
+      STATUTS_COMMANDE.map((s) => [s, t(`statut_${s}`)]),
+    )
+    // Pas de parcours pour une annulation : ce n'est pas une progression,
+    // c'est une sortie de route — même choix que StatutTimeline.tsx.
+    const etapesTimeline = statut === 'annulee' ? [] : STATUTS_PAR_MODE[modeLivraison].filter((s) => s !== 'annulee')
+
+    // Lignes + photo ACTUELLE du catalogue — même raisonnement que la page
+    // /compte/commandes/[id] : lignes_commande n'a jamais stocké d'image.
+    const [{ data: lignesCommande }, catalogue] = await Promise.all([
+      supabase.from('lignes_commande').select('nom_produit, categorie, quantite, produit_id').eq('commande_id', id),
+      lireProduitsPublies(),
+    ])
+    const catalogueParId = new Map(catalogue.map((p) => [p.id, p]))
+    const lignes = (lignesCommande ?? []).map((l) => ({
+      nom: l.nom_produit,
+      categorie: l.categorie,
+      quantite: l.quantite,
+      image: l.produit_id ? (catalogueParId.get(l.produit_id)?.src ?? null) : null,
+    }))
+
     const { Resend } = await import('resend')
-    const { html, text } = gabaritChangementStatut({ numero, statutLabel, lienCommande, origine: origine() })
+    const { html, text } = gabaritChangementStatut({
+      numero,
+      statutLabel,
+      statutActuel: statut,
+      etapesTimeline,
+      libellesStatuts,
+      lignes,
+      lienCommande,
+      origine: origine(),
+    })
 
     await new Resend(cleResend).emails.send({
       from: 'KO-LAB <site@ko-lab-center.ca>',

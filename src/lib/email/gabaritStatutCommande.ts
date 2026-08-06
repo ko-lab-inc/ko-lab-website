@@ -10,37 +10,139 @@
  * chaque changement, sans avoir à revenir consulter sa page de commande par
  * habitude. Voir changerStatutCommande (admin/commandes/actions.ts).
  *
- * Volontairement plus court que gabaritCommande.ts (confirmation initiale,
- * avec produits et images) : ce courriel n'annonce qu'un changement d'état,
- * pas le contenu de la commande — même style (bandeau noir, accent bleu),
- * même lien vers /compte/commandes/[id] pour le détail complet.
+ * ---------------------------------------------------------------------------
+ * PARCOURS ET PRODUITS — ajoutés le 6 août 2026
+ *
+ * Ce courriel n'affichait au départ que le nouveau statut, sans le parcours
+ * ni les produits — demande de Christian après avoir vu la page
+ * /compte/commandes/[id] recevoir les deux (StatutTimeline, photos). Même
+ * information, deux rendus : un `<ol>` + flexbox sur la page, une paire de
+ * `<table>` ici — aucun client de messagerie de bureau (Outlook au premier
+ * chef) ne comprend flexbox/grid, seuls des tableaux à largeurs FIXES en
+ * pixels s'affichent de façon fiable partout. `font-size:1px;line-height:1px`
+ * sur les cellules de points/lignes : technique standard pour qu'une cellule
+ * de tableau conserve une hauteur précise en email sans dépendre du rendu de
+ * texte d'un client à l'autre.
  * ---------------------------------------------------------------------------
  */
 
 import { ROUTES } from '@/lib/routes'
+
+import type { StatutCommande } from '@/types'
 
 const NOIR = '#111210'
 const CREME = '#f0ede6'
 const BLANC = '#f8f6f1'
 const BLEU = '#2f7fc9'
 const MUET = '#7a7b76'
+const LIGNE = '#e0ddd6'
+
+const LARGEUR_CONTENU = 496
+const COTE_POINT = 12
 
 function echapper(texte: string): string {
   return texte.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
+function image(src: string | null, origine: string): string | null {
+  if (!src) return null
+  return src.startsWith('http') ? src : `${origine}${src}`
+}
+
+/**
+ * Parcours horizontal — équivalent email de StatutTimeline.tsx (ui/). Même
+ * principe (points + lignes, un point atteint devient bleu), même exclusion
+ * de `annulee` : ce n'est pas une étape, l'appelant ne fournit `etapes` que
+ * pour une commande active.
+ */
+function construireTimeline(
+  etapes: readonly StatutCommande[],
+  statutActuel: StatutCommande,
+  libelles: Record<string, string>,
+): string {
+  const n = etapes.length
+  if (n === 0) return ''
+  const largeurLigne = n > 1 ? Math.floor((LARGEUR_CONTENU - n * COTE_POINT) / (n - 1)) : 0
+  const indexActuel = etapes.indexOf(statutActuel)
+
+  const cellulesPoints = etapes
+    .map((_etape, i) => {
+      const atteinte = indexActuel >= 0 && i <= indexActuel
+      let html = `<td width="${COTE_POINT}" style="width:${COTE_POINT}px;height:${COTE_POINT}px;background:${atteinte ? BLEU : LIGNE};font-size:1px;line-height:1px;">&nbsp;</td>`
+      if (i < n - 1) {
+        const ligneAtteinte = i < indexActuel
+        html += `<td width="${largeurLigne}" style="width:${largeurLigne}px;height:1px;background:${ligneAtteinte ? BLEU : LIGNE};font-size:1px;line-height:1px;">&nbsp;</td>`
+      }
+      return html
+    })
+    .join('')
+
+  const cellulesLabels = etapes
+    .map((etape, i) => {
+      const atteinte = indexActuel >= 0 && i <= indexActuel
+      const colspan = i < n - 1 ? 2 : 1
+      return `<td colspan="${colspan}" style="padding-top:8px;font-family:'Courier New',Courier,monospace;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:${atteinte ? NOIR : MUET};text-align:center;">${echapper(libelles[etape] ?? etape)}</td>`
+    })
+    .join('')
+
+  return `
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:${LARGEUR_CONTENU}px;max-width:100%;">
+      <tr>${cellulesPoints}</tr>
+      <tr>${cellulesLabels}</tr>
+    </table>`
+}
+
+function construireLignes(
+  lignes: { nom: string; categorie: string; quantite: number; image: string | null }[],
+  origine: string,
+): string {
+  return lignes
+    .map((l) => {
+      const src = image(l.image, origine)
+      const vignette = src
+        ? `<img src="${src}" width="56" height="56" alt="" style="display:block;width:56px;height:56px;object-fit:cover;border:1px solid ${LIGNE};background:${BLANC};">`
+        : `<div style="width:56px;height:56px;border:1px solid ${LIGNE};background:${BLANC};"></div>`
+
+      return `
+        <tr>
+          <td style="padding:14px 0;border-bottom:1px solid ${LIGNE};width:56px;">${vignette}</td>
+          <td style="padding:14px 0 14px 16px;border-bottom:1px solid ${LIGNE};font-family:Arial,Helvetica,sans-serif;">
+            <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:${BLEU};">${echapper(l.categorie)}</div>
+            <div style="font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${NOIR};margin-top:2px;">${echapper(l.nom)}</div>
+          </td>
+          <td style="padding:14px 0 14px 16px;border-bottom:1px solid ${LIGNE};font-family:'Courier New',Courier,monospace;font-size:13px;color:${MUET};text-align:right;white-space:nowrap;vertical-align:top;">
+            × ${l.quantite}
+          </td>
+        </tr>`
+    })
+    .join('')
+}
+
 export function gabaritChangementStatut({
   numero,
   statutLabel,
+  statutActuel,
+  etapesTimeline,
+  libellesStatuts,
+  lignes,
   lienCommande,
   origine,
 }: {
   numero: string
   statutLabel: string
+  /** Statut réel — peut être hors de `etapesTimeline` sur une donnée historique incohérente, voir construireTimeline. */
+  statutActuel: StatutCommande
+  /** Parcours du MODE de cette commande, sans `annulee` — voir STATUTS_PAR_MODE. */
+  etapesTimeline: readonly StatutCommande[]
+  libellesStatuts: Record<string, string>
+  lignes: { nom: string; categorie: string; quantite: number; image: string | null }[]
   lienCommande: string
   /** Base absolue du site — même paramètre que gabaritCommande.ts, pour les liens légaux du pied. */
   origine: string
 }): { html: string; text: string } {
+  const timelineHtml = construireTimeline(etapesTimeline, statutActuel, libellesStatuts)
+  const lignesHtml = construireLignes(lignes, origine)
+
   const html = `<!doctype html>
 <html lang="fr">
 <body style="margin:0;padding:0;background:${CREME};">
@@ -61,6 +163,28 @@ export function gabaritChangementStatut({
               <h1 style="margin:8px 0 0;font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:24px;color:${NOIR};">Nouveau statut : ${echapper(statutLabel)}</h1>
             </td>
           </tr>
+
+          ${
+            timelineHtml
+              ? `<tr>
+            <td style="padding:24px 32px 0;">
+              ${timelineHtml}
+            </td>
+          </tr>`
+              : ''
+          }
+
+          ${
+            lignes.length > 0
+              ? `<tr>
+            <td style="padding:24px 32px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${lignesHtml}
+              </table>
+            </td>
+          </tr>`
+              : ''
+          }
 
           <tr>
             <td style="padding:28px 32px 32px;">
@@ -101,6 +225,10 @@ export function gabaritChangementStatut({
   const text = [
     `Commande ${numero}`,
     `Nouveau statut : ${statutLabel}`,
+    '',
+    `Parcours : ${etapesTimeline.map((e) => libellesStatuts[e] ?? e).join(' > ')}`,
+    '',
+    ...(lignes.length > 0 ? lignes.map((l) => `— ${l.nom} × ${l.quantite}`) : []),
     '',
     lienCommande,
     '',
