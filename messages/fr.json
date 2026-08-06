@@ -741,6 +741,7 @@
     "colonne_livraison": "Mode",
     "colonne_total": "Total indicatif",
     "commande_total_sur_demande": "Sur demande",
+    "commande_statut_reel": "Statut réel",
     "commande_statut_nouvelle": "Nouvelle",
     "commande_statut_confirmee": "Confirmée",
     "commande_statut_en_preparation": "En préparation",

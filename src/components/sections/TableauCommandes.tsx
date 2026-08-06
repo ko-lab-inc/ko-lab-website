@@ -5,18 +5,18 @@ import { PanneauAdmin } from '@/components/layout/CadreAdmin'
 import { STATUTS_COMMANDE, STATUTS_PAR_MODE, type ModeLivraison, type StatutCommande } from '@/types'
 
 /**
- * Statuts proposés pour CETTE commande : ceux pertinents pour son mode de
- * livraison, plus son statut actuel s'il en sort (donnée historique déjà mal
- * assignée avant ce correctif) — sinon le <select> n'aurait aucune option
- * correspondant à sa valeur réelle, et masquerait l'incohérence au lieu de
- * la montrer.
+ * Statuts proposés pour CETTE commande : STRICTEMENT ceux pertinents pour
+ * son mode de livraison — jamais les sept, jamais le statut actuel en plus
+ * s'il en sort. Une première version gardait le statut réel comme option de
+ * secours quand il ne correspondait pas au mode (donnée historique mal
+ * assignée) ; Christian l'a corrigée après coup : une commande à ramasser ne
+ * doit jamais reproposer « Expédiée », même pour corriger une ancienne
+ * erreur — la liste doit rester celle du mode, point final. Le vrai statut
+ * incohérent reste visible ailleurs (voir `incoherent` plus bas), jamais
+ * dans les choix eux-mêmes.
  */
-function optionsStatut(mode: string, statutActuel: string): StatutCommande[] {
-  const base = STATUTS_PAR_MODE[mode as ModeLivraison] ?? STATUTS_COMMANDE
-  if (base.includes(statutActuel as StatutCommande)) return [...base]
-  return [...base, statutActuel as StatutCommande].sort(
-    (a, b) => STATUTS_COMMANDE.indexOf(a) - STATUTS_COMMANDE.indexOf(b),
-  )
+function optionsStatut(mode: string): readonly StatutCommande[] {
+  return STATUTS_PAR_MODE[mode as ModeLivraison] ?? STATUTS_COMMANDE
 }
 
 export type LigneTableauCommande = {
@@ -59,6 +59,7 @@ export function TableauCommandes({
     colonneTotal: string
     colonneCree: string
     totalSurDemande: string
+    statutReel: string
   }
 }) {
   return (
@@ -127,29 +128,50 @@ export function TableauCommandes({
                   {c.dateFormatee}
                 </span>
 
-                <form action={changerStatutCommande} className="w-40 shrink-0">
-                  <input type="hidden" name="locale" value={locale} />
-                  <input type="hidden" name="id" value={c.id} />
-                  {/* `key={c.statut}` — voir TableauDemandes.tsx pour le
-                      détail : sans lui, le menu revient visuellement sur
-                      l'ancien statut après un changement, même si l'écriture
-                      a réussi (comportement de reset des formulaires non
-                      contrôlés de React). */}
-                  <select
-                    key={c.statut}
-                    name="statut"
-                    defaultValue={c.statut}
-                    onChange={(e) => e.currentTarget.form?.requestSubmit()}
-                    aria-label={`${textes.colonneStatut} — ${c.numero}`}
-                    className="min-h-[40px] w-full border border-ko-line bg-ko-white px-2 text-sm text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none"
-                  >
-                    {optionsStatut(c.mode_livraison, c.statut).map((s) => (
-                      <option key={s} value={s}>
-                        {libelles.statuts[s]}
-                      </option>
-                    ))}
-                  </select>
-                </form>
+                {(() => {
+                  const options = optionsStatut(c.mode_livraison)
+                  const incoherent = !options.includes(c.statut as StatutCommande)
+
+                  return (
+                    <div className="w-40 shrink-0">
+                      <form action={changerStatutCommande}>
+                        <input type="hidden" name="locale" value={locale} />
+                        <input type="hidden" name="id" value={c.id} />
+                        {/* `key={c.statut}` — voir TableauDemandes.tsx pour le
+                            détail : sans lui, le menu revient visuellement sur
+                            l'ancien statut après un changement, même si
+                            l'écriture a réussi (comportement de reset des
+                            formulaires non contrôlés de React).
+
+                            Pas de `defaultValue={c.statut}` quand il est
+                            incohérent avec le mode : aucune option ne
+                            correspondrait, le navigateur retomberait sur la
+                            première sans le dire. Le vrai statut reste lisible
+                            juste en dessous (voir `incoherent`) — jamais
+                            proposé comme choix, mais jamais caché non plus. */}
+                        <select
+                          key={c.statut}
+                          name="statut"
+                          defaultValue={incoherent ? undefined : c.statut}
+                          onChange={(e) => e.currentTarget.form?.requestSubmit()}
+                          aria-label={`${textes.colonneStatut} — ${c.numero}`}
+                          className="min-h-[40px] w-full border border-ko-line bg-ko-white px-2 text-sm text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none"
+                        >
+                          {options.map((s) => (
+                            <option key={s} value={s}>
+                              {libelles.statuts[s]}
+                            </option>
+                          ))}
+                        </select>
+                      </form>
+                      {incoherent && (
+                        <p className="mt-1 text-[11px] text-ko-muted">
+                          {textes.statutReel} : {libelles.statuts[c.statut] ?? c.statut}
+                        </p>
+                      )}
+                    </div>
+                  )
+                })()}
               </li>
             ))}
           </ul>

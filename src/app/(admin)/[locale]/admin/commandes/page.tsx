@@ -96,6 +96,7 @@ export default async function CommandesPage({ params }: Props) {
           colonneTotal: t('colonne_total'),
           colonneCree: t('colonne_cree'),
           totalSurDemande: t('commande_total_sur_demande'),
+          statutReel: t('commande_statut_reel'),
         }}
       />
     </>

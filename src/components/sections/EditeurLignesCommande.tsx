@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useActionState, useEffect, useMemo, useRef, useState } from 'react'
 import { useFormatter, useTranslations } from 'next-intl'
 
@@ -18,6 +19,7 @@ type LigneEditable = {
   categorie: string
   prixIndicatif: number | null
   quantite: number
+  src: string | null
 }
 
 /**
@@ -67,6 +69,7 @@ export function EditeurLignesCommande({
     categorie: string
     prixIndicatif: number | null
     quantiteDisponible: number
+    src: string | null
   }[]
   modeLivraisonInitial: 'ramassage' | 'expedition'
   adresseLivraisonInitiale: string | null
@@ -86,6 +89,9 @@ export function EditeurLignesCommande({
         categorie: l.categorie,
         prixIndicatif: l.prixIndicatif,
         quantite: l.quantite,
+        // `parSlug.has(l.slug)` déjà vérifié par le `.filter()` ci-dessus —
+        // l'entrée existe forcément dans le catalogue à ce stade.
+        src: parSlug.get(l.slug)?.src ?? null,
       })),
   )
   const lignesIndisponibles = lignesInitiales.filter((l) => !l.slug || !parSlug.has(l.slug))
@@ -138,6 +144,7 @@ export function EditeurLignesCommande({
               categorie: produit.categorie,
               prixIndicatif: produit.prixIndicatif,
               quantite: Math.min(article.quantite, max),
+              src: produit.src,
             })
           }
         }
@@ -195,13 +202,24 @@ export function EditeurLignesCommande({
         ) : (
           lignes.map((l) => (
             <li key={l.slug} className="flex flex-col gap-4 py-6 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
-                <p className="font-serif text-[18px] text-ko-ink">{l.nom}</p>
-                {l.prixIndicatif != null && (
-                  <p className="mt-1 font-mono text-sm text-ko-muted">
-                    {format.number(l.prixIndicatif, { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })}
-                  </p>
-                )}
+              <div className="flex min-w-0 items-center gap-4">
+                {/* Même cadre que la boutique et le panier : filet 1px, blanc
+                    pur — un produit ne doit pas changer d'apparence d'un
+                    écran à l'autre. Emplacement vide plutôt que masqué s'il
+                    n'y a pas de photo, pour garder l'alignement des lignes. */}
+                <div className="relative h-16 w-16 shrink-0 overflow-hidden border border-ko-line bg-ko-photo">
+                  {l.src && (
+                    <Image src={l.src} alt={l.nom} fill sizes="64px" className="object-contain p-1.5" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="font-serif text-[18px] text-ko-ink">{l.nom}</p>
+                  {l.prixIndicatif != null && (
+                    <p className="mt-1 font-mono text-sm text-ko-muted">
+                      {format.number(l.prixIndicatif, { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 })}
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="flex shrink-0 items-center gap-6">
                 <div className="flex items-center border border-ko-line">

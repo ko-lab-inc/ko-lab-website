@@ -2,15 +2,18 @@ import { hasLocale } from 'next-intl'
 import { getFormatter, getTranslations } from 'next-intl/server'
 import { notFound, redirect } from 'next/navigation'
 
+import Image from 'next/image'
+
 import { BoutonAnnulerCommande } from '@/components/sections/BoutonAnnulerCommande'
 import { EditeurLignesCommande } from '@/components/sections/EditeurLignesCommande'
+import { StatutTimeline } from '@/components/ui/StatutTimeline'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireProduitsPublies } from '@/lib/produits'
 import { ROUTES } from '@/lib/routes'
 import { createClient } from '@/lib/supabase/server'
 import { estUuid } from '@/lib/utils/identifiant'
-import { STATUTS_COMMANDE, STATUTS_MODIFIABLES, type StatutCommande } from '@/types'
+import { STATUTS_COMMANDE, STATUTS_MODIFIABLES, STATUTS_PAR_MODE, type StatutCommande } from '@/types'
 
 import type { Metadata } from 'next'
 
@@ -82,13 +85,25 @@ export default async function DetailCommandePage({ params }: Props) {
     STATUTS_MODIFIABLES.some((s) => s === (commande.statut as StatutCommande)) &&
     new Date(commande.fenetre_modification_expire_at) > new Date()
 
-  const catalogue = modifiable ? await lireProduitsPublies() : []
+  // Toujours lu, plus seulement si modifiable : sert désormais aussi à
+  // retrouver la photo de chaque ligne côté lecture seule (voir plus bas).
+  // `lireProduitsPublies()` est mis en cache — le lire ici ne coûte rien.
+  const catalogue = await lireProduitsPublies()
+  const catalogueParId = new Map(catalogue.map((p) => [p.id, p]))
 
   const libellesStatuts: Record<string, string> = Object.fromEntries(
     STATUTS_COMMANDE.map((s) => [s, t(`statut_${s}`)]),
   )
   const libelleLivraison =
     commande.mode_livraison === 'expedition' ? t('expedition') : t('ramassage')
+
+  // Parcours de CE mode, sans `annulee` : ce n'est pas une étape du cycle
+  // normal, c'est une sortie de route — voir la note d'en-tête de
+  // StatutTimeline. Rendu seulement si la commande n'est pas déjà annulée,
+  // le message dédié plus bas suffit dans ce cas.
+  const etapesTimeline = STATUTS_PAR_MODE[commande.mode_livraison as 'ramassage' | 'expedition'].filter(
+    (s) => s !== 'annulee',
+  )
 
   return (
     <>
@@ -113,6 +128,18 @@ export default async function DetailCommandePage({ params }: Props) {
             <p className="mt-4 max-w-[46ch] whitespace-pre-line text-sm leading-relaxed text-ko-muted">
               {commande.adresse_livraison}
             </p>
+          )}
+
+          {/* Annulée exclue : ce n'est pas une étape à situer sur le
+              parcours normal, le message dédié plus bas suffit. */}
+          {commande.statut !== 'annulee' && (
+            <div className="mt-8 max-w-[420px]">
+              <StatutTimeline
+                etapes={etapesTimeline}
+                statutActuel={commande.statut as StatutCommande}
+                libelles={libellesStatuts}
+              />
+            </div>
           )}
         </div>
       </section>
@@ -149,6 +176,7 @@ export default async function DetailCommandePage({ params }: Props) {
                   categorie: p.categorie,
                   prixIndicatif: p.prixIndicatif,
                   quantiteDisponible: p.quantiteDisponible,
+                  src: p.src,
                 }))}
               />
               <div className="mt-8 border-t border-ko-line pt-6">
@@ -167,17 +195,34 @@ export default async function DetailCommandePage({ params }: Props) {
                 </p>
               </div>
               <ul className="divide-y divide-ko-line border-y border-ko-line">
-                {(lignes ?? []).map((l) => (
-                  <li key={l.id} className="flex items-center justify-between gap-6 py-5">
-                    <div>
-                      <p className="text-base text-ko-ink">{l.nom_produit}</p>
-                      <p className="mt-0.5 font-mono text-xs uppercase tracking-wide text-ko-muted">
-                        {l.categorie}
-                      </p>
-                    </div>
-                    <span className="shrink-0 font-mono text-sm text-ko-muted">× {l.quantite}</span>
-                  </li>
-                ))}
+                {(lignes ?? []).map((l) => {
+                  // Photo ACTUELLE du catalogue, pas une copie figée au moment
+                  // de la commande — `lignes_commande` n'a jamais stocké
+                  // d'image (seuls nom/catégorie/prix sont capturés à l'achat).
+                  // Un produit modifié ou dépublié depuis peut donc afficher
+                  // une photo différente ou aucune, comme son nom l'indique
+                  // déjà pour un produit renommé.
+                  const src = l.produit_id ? (catalogueParId.get(l.produit_id)?.src ?? null) : null
+
+                  return (
+                    <li key={l.id} className="flex items-center gap-4 py-5">
+                      <div className="relative h-16 w-16 shrink-0 overflow-hidden border border-ko-line bg-ko-photo">
+                        {src && (
+                          <Image src={src} alt={l.nom_produit} fill sizes="64px" className="object-contain p-1.5" />
+                        )}
+                      </div>
+                      <div className="flex flex-1 items-center justify-between gap-6">
+                        <div>
+                          <p className="text-base text-ko-ink">{l.nom_produit}</p>
+                          <p className="mt-0.5 font-mono text-xs uppercase tracking-wide text-ko-muted">
+                            {l.categorie}
+                          </p>
+                        </div>
+                        <span className="shrink-0 font-mono text-sm text-ko-muted">× {l.quantite}</span>
+                      </div>
+                    </li>
+                  )
+                })}
               </ul>
             </>
           )}
