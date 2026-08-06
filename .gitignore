@@ -78,3 +78,12 @@ pids
 .DS_Store
 Thumbs.db
 *.tgz
+
+# --- Brief créatif, jamais lu par le code --------------------------------------
+# Signalé par l'audit du 5 août 2026 : ces images et ce document alourdissaient
+# le dépôt sans qu'aucune route ni composant n'y fasse jamais référence.
+# Gardés sur disque, retirés du suivi Git — la place d'un brief créatif est un
+# espace de partage (Drive), pas le dépôt de code.
+/ADN KO-LAB INC/
+/images site ref/
+/KO-LAB_Structure_Site_Web_V2.docx
