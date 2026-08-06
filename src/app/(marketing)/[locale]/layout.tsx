@@ -223,12 +223,41 @@ export default async function MarketingLayout({ children, params }: Props) {
     },
   }
 
+  /**
+   * Organization — schema.org, une seule fois pour tout le site.
+   *
+   * Absent avant ce correctif (audit SEO du 5 août 2026) : sans ça, Google n'a
+   * aucune donnée structurée pour construire un panneau de connaissance sur
+   * l'entreprise. Champs limités à ce qui est réellement confirmé — pas
+   * d'adresse postale précise (pas encore fournie pour les mentions légales),
+   * pas de `logo` (aucun visuel carré exploitable dans les assets actuels).
+   * Le `replace` ci-dessous échappe les chevrons ouvrants du JSON sérialisé :
+   * sans lui, une valeur de réglage contenant la séquence de fermeture du
+   * script couperait la balise en plein milieu.
+   */
+  const organisationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'KO-LAB Inc.',
+    url: siteUrl,
+    slogan: "De l'idée au terrain.",
+    email: reglages.contactCourriel,
+    ...(reglages.contactTelephone ? { telephone: reglages.contactTelephone } : {}),
+    areaServed: reglages.contactRegion,
+  }
+
   return (
     <html
       lang={locale}
       className={`${fraunces.variable} ${instrumentSans.variable} ${jetbrainsMono.variable}`}
     >
       <body className="font-sans antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organisationJsonLd).replace(/</g, '\\u003c'),
+          }}
+        />
         <NextIntlClientProvider messages={messagesClient}>
           <PanierProvider>
           {/* Lien d'évitement — première cible de tabulation, invisible tant

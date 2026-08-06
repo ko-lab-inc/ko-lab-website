@@ -184,7 +184,7 @@ export function GalerieRealisations({
                 */}
                 <Image
                   src={r.src}
-                  alt=""
+                  alt={r.titre}
                   fill
                   // La grande carte est au-dessus de la ligne de flottaison et
                   // Next la détecte comme élément LCP. Sans `priority`, elle est

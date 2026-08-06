@@ -28,6 +28,7 @@ import type { ReactNode } from 'react'
  */
 export function GalerieProduit({
   src,
+  nom,
   cadrage,
   couleurs,
   labelColoris,
@@ -36,6 +37,11 @@ export function GalerieProduit({
   children,
 }: {
   src: string | null
+  /** Nom du produit — texte alternatif de la photo, jamais vide ici : cette
+   *  image N'EST PAS un lien, contrairement à l'ancienne carte du catalogue
+   *  (voir CatalogueBoutique.tsx), un alt vide ne fait donc que priver
+   *  Google Images d'un texte à indexer sur la page qui convertit le plus. */
+  nom: string
   cadrage?: 'contain' | 'cover'
   couleurs?: VarianteCouleur[]
   /** Intitulé du sélecteur, p. ex. « Coloris ». */
@@ -57,6 +63,8 @@ export function GalerieProduit({
   // par construction, mais noUncheckedIndexedAccess l'exige, et retomber sur
   // la photo par défaut vaut mieux qu'un cadre vide.
   const visuel = variantes ? (variantes[index]?.src ?? src) : src
+  const nomVariante = variantes?.[index]?.nom
+  const alt = nomVariante ? `${nom} — ${nomVariante}` : nom
 
   return (
     <div>
@@ -75,7 +83,7 @@ export function GalerieProduit({
             // chargement de la nouvelle — le coloris semble ne pas répondre.
             key={visuel}
             src={visuel}
-            alt=""
+            alt={alt}
             fill
             priority
             quality={85}

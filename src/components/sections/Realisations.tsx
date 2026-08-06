@@ -148,7 +148,7 @@ function Carte({
       */}
       <Image
         src={src}
-        alt=""
+        alt={titre}
         fill
         quality={80}
         sizes="(max-width: 1024px) 100vw, 66vw"

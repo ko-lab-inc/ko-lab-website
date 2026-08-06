@@ -18,6 +18,7 @@ import { lireProduitsPublies } from '@/lib/produits'
 import { lireReglages } from '@/lib/reglages'
 import { ROUTES, routeProduit } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
+import { origine } from '@/lib/utils/origine'
 
 import type { Metadata } from 'next'
 
@@ -115,6 +116,33 @@ export default async function FicheProduitPage({ params }: Props) {
         })
       : t('prix_sur_demande')
 
+  /**
+   * Product — schema.org, SANS `offers`/prix.
+   *
+   * La note historique de ce fichier expliquait pourquoi aucun balisage
+   * n'existait : publier `prixIndicatif` en `Offer.price` le présenterait à
+   * Google comme un prix ferme, alors que certains le sont encore
+   * provisoires. Ce risque ne concerne QUE le prix — nom, image et
+   * description sont des faits déjà vrais aujourd'hui, quel que soit l'état
+   * de confirmation du prix. `offers` reste donc absent tant qu'il n'existe
+   * pas de distinction en base entre prix confirmé et prix provisoire ; le
+   * reste peut être publié sans attendre.
+   */
+  const imageAbsolue = produit.src
+    ? produit.src.startsWith('http')
+      ? produit.src
+      : `${origine()}${produit.src}`
+    : null
+  const produitJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: produit.nom,
+    description: produit.texte,
+    sku: produit.slug,
+    url: `${origine()}/${locale}${routeProduit(slug)}`,
+    ...(imageAbsolue ? { image: [imageAbsolue] } : {}),
+  }
+
   return (
     <>
       {/* Espace pour la barre d'achat collante (mobile) : sans lui, le dernier
@@ -123,15 +151,15 @@ export default async function FicheProduitPage({ params }: Props) {
           prix et le contrôle de quantité passant sur deux lignes. La réserve
           était donc plus courte d'un pixel que ce qu'elle devait couvrir. */}
       <div className="pb-28 lg:pb-0">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(produitJsonLd).replace(/</g, '\\u003c') }}
+        />
+
         {/* Fil d'Ariane plutôt qu'un simple « Retour au catalogue » : il dit
             OÙ l'on se trouve, pas seulement d'où l'on vient — et il rend la
             boutique atteignable depuis n'importe quelle fiche ouverte
-            directement depuis un moteur de recherche.
-
-            Pas de balisage JSON-LD pour l'instant : le schéma Product qui
-            l'accompagne normalement publierait `prixIndicatif` comme une
-            offre ferme auprès de Google, alors que trois de ces prix sont
-            encore provisoires. À ajouter quand les prix seront confirmés. */}
+            directement depuis un moteur de recherche. */}
         <nav
           aria-label={t('fil_ariane_accueil')}
           className="border-b border-ko-line bg-ko-cream py-6"
@@ -174,6 +202,7 @@ export default async function FicheProduitPage({ params }: Props) {
                 <div>
                 <GalerieProduit
                   src={produit.src}
+                  nom={produit.nom}
                   cadrage={produit.cadrage}
                   couleurs={produit.couleurs}
                   labelColoris={t('coloris')}

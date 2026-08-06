@@ -233,7 +233,13 @@ export function CatalogueBoutique({
                     {produit.src ? (
                       <Image
                         src={produit.src}
-                        alt=""
+                        // Pas redondant avec le lien du titre plus bas (voir la
+                        // note plus haut sur l'ancre unique) : cette image n'est
+                        // PAS elle-même un lien, donc un alt vide ne fait ici que
+                        // priver Google Images d'un texte à indexer, sans le
+                        // bénéfice d'accessibilité qui justifiait alt="" quand
+                        // l'image était le seul contenu d'un second lien.
+                        alt={produit.nom}
                         fill
                         quality={85}
                         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
