@@ -38,7 +38,13 @@ const MUET = '#7a7b76'
 const LIGNE = '#e0ddd6'
 
 const LARGEUR_CONTENU = 496
-const COTE_POINT = 12
+// Point net, ligne fine — pas un bloc plein. Un premier essai à 12px de
+// point et 1px de ligne rendait un rectangle bleu épais et continu (les
+// points dominaient visuellement), pas la « petite barre mince avec des
+// points » demandée par Christian. 8px/2px garde les points visibles sans
+// écraser le trait qui les relie.
+const COTE_POINT = 8
+const EPAISSEUR_LIGNE = 2
 
 function echapper(texte: string): string {
   return texte.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -51,15 +57,20 @@ function image(src: string | null, origine: string): string | null {
 
 /**
  * Parcours horizontal — équivalent email de StatutTimeline.tsx (ui/). Même
- * principe (points + lignes, un point atteint devient bleu), même exclusion
- * de `annulee` : ce n'est pas une étape, l'appelant ne fournit `etapes` que
- * pour une commande active.
+ * principe (petits points reliés par un trait fin, un point atteint devient
+ * bleu, le reste en gris), même exclusion de `annulee` : ce n'est pas une
+ * étape, l'appelant ne fournit `etapes` que pour une commande active.
+ *
+ * ⚠️ SANS LIBELLÉ PAR ÉTAPE — contrairement à la page web. Un premier essai
+ * affichait les cinq statuts sous la barre. Sur Gmail mobile, un tableau à
+ * largeurs FIXES en pixels ne se redimensionne pas comme du flexbox : les
+ * cinq libellés se sont écrasés les uns sur les autres, illisibles (signalé
+ * par Christian, capture à l'appui). Le titre du courriel dit déjà
+ * « Nouveau statut : X » juste au-dessus — la barre seule suffit à montrer
+ * la progression sans dupliquer cette information dans un espace trop
+ * étroit pour la porter proprement.
  */
-function construireTimeline(
-  etapes: readonly StatutCommande[],
-  statutActuel: StatutCommande,
-  libelles: Record<string, string>,
-): string {
+function construireTimeline(etapes: readonly StatutCommande[], statutActuel: StatutCommande): string {
   const n = etapes.length
   if (n === 0) return ''
   const largeurLigne = n > 1 ? Math.floor((LARGEUR_CONTENU - n * COTE_POINT) / (n - 1)) : 0
@@ -68,27 +79,20 @@ function construireTimeline(
   const cellulesPoints = etapes
     .map((_etape, i) => {
       const atteinte = indexActuel >= 0 && i <= indexActuel
+      // Carré, pas un cercle — même vocabulaire que StatutTimeline.tsx (page
+      // web) et le reste du site (skill 08 : pas de pastille colorée).
       let html = `<td width="${COTE_POINT}" style="width:${COTE_POINT}px;height:${COTE_POINT}px;background:${atteinte ? BLEU : LIGNE};font-size:1px;line-height:1px;">&nbsp;</td>`
       if (i < n - 1) {
         const ligneAtteinte = i < indexActuel
-        html += `<td width="${largeurLigne}" style="width:${largeurLigne}px;height:1px;background:${ligneAtteinte ? BLEU : LIGNE};font-size:1px;line-height:1px;">&nbsp;</td>`
+        html += `<td width="${largeurLigne}" style="width:${largeurLigne}px;height:${EPAISSEUR_LIGNE}px;background:${ligneAtteinte ? BLEU : LIGNE};font-size:1px;line-height:1px;">&nbsp;</td>`
       }
       return html
-    })
-    .join('')
-
-  const cellulesLabels = etapes
-    .map((etape, i) => {
-      const atteinte = indexActuel >= 0 && i <= indexActuel
-      const colspan = i < n - 1 ? 2 : 1
-      return `<td colspan="${colspan}" style="padding-top:8px;font-family:'Courier New',Courier,monospace;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:${atteinte ? NOIR : MUET};text-align:center;">${echapper(libelles[etape] ?? etape)}</td>`
     })
     .join('')
 
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" style="width:${LARGEUR_CONTENU}px;max-width:100%;">
       <tr>${cellulesPoints}</tr>
-      <tr>${cellulesLabels}</tr>
     </table>`
 }
 
@@ -140,7 +144,7 @@ export function gabaritChangementStatut({
   /** Base absolue du site — même paramètre que gabaritCommande.ts, pour les liens légaux du pied. */
   origine: string
 }): { html: string; text: string } {
-  const timelineHtml = construireTimeline(etapesTimeline, statutActuel, libellesStatuts)
+  const timelineHtml = construireTimeline(etapesTimeline, statutActuel)
   const lignesHtml = construireLignes(lignes, origine)
 
   const html = `<!doctype html>
