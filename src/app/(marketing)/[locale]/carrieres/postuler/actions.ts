@@ -181,6 +181,11 @@ export async function envoyerCandidature(
       a_experience: analyse.data.a_experience === 'oui',
       experience_texte: analyse.data.experience_texte,
       source: analyse.data.source,
+      // Explicite plutôt que de compter sur le défaut de la colonne
+      // (migration 0028) — cette Server Action est le SEUL point d'écriture
+      // de cette table, donc toujours 'interne' ; le Google Form externe
+      // (LIEN_CANDIDATURE_EXTERNE) n'écrit jamais ici, voir la migration.
+      canal: 'interne',
       // ⚠️ Ne pas oublier cette ligne. Sans elle, le CV part bien dans le
       // stockage mais la candidature s'enregistre avec `cv_chemin` à NULL :
       // le fichier existe, plus personne ne sait à qui il appartient, et

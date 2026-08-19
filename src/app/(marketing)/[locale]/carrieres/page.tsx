@@ -1,13 +1,16 @@
 import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 import { buttonVariants } from '@/components/ui/Button'
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
-import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
+import { lireOffresPubliees, photoPourDepartement, POSTES_REPLI } from '@/lib/carrieres'
 import { EMAILS } from '@/lib/constantes'
+import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -62,17 +65,30 @@ export default async function CarrieresPage({ params }: Props) {
     etudiant: t('type_etudiant'),
   }
 
-  let postes: { cle: string; numero: string; titre: string; departement: string; type: string; description: string; exigences: string[] }[]
+  let postes: {
+    cle: string
+    numero: string
+    titre: string
+    /** Prête pour la Phase 9, pas encore affichée — voir lib/carrieres.ts. */
+    titreEn: string | null
+    departement: string
+    type: string
+    description: string
+    exigences: string[]
+    photo: 'operationsCrew' | 'operationsCrewVertical' | 'deploiementCamion' | 'labImpression3d' | null
+  }[]
 
   if (publiees) {
     postes = publiees.map((p, i) => ({
       cle: p.id,
       numero: String(i + 1).padStart(2, '0'),
       titre: p.titre,
+      titreEn: p.titreEn,
       departement: p.departement,
       type: libellesType[p.type] ?? p.type,
       description: p.description,
       exigences: p.exigences,
+      photo: photoPourDepartement(p.departement),
     }))
   } else {
     // Traducteurs cadrés par poste : chaque clé est ainsi vérifiée à la
@@ -88,21 +104,51 @@ export default async function CarrieresPage({ params }: Props) {
       cle: POSTES_REPLI[i] ?? String(i),
       numero: String(i + 1).padStart(2, '0'),
       titre: tp('titre'),
+      titreEn: null,
       departement: tp('departement'),
       type: t('type_temps_plein'),
       description: tp('description'),
       exigences: [tp('exigence_1'), tp('exigence_2'), tp('exigence_3'), tp('exigence_4')],
+      photo: photoPourDepartement(tp('departement')),
     }))
   }
 
   return (
     <>
-      {/* En-tête sobre, sans photo — même traitement que Réalisations. */}
+      {/* ---------------------------- Bannière + intro --------------------------- */}
+      {/* Page de conversion (Phase 6.3) : le double CTA arrive dès le premier
+          écran, avant même la liste des postes — quelqu'un déjà décidé n'a
+          pas à faire défiler. */}
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
         <div className="mx-auto max-w-container px-6 lg:px-12">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
-          <h1 className="ko-display mt-6 max-w-[16ch] text-ko-ink">{t('title')}</h1>
-          <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-ko-muted lg:text-lg">
+          <h1 className="ko-display mt-6 max-w-[18ch] text-ko-ink">{t('banniere_titre')}</h1>
+          <p className="mt-7 max-w-[56ch] text-base leading-relaxed text-ko-muted lg:text-lg">
+            {t('banniere_phrase')}
+          </p>
+
+          {/* Canal principal (formulaire interne) en avant, canal externe
+              (Google Form, temporaire — Phase 6.2) nettement plus discret :
+              un bouton plein contre un lien souligné, pas deux boutons de
+              même poids. Le lien externe passe par /api/… pour rester
+              traçable (voir cette route pour pourquoi ?utm_source= seul ne
+              suffit pas). */}
+          <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+            <Link href={ROUTES.carrieresPostuler} className={buttonVariants({ variant: 'primary' })}>
+              {t('cta_principal')}
+              <span aria-hidden="true">→</span>
+            </Link>
+
+            <a
+              href="/api/carrieres/candidature-externe"
+              className={buttonVariants({ variant: 'text' })}
+            >
+              {t('cta_secondaire')}
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+
+          <p className="mt-12 max-w-[62ch] border-t border-ko-line pt-8 text-sm leading-relaxed text-ko-muted lg:text-base">
             {t('intro')}
           </p>
         </div>
@@ -127,7 +173,33 @@ export default async function CarrieresPage({ params }: Props) {
                   <article className="grid grid-cols-1 gap-8 border-b border-ko-line py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 lg:py-16">
                     {/* Colonne gauche : identité du poste */}
                     <div>
-                      <div className="flex items-baseline gap-4">
+                      {/* Visuel — Phase 6.3 : aucune photo dédiée par poste,
+                          une photo réelle déjà en Storage quand le
+                          département correspond thématiquement
+                          (lib/carrieres.ts, photoPourDepartement), sinon
+                          PhotoPlaceholder. Jamais de stock (skill 22).
+                          Format modeste et non pleine largeur : la page
+                          reste un parcours court, pas une galerie. */}
+                      {poste.photo ? (
+                        <div className="relative aspect-[4/3] w-full max-w-[220px] overflow-hidden rounded-lg bg-ko-cream2">
+                          <Image
+                            src={IMAGES[poste.photo]}
+                            alt=""
+                            fill
+                            quality={75}
+                            sizes="220px"
+                            style={FILTRE_TERRAIN}
+                            className="object-cover object-center"
+                          />
+                        </div>
+                      ) : (
+                        <PhotoPlaceholder
+                          ratio="aspect-[4/3]"
+                          className="w-full max-w-[220px] rounded-lg"
+                        />
+                      )}
+
+                      <div className="mt-6 flex items-baseline gap-4">
                         <span className="font-serif text-[28px] font-light leading-none text-ko-cream2">
                           {poste.numero}
                         </span>
@@ -143,6 +215,19 @@ export default async function CarrieresPage({ params }: Props) {
                       <p className="mt-6 max-w-[46ch] text-base leading-relaxed text-ko-muted">
                         {poste.description}
                       </p>
+
+                      {/* CTA du haut — page de conversion : quelqu'un déjà
+                          convaincu par le titre seul n'a pas à lire les
+                          exigences avant de pouvoir postuler. Discret
+                          (variant text) : le bouton plein reste en bas,
+                          après les exigences, comme confirmation finale. */}
+                      <Link
+                        href={`${ROUTES.carrieresPostuler}?poste=${encodeURIComponent(poste.titre)}`}
+                        className={`mt-6 ${buttonVariants({ variant: 'text' })}`}
+                      >
+                        {t('postuler')}
+                        <span aria-hidden="true">→</span>
+                      </Link>
                     </div>
 
                     {/* Colonne droite : exigences et candidature */}
@@ -203,7 +288,7 @@ export default async function CarrieresPage({ params }: Props) {
                 href={`mailto:${EMAILS.rh}`}
                 className={`mt-9 ${buttonVariants({ variant: 'ghost' })}`}
               >
-                {EMAILS.rh}
+                {t('rh_cta')}
                 <span aria-hidden="true">→</span>
               </a>
             </div>

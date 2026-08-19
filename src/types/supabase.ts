@@ -270,6 +270,9 @@ export type Database = {
           /** Chemin dans le bucket PRIVÉ `cv`. NULL = aucun CV joint. */
           cv_chemin: string | null
           source: string | null
+          /** Migration 0028. CHECK : 'interne' — seule valeur possible tant que
+           *  le Google Form externe n'écrit pas dans cette table. */
+          canal: string
           /** CHECK : 'nouveau' | 'lu' | 'traite' */
           statut: string
           created_at: string
@@ -287,6 +290,7 @@ export type Database = {
           experience_texte?: string | null
           cv_chemin?: string | null
           source?: string | null
+          canal?: string
           statut?: string
           created_at?: string
         }
@@ -303,6 +307,7 @@ export type Database = {
           experience_texte?: string | null
           cv_chemin?: string | null
           source?: string | null
+          canal?: string
           statut?: string
           created_at?: string
         }

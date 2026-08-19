@@ -33,6 +33,13 @@ import { TYPES_POSTE, type TypePoste } from '@/types'
 export type PosteCarte = {
   id: string
   titre: string
+  /**
+   * Prête pour la Phase 9 (anglais confirmé), pas encore affichée : le site
+   * reste mono-langue jusque-là. `null` tant que titre_en n'est pas rempli
+   * en base pour ce poste — vrai pour la plupart aujourd'hui, voir le
+   * rapport de Phase 6.
+   */
+  titreEn: string | null
   departement: string
   type: TypePoste
   description: string
@@ -64,7 +71,7 @@ async function lireDepuisBase(): Promise<PosteCarte[] | null> {
     const supabase = createStaticClient()
     const { data, error } = await supabase
       .from('postes_carrieres')
-      .select('id, titre_fr, departement, type, description_fr, exigences_fr')
+      .select('id, titre_fr, titre_en, departement, type, description_fr, exigences_fr')
       .eq('actif', true)
       .order('ordre')
 
@@ -75,6 +82,7 @@ async function lireDepuisBase(): Promise<PosteCarte[] | null> {
       .map((p) => ({
         id: p.id,
         titre: p.titre_fr,
+        titreEn: p.titre_en,
         departement: p.departement,
         type: p.type,
         description: p.description_fr ?? '',
@@ -100,3 +108,36 @@ export const lireOffresPubliees = unstable_cache(lireDepuisBase, ['offres-publie
   tags: [ETIQUETTE_CARRIERES],
   revalidate: 3600,
 })
+
+/**
+ * Visuel d'une fiche de poste — Phase 6.3.
+ *
+ * Aucune photo n'a été prise spécifiquement pour les postes : le document de
+ * cadrage demande de réutiliser une photo déjà réelle (medias/) quand le
+ * département y correspond thématiquement, PhotoPlaceholder sinon — jamais
+ * une photo de stock (skill 22). Match par département plutôt que par titre :
+ * plus stable si un titre est reformulé, et les postes d'un même département
+ * partagent le même type de terrain.
+ *
+ * Renvoie une clé de IMAGES, pas l'URL — l'appelant importe IMAGES lui-même,
+ * ce module ne dépend pas de next/image.
+ */
+export function photoPourDepartement(
+  departement: string,
+): 'operationsCrew' | 'operationsCrewVertical' | 'deploiementCamion' | 'labImpression3d' | null {
+  switch (departement) {
+    case 'Opérations':
+      return 'operationsCrew'
+    case 'Logistique événementielle':
+      return 'operationsCrewVertical'
+    case 'Transport & logistique':
+      return 'deploiementCamion'
+    case 'Lab créatif':
+      return 'labImpression3d'
+    // Installation, Atelier, Administration & coordination, Bureau : aucune
+    // photo réelle ne correspond honnêtement — PhotoPlaceholder (voir
+    // l'appelant).
+    default:
+      return null
+  }
+}
