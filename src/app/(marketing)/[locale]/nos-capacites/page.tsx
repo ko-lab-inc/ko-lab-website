@@ -191,6 +191,34 @@ export default async function CapacitesHubPage({ params }: Props) {
         </div>
       </section>
 
+      {/* ---------------------------- Deux regroupements ---------------------------- */}
+      {/* Phase 7 : KO-LAB doit apparaître autant comme entreprise de
+          fabrication, logistique et exécution terrain que comme atelier
+          créatif. Les quatre capacités ci-dessous restent la structure de
+          navigation (une page chacune), mais ces deux regroupements — demandés
+          explicitement, mot pour mot — donnent le langage transversal qui
+          traverse plusieurs capacités à la fois : le premier recoupe surtout
+          Opérations terrain, le second Installations et Équipements. */}
+      <section className="border-b border-ko-line bg-ko-white py-14 lg:py-20">
+        <div className="mx-auto max-w-container px-6 lg:px-12">
+          <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-16">
+            <Reveal>
+              <p className="label-mono">{t('hub.regroupement_1_nom')}</p>
+              <p className="mt-4 max-w-[42ch] text-base leading-relaxed text-ko-muted">
+                {t('hub.regroupement_1_texte')}
+              </p>
+            </Reveal>
+
+            <Reveal>
+              <p className="label-mono">{t('hub.regroupement_2_nom')}</p>
+              <p className="mt-4 max-w-[42ch] text-base leading-relaxed text-ko-muted">
+                {t('hub.regroupement_2_texte')}
+              </p>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
       {/* ------------------------- Les quatre capacités ------------------------- */}
       {capacites.map(({ cle, numero, href, label, titre, intro, items, src, cadrage, desature }, i) => {
         // Alternance des fonds ET du côté de la photo : sans ça, quatre blocs

@@ -38,6 +38,11 @@ export type PosteCarte = {
    * reste mono-langue jusque-là. `null` tant que titre_en n'est pas rempli
    * en base pour ce poste — vrai pour la plupart aujourd'hui, voir le
    * rapport de Phase 6.
+   *
+   * ⚠️ « Chef d'équipe terrain » (Logistique événementielle) a bien
+   * titre_en = 'Crew Leader', mais PAS description_en ni exigences_en —
+   * la fiche en doublon supprimée pendant la Phase 6 les avait, celle
+   * conservée non. À traduire avant d'activer l'anglais.
    */
   titreEn: string | null
   departement: string

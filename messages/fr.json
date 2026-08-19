@@ -142,7 +142,7 @@
     },
     "lab": {
       "label": "03 — Le LAB",
-      "title": "Le LAB ne se limite pas à fabriquer ce que vous <em>imaginez</em>",
+      "title": "Nous pouvons développer non seulement le produit, mais également la <em>façon</em> de le produire.",
       "texte": "De la première idée jusqu'à la chaîne de production, Le LAB développe les produits, les pièces et les solutions dont votre projet a réellement besoin.",
       "lien": "Découvrir Le LAB",
       "etape1_titre": "Conception",
@@ -215,7 +215,11 @@
       "phrase": "Votre organisation conserve la vision. Nous ajoutons les ressources nécessaires pour la mettre sur le terrain.",
       "texte": "KO-LAB ne se présente pas uniquement comme une entreprise événementielle ou une agence de main-d'œuvre. Nous planifions, fabriquons, installons, équipons et déployons des projets complexes — du premier plan jusqu'au démontage.",
       "lien_page": "Voir la page",
-      "ce_que_ca_couvre": "Ce que ça couvre"
+      "ce_que_ca_couvre": "Ce que ça couvre",
+      "regroupement_1_nom": "Main-d'œuvre & opérations terrain",
+      "regroupement_1_texte": "Équipes de terrain, logistique événementielle, manutention, montage, démontage, supervision, soutien opérationnel.",
+      "regroupement_2_nom": "Transport & installation",
+      "regroupement_2_texte": "Transport spécialisé, remorques, livraison, installation d'enseignes, décors, mobilier, structures."
     },
     "cta": {
       "label": "Prochaine étape",
@@ -261,7 +265,7 @@
     "lab": {
       "label": "Le LAB",
       "title": "Développer ce dont votre projet a réellement besoin",
-      "phrase": "Le LAB ne se limite pas à fabriquer ce que vous imaginez. Il nous permet de développer ce dont votre projet a réellement besoin.",
+      "phrase": "Nous pouvons développer non seulement le produit, mais également la façon de le produire.",
       "intro": "De la première idée jusqu'à la chaîne de production, Le LAB développe les produits, les pièces et les solutions dont votre projet a réellement besoin.",
       "item_1": "Conception et modélisation 3D",
       "item_2": "Impression 3D",
@@ -276,7 +280,7 @@
       "label": "Équipements et déploiement",
       "title": "Les bonnes équipes font avancer le projet",
       "phrase": "Les bonnes équipes font avancer le projet. Les bons moyens permettent de le livrer.",
-      "intro": "KO-LAB ne fournit pas seulement des personnes, mais aussi les moyens de livrer le projet.",
+      "intro": "Nous ne fournissons pas seulement les personnes. Nous pouvons aussi organiser les moyens nécessaires pour accomplir le travail.",
       "item_1": "Camions et véhicules de travail",
       "item_2": "Remorques ouvertes, fermées et spécialisées",
       "item_3": "Nacelles et équipements d'élévation",
