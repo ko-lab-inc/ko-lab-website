@@ -12,6 +12,7 @@ import { Offres } from '@/components/sections/Offres'
 import { PreuveTerrain } from '@/components/sections/PreuveTerrain'
 import { Realisations } from '@/components/sections/Realisations'
 import { StatsBar } from '@/components/sections/StatsBar'
+import { IntroAnimee } from '@/components/ui/IntroAnimee'
 import { routing } from '@/i18n/routing'
 
 import type { Metadata } from 'next'
@@ -79,6 +80,10 @@ export default async function AccueilPage({ params }: Props) {
    */
   return (
     <>
+      {/* Overlay client, position: fixed — ne retarde ni ne remplace rien
+          en dessous (voir IntroAnimee.tsx). Uniquement l'accueil : c'est le
+          titre du hero, spécifique à cette page, qui clôt la séquence. */}
+      <IntroAnimee />
       <Hero />
       <StatsBar />
       <Besoins />

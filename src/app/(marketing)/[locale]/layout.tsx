@@ -181,6 +181,9 @@ export default async function MarketingLayout({ children, params }: Props) {
    *                            → Commande (migration 0021 ; la première montée
    *                              par /boutique/commande/details, la seconde
    *                              par /compte/commandes/[id])
+   *   IntroAnimee.tsx          → Home.intro, Home.hero.title (Phase 4, 19 août
+   *                              2026) — l'intro reprend le titre du hero pour
+   *                              la dernière phrase, jamais une copie séparée
    *
    * CatalogueBoutique reçoit ses chaînes en props, résolues côté serveur —
    * c'est le modèle à privilégier pour tout nouveau composant.
@@ -210,6 +213,13 @@ export default async function MarketingLayout({ children, params }: Props) {
     // Le modal bascule entre connexion et création sans naviguer : il lui faut
     // les deux jeux de libellés.
     Inscription: tousLesMessages.Inscription,
+    // Intro animée de l'accueil (Phase 4) — sous-ensemble : le titre du hero
+    // est repris tel quel (pas de copie séparée qui pourrait diverger), le
+    // reste de Home.hero (sous-titre, CTA…) n'a rien à faire côté client ici.
+    Home: {
+      intro: tousLesMessages.Home.intro,
+      hero: { title: tousLesMessages.Home.hero.title },
+    },
     // ⚠️ SOUS-ENSEMBLE, pas l'espace de noms entier. `Boutique` contient les
     // noms des produits « Solutions modulaires », que le drapeau masque et que
     // le document de cadrage interdit de publier. Transmettre le namespace

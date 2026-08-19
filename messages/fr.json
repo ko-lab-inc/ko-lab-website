@@ -77,6 +77,13 @@
     "menuPrincipal": "Navigation principale"
   },
   "Home": {
+    "intro": {
+      "mot1": "Créer.",
+      "mot2": "Fabriquer.",
+      "mot3": "Installer.",
+      "mot4": "Déployer.",
+      "passer": "Passer l'introduction"
+    },
     "hero": {
       "tag": "De l'idée au terrain",
       "title": "Qu'est-ce qu'on met sur le <em>terrain</em> aujourd'hui?",

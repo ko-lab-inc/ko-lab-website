@@ -313,6 +313,130 @@
   .reveal:nth-child(4) {
     transition-delay: 240ms;
   }
+
+  /* ---------------------------------------------------------------------------
+     Intro animée de l'accueil — Phase 4, 19 août 2026 (IntroAnimee.tsx).
+
+     Pas de garde-fou `@media (scripting: none)` ici, contrairement à .reveal :
+     ce composant ne rend RIEN par défaut (voir sa note d'en-tête) — sans JS,
+     il n'existe simplement jamais dans le DOM, il n'y a donc rien à remasquer.
+     --------------------------------------------------------------------------- */
+  .intro-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ko-black);
+    opacity: 1;
+    transition: opacity 450ms ease;
+  }
+
+  .intro-overlay-sortie {
+    opacity: 0;
+  }
+
+  .intro-scene {
+    max-width: 90vw;
+    padding: 0 24px;
+    text-align: center;
+  }
+
+  .intro-mot {
+    margin: 0;
+    font-family: var(--font-serif), Georgia, serif;
+    font-weight: 300;
+    font-size: clamp(40px, 11vw, 120px);
+    letter-spacing: -0.02em;
+    color: var(--ko-white);
+    /* Un nouveau nœud à chaque mot (key={indexMot} côté React) : l'animation
+       rejoue seule à chaque remplacement, pas de classe à retirer/reposer. */
+    animation: intro-mot-entree 200ms ease-out both;
+  }
+
+  /* Reveal horizontal — un masque qui s'ouvre de gauche à droite, pas un
+     fondu : c'est la lecture demandée (« masque ou reveal horizontal »). */
+  @keyframes intro-mot-entree {
+    from {
+      opacity: 0;
+      clip-path: inset(0 100% 0 0);
+    }
+    35% {
+      opacity: 1;
+    }
+    to {
+      opacity: 1;
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  .intro-phrase {
+    margin: 0 auto;
+    max-width: 22ch;
+    font-family: var(--font-serif), Georgia, serif;
+    font-weight: 300;
+    font-size: clamp(22px, 4.2vw, 42px);
+    line-height: 1.22;
+    letter-spacing: -0.01em;
+    color: var(--ko-white);
+    animation: intro-phrase-entree 400ms ease-out both;
+  }
+
+  @keyframes intro-phrase-entree {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* Accent bleu, seul point de couleur de toute la séquence — un filet, pas
+     un aplat : même vocabulaire que le reste du site (skill 08). */
+  .intro-filet {
+    display: block;
+    width: 40px;
+    height: 2px;
+    margin: 28px auto 0;
+    background: var(--ko-blue);
+  }
+
+  /* Bouton « Passer l'introduction » — discret, coin bas-droit. Padding
+     généreux malgré le petit texte : la cible tactile/clic reste confortable
+     sans agrandir visuellement le libellé. `label-mono-d` (fond sombre, voir
+     plus haut) donne déjà la police, la casse et le bleu-2 réglementaires ;
+     :focus-visible global (plus haut dans ce fichier) donne l'anneau bleu.
+     Pas d'opacité réduite par défaut : --ko-blue-2 sur --ko-black n'atteint
+     déjà que 6,37:1 (voir label-mono-d) — le ternir aurait fait passer le
+     contraste réel sous 4,5:1 pour ce petit texte, testé et corrigé avant
+     publication plutôt qu'après. Le soulignement au survol/focus suffit
+     comme signal d'interaction, sans toucher au contraste. */
+  .intro-passer {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    padding: 10px 14px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .intro-passer:hover,
+  .intro-passer:focus-visible {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  @media (min-width: 640px) {
+    .intro-passer {
+      right: 32px;
+      bottom: 32px;
+    }
+  }
 }
 
 /* =============================================================================
