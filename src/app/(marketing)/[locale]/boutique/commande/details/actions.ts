@@ -2,6 +2,7 @@
 
 import { headers } from 'next/headers'
 
+import { EMAILS } from '@/lib/constantes'
 import { gabaritConfirmationCommande } from '@/lib/email/gabaritCommande'
 import { lireProduitsPublies } from '@/lib/produits'
 import { routeCommande } from '@/lib/routes'
@@ -280,11 +281,12 @@ export async function creerCommande(
         })
 
         await new Resend(cleResend).emails.send({
-          from: 'KO-LAB <site@ko-lab-center.ca>',
+          from: `KO-LAB <${EMAILS.envoiTransactionnel}>`,
           // `from` reste sur le domaine vérifié Resend (ko-lab-center.ca) —
           // le client qui répond doit atterrir dans la vraie boîte de
           // l'équipe (ko-lab.ca), pas dans une adresse jamais consultée.
-          replyTo: 'info@ko-lab.ca',
+          // Voir lib/constantes.ts.
+          replyTo: EMAILS.info,
           to: email,
           subject: `Confirmation de commande — ${data.numero}`,
           html,

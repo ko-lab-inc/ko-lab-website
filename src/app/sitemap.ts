@@ -1,3 +1,4 @@
+import { DOMAINE } from '@/lib/constantes'
 import { lireProduitsPublies } from '@/lib/produits'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
 
@@ -8,10 +9,11 @@ import type { MetadataRoute } from 'next'
  *
  * Même repli que `metadataBase` dans le layout marketing
  * (`(marketing)/[locale]/layout.tsx`) : `NEXT_PUBLIC_SITE_URL` en priorité,
- * `ko-lab-center.ca` sinon. Un sitemap qui pointerait vers `localhost:3000`
- * en production serait pire que son absence.
+ * `ko-lab-center.ca` sinon (voir lib/constantes.ts). Un sitemap qui
+ * pointerait vers `localhost:3000` en production serait pire que son
+ * absence.
  */
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab-center.ca'
+const siteUrl = DOMAINE
 
 /**
  * Site francophone uniquement (routing.ts) : toutes les URL publiques

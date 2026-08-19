@@ -2,6 +2,7 @@ import 'server-only'
 
 import { unstable_cache } from 'next/cache'
 
+import { EMAILS } from '@/lib/constantes'
 import { createStaticClient } from '@/lib/supabase/static'
 
 /**
@@ -61,12 +62,9 @@ export type Reglages = {
  */
 function repli(): Reglages {
   return {
-    // ⚠️ Domaine DIFFÉRENT de celui du site (ko-lab-center.ca) — volontaire.
-    // ko-lab.ca est la vraie boîte que l'équipe consulte ; ko-lab-center.ca
-    // n'est vérifié que pour ENVOYER via Resend (voir les `from:` en dur des
-    // gabarits de courriel), personne n'y reçoit rien. Les deux domaines ont
-    // des rôles différents, ce n'est pas une incohérence à corriger.
-    contactCourriel: 'info@ko-lab.ca',
+    // Domaine DIFFÉRENT de celui du site (ko-lab-center.ca) — volontaire,
+    // voir lib/constantes.ts pour l'explication complète des deux rôles.
+    contactCourriel: EMAILS.info,
     contactTelephone: '',
     contactRegion: 'Outaouais, Québec',
     // Comparaison stricte à 'true' : une variable absente, vide ou mal

@@ -7,6 +7,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
+import { EMAILS } from '@/lib/constantes'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -199,10 +200,10 @@ export default async function CarrieresPage({ params }: Props) {
               </p>
 
               <a
-                href={`mailto:${t('rh_courriel')}`}
+                href={`mailto:${EMAILS.rh}`}
                 className={`mt-9 ${buttonVariants({ variant: 'ghost' })}`}
               >
-                {t('rh_courriel')}
+                {EMAILS.rh}
                 <span aria-hidden="true">→</span>
               </a>
             </div>

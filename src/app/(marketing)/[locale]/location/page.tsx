@@ -6,6 +6,7 @@ import { buttonVariants } from '@/components/ui/Button'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
+import { LIEN_RENTMAN } from '@/lib/constantes'
 import { ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -13,15 +14,6 @@ import type { Metadata } from 'next'
 type Props = { params: Promise<{ locale: string }> }
 
 export const revalidate = 3600
-
-/**
- * ⚠️ PROVISOIRE — l'URL Rentman n'est pas encore connue.
- *
- * `#` volontairement, et non une URL inventée : un lien mort vers un domaine
- * plausible serait plus difficile à repérer qu'une ancre vide. Le bouton reste
- * visible pour valider la mise en page.
- */
-const URL_RENTMAN = '#'
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
@@ -78,19 +70,25 @@ export default async function LocationPage({ params }: Props) {
               </p>
 
               <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-                {/* Lien externe : <a> et non le <Link> localisé, qui préfixerait
-                    l'URL d'une locale. rel="noopener" est obligatoire avec
-                    target="_blank" — sans lui, la page ouverte accède à
-                    window.opener (skill 09). */}
-                <a
-                  href={URL_RENTMAN}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={buttonVariants({ variant: 'primary' })}
-                >
-                  {t('cta_rentman')}
-                  <span aria-hidden="true">→</span>
-                </a>
+                {/* Masqué tant que LIEN_RENTMAN reste le repli '#'
+                    (lib/constantes.ts) — un bouton qui ne mène nulle part en
+                    production est pire que son absence. Le code du bouton
+                    reste en place, prêt dès que l'URL réelle arrive.
+                    Lien externe : <a> et non le <Link> localisé, qui
+                    préfixerait l'URL d'une locale. rel="noopener" est
+                    obligatoire avec target="_blank" — sans lui, la page
+                    ouverte accède à window.opener (skill 09). */}
+                {LIEN_RENTMAN !== '#' && (
+                  <a
+                    href={LIEN_RENTMAN}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={buttonVariants({ variant: 'primary' })}
+                  >
+                    {t('cta_rentman')}
+                    <span aria-hidden="true">→</span>
+                  </a>
+                )}
 
                 <Link
                   href={`${ROUTES.contact}?type=location`}

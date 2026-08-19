@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
+import { EMAILS } from '@/lib/constantes'
 import { gabaritConfirmationCommande } from '@/lib/email/gabaritCommande'
 import { lireProduitsPublies } from '@/lib/produits'
 import { routeCommande } from '@/lib/routes'
@@ -223,11 +224,11 @@ export async function modifierCommande(
       })
 
       await new Resend(cleResend).emails.send({
-        from: 'KO-LAB <site@ko-lab-center.ca>',
+        from: `KO-LAB <${EMAILS.envoiTransactionnel}>`,
         // `from` reste sur le domaine vérifié Resend (ko-lab-center.ca) — le
         // client qui répond doit atterrir dans la vraie boîte de l'équipe
-        // (ko-lab.ca), pas dans une adresse jamais consultée.
-        replyTo: 'info@ko-lab.ca',
+        // (ko-lab.ca), pas dans une adresse jamais consultée. Voir lib/constantes.ts.
+        replyTo: EMAILS.info,
         to: user.email,
         subject: `Commande mise à jour — ${commande.numero}`,
         html,

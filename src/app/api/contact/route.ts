@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
+import { EMAILS } from '@/lib/constantes'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { lireReglages } from '@/lib/reglages'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest) {
       const { contactCourriel } = await lireReglages()
 
       await new Resend(cleResend).emails.send({
-        from: 'KO-LAB <site@ko-lab-center.ca>',
+        from: `KO-LAB <${EMAILS.envoiTransactionnel}>`,
         to: contactCourriel,
         replyTo: donnees.email,
         subject: `Nouvelle demande — ${donnees.type}`,

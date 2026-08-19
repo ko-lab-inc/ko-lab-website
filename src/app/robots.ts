@@ -1,7 +1,9 @@
+import { DOMAINE } from '@/lib/constantes'
+
 import type { MetadataRoute } from 'next'
 
-/** Même repli que sitemap.ts et le layout marketing. */
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab-center.ca'
+/** Même repli que sitemap.ts et le layout marketing — voir lib/constantes.ts. */
+const siteUrl = DOMAINE
 
 /**
  * robots.txt — n'existait pas du tout avant ce fichier.

@@ -200,7 +200,17 @@ const nextConfig: NextConfig = {
         // CORS restrictif sur les API — skill 25.
         source: '/api/:path*',
         headers: [
-          { key: 'Access-Control-Allow-Origin', value: 'https://ko-lab-center.ca' },
+          // Lu directement, pas via lib/constantes.ts : un build incrémental
+          // local (sans nettoyer .next) a servi une ancienne valeur en
+          // silence après un changement de NEXT_PUBLIC_SITE_URL — reproduit
+          // et vérifié le 19 août 2026. Sur un build propre le manifeste est
+          // correct (confirmé en lisant .next/routes-manifest.json), mais ce
+          // fichier n'a qu'une seule chance d'être juste en production : la
+          // lecture la plus directe possible, sans dépendance à un import
+          // cross-dossier, est le choix le plus sûr ici. Même valeur que
+          // DOMAINE dans lib/constantes.ts — à changer aux DEUX endroits le
+          // jour de la bascule de domaine (voir docs/bascule-domaine.md).
+          { key: 'Access-Control-Allow-Origin', value: process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab-center.ca' },
           { key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
         ],

@@ -7,6 +7,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Nav } from '@/components/layout/Nav'
 import { ChatCrisp } from '@/components/ui/ChatCrisp'
 import { WidgetAide } from '@/components/ui/WidgetAide'
+import { DOMAINE } from '@/lib/constantes'
 import { PanierProvider } from '@/lib/panier/PanierContext'
 import { lireReglages } from '@/lib/reglages'
 import { routing } from '@/i18n/routing'
@@ -65,12 +66,12 @@ const jetbrainsMono = JetBrains_Mono({
   display: 'swap',
 })
 
-// `||` et non `??` : une variable déclarée mais non renseignée dans .env.local
-// vaut la CHAÎNE VIDE, pas undefined. `??` la laisserait passer et
-// `new URL('')` lèverait ERR_INVALID_URL au chargement du module — donc un 500
-// sur toutes les pages, y compris en production si la variable est oubliée
-// sur Vercel.
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab-center.ca'
+// Repli littéral géré par lib/constantes.ts (Phase 3) — `||` et non `??` :
+// une variable déclarée mais non renseignée dans .env.local vaut la CHAÎNE
+// VIDE, pas undefined. `??` la laisserait passer et `new URL('')` lèverait
+// ERR_INVALID_URL au chargement du module — donc un 500 sur toutes les
+// pages, y compris en production si la variable est oubliée sur Vercel.
+const siteUrl = DOMAINE
 
 // Accès littéral à process.env, comme dans ChatCrisp : Next substitue ces
 // expressions au build par analyse statique du texte, un accès dynamique
