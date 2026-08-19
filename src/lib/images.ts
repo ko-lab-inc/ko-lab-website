@@ -52,23 +52,46 @@ function unsplash(chemin: string): string {
   return `https://images.unsplash.com/${chemin}?${PARAMS}`
 }
 
+/**
+ * Photos KO-LAB réelles — bucket public `medias`, Supabase Storage.
+ * Déposées et redimensionnées le 18 août 2026 (mandats Canada Day 2026,
+ * DEVFEST 2026, atelier Le LAB) — voir KO-LAB-PHOTOS/_metadonnees.txt
+ * (hors dépôt, jamais commité) pour la source et le contexte de chaque photo.
+ */
+function medias(chemin: string): string {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/medias/${chemin}`
+}
+
 export const IMAGES = {
-  /** Chantier de nuit : 3 ouvriers, lampes de travail, pelleteuse, asphalte mouillé. */
-  hero: unsplash('reserve/7VRjBuoQRG6b0U7sIqjk_ConstructionNight_wide2.jpg'),
-
-  /** Silhouettes d'ouvriers sur dalle + grue à tour, ciel ambré. Format vertical. */
-  besoinDeployer: unsplash('photo-1579847188804-ecba0e2ea330'),
-
-  /** Deux ouvriers en silhouette sur échafaudage tubulaire, contre-jour ambré. Vertical. */
-  besoinInstaller: unsplash('photo-1670846112333-ca9115b38b18'),
-
-  /** Gerbe d'étincelles de meuleuse sur fond noir. */
-  besoinFabriquer: unsplash('reserve/7vjJbdDRga27ApDoYicw_Sparks.jpg'),
-
-  /** Semi-remorque de nuit, feux de gabarit ambrés devant un dépôt. */
-  besoinLouer: unsplash('photo-1714009889233-6699f04623ff'),
+  /** Photo réelle — scène Fête du Canada Day 2026, plateau de scène en montage. */
+  hero: '/images/hero/hero-canada-day-2026.webp',
 
   /**
+   * ⚠️ TOUJOURS UNSPLASH — aucune photo reçue pour ce besoin.
+   * Le dossier `canada day img/Déployer une équipe` du lot du 18 août 2026
+   * était VIDE (confirmé par recherche récursive) : la photo attendue pour
+   * ce besoin n'a jamais été fournie. Rien à remplacer tant qu'elle n'arrive
+   * pas — ne pas réutiliser une autre photo du lot à sa place sans validation.
+   */
+  besoinDeployer: unsplash('photo-1579847188804-ecba0e2ea330'),
+
+  /** Photo réelle — équipe KO-LAB (gilets orange) sur site, Canada Day 2026. */
+  besoinInstaller: medias('home/besoin-installer-2026.webp'),
+
+  /** Photo réelle — impression 3D en cours, atelier Le LAB (pièce dorée drapée). */
+  besoinFabriquer: medias('home/besoin-fabriquer-2026.webp'),
+
+  /** Photo réelle — mobilier et aménagement de site loués, DEVFEST 2026. */
+  besoinLouer: medias('rental/location-mobilier-2026.webp'),
+
+  /**
+   * ⚠️ TOUJOURS UNSPLASH — aucune photo de découpe laser/CNC reçue.
+   * Le lot du 18 août 2026 (dossier `le lab 3d`) ne contient que des photos
+   * d'impression 3D (Bambu Lab) — aucune ne montre de découpe laser ni de
+   * CNC, le sujet exact que cette clé doit illustrer. Le watermark signalé
+   * ci-dessous reste donc non corrigé : ne pas la remplacer par une photo
+   * d'impression 3D, ce serait montrer autre chose que ce que le texte décrit.
+   *
    * Découpe laser CNC en action, deux gerbes d'étincelles, fond noir.
    * Section LAB de l'accueil — correspond à l'item « Laser et CNC ».
    *
@@ -80,12 +103,18 @@ export const IMAGES = {
   lab: unsplash('photo-1711418235334-8895331a6cf9'),
 
   /**
-   * Imprimante FDM en cours d'impression, halo bleu du panneau de commande.
-   * Page Le LAB — correspond à l'item « Impression 3D ».
+   * Photo réelle — imprimante Bambu Lab X2D en cours d'impression, halo bleu
+   * de l'éclairage d'atelier. Page Le LAB — correspond à l'item « Impression 3D ».
    */
-  labImpression3d: unsplash('photo-1642969164999-979483e21601'),
+  labImpression3d: medias('lab/lab-machine-2026.webp'),
 
   /**
+   * ⚠️ TOUJOURS UNSPLASH — dossier Installations en attente.
+   * Le photographe des photos d'Installations (série _87T75xx, mandat décor
+   * de Noël concession automobile) n'est pas confirmé interne — voir
+   * KO-LAB-PHOTOS/_metadonnees.txt. Tenu à l'écart de tout usage (site
+   * générique comme réalisation) tant que l'autorisation n'est pas obtenue.
+   *
    * Ouvrier sur nacelle élévatrice contre une façade de pierre, lumière rasante.
    * Page Installations — « Centres commerciaux et tours à bureaux ».
    */
@@ -109,12 +138,15 @@ export const IMAGES = {
   /** Soudeur au masque, arc blanc-bleu, atelier noyé dans le noir. Disponible. */
   soudeur: unsplash('photo-1745448797900-35d08e85e9db'),
 
-  // ⚠️ TEMPORAIRE — duplication en attente de la vraie photo KO-LAB 2025-2026.
-  // Ces trois emplacements réutilisent des images déjà présentes plus haut sur
-  // la page : c'est visible et volontaire, pour ne pas masquer le manque.
-  preuveTerrain: unsplash('reserve/7VRjBuoQRG6b0U7sIqjk_ConstructionNight_wide2.jpg'),
+  // Duplication volontaire des emplacements ci-dessus (même raison qu'avant :
+  // c'est visible, pas caché). preuveTerrain et realisationInstallation
+  // suivent désormais hero/besoinInstaller, devenus des photos réelles.
+  // realisationTerrain (besoinDeployer) et realisationLab (soudeur) restent
+  // Unsplash tant que ces clés-source n'ont pas de remplacement — voir leurs
+  // commentaires respectifs plus haut.
+  preuveTerrain: '/images/hero/hero-canada-day-2026.webp',
   realisationTerrain: unsplash('photo-1579847188804-ecba0e2ea330'),
-  realisationInstallation: unsplash('photo-1670846112333-ca9115b38b18'),
+  realisationInstallation: medias('home/besoin-installer-2026.webp'),
   realisationLab: unsplash('photo-1745448797900-35d08e85e9db'),
   /** Réutilisée par les Réalisations : la CNC porte déjà la section LAB. */
 
@@ -127,8 +159,14 @@ export const IMAGES = {
 export const CADRAGES = {
   /** Silhouettes en haut à gauche du cadre. */
   besoinDeployer: 'object-[30%_25%]',
-  /** Ouvriers sur le tiers gauche. */
-  besoinInstaller: 'object-[22%_40%]',
+  /**
+   * Photo réelle (équipe KO-LAB, Canada Day 2026), format portrait recadré
+   * dans une carte 16/9 — le groupe se tient dans le tiers bas du cadre.
+   * L'ancien réglage (22% 40%, calé sur l'ex-silhouette Unsplash) montrait la
+   * bannière plutôt que l'équipe une fois la vraie photo posée ; corrigé en
+   * visionnant le rendu réel de la carte, pas en le supposant.
+   */
+  besoinInstaller: 'object-[55%_82%]',
   /** Nacelle et ouvrier au centre, légèrement sous le milieu du cadre vertical. */
   installationNacelle: 'object-[50%_58%]',
 } as const

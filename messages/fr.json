@@ -185,20 +185,6 @@
       "vip_nom": "Centre de l'auto VIP",
       "vip_role": "Entretien mécanique, soutien aux véhicules et besoins liés à la flotte."
     },
-    "avis": {
-      "label": "Avis clients",
-      "title": "Ce que nos clients disent du terrain",
-      "mandat_confirme": "Mandat confirmé",
-      "avis_1_nom": "Patrimoine canadien (PCH)",
-      "avis_1_role": "Fête du Canada · Bal de Neige",
-      "avis_1_texte": "Déploiement terrain pour la Fête du Canada et le Bal de Neige, avec un retour positif de l'organisation.",
-      "avis_2_nom": "Bluesfest",
-      "avis_2_role": "Festival Bluesfest",
-      "avis_2_texte": "Logistique terrain assurée pendant le festival, avec un excellent retour de l'organisation.",
-      "avis_3_nom": "Devcore",
-      "avis_3_role": "DevFest Cornwall",
-      "avis_3_texte": "Installation et logistique pour DevFest Cornwall, avec un retour positif de l'équipe organisatrice."
-    },
     "offres": {
       "label": "Aussi disponible",
       "location_tag": "Rentman",
@@ -305,35 +291,15 @@
     "filtre_lab": "Le LAB",
     "filtre_equipement": "Équipements",
     "aucun_resultat": "Aucune réalisation dans cette catégorie pour le moment.",
+    "aucune_realisation": "Nos réalisations documentées arrivent bientôt.",
     "filtres_label": "Filtrer les réalisations",
     "compte": "{n, plural, =0 {Aucune réalisation} one {# réalisation} other {# réalisations}}",
-    "items": {
-      "terrain": {
-        "titre": "Déploiement événementiel",
-        "description": "Coordination d'équipes sur plusieurs zones, montage, soutien pendant l'événement et démontage."
-      },
-      "installation": {
-        "titre": "Installation saisonnière",
-        "description": "Préparation, transport, installation en hauteur, suivi et retrait — jusqu'à l'entreposage."
-      },
-      "lab": {
-        "titre": "Fabrication sur mesure",
-        "description": "Conception, prototypage et production de pièces développées pour les besoins réels du projet."
-      }
-    },
     "voir_serie": "Voir les images",
     "slide_fermer": "Fermer les images",
     "slide_precedent": "Image précédente",
     "slide_suivant": "Image suivante",
     "slide_position": "{n} sur {total}",
     "serie_compte": "{n, plural, one {# image} other {# images}}",
-    "alt": {
-      "terrain_nuit": "Chantier de nuit : trois personnes sous des lampes de travail, pelleteuse à l'arrêt, asphalte mouillé.",
-      "terrain_logistique": "Semi-remorque de nuit, feux de gabarit allumés devant un dépôt.",
-      "installation_echafaudage": "Deux personnes en silhouette sur un échafaudage tubulaire, à contre-jour.",
-      "lab_soudure": "Poste de soudure au masque, arc blanc-bleu, atelier dans la pénombre.",
-      "lab_meuleuse": "Gerbe d'étincelles de meuleuse sur fond noir."
-    },
     "bandeau_groupe": "Photos de la réalisation"
   },
   "Boutique": {

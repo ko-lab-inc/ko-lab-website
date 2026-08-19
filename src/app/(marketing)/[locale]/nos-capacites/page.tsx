@@ -107,7 +107,10 @@ export default async function CapacitesHubPage({ params }: Props) {
       items: ITEMS_7.map((k) => tInst(k)),
       src: IMAGES.besoinInstaller,
       cadrage: CADRAGES.besoinInstaller,
-      desature: true,
+      // Photo réelle (Canada Day 2026, jour nuageux) — plus le contre-jour
+      // doré de l'ex-photo Unsplash que `desature` (FILTRE_TERRAIN_CHAUD)
+      // corrigeait. Voir Besoins.tsx pour le même correctif sur l'accueil.
+      desature: false,
     },
     {
       cle: 'lab',

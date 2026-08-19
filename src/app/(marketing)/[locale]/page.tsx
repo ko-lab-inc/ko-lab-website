@@ -2,7 +2,6 @@ import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
-import { Avis } from '@/components/sections/Avis'
 import { Besoins } from '@/components/sections/Besoins'
 import { Capacites } from '@/components/sections/Capacites'
 import { CtaFinal } from '@/components/sections/CtaFinal'
@@ -74,7 +73,6 @@ export default async function AccueilPage({ params }: Props) {
    *   Preuve      photo + voile sombre
    *   Réalisations ko-white
    *   Écosystème  ko-black
-   *   Avis        ko-white
    *   Offres      ko-cream
    *   CTA final   ko-white
    *   (Footer)    ko-black
@@ -89,7 +87,6 @@ export default async function AccueilPage({ params }: Props) {
       <PreuveTerrain />
       <Realisations />
       <Ecosysteme />
-      <Avis />
       <Offres />
       <CtaFinal />
     </>

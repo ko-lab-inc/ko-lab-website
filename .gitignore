@@ -87,3 +87,10 @@ Thumbs.db
 /ADN KO-LAB INC/
 /images site ref/
 /KO-LAB_Structure_Site_Web_V2.docx
+/KO-LAB-PHOTOS
+
+# HANDOFF.md et briefs .docx déposés le 18 août 2026 — contiennent des
+# informations internes sensibles (identité légale non résolue, détails
+# financiers, courriels personnels). Dépôt GitHub public : même raison que
+# les entrées ci-dessus, jamais dans l'historique Git.
+/docs/briefs/

@@ -27,17 +27,16 @@ export async function Besoins() {
   const t = await getTranslations('Home.besoins')
 
   /**
-   * Les photos 01 et 02 sont des contre-jours de fin de journée : leur ciel
-   * ambré très saturé entrait en concurrence avec le bleu accent du site.
-   * FILTRE_TERRAIN_CHAUD (images.ts) conserve les silhouettes et la
-   * profondeur, mais ramène la dominante orange au niveau des autres visuels —
-   * tout en partageant grayscale et brightness avec FILTRE_TERRAIN, pour que
-   * les quatre photos restent reconnaissables comme une même famille.
+   * Seule 01 (besoinDeployer, encore Unsplash) reste un contre-jour de fin de
+   * journée : son ciel ambré très saturé entrait en concurrence avec le bleu
+   * accent du site. FILTRE_TERRAIN_CHAUD (images.ts) conserve les silhouettes
+   * et la profondeur, mais ramène la dominante orange au niveau des autres
+   * visuels.
    *
-   * 03 et 04 n'ont pas besoin de correction supplémentaire : leur ambre vient
-   * d'une source ponctuelle (impression 3D, feux de camion) sur fond noir,
-   * sans aplat coloré. Elles reçoivent tout de même FILTRE_TERRAIN — jamais
-   * `undefined` — pour partager le même socle que le reste du site.
+   * 02, 03 et 04 sont des photos réelles KO-LAB (2025-2026) sans ciel doré à
+   * corriger — 02 est un jour nuageux, 03 et 04 des scènes d'atelier/de site
+   * sur fond neutre. Toutes reçoivent FILTRE_TERRAIN — jamais `undefined` —
+   * pour partager le même socle colorimétrique que le reste du site.
    */
   const besoins = [
     {
@@ -56,7 +55,11 @@ export async function Besoins() {
       Icone: IconeGrue,
       src: IMAGES.besoinInstaller,
       cadrage: CADRAGES.besoinInstaller,
-      style: FILTRE_TERRAIN_CHAUD,
+      // Photo réelle (Canada Day 2026) — jour nuageux, pas le contre-jour doré
+      // de l'ex-photo Unsplash. FILTRE_TERRAIN_CHAUD assombrissait et
+      // désaturait pour compenser un ciel ambré qui n'existe plus ici ; le
+      // socle FILTRE_TERRAIN suffit, comme 03 et 04.
+      style: FILTRE_TERRAIN,
     },
     {
       cle: 'fabriquer',

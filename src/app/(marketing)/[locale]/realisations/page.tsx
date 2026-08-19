@@ -8,7 +8,6 @@ import {
 } from '@/components/sections/GalerieRealisations'
 import { Reveal } from '@/components/ui/Reveal'
 import { routing } from '@/i18n/routing'
-import { CADRAGES, IMAGES } from '@/lib/images'
 import { lireRealisationsPubliees, type RealisationPubliee } from '@/lib/realisations'
 import { ROUTES } from '@/lib/routes'
 
@@ -41,24 +40,15 @@ export default async function RealisationsPage({ params }: Props) {
   const t = await getTranslations('Realisations')
 
   /**
-   * Base d'abord, contenu provisoire en repli.
-   *
-   * ---------------------------------------------------------------------------
-   * ⚠️ POURQUOI UN REPLI, ET NON UN SIMPLE TABLEAU VIDE
-   *
    * `lireRealisationsPubliees()` renvoie `null` tant qu'AUCUNE réalisation
-   * n'a été publiée avec au moins une photo depuis /admin/realisations — c'est
-   * le cas aujourd'hui : les trois lignes de démonstration ont été dépubliées
-   * (elles étaient inventées), et rien de réel n'a encore été saisi. Sans
-   * repli, la galerie publique se viderait le jour du déploiement de cette
-   * fonctionnalité, avant même que Christian ait eu le temps d'y ajouter un
-   * seul chantier.
-   *
-   * Le contenu provisoire ci-dessous restera donc affiché jusqu'à ce qu'une
-   * première réalisation soit publiée — à cet instant, `lireRealisationsPubliees()`
-   * cesse de renvoyer `null` et ce tableau de repli n'est plus jamais atteint.
-   * Rien à changer ici ce jour-là.
-   * ---------------------------------------------------------------------------
+   * n'a été publiée avec au moins une photo depuis /admin/realisations — les
+   * quatre lignes qui occupaient la galerie ont été dépubliées le 17 août
+   * 2026 : titres et descriptions génériques ("Déploiement événementiel",
+   * etc.), aucune n'identifiait un client ou un projet réel malgré des
+   * photos réellement téléversées. Une galerie vide et honnête vaut mieux
+   * qu'une galerie de faux projets — voir la règle de véracité de
+   * CLAUDE.md. Cet état s'efface de lui-même dès que Christian publie une
+   * première réalisation réelle, sans changement de code.
    */
   const publiees = await lireRealisationsPubliees()
 
@@ -68,63 +58,6 @@ export default async function RealisationsPage({ params }: Props) {
     lab: t('filtre_lab'),
     equipement: t('filtre_equipement'),
   }
-
-  // ⚠️ CONTENU PROVISOIRE — voir la note ci-dessus. Les séries d'images
-  // réutilisent des photos déjà présentes ailleurs sur le site : ce sont les
-  // mêmes images de banque que partout, en attendant les vraies photos de
-  // chantier KO-LAB.
-  const repli: readonly RealisationCarte[] = [
-    {
-      cle: 'terrain',
-      categorie: 'terrain',
-      titre: t('items.terrain.titre'),
-      description: t('items.terrain.description'),
-      tag: t('filtre_terrain'),
-      src: IMAGES.realisationTerrain,
-      cadrage: CADRAGES.besoinDeployer,
-      desature: true,
-      serie: [
-        { src: IMAGES.hero, alt: t('alt.terrain_nuit') },
-        { src: IMAGES.besoinLouer, alt: t('alt.terrain_logistique') },
-      ],
-    },
-    {
-      cle: 'installation',
-      categorie: 'installation',
-      titre: t('items.installation.titre'),
-      description: t('items.installation.description'),
-      tag: t('filtre_installation'),
-      src: IMAGES.installationNacelle,
-      cadrage: CADRAGES.installationNacelle,
-      desature: false,
-      serie: [{ src: IMAGES.besoinInstaller, alt: t('alt.installation_echafaudage') }],
-    },
-    {
-      cle: 'lab',
-      categorie: 'lab',
-      titre: t('items.lab.titre'),
-      description: t('items.lab.description'),
-      tag: t('filtre_lab'),
-      src: IMAGES.labImpression3d,
-      cadrage: 'object-center',
-      desature: false,
-      /**
-       * ⚠️ IMAGES.lab (découpe laser CNC) est volontairement ABSENTE.
-       *
-       * Elle porte une signature de photographe incrustée en bas à droite —
-       * discrète sur une carte, criante en plein écran. La visionneuse affiche
-       * l'image entière : ce qui passait inaperçu devient le sujet.
-       */
-      serie: [
-        { src: IMAGES.soudeur, alt: t('alt.lab_soudure') },
-        { src: IMAGES.besoinFabriquer, alt: t('alt.lab_meuleuse') },
-      ],
-    },
-  ]
-
-  const realisations: readonly RealisationCarte[] = publiees
-    ? publiees.map((r) => versCarte(r, libellesCategories))
-    : repli
 
   // Les catégories du skill 21. `equipement` est proposée dès maintenant même
   // sans réalisation associée : le message « aucun résultat » informe mieux
@@ -159,14 +92,18 @@ export default async function RealisationsPage({ params }: Props) {
       {/* ------------------------------ Galerie ------------------------------ */}
       <section className="bg-ko-white py-16 lg:py-24">
         <div className="mx-auto max-w-container px-6 lg:px-12">
-          <Reveal>
-            <GalerieRealisations
-              realisations={realisations}
-              filtres={filtres}
-              labelFiltres={t('filtres_label')}
-              aucunResultat={t('aucun_resultat')}
-            />
-          </Reveal>
+          {publiees ? (
+            <Reveal>
+              <GalerieRealisations
+                realisations={publiees.map((r) => versCarte(r, libellesCategories))}
+                filtres={filtres}
+                labelFiltres={t('filtres_label')}
+                aucunResultat={t('aucun_resultat')}
+              />
+            </Reveal>
+          ) : (
+            <p className="text-base text-ko-muted">{t('aucune_realisation')}</p>
+          )}
         </div>
       </section>
     </>
