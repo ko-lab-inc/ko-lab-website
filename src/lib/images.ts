@@ -121,19 +121,29 @@ export const IMAGES = {
   installationNacelle: unsplash('photo-1641384390864-dbfa6e39fd28'),
 
   /**
-   * Tête d'impression FDM en cours de dépôt, fond très clair, éclairage studio.
+   * Photo réelle — petite série de pièces imprimées (jaune-vert), tête
+   * d'impression Bambu Lab visible en haut du cadre. Atelier KO-LAB,
+   * lot du 18 août 2026 (dossier « le lab 3d » / Petite série production).
    *
-   * Boutique — catégorie Impression 3D. Traitement volontairement DIFFÉRENT des
-   * photos de capacités : il faut ici une image produit lisible sur carte
-   * blanche, pas une ambiance sombre.
+   * ⚠️ AUCUN CONSOMMATEUR ACTUEL — grep vérifié, cette clé n'est référencée
+   * nulle part dans src/ en dehors de sa propre définition (Phase 8). Le
+   * remplacement règle l'objectif « 0 URL Unsplash dans src/ » sans changer
+   * quoi que ce soit à l'écran ; câbler un usage reste à faire.
    *
-   * ⚠️ GÉNÉRIQUE — ne montre aucun modèle précis. À remplacer par les visuels
-   * presse officiels de Bambu Lab. Sur une fiche produit, l'image affirme
-   * « voici ce que vous achetez » : une machine générique y est une inexactitude,
-   * pas une approximation. C'est pourquoi les autres produits utilisent
-   * PhotoPlaceholder plutôt qu'une photo de stock approchante.
+   * ⚠️ MODÈLE — la machine visible porte la marque « Bambu Lab » (lisible,
+   * réel) mais AUCUN numéro de modèle identifiable dans ce cadrage —
+   * volontaire : le catalogue vend le X1 Carbon et le P1S, pas la machine
+   * de cette photo (un X2D, `lab/lab-machine-2026.webp`). Si cette clé est
+   * un jour posée sur UNE fiche produit précise plutôt qu'un usage
+   * générique « catégorie Impression 3D », vérifier que le modèle
+   * correspond à ce qui est vendu — sinon même défaut que l'ancien
+   * placeholder Unsplash, juste avec une vraie photo.
+   *
+   * Aucune mention de statut de revendeur nulle part autour de cette image
+   * (RAPPEL Phase 8) : KO-LAB n'est ni revendeur ni distributeur autorisé
+   * Bambu Lab — la photo montre l'atelier, pas une affirmation commerciale.
    */
-  boutiqueImpression3d: unsplash('photo-1597765654525-5cb60d312ef6'),
+  boutiqueImpression3d: medias('boutique/impression-3d-2026.webp'),
 
   /** Soudeur au masque, arc blanc-bleu, atelier noyé dans le noir. Disponible. */
   soudeur: unsplash('photo-1745448797900-35d08e85e9db'),
