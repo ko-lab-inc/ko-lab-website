@@ -133,7 +133,7 @@ export default async function PostulerPage({ params, searchParams }: Props) {
 
           <Link
             href={ROUTES.carrieres}
-            className="mt-12 inline-flex min-h-[44px] items-center text-sm text-ko-muted transition-colors duration-200 hover:text-ko-blue"
+            className="mt-12 inline-flex min-h-[44px] items-center text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
           >
             ← {t('postuler_retour')}
           </Link>

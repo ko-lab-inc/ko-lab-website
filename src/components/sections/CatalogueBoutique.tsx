@@ -135,9 +135,15 @@ export function CatalogueBoutique({
                 className={cn(
                   'min-h-[40px] rounded-sm border px-4 py-1.5 text-left text-sm transition-colors duration-200',
                   'lg:rounded-none lg:border-x-0 lg:border-t-0 lg:border-l-2 lg:px-3 lg:pl-3',
+                  // Phase 2 (18 août 2026) : texte noir sur le fond plein
+                  // (mobile), ko-ink sur la variante transparente (desktop) —
+                  // le bleu en texte échoue le contraste sur fond clair
+                  // (2,15:1), même petit et même en état actif. Le filet
+                  // gauche bleu (lg:border-l-2, hors classes conditionnelles)
+                  // reste le signal de sélection en desktop.
                   actif
-                    ? 'border-ko-blue bg-ko-blue text-ko-white lg:bg-transparent lg:font-medium lg:text-ko-blue'
-                    : 'border-ko-line text-ko-ink hover:border-ko-ink lg:border-transparent lg:hover:border-ko-line lg:hover:text-ko-blue',
+                    ? 'border-ko-blue bg-ko-blue text-ko-black lg:bg-transparent lg:font-medium lg:text-ko-ink'
+                    : 'border-ko-line text-ko-ink hover:border-ko-ink lg:border-transparent lg:hover:border-ko-line',
                 )}
               >
                 {label}
@@ -204,7 +210,7 @@ export function CatalogueBoutique({
                     {/* Ruban — vide tant que Christian n'a pas confirmé un texte
                         vrai par produit (voir le commentaire sur ProduitCarte). */}
                     {produit.badgeRibbon && (
-                      <span className="absolute left-0 top-4 z-10 flex items-center gap-1.5 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-white [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]">
+                      <span className="absolute left-0 top-4 z-10 flex items-center gap-1.5 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-black [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]">
                         {produit.badgeRibbonIcone && <produit.badgeRibbonIcone taille={12} />}
                         {produit.badgeRibbon}
                       </span>
@@ -279,11 +285,11 @@ export function CatalogueBoutique({
 
                   <div className="flex flex-1 flex-col pt-4">
                     {/* Catégorie en mono nu — pas de pastille colorée (skill 08). */}
-                    <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
+                    <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-muted">
                       {nomCategorie}
                     </p>
 
-                    <h3 className="mt-2 font-serif text-[16px] leading-tight text-ko-ink transition-colors duration-200 group-hover:text-ko-blue sm:text-[18px]">
+                    <h3 className="mt-2 font-serif text-[16px] leading-tight text-ko-ink underline decoration-transparent underline-offset-4 transition-colors duration-200 group-hover:decoration-ko-blue sm:text-[18px]">
                       {/*
                         LIEN UNIQUE de la carte, étiré sur toute sa surface.
 

@@ -74,7 +74,7 @@ export default async function InscriptionPage({ params, searchParams }: Props) {
           // mais qui a DÉJÀ un compte ne doit pas perdre sa destination en
           // choisissant de se connecter plutôt que de s'inscrire.
           href={suivant ? `${ROUTES.connexion}?suivant=${encodeURIComponent(suivant)}` : ROUTES.connexion}
-          className="text-ko-blue underline-offset-4 transition-colors duration-200 hover:underline"
+          className="text-ko-ink underline-offset-4 transition-colors duration-200 hover:underline hover:decoration-ko-blue"
         >
           {t('se_connecter')}
         </Link>

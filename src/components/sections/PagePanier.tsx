@@ -118,10 +118,10 @@ export function PagePanier({
                 </div>
 
                 <div className="min-w-0">
-                  <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-blue">
+                  <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ko-muted">
                     {article.categorie}
                   </p>
-                  <p className="mt-2 font-serif text-[20px] leading-tight text-ko-ink transition-colors duration-200 group-hover:text-ko-blue">
+                  <p className="mt-2 font-serif text-[20px] leading-tight text-ko-ink underline decoration-transparent underline-offset-4 transition-colors duration-200 group-hover:decoration-ko-blue">
                     {article.nom}
                   </p>
                   {fiche?.prix != null && (
@@ -147,7 +147,7 @@ export function PagePanier({
                     onClick={() => changerQuantite(article.slug, Math.max(1, article.quantite - 1))}
                     disabled={article.quantite <= 1}
                     aria-label={`${t('quantite')} −`}
-                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
+                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-black disabled:opacity-40"
                   >
                     <IconeMoins taille={14} />
                   </button>
@@ -169,7 +169,7 @@ export function PagePanier({
                     // toute modification d'une ligne déjà obsolète.
                     disabled={article.quantite >= (fiche?.quantiteDisponible ?? Infinity)}
                     aria-label={`${t('quantite')} +`}
-                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
+                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-black disabled:opacity-40"
                   >
                     <IconePlus taille={14} />
                   </button>

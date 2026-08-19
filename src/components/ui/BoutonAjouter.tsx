@@ -83,7 +83,7 @@ export function BoutonAjouter({
             onClick={() => regler(quantite - 1)}
             disabled={quantite <= 1}
             aria-label={`${t('quantite')} −`}
-            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
+            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-black disabled:opacity-40"
           >
             <IconeMoins taille={14} />
           </button>
@@ -100,7 +100,7 @@ export function BoutonAjouter({
             onClick={() => regler(quantite + 1)}
             disabled={quantite >= quantiteDisponible}
             aria-label={`${t('quantite')} +`}
-            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
+            className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-black disabled:opacity-40"
           >
             <IconePlus taille={14} />
           </button>

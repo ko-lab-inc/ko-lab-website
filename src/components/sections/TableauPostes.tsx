@@ -122,7 +122,7 @@ export function TableauPostes({
                   </span>
                 </span>
 
-                <span className="label-mono hidden shrink-0 text-ko-blue sm:block">
+                <span className="label-mono hidden shrink-0 sm:block">
                   {libelles.types[p.type] ?? p.type}
                 </span>
 
@@ -135,7 +135,7 @@ export function TableauPostes({
                     title={p.actif ? textes.retirer : textes.publier}
                     className={cn(
                       'label-mono min-h-[32px] px-2 transition-colors duration-200',
-                      p.actif ? 'text-ko-blue hover:text-ko-ink' : 'text-ko-muted hover:text-ko-blue',
+                      p.actif ? 'text-ko-ink' : 'text-ko-muted hover:text-ko-ink',
                     )}
                   >
                     {p.actif ? textes.actif : textes.inactif}
@@ -148,7 +148,7 @@ export function TableauPostes({
                     onClick={() => setVoir(p)}
                     aria-label={`${textes.voir} — ${p.titre_fr}`}
                     title={textes.voir}
-                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue"
+                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
                   >
                     <IconeOeil taille={17} />
                   </button>
@@ -158,7 +158,7 @@ export function TableauPostes({
                     onClick={() => setEdite(p)}
                     aria-label={`${textes.modifier} — ${p.titre_fr}`}
                     title={textes.modifier}
-                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue"
+                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
                   >
                     <IconeCrayon taille={17} />
                   </button>
@@ -251,8 +251,8 @@ export function TableauPostes({
           {voir && (
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                <span className="label-mono text-ko-blue">{libelles.types[voir.type] ?? voir.type}</span>
-                <span className={cn('label-mono', voir.actif ? 'text-ko-blue' : 'text-ko-muted')}>
+                <span className="label-mono">{libelles.types[voir.type] ?? voir.type}</span>
+                <span className={cn('label-mono', voir.actif ? 'text-ko-ink' : 'text-ko-muted')}>
                   {voir.actif ? textes.actif : textes.inactif}
                 </span>
               </div>

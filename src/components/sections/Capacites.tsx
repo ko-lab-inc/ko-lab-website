@@ -85,7 +85,7 @@ export async function Capacites() {
                     */}
                     <span
                       aria-hidden="true"
-                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ko-blue text-sm text-ko-blue transition-colors duration-200 group-hover:bg-ko-blue group-hover:text-ko-white"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-ko-blue text-sm text-ko-blue transition-colors duration-200 group-hover:bg-ko-blue group-hover:text-ko-black"
                     >
                       →
                     </span>

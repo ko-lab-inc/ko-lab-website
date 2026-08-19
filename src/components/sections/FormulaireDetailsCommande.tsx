@@ -54,7 +54,7 @@ function Champ({
       <label htmlFor={id} className="label-mono mb-2 block text-ko-muted">
         {libelle}
         {obligatoire && (
-          <span aria-label={marqueur} className="ml-1 text-ko-blue">
+          <span aria-label={marqueur} className="ml-1 text-ko-ink">
             *
           </span>
         )}

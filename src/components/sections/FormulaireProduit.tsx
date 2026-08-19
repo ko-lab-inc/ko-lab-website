@@ -304,7 +304,7 @@ export function FormulaireProduit({
         </p>
       )}
       {etat.succes && (
-        <p role="status" className="text-sm text-ko-blue">
+        <p role="status" className="text-sm font-medium text-ko-ink">
           {libelles.succes}
         </p>
       )}

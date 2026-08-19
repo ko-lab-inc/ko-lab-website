@@ -199,7 +199,7 @@ export function BandeauVideos({
                   aria-hidden="true"
                   className="absolute inset-0 flex items-center justify-center"
                 >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ko-scrim/70 text-ko-white transition-colors duration-200 group-hover:bg-ko-blue">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ko-scrim/70 text-ko-white transition-colors duration-200 group-hover:bg-ko-blue group-hover:text-ko-black">
                     <IconeLecture taille={20} />
                   </span>
                 </span>
@@ -207,7 +207,7 @@ export function BandeauVideos({
 
               {/* Le titre EST le nom accessible de la carte : pas de
                   `aria-label` en plus, qui ferait doublon au lecteur d'écran. */}
-              <p className="mt-3 text-sm leading-snug text-ko-ink transition-colors duration-200 group-hover:text-ko-blue">
+              <p className="mt-3 text-sm leading-snug text-ko-ink underline decoration-transparent underline-offset-4 transition-colors duration-200 group-hover:decoration-ko-blue">
                 {v.titre}
               </p>
               <p className="label-mono mt-1.5 text-ko-muted">{libelles.lire}</p>
@@ -257,7 +257,7 @@ export function BandeauVideos({
             onClick={() => defiler(-1)}
             aria-label={libelles.precedent}
             title={libelles.precedent}
-            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue"
+            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue"
           >
             <span
               aria-hidden="true"
@@ -269,7 +269,7 @@ export function BandeauVideos({
             onClick={() => defiler(1)}
             aria-label={libelles.suivant}
             title={libelles.suivant}
-            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue"
+            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue"
           >
             <span
               aria-hidden="true"
@@ -305,7 +305,7 @@ export function BandeauVideos({
                 onClick={() => boite.current?.close()}
                 aria-label={libelles.fermer}
                 title={libelles.fermer}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ko-scrim/55 text-ko-white transition-colors duration-200 hover:bg-ko-blue"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ko-scrim/55 text-ko-white transition-colors duration-200 hover:bg-ko-blue hover:text-ko-black"
               >
                 <IconeFermer taille={20} />
               </button>

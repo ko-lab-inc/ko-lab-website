@@ -19,9 +19,21 @@
     --ko-white: #f8f6f1; /* fond clair principal */
     --ko-cream: #f0ede6; /* fond clair secondaire */
     --ko-cream-2: #e8e4db; /* fond clair tertiaire, filigranes, placeholders */
-    --ko-blue: #2f7fc9; /* accent UNIQUE */
-    --ko-blue-2: #5aa3e4; /* hover bleu, et accent sur fond sombre */
-    --ko-blue-bg: #e8f2fb; /* fond bleu très léger */
+    /* #61b4db remplace #2f7fc9 le 18 août 2026 (décision direction, Phase 2
+       refonte). Sur fond clair, ce bleu ne passe QUE pour les gros éléments
+       graphiques (filets, aplats, chiffres XXL, soulignements) — 2,15:1 sur
+       --ko-white, très sous le seuil AA même pour du grand texte. Jamais de
+       texte courant ni de petit texte en bleu sur fond clair : voir
+       .label-mono ci-dessous, corrigé pour cette raison. */
+    --ko-blue: #61b4db; /* accent UNIQUE */
+    /* Plus foncé que --ko-blue (demande explicite) — sert le hover des
+       boutons pleins et les états actifs sur fond sombre. Ce n'est plus une
+       nécessité de contraste : --ko-blue seul atteint déjà 8,10:1 sur
+       --ko-black, largement au-dessus du seuil AA même pour du petit texte
+       (contre 4,47:1 pour l'ancien bleu, qui échouait à 11px — d'où
+       l'existence historique de cette variante). --ko-blue-2 reste utile
+       comme état d'interaction (hover, actif), pas comme correctif. */
+    --ko-blue-2: #37a0d2; /* hover bleu, et accent sur fond sombre */
     --ko-muted: #7a7b76; /* texte secondaire sur fond clair */
     --ko-muted-d: #b3b2ae; /* texte secondaire sur fond sombre — 8.85:1 sur --ko-black */
     --ko-line: #e0ddd6; /* bordures sur fond clair */
@@ -43,7 +55,7 @@
        ko-frost, ce qui évite de retomber sur `black/88` codé en dur. */
     --ko-black-rgb: 17 18 16;
     --ko-white-rgb: 248 246 241;
-    --ko-blue-rgb: 47 127 201;
+    --ko-blue-rgb: 97 180 219;
   }
 
   /* Les familles --font-serif / --font-sans / --font-mono ne sont PAS définies
@@ -144,17 +156,24 @@
   /* ---------------------------------------------------------------------------
      Labels mono — skill 02
      --------------------------------------------------------------------------- */
+  /* Fond clair — jamais bleu (Phase 2, règle d'accessibilité) : --ko-blue sur
+     --ko-white ne fait que 2,15:1, sous tout seuil AA même pour du petit
+     texte. --ko-muted est le texte secondaire du design system, le rôle
+     sémantique exact d'un label. */
   .label-mono {
     font-family: var(--font-mono), 'JetBrains Mono', monospace;
     font-size: 11px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--ko-blue);
+    color: var(--ko-muted);
   }
 
-  /* Variante fond sombre. À 11px, --ko-blue sur --ko-black plafonne à 4.47:1,
-     sous le seuil AA de 4.5:1 pour le petit texte ; --ko-blue-2 atteint 6.97:1.
-     Même logique de nommage que --ko-line-d. */
+  /* Variante fond sombre — ici le bleu reste permis (règle Phase 2 : fond
+     sombre = bleu libre). --ko-blue-2 atteint 6,37:1 sur --ko-black ;
+     --ko-blue seul suffirait déjà (8,10:1) mais -2 différencie visuellement
+     du label-mono clair et sert le même rôle d'état sur les autres accents
+     de fond sombre (StatsBar, Ecosysteme, NavAdmin). Même logique de nommage
+     que --ko-line-d. */
   .label-mono-d {
     color: var(--ko-blue-2);
   }

@@ -75,10 +75,11 @@ export async function StatsBar() {
                 cellule offre ~131px utiles et « 20 000+ » en Fraunces 34px
                 déborde. Le 34px demandé est conservé à partir de lg.
               */}
-              {/* ko-blue2 et non ko-blue : sur --ko-black, le bleu principal
-                  plafonne à 4.47:1. `--ko-blue-mid` n'existe pas dans la
-                  palette. items-center aligne l'icône sur la ligne de base
-                  optique du chiffre, pas sur sa boîte. */}
+              {/* ko-blue2 : variante d'état sur fond sombre, plus foncée que
+                  ko-blue — plus une nécessité de contraste depuis #61b4db
+                  (8.10:1 sur --ko-black à lui seul), voir globals.css.
+                  items-center aligne l'icône sur la ligne de base optique du
+                  chiffre, pas sur sa boîte. */}
               <div className="flex items-center gap-3">
                 <stat.Icone taille={20} className="text-ko-blue2" />
 

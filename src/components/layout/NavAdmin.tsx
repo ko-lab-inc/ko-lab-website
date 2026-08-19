@@ -227,12 +227,13 @@ export function NavAdmin({
                       // 2px se perdait.
                       //
                       // ⚠️ Sur fond sombre, l'aplat est un voile blanc
-                      // translucide (ko-frost) et non l'ancien ko-blue-bg
-                      // (#e8f2fb) : ce bleu très pâle était conçu pour un
-                      // fond clair et deviendrait un pavé lumineux sur le
-                      // noir. Le texte passe à ko-blue2, seul bleu de la
-                      // palette qui atteint le seuil AA sur ko-black (6.97:1
-                      // contre 4.47:1 — voir label-mono-d dans globals.css).
+                      // translucide (ko-frost) et non ko-blue-bg : ce bleu
+                      // très pâle est conçu pour un fond clair et deviendrait
+                      // un pavé lumineux sur le noir. Le texte passe à
+                      // ko-blue2 (6.37:1 sur ko-black) — variante d'état,
+                      // plus une nécessité de contraste depuis #61b4db
+                      // (ko-blue seul atteint déjà 8.10:1) — voir
+                      // label-mono-d dans globals.css.
                       className={cn(
                         'flex min-h-[40px] items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors duration-200',
                         actif

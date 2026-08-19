@@ -27,7 +27,6 @@ const config: Config = {
         'ko-cream2': 'var(--ko-cream-2)',
         'ko-blue': 'var(--ko-blue)',
         'ko-blue2': 'var(--ko-blue-2)',
-        'ko-blue-bg': 'var(--ko-blue-bg)',
         'ko-muted': 'var(--ko-muted)',
         // Texte secondaire sur fond sombre. Un token dédié et non `ko-white/70` :
         // les couleurs mappées en var() ne supportent pas les modificateurs

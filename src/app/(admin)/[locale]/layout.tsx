@@ -294,7 +294,7 @@ export default async function AdminLayout({ children, params }: Props) {
                   ne pousse « Se déconnecter » hors de l'écran sur mobile. */}
               <span className="max-w-[38vw] text-right leading-tight sm:max-w-none">
                 <span className="block truncate text-sm text-ko-ink">{profil.email}</span>
-                <span className="label-mono text-ko-blue">
+                <span className="label-mono">
                   {t(`role_${profil.role === 'admin' ? 'admin' : 'editor'}`)}
                 </span>
               </span>

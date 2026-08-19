@@ -296,7 +296,7 @@ export default async function TableauDeBordPage({ params }: Props) {
                 cliquer une ligne « récente » ne menait nulle part. */}
             <Link
               href={`/${locale}/admin/demandes`}
-              className="text-sm text-ko-blue transition-colors duration-200 hover:text-ko-ink"
+              className="text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
             >
               {t('voir_toutes_demandes')} →
             </Link>
@@ -322,7 +322,7 @@ export default async function TableauDeBordPage({ params }: Props) {
                       <span className="min-w-0 flex-1 truncate text-base text-ko-ink">
                         {d.nom} — {d.email}
                       </span>
-                      <span className="label-mono shrink-0 text-ko-blue sm:w-24">{d.type}</span>
+                      <span className="label-mono shrink-0 sm:w-24">{d.type}</span>
                       <span className="shrink-0 font-mono text-xs text-ko-muted sm:w-40 sm:text-right">
                         {format.dateTime(new Date(d.created_at), {
                           dateStyle: 'medium',
@@ -354,7 +354,7 @@ export default async function TableauDeBordPage({ params }: Props) {
                 <ul className="space-y-4">
                   {alertes.map((a) => (
                     <li key={a} className="flex gap-3">
-                      <IconeAlerte taille={16} className="mt-0.5 text-ko-blue" />
+                      <IconeAlerte taille={16} className="mt-0.5 text-ko-ink" />
                       <span className="text-sm leading-relaxed text-ko-ink">{a}</span>
                     </li>
                   ))}

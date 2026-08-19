@@ -120,7 +120,7 @@ export function GalerieRealisations({
               className={cn(
                 'min-h-[44px] rounded-sm border px-5 text-sm transition-colors duration-250',
                 actif
-                  ? 'border-ko-blue bg-ko-blue text-ko-white'
+                  ? 'border-ko-blue bg-ko-blue text-ko-black'
                   : 'border-ko-line text-ko-ink hover:border-ko-ink',
               )}
             >
@@ -237,7 +237,7 @@ export function GalerieRealisations({
                     {/* Compteur d'images, en haut à droite, en face du tag.
                         C'est le seul indice qu'il y a plus à voir — sans lui,
                         rien ne distingue une carte cliquable d'une autre. */}
-                    <span className="label-mono absolute right-4 top-4 rounded bg-ko-scrim/60 px-3 py-1.5 text-ko-frost/90 backdrop-blur-sm transition-colors duration-[400ms] group-hover:bg-ko-blue group-hover:text-ko-white">
+                    <span className="label-mono absolute right-4 top-4 rounded bg-ko-scrim/60 px-3 py-1.5 text-ko-frost/90 backdrop-blur-sm transition-colors duration-[400ms] group-hover:bg-ko-blue group-hover:text-ko-black">
                       {t('serie_compte', { n: serie.length })}
                     </span>
                   </button>

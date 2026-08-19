@@ -33,7 +33,7 @@ import type { StatutCommande } from '@/types'
 const NOIR = '#111210'
 const CREME = '#f0ede6'
 const BLANC = '#f8f6f1'
-const BLEU = '#2f7fc9'
+const BLEU = '#61b4db'
 const MUET = '#7a7b76'
 const LIGNE = '#e0ddd6'
 
@@ -111,7 +111,7 @@ function construireLignes(
         <tr>
           <td style="padding:14px 0;border-bottom:1px solid ${LIGNE};width:56px;">${vignette}</td>
           <td style="padding:14px 0 14px 16px;border-bottom:1px solid ${LIGNE};font-family:Arial,Helvetica,sans-serif;">
-            <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:${BLEU};">${echapper(l.categorie)}</div>
+            <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:${MUET};">${echapper(l.categorie)}</div>
             <div style="font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${NOIR};margin-top:2px;">${echapper(l.nom)}</div>
           </td>
           <td style="padding:14px 0 14px 16px;border-bottom:1px solid ${LIGNE};font-family:'Courier New',Courier,monospace;font-size:13px;color:${MUET};text-align:right;white-space:nowrap;vertical-align:top;">
@@ -163,7 +163,7 @@ export function gabaritChangementStatut({
 
           <tr>
             <td style="padding:32px 32px 0;">
-              <span style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:${BLEU};">Commande ${echapper(numero)}</span>
+              <span style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:${MUET};">Commande ${echapper(numero)}</span>
               <h1 style="margin:8px 0 0;font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:24px;color:${NOIR};">Nouveau statut : ${echapper(statutLabel)}</h1>
             </td>
           </tr>
@@ -192,7 +192,7 @@ export function gabaritChangementStatut({
 
           <tr>
             <td style="padding:28px 32px 32px;">
-              <a href="${lienCommande}" style="display:inline-block;background:${BLEU};color:${BLANC};font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;text-decoration:none;padding:14px 28px;">
+              <a href="${lienCommande}" style="display:inline-block;background:${BLEU};color:${NOIR};font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;text-decoration:none;padding:14px 28px;">
                 Voir ma commande
               </a>
               <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${MUET};">

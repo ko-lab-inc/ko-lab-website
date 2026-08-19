@@ -54,7 +54,7 @@ export function ChatCrisp() {
  * l'atteignent. Le réglage se fait sous Settings → Website Settings →
  * Appearance → Color, en saisissant le noir KO-LAB #111210.
  *
- * Le bleu #2f7fc9 est à éviter : c'est notre unique signal d'interaction, et
+ * Le bleu #61b4db est à éviter : c'est notre unique signal d'interaction, et
  * un lanceur bleu entrerait en concurrence avec les boutons « Demander un
  * prix ». Le noir se pose sans rivaliser (skill 08).
  */

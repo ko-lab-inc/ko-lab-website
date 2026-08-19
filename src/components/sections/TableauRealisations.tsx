@@ -162,7 +162,7 @@ export function TableauRealisations({
                     <span className="block truncate font-mono text-xs text-ko-muted">{r.slug}</span>
                   </span>
 
-                  <span className="label-mono hidden shrink-0 text-ko-blue lg:block">
+                  <span className="label-mono hidden shrink-0 lg:block">
                     {libelles.categories[r.categorie] ?? r.categorie}
                   </span>
 
@@ -180,8 +180,8 @@ export function TableauRealisations({
                       className={cn(
                         'label-mono min-h-[32px] px-2 transition-colors duration-200',
                         r.publie
-                          ? 'text-ko-blue hover:text-ko-ink'
-                          : 'text-ko-muted hover:text-ko-blue',
+                          ? 'text-ko-ink'
+                          : 'text-ko-muted hover:text-ko-ink',
                       )}
                     >
                       {r.publie ? textes.publie : textes.horsLigne}
@@ -194,7 +194,7 @@ export function TableauRealisations({
                       onClick={() => setVoir(r)}
                       aria-label={`${textes.voir} — ${r.titre_fr}`}
                       title={textes.voir}
-                      className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue"
+                      className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
                     >
                       <IconeOeil taille={17} />
                     </button>
@@ -204,7 +204,7 @@ export function TableauRealisations({
                       onClick={() => setEdite(r)}
                       aria-label={`${textes.modifier} — ${r.titre_fr}`}
                       title={textes.modifier}
-                      className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue"
+                      className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
                     >
                       <IconeCrayon taille={17} />
                     </button>
@@ -298,10 +298,10 @@ export function TableauRealisations({
           {voir && (
             <div className="space-y-6">
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                <span className="label-mono text-ko-blue">
+                <span className="label-mono">
                   {libelles.categories[voir.categorie] ?? voir.categorie}
                 </span>
-                <span className={cn('label-mono', voir.publie ? 'text-ko-blue' : 'text-ko-muted')}>
+                <span className={cn('label-mono', voir.publie ? 'text-ko-ink' : 'text-ko-muted')}>
                   {voir.publie ? textes.publie : textes.horsLigne}
                 </span>
               </div>

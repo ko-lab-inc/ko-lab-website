@@ -111,14 +111,14 @@ export default async function DetailCommandePage({ params }: Props) {
         <div className="mx-auto max-w-container px-6 lg:px-12">
           <Link
             href={ROUTES.compteCommandes}
-            className="text-sm text-ko-muted transition-colors duration-200 hover:text-ko-blue"
+            className="text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
           >
             ← {t('retour_liste')}
           </Link>
           <span aria-hidden="true" className="mt-6 block h-px w-8 bg-ko-blue" />
           <h1 className="ko-display mt-6 text-ko-ink">{commande.numero}</h1>
           <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-ko-muted">
-            <span className="label-mono text-ko-blue">
+            <span className="label-mono">
               {libellesStatuts[commande.statut] ?? commande.statut}
             </span>
             <span>{format.dateTime(new Date(commande.created_at), { dateStyle: 'medium' })}</span>

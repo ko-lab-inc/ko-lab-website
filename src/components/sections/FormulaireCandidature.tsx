@@ -88,7 +88,7 @@ function Champ({
       <label htmlFor={id} className="label-mono mb-2 block text-ko-muted">
         {libelle}
         {obligatoire && (
-          <span aria-label={marqueur} className="ml-1 text-ko-blue">
+          <span aria-label={marqueur} className="ml-1 text-ko-ink">
             *
           </span>
         )}
@@ -117,7 +117,7 @@ function ChoixOuiNon({
     <fieldset>
       <legend className="label-mono mb-2 text-ko-muted">
         {libelle}
-        <span aria-label={marqueur} className="ml-1 text-ko-blue">
+        <span aria-label={marqueur} className="ml-1 text-ko-ink">
           *
         </span>
       </legend>
@@ -128,7 +128,7 @@ function ChoixOuiNon({
         ].map(({ valeur, texte }) => (
           <label
             key={valeur}
-            className="flex min-h-[44px] cursor-pointer items-center gap-2.5 border border-ko-line bg-ko-white px-4 text-base text-ko-ink transition-colors duration-200 hover:border-ko-blue has-[:checked]:border-ko-blue has-[:checked]:text-ko-blue"
+            className="flex min-h-[44px] cursor-pointer items-center gap-2.5 border border-ko-line bg-ko-white px-4 text-base text-ko-ink transition-colors duration-200 hover:border-ko-blue has-[:checked]:border-ko-blue has-[:checked]:font-medium"
           >
             <input type="radio" name={nom} value={valeur} required className="accent-ko-blue" />
             {texte}
@@ -251,7 +251,7 @@ export function FormulaireCandidature({
       <fieldset>
         <legend className="label-mono mb-2 text-ko-muted">
           {libelles.postes}
-          <span aria-label={libelles.champObligatoire} className="ml-1 text-ko-blue">
+          <span aria-label={libelles.champObligatoire} className="ml-1 text-ko-ink">
             *
           </span>
         </legend>
@@ -343,7 +343,7 @@ export function FormulaireCandidature({
         />
         <span>
           {libelles.confirmation}
-          <span aria-label={libelles.champObligatoire} className="ml-1 text-ko-blue">
+          <span aria-label={libelles.champObligatoire} className="ml-1 text-ko-ink">
             *
           </span>
         </span>

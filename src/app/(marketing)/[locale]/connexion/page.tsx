@@ -88,7 +88,7 @@ export default async function ConnexionPage({ params, searchParams }: Props) {
       <div className="mt-6 flex flex-col gap-2 text-sm">
         <Link
           href={ROUTES.motDePasseOublie}
-          className="text-ko-muted underline-offset-4 transition-colors duration-200 hover:text-ko-blue hover:underline"
+          className="text-ko-muted underline-offset-4 transition-colors duration-200 hover:text-ko-ink hover:underline"
         >
           {t('mot_de_passe_oublie')}
         </Link>
@@ -99,7 +99,7 @@ export default async function ConnexionPage({ params, searchParams }: Props) {
             // quelqu'un venu commander qui n'a PAS encore de compte ne doit
             // pas atterrir sur /compte une fois inscrit.
             href={suivant ? `${ROUTES.inscription}?suivant=${encodeURIComponent(suivant)}` : ROUTES.inscription}
-            className="text-ko-blue underline-offset-4 transition-colors duration-200 hover:underline"
+            className="text-ko-ink underline-offset-4 transition-colors duration-200 hover:underline hover:decoration-ko-blue"
           >
             {t('creer_compte')}
           </Link>

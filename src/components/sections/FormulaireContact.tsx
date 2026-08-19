@@ -237,7 +237,10 @@ function Champ({
 
       {children}
 
-      {erreur && <p className="mt-2 text-sm text-ko-blue">{erreur}</p>}
+      {/* text-ko-ink + gras, pas text-ko-blue (Phase 2) : la palette n'a pas
+          de rouge d'erreur, mais le bleu échoue le contraste ici — le gras
+          porte la distinction visuelle avec le texte courant. */}
+      {erreur && <p className="mt-2 text-sm font-medium text-ko-ink">{erreur}</p>}
     </div>
   )
 }

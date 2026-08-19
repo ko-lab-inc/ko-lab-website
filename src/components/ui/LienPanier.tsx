@@ -33,7 +33,7 @@ export function LienPanier({ className }: { className?: string }) {
       href={ROUTES.boutiqueDemande}
       aria-label={`${t('ouvrir')} (${nombre})`}
       className={cn(
-        'inline-flex min-h-[44px] items-center gap-2 text-sm text-ko-ink transition-colors duration-200 hover:text-ko-blue',
+        'inline-flex min-h-[44px] items-center gap-2 text-sm text-ko-ink transition-colors duration-200 hover:text-ko-black',
         className,
       )}
     >
@@ -55,7 +55,7 @@ export function LienPanier({ className }: { className?: string }) {
 
       {/* Compteur : chiffre nu sur pastille bleue — le bleu est le seul accent
           du système, et c'est ici une information, pas une décoration. */}
-      <span aria-hidden="true" className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-ko-blue px-1.5 font-mono text-[10px] text-ko-white">
+      <span aria-hidden="true" className="inline-flex h-5 min-w-[20px] items-center justify-center rounded-full bg-ko-blue px-1.5 font-mono text-[10px] text-ko-black">
         {nombre}
       </span>
     </Link>

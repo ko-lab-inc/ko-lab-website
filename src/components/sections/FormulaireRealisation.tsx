@@ -270,7 +270,7 @@ export function FormulaireRealisation({
                       disabled={desactive}
                       aria-label={`${label} — ${img.alt || img.url}`}
                       title={label}
-                      className="group flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue disabled:cursor-not-allowed disabled:text-ko-line"
+                      className="group flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink disabled:cursor-not-allowed disabled:text-ko-line"
                     >
                       <span
                         aria-hidden="true"
@@ -322,7 +322,7 @@ export function FormulaireRealisation({
         </p>
       )}
       {etat.succes && (
-        <p role="status" className="text-sm text-ko-blue">
+        <p role="status" className="text-sm font-medium text-ko-ink">
           {libelles.succes}
         </p>
       )}

@@ -35,7 +35,7 @@ export function CadreAuth({
 export function EncartAuth({ titre, texte }: { titre: string; texte: string }) {
   return (
     <div className="mt-8 border border-ko-line bg-ko-white p-5">
-      <p className="label-mono text-ko-blue">{titre}</p>
+      <p className="label-mono">{titre}</p>
       <p className="mt-2.5 text-sm leading-relaxed text-ko-ink">{texte}</p>
     </div>
   )

@@ -21,10 +21,12 @@ const base =
   'inline-flex items-center justify-center min-h-[44px] transition-colors duration-200 disabled:opacity-60 disabled:cursor-not-allowed'
 
 const variants: Record<ButtonVariant, string> = {
-  // text-ko-white et non text-white : #f8f6f1 est le blanc du design system.
-  // Le skill 02 écrit `text-white`, hors palette — corrigé pour respecter
-  // la règle « zéro couleur hardcodée ».
-  primary: 'bg-ko-blue text-ko-white font-medium rounded-sm gap-2.5 hover:bg-ko-blue2',
+  // text-ko-black et non text-ko-white (Phase 2, 18 août 2026) : texte blanc
+  // sur --ko-blue ne fait que 2,32:1, très sous le seuil AA — un bouton bleu
+  // n'est lisible qu'avec du texte noir (9,06:1). Vrai sur fond clair ET
+  // fond sombre : la paire blanc/bleu échoue indépendamment de ce qu'il y a
+  // autour du bouton.
+  primary: 'bg-ko-blue text-ko-black font-medium rounded-sm gap-2.5 hover:bg-ko-blue2',
   ghost: 'border border-ko-line text-ko-ink rounded-sm gap-2.5 hover:border-ko-ink',
   // Souligné fin plutôt qu'encadré. La transition sur `gap` fait avancer la
   // flèche au survol — interaction validée par le skill 20.

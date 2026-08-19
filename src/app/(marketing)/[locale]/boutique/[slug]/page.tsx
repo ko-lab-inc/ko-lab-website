@@ -166,13 +166,13 @@ export default async function FicheProduitPage({ params }: Props) {
         >
           <ol className="mx-auto flex max-w-container flex-wrap items-center gap-2 px-6 text-sm text-ko-muted lg:px-12">
             <li>
-              <Link href={ROUTES.accueil} className="transition-colors duration-200 hover:text-ko-blue">
+              <Link href={ROUTES.accueil} className="transition-colors duration-200 hover:text-ko-black">
                 {t('fil_ariane_accueil')}
               </Link>
             </li>
             <li aria-hidden="true">/</li>
             <li>
-              <Link href={ROUTES.boutique} className="transition-colors duration-200 hover:text-ko-blue">
+              <Link href={ROUTES.boutique} className="transition-colors duration-200 hover:text-ko-black">
                 {t('title')}
               </Link>
             </li>
@@ -210,7 +210,7 @@ export default async function FicheProduitPage({ params }: Props) {
                   enRupture={produit.enRupture}
                 >
                   {produit.badgeRibbon && (
-                    <span className="absolute left-0 top-4 z-10 flex items-center gap-1.5 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-white [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]">
+                    <span className="absolute left-0 top-4 z-10 flex items-center gap-1.5 bg-ko-blue py-1 pl-3 pr-4 font-mono text-[9px] uppercase tracking-[0.14em] text-ko-black [clip-path:polygon(0_0,100%_0,calc(100%-10px)_50%,100%_100%,0_100%)]">
                       {produit.badgeRibbonIcone && <produit.badgeRibbonIcone taille={12} />}
                       {produit.badgeRibbon}
                     </span>
@@ -269,7 +269,7 @@ export default async function FicheProduitPage({ params }: Props) {
 
                 {/* ------------------------------ Infos ------------------------------ */}
                 <div>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ko-blue">
+                  <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-ko-muted">
                     {nomCategorie}
                   </p>
 

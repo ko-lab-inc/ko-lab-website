@@ -67,7 +67,7 @@ export function LigneUtilisateur({
       <div className="min-w-0">
         <p className="truncate text-base text-ko-ink">
           {courriel}
-          {estSoi && <span className="ml-2 label-mono text-ko-blue">{libelles.soiMeme}</span>}
+          {estSoi && <span className="ml-2 label-mono">{libelles.soiMeme}</span>}
         </p>
         <p className="mt-0.5 font-mono text-xs text-ko-muted">{cree}</p>
         {erreur && (
@@ -135,7 +135,7 @@ export function LigneUtilisateur({
         <span
           className={cn(
             'shrink-0 font-mono text-xs uppercase tracking-[0.14em]',
-            role === 'client' ? 'text-ko-muted' : 'text-ko-blue',
+            role === 'client' ? 'text-ko-muted' : 'text-ko-ink',
           )}
         >
           {libelles.roles[role]}

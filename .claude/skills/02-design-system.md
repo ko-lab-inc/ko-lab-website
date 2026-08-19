@@ -9,9 +9,8 @@
   --ko-white:    #f8f6f1;   /* fond clair principal */
   --ko-cream:    #f0ede6;   /* fond clair secondaire */
   --ko-cream-2:  #e8e4db;   /* fond clair tertiaire */
-  --ko-blue:     #2f7fc9;   /* accent UNIQUE */
-  --ko-blue-2:   #5aa3e4;   /* hover bleu */
-  --ko-blue-bg:  #e8f2fb;   /* fond bleu très léger */
+  --ko-blue:     #61b4db;   /* accent UNIQUE — depuis le 18 août 2026 */
+  --ko-blue-2:   #37a0d2;   /* plus foncé que --ko-blue — hover, états actifs */
   --ko-muted:    #7a7b76;   /* texte secondaire */
   --ko-line:     #e0ddd6;   /* bordures sur fond clair */
   --ko-line-d:   rgba(255,255,255,0.12); /* bordures sur fond sombre */
@@ -41,16 +40,20 @@
 .ko-h2      { font-family: var(--font-serif); font-weight: 400; font-size: clamp(22px, 2.8vw, 38px); line-height: 1.12; letter-spacing: -0.015em; }
 .ko-h3      { font-family: var(--font-serif); font-weight: 400; font-size: clamp(18px, 2vw, 26px);   line-height: 1.2; }
 
-/* Italiques en accent — toujours en bleu KO-LAB */
+/* Italiques en accent — bleu KO-LAB, réservé aux GROS titres (h1/h2) :
+   sur fond clair, le bleu ne passe qu'en gros élément graphique (voir
+   règle d'usage du bleu, CLAUDE.md). Jamais dans du texte courant. */
 em { font-style: italic; color: var(--ko-blue); }
 
-/* Labels mono */
+/* Labels mono — --ko-muted, PAS --ko-blue : à 11px sur fond clair, le bleu
+   ne fait que 2,15:1, sous tout seuil AA. Sur fond sombre, utiliser
+   .label-mono-d (--ko-blue-2, 6,37:1) — le bleu y reste libre. */
 .label-mono {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ko-blue);
+  color: var(--ko-muted);
 }
 ```
 
@@ -77,8 +80,9 @@ fontFamily: {
 
 ## Boutons
 ```tsx
-/* Primaire — fond bleu KO-LAB */
-<button className="bg-ko-blue text-white font-medium text-sm px-7 py-4 rounded-sm
+/* Primaire — fond bleu KO-LAB, texte NOIR (pas blanc : blanc sur bleu ne
+   fait que 2,32:1, voir règle d'usage du bleu, CLAUDE.md) */
+<button className="bg-ko-blue text-ko-black font-medium text-sm px-7 py-4 rounded-sm
   hover:bg-ko-blue2 transition-colors duration-200 inline-flex items-center gap-2.5">
   Discuter d'un mandat →
 </button>

@@ -84,12 +84,32 @@ tableau de conformité.
 --ko-black:   #111210   (dominant, fond sombre)
 --ko-white:   #f8f6f1   (fond clair, texte sur noir)
 --ko-cream:   #f0ede6   (sections claires, arrière-plans)
---ko-blue:    #2f7fc9   (accent UNIQUE — boutons, liens, labels)
---ko-blue-2:  #5aa3e4   (hover du bleu)
+--ko-blue:    #61b4db   (accent UNIQUE — depuis le 18 août 2026, ex #2f7fc9)
+--ko-blue-2:  #37a0d2   (plus foncé que --ko-blue — hover, états actifs)
 --ko-muted:   #7a7b76   (texte secondaire)
 --ko-line:    #e0ddd6   (bordures)
 ```
 Ces 7 tokens sont la palette complète. N'en ajouter aucun, n'en retirer aucun.
+
+**Règle d'usage du bleu (Phase 2, 18 août 2026)** — accessibilité mesurée, pas
+suggérée :
+
+| Combinaison | Contraste | Verdict |
+|---|---|---|
+| `--ko-blue` sur `--ko-black` | 8,10:1 | OK |
+| Texte noir sur `--ko-blue` | 9,06:1 | OK |
+| `--ko-blue` sur `--ko-white`/`--ko-cream` | 2,15:1 | ÉCHOUE |
+| Texte blanc sur `--ko-blue` | 2,32:1 | ÉCHOUE |
+
+- Fond sombre : bleu libre — texte, liens, labels, bordures, accents.
+- Fond clair : bleu réservé aux **gros éléments graphiques** (filets, aplats,
+  chiffres XXL, soulignements). Jamais de texte courant ni de petit texte en
+  bleu sur fond clair — c'est pourquoi `.label-mono` (globals.css) est en
+  `--ko-muted`, pas en bleu : à 11px sur fond clair, le bleu échoue même le
+  seuil AA du grand texte.
+- Boutons sur fond clair : fond noir, texte blanc. Jamais de bouton bleu à
+  texte blanc — la paire échoue indépendamment du fond autour du bouton.
+- Boutons bleus : texte noir uniquement (voir `Button.tsx`, variante `primary`).
 
 ### Typographie
 - Titres : `Fraunces` (serif, weight 300/400, avec italiques en accent)

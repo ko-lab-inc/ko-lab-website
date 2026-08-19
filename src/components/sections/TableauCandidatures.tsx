@@ -50,7 +50,7 @@ function BoutonCv({
       <input type="hidden" name="id" value={id} />
       <button
         type="submit"
-        className="min-h-[36px] border-b border-ko-line pb-0.5 text-sm text-ko-blue transition-colors duration-200 hover:border-ko-blue"
+        className="min-h-[36px] border-b border-ko-line pb-0.5 text-sm text-ko-ink transition-colors duration-200 hover:border-ko-blue"
         title={`${libelle} — ${nom}`}
       >
         {libelle}
@@ -216,7 +216,7 @@ export function TableauCandidatures({
                 </span>
 
                 {/* Postes visés — l'information la plus utile pour trier. */}
-                <span className="label-mono hidden min-w-0 max-w-[16rem] shrink-0 truncate text-ko-blue lg:block">
+                <span className="label-mono hidden min-w-0 max-w-[16rem] shrink-0 truncate lg:block">
                   {c.postes.join(' · ')}
                 </span>
 
@@ -241,7 +241,7 @@ export function TableauCandidatures({
                     className={cn(
                       'min-h-[36px] w-full border px-2 py-1 text-xs transition-colors duration-200 focus:border-ko-blue focus:outline-none',
                       c.statut === 'nouveau'
-                        ? 'border-ko-blue text-ko-blue'
+                        ? 'border-ko-blue text-ko-ink'
                         : 'border-ko-line text-ko-muted',
                     )}
                   >
@@ -259,7 +259,7 @@ export function TableauCandidatures({
                     onClick={() => setVoir(c)}
                     aria-label={`${textes.voir} — ${c.nom}`}
                     title={textes.voir}
-                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue"
+                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
                   >
                     <IconeOeil taille={17} />
                   </button>
@@ -304,7 +304,7 @@ export function TableauCandidatures({
               disabled={pageActuelle === 0}
               aria-label={textes.pagePrecedente}
               title={textes.pagePrecedente}
-              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
+              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
             >
               <span
                 aria-hidden="true"
@@ -317,7 +317,7 @@ export function TableauCandidatures({
               disabled={pageActuelle >= totalPages - 1}
               aria-label={textes.pageSuivante}
               title={textes.pageSuivante}
-              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
+              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
             >
               <span
                 aria-hidden="true"

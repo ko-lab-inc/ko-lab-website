@@ -52,7 +52,7 @@ export async function Offres() {
                   {t(`${cle}_texte`)}
                 </p>
 
-                <span className="mt-auto inline-flex w-fit items-center gap-2 border-b border-ko-accent/30 pb-0.5 pt-8 text-sm text-ko-blue transition-[gap,border-color] duration-200 group-hover:gap-3.5 group-hover:border-ko-accent">
+                <span className="mt-auto inline-flex w-fit items-center gap-2 border-b border-ko-accent/30 pb-0.5 pt-8 text-sm text-ko-ink transition-[gap,border-color] duration-200 group-hover:gap-3.5 group-hover:border-ko-accent">
                   {t(`${cle}_lien`)}
                   <span aria-hidden="true">→</span>
                 </span>

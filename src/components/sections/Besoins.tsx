@@ -171,7 +171,7 @@ export async function Besoins() {
                   {t(`${cle}_texte`)}
                 </p>
 
-                <span className="mt-4 inline-flex items-center gap-2 border-b border-ko-accent/30 pb-0.5 text-sm text-ko-blue transition-[gap,border-color] duration-200 group-hover:gap-3.5 group-hover:border-ko-accent">
+                <span className="mt-4 inline-flex items-center gap-2 border-b border-ko-accent/30 pb-0.5 text-sm text-ko-ink transition-[gap,border-color] duration-200 group-hover:gap-3.5 group-hover:border-ko-accent">
                   {t('en_savoir_plus')}
                   <span aria-hidden="true">→</span>
                 </span>

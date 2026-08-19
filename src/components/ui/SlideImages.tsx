@@ -197,7 +197,7 @@ export function SlideImages({
             onClick={() => boite.current?.close()}
             aria-label={libelles.fermer}
             title={libelles.fermer}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ko-scrim/55 text-ko-white transition-colors duration-200 hover:bg-ko-blue"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-ko-scrim/55 text-ko-white transition-colors duration-200 hover:bg-ko-blue hover:text-ko-black"
           >
             <IconeFermer taille={20} />
           </button>
@@ -386,7 +386,7 @@ function BoutonFleche({
             // Largeurs posées par côté : `border-2` combiné à `border-b`
             // laisse l'ordre de génération de Tailwind décider laquelle des
             // deux l'emporte, et le chevron sort à 1 px une fois sur deux.
-            'h-3 w-3 rotate-45 border-ko-frost/85 transition-colors duration-200 group-hover:border-ko-white',
+            'h-3 w-3 rotate-45 border-ko-frost/85 transition-colors duration-200 group-hover:border-ko-black',
             precedent ? 'ml-1 border-b-2 border-l-2' : 'mr-1 border-r-2 border-t-2',
           )}
         />

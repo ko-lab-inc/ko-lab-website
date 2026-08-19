@@ -174,7 +174,7 @@ export function TableauVideos({
                         disabled={desactive}
                         aria-label={`${label} — ${v.titre}`}
                         title={label}
-                        className="group flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue disabled:cursor-not-allowed disabled:text-ko-line"
+                        className="group flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink disabled:cursor-not-allowed disabled:text-ko-line"
                       >
                         <span
                           aria-hidden="true"
@@ -197,7 +197,7 @@ export function TableauVideos({
                     title={v.actif ? textes.retirer : textes.publier}
                     className={cn(
                       'label-mono min-h-[32px] px-2 transition-colors duration-200',
-                      v.actif ? 'text-ko-blue hover:text-ko-ink' : 'text-ko-muted hover:text-ko-blue',
+                      v.actif ? 'text-ko-ink' : 'text-ko-muted hover:text-ko-ink',
                     )}
                   >
                     {v.actif ? textes.enLigne : textes.horsLigne}
@@ -213,7 +213,7 @@ export function TableauVideos({
                     rel="noopener noreferrer"
                     aria-label={`${textes.apercu} — ${v.titre}`}
                     title={textes.apercu}
-                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue"
+                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
                   >
                     <span aria-hidden="true" className="text-sm">
                       ↗
@@ -225,7 +225,7 @@ export function TableauVideos({
                     onClick={() => setEdite(v)}
                     aria-label={`${textes.modifier} — ${v.titre}`}
                     title={textes.modifier}
-                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue"
+                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
                   >
                     <IconeCrayon taille={17} />
                   </button>
@@ -274,7 +274,7 @@ export function TableauVideos({
               disabled={pageActuelle === 0}
               aria-label={textes.pagePrecedente}
               title={textes.pagePrecedente}
-              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
+              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
             >
               <span
                 aria-hidden="true"
@@ -287,7 +287,7 @@ export function TableauVideos({
               disabled={pageActuelle >= totalPages - 1}
               aria-label={textes.pageSuivante}
               title={textes.pageSuivante}
-              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
+              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
             >
               <span
                 aria-hidden="true"

@@ -87,7 +87,15 @@ export function Nav({
   ] as const
 
   /**
-   * Page courante — gras + bleu, demande de Christian.
+   * Page courante — gras, demande initiale de Christian « gras + bleu ».
+   *
+   * ⚠️ CHANGÉ EN PHASE 2 (18 août 2026) — le bleu sur fond crème (nav
+   * sticky) ne fait que 2,15:1, sous tout seuil AA même pour du texte de
+   * cette taille. Le gras seul indique l'état actif ; `aria-current="page"`
+   * porte l'information pour un lecteur d'écran. Le survol perd son
+   * changement de couleur, remplacé par un soulignement (permis sur fond
+   * clair, contrairement au texte bleu). À valider avec Christian — c'est
+   * une correction de contraste, pas un choix esthétique arbitraire.
    *
    * `pathname` (next-intl) est déjà sans préfixe de langue, donc comparable
    * tel quel aux `href` de ROUTES. `startsWith(href + '/')` couvre les
@@ -108,10 +116,13 @@ export function Nav({
       )}
     >
       <div className="mx-auto flex max-w-container items-center justify-between px-6 py-4 lg:px-12">
-        {/* Wordmark — pas d'animation au survol (skill 08). */}
+        {/* Wordmark — pas d'animation au survol (skill 08). Le hover bleu
+            contredisait ce commentaire depuis le début ; retiré en même
+            temps que la règle Phase 2 (jamais de bleu sur texte courant
+            clair) plutôt que de le recolorer pour rien. */}
         <Link
           href={ROUTES.accueil}
-          className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+          className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-ko-ink"
         >
           KO-LAB
         </Link>
@@ -128,8 +139,8 @@ export function Nav({
               aria-expanded={capacitesOuvert}
               onClick={() => setCapacitesOuvert((v) => !v)}
               className={cn(
-                'flex min-h-[44px] items-center gap-1.5 text-sm transition-colors duration-200 hover:text-ko-blue',
-                capacitesActif ? 'font-medium text-ko-blue' : 'text-ko-ink',
+                'flex min-h-[44px] items-center gap-1.5 text-sm text-ko-ink transition-[text-decoration-color] duration-200 hover:underline hover:decoration-ko-blue hover:underline-offset-4',
+                capacitesActif && 'font-medium',
               )}
             >
               {t('capacites')}
@@ -147,8 +158,8 @@ export function Nav({
                     href={href}
                     aria-current={estActif(href) ? 'page' : undefined}
                     className={cn(
-                      'block px-5 py-3 text-sm transition-[padding,background-color,color] duration-250 hover:bg-ko-cream hover:pl-7 hover:text-ko-blue',
-                      estActif(href) ? 'font-medium text-ko-blue' : 'text-ko-ink',
+                      'block px-5 py-3 text-sm text-ko-ink transition-[padding,background-color] duration-250 hover:bg-ko-cream hover:pl-7',
+                      estActif(href) && 'font-medium',
                     )}
                   >
                     {t(key)}
@@ -164,8 +175,8 @@ export function Nav({
               href={href}
               aria-current={estActif(href) ? 'page' : undefined}
               className={cn(
-                'flex min-h-[44px] items-center text-sm transition-colors duration-200 hover:text-ko-blue',
-                estActif(href) ? 'font-medium text-ko-blue' : 'text-ko-ink',
+                'flex min-h-[44px] items-center text-sm text-ko-ink transition-[text-decoration-color] duration-200 hover:underline hover:decoration-ko-blue hover:underline-offset-4',
+                estActif(href) && 'font-medium',
               )}
             >
               {t(key)}
@@ -198,7 +209,7 @@ export function Nav({
             // façon inutilisable, puisqu'il périme dès qu'on se connecte.
             prefetch={false}
             aria-label={t('compte')}
-            className="flex h-11 w-11 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue"
+            className="flex h-11 w-11 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-black"
           >
             <IconeProfil taille={20} />
           </Link>
@@ -255,7 +266,7 @@ export function Nav({
           aria-label={t('menuPrincipal')}
           className="max-h-[calc(100svh-73px)] overflow-y-auto border-t border-ko-line bg-ko-cream px-6 pb-10 pt-6 lg:hidden"
         >
-          <p className={cn('label-mono mb-3', capacitesActif ? 'text-ko-blue' : undefined)}>
+          <p className={cn('label-mono mb-3', capacitesActif && 'text-ko-ink')}>
             {t('capacites')}
           </p>
           <ul className="mb-8 border-l border-ko-line">
@@ -266,7 +277,7 @@ export function Nav({
                   aria-current={estActif(href) ? 'page' : undefined}
                   className={cn(
                     'flex min-h-[44px] items-center pl-5 text-base',
-                    estActif(href) ? 'font-medium text-ko-blue' : 'text-ko-ink',
+                    estActif(href) ? 'font-medium text-ko-ink' : 'text-ko-ink',
                   )}
                 >
                   {t(key)}
@@ -283,7 +294,7 @@ export function Nav({
                   aria-current={estActif(href) ? 'page' : undefined}
                   className={cn(
                     'flex min-h-[52px] items-center text-base',
-                    estActif(href) ? 'font-medium text-ko-blue' : 'text-ko-ink',
+                    estActif(href) ? 'font-medium text-ko-ink' : 'text-ko-ink',
                   )}
                 >
                   {t(key)}

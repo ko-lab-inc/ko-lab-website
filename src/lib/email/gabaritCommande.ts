@@ -59,7 +59,7 @@ export type LigneEmailCommande = {
 const NOIR = '#111210'
 const CREME = '#f0ede6'
 const BLANC = '#f8f6f1'
-const BLEU = '#2f7fc9'
+const BLEU = '#61b4db'
 const MUET = '#7a7b76'
 const LIGNE = '#e0ddd6'
 
@@ -133,7 +133,7 @@ export function gabaritConfirmationCommande({
         <tr>
           <td style="padding:16px 0;border-bottom:1px solid ${LIGNE};width:64px;">${vignette}</td>
           <td style="padding:16px 0 16px 16px;border-bottom:1px solid ${LIGNE};font-family:Arial,Helvetica,sans-serif;">
-            <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:${BLEU};">${echapper(l.categorie)}</div>
+            <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:${MUET};">${echapper(l.categorie)}</div>
             <div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;color:${NOIR};margin-top:4px;">${echapper(l.nom)}</div>
             <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${MUET};margin-top:4px;">Quantité : ${l.quantite}</div>
           </td>
@@ -167,7 +167,7 @@ export function gabaritConfirmationCommande({
           <!-- numéro de commande, en gros — même traitement que /compte/commandes/[id] -->
           <tr>
             <td style="padding:32px 32px 0;">
-              <span style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:${BLEU};">Commande</span>
+              <span style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:${MUET};">Commande</span>
               <h1 style="margin:8px 0 0;font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:32px;color:${NOIR};">${echapper(numero)}</h1>
             </td>
           </tr>
@@ -222,7 +222,7 @@ export function gabaritConfirmationCommande({
           <!-- CTA -->
           <tr>
             <td style="padding:28px 32px 32px;">
-              <a href="${lienCommande}" style="display:inline-block;background:${BLEU};color:${BLANC};font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;text-decoration:none;padding:14px 28px;">
+              <a href="${lienCommande}" style="display:inline-block;background:${BLEU};color:${NOIR};font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;text-decoration:none;padding:14px 28px;">
                 Voir ma commande
               </a>
               <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${MUET};">

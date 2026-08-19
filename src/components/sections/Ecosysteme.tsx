@@ -50,7 +50,7 @@ export async function Ecosysteme() {
                     sur les quatre cellules n'apportait aucune information et
                     faisait de la ligne un simple motif décoratif — ce que le
                     skill 08 proscrit. Le métier, lui, situe le partenaire. */}
-                {/* ko-blue2 sur fond sombre — voir la note de StatsBar. */}
+                {/* ko-blue2 sur fond sombre — variante d'état, voir la note de StatsBar. */}
                 <Icone taille={24} className="mb-5 text-ko-blue2" />
 
                 <p className="label-mono label-mono-d">{t(`${cle}_tag`)}</p>

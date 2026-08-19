@@ -83,7 +83,7 @@ export async function ListeProfils({
           que de lui laisser croire à un écran incomplet. */}
       {!estAdmin && (
         <PanneauAdmin className="mb-6">
-          <p className="label-mono text-ko-blue">{t('reserve_admin_titre')}</p>
+          <p className="label-mono">{t('reserve_admin_titre')}</p>
           <p className="mt-2.5 text-sm leading-relaxed text-ko-ink">{t('reserve_admin_texte')}</p>
         </PanneauAdmin>
       )}

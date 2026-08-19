@@ -93,7 +93,7 @@ export default async function MesCommandesPage({ params }: Props) {
                         {format.dateTime(new Date(c.created_at), { dateStyle: 'medium' })}
                       </p>
                     </div>
-                    <span className="label-mono text-ko-blue">
+                    <span className="label-mono">
                       {libellesStatuts[c.statut] ?? c.statut}
                     </span>
                   </Link>

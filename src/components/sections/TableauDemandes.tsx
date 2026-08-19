@@ -201,7 +201,7 @@ export function TableauDemandes({
                   <span className="block truncate font-mono text-xs text-ko-muted">{d.email}</span>
                 </span>
 
-                <span className="label-mono hidden w-28 shrink-0 text-ko-blue sm:block">
+                <span className="label-mono hidden w-28 shrink-0 sm:block">
                   {libelles.types[d.type] ?? d.type}
                 </span>
 
@@ -240,7 +240,7 @@ export function TableauDemandes({
                     className={cn(
                       'min-h-[36px] w-full border px-2 py-1 text-xs transition-colors duration-200 focus:border-ko-blue focus:outline-none',
                       d.statut === 'nouveau'
-                        ? 'border-ko-blue text-ko-blue'
+                        ? 'border-ko-blue text-ko-ink'
                         : 'border-ko-line text-ko-muted',
                     )}
                   >
@@ -258,7 +258,7 @@ export function TableauDemandes({
                     onClick={() => setVoir(d)}
                     aria-label={`${textes.voir} — ${d.nom}`}
                     title={textes.voir}
-                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-blue"
+                    className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
                   >
                     <IconeOeil taille={17} />
                   </button>
@@ -303,7 +303,7 @@ export function TableauDemandes({
               disabled={pageActuelle === 0}
               aria-label={textes.pagePrecedente}
               title={textes.pagePrecedente}
-              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
+              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
             >
               <span
                 aria-hidden="true"
@@ -316,7 +316,7 @@ export function TableauDemandes({
               disabled={pageActuelle >= totalPages - 1}
               aria-label={textes.pageSuivante}
               title={textes.pageSuivante}
-              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
+              className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue disabled:cursor-not-allowed disabled:border-ko-line disabled:text-ko-line"
             >
               <span
                 aria-hidden="true"
@@ -357,7 +357,7 @@ export function TableauDemandes({
             </div>
 
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
-              <span className="label-mono text-ko-blue">{libelles.types[voir.type] ?? voir.type}</span>
+              <span className="label-mono">{libelles.types[voir.type] ?? voir.type}</span>
               <span className="font-mono text-xs text-ko-muted">{voir.dateFormatee}</span>
             </div>
 

@@ -232,7 +232,7 @@ export function FormulaireReglages({
         {/* `role="status"` : le formulaire ne recharge pas la page, rien ne
             signalerait autrement que l'enregistrement a eu lieu. */}
         {etat.succes && (
-          <p role="status" className="text-sm text-ko-blue">
+          <p role="status" className="text-sm font-medium text-ko-ink">
             {libelles.succes}
           </p>
         )}

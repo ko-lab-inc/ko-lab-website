@@ -228,7 +228,7 @@ export function EditeurLignesCommande({
                     onClick={() => changerQuantite(l.slug, l.quantite - 1)}
                     disabled={l.quantite <= 1}
                     aria-label={`${t('quantite')} −`}
-                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
+                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-black disabled:opacity-40"
                   >
                     <IconeMoins taille={14} />
                   </button>
@@ -238,7 +238,7 @@ export function EditeurLignesCommande({
                     onClick={() => changerQuantite(l.slug, l.quantite + 1)}
                     disabled={l.quantite >= (parSlug.get(l.slug)?.quantiteDisponible ?? 99)}
                     aria-label={`${t('quantite')} +`}
-                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-blue disabled:opacity-40"
+                    className="flex h-11 w-10 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-black disabled:opacity-40"
                   >
                     <IconePlus taille={14} />
                   </button>

@@ -86,7 +86,7 @@ export default async function ContactPage({ params }: Props) {
                     </p>
                     <a
                       href={`mailto:${reglages.contactCourriel}`}
-                      className="mt-2 inline-flex min-h-[44px] items-center border-b border-ko-line pb-0.5 font-serif text-[22px] text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue"
+                      className="mt-2 inline-flex min-h-[44px] items-center border-b border-ko-line pb-0.5 font-serif text-[22px] text-ko-ink transition-colors duration-200 hover:border-ko-blue"
                     >
                       {reglages.contactCourriel}
                     </a>
@@ -99,7 +99,7 @@ export default async function ContactPage({ params }: Props) {
                       </p>
                       <a
                         href={`tel:${reglages.contactTelephone.replace(/[^+\d]/g, '')}`}
-                        className="mt-2 inline-flex min-h-[44px] items-center border-b border-ko-line pb-0.5 font-serif text-[22px] text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue"
+                        className="mt-2 inline-flex min-h-[44px] items-center border-b border-ko-line pb-0.5 font-serif text-[22px] text-ko-ink transition-colors duration-200 hover:border-ko-blue"
                       >
                         {reglages.contactTelephone}
                       </a>

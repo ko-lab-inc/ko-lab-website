@@ -8,7 +8,8 @@ import { cn } from '@/lib/utils/cn'
  * Le skill 02 limite la palette à trois couleurs plus UN accent. Un badge
  * vert/orange/rouge par statut serait exactement le pattern de tableau de
  * bord générique que le skill 08 interdit. L'attention se marque avec
- * l'accent existant (ko-blue) et IconeAlerte — déjà le vocabulaire du
+ * ko-ink (pas ko-blue : ce badge apparaît aussi sur fond clair, où le bleu
+ * échoue le contraste — Phase 2) et IconeAlerte — déjà le vocabulaire du
  * panneau « Points d'attention » du tableau de bord — pas une nouvelle
  * couleur par état.
  *
@@ -33,7 +34,7 @@ export function EtiquetteStock({
     <span
       className={cn(
         'inline-flex items-center gap-1.5',
-        attention ? 'text-ko-blue' : 'text-ko-muted',
+        attention ? 'text-ko-ink' : 'text-ko-muted',
         className,
       )}
     >

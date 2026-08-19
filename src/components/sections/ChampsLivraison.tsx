@@ -48,7 +48,7 @@ function Champ({
       <label htmlFor={id} className="label-mono mb-2 block text-ko-muted">
         {libelle}
         {obligatoire && (
-          <span aria-label={marqueur} className="ml-1 text-ko-blue">
+          <span aria-label={marqueur} className="ml-1 text-ko-ink">
             *
           </span>
         )}
@@ -76,7 +76,7 @@ export function ChampsLivraison({
       <fieldset>
         <legend className="label-mono mb-2 text-ko-muted">
           {t('mode_livraison')}
-          <span aria-label={t('champ_obligatoire')} className="ml-1 text-ko-blue">
+          <span aria-label={t('champ_obligatoire')} className="ml-1 text-ko-ink">
             *
           </span>
         </legend>
@@ -84,7 +84,7 @@ export function ChampsLivraison({
           {(['ramassage', 'expedition'] as const).map((valeur) => (
             <label
               key={valeur}
-              className="flex min-h-[44px] flex-1 cursor-pointer items-center gap-2.5 border border-ko-line bg-ko-white px-4 text-base text-ko-ink transition-colors duration-200 hover:border-ko-blue has-[:checked]:border-ko-blue has-[:checked]:text-ko-blue"
+              className="flex min-h-[44px] flex-1 cursor-pointer items-center gap-2.5 border border-ko-line bg-ko-white px-4 text-base text-ko-ink transition-colors duration-200 hover:border-ko-blue has-[:checked]:border-ko-blue has-[:checked]:font-medium"
             >
               <input
                 type="radio"

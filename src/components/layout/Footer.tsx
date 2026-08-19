@@ -11,8 +11,10 @@ import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
  * navigateur (skill 01, Server Components par défaut).
  *
  * Note contraste : sur --ko-black, les labels mono passent en `label-mono-d`
- * (--ko-blue-2). Le bleu principal plafonne à 4.47:1 sur ce fond, sous le seuil
- * AA de 4.5:1 pour du texte de 11px — voir globals.css.
+ * (--ko-blue-2, 6.37:1). Depuis le passage à #61b4db (Phase 2, 18 août 2026),
+ * --ko-blue seul atteint déjà 8.10:1 sur ce fond — label-mono-d n'est plus une
+ * nécessité de contraste, juste la variante d'état déjà en place. Voir
+ * globals.css.
  */
 export async function Footer() {
   const t = await getTranslations('Footer')

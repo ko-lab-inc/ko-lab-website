@@ -108,7 +108,7 @@ export function BandeauImages({
             onClick={() => defiler(-1)}
             aria-label={libelles.precedent}
             title={libelles.precedent}
-            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue"
+            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue"
           >
             {/* `border-ko-ink` explicite : Tailwind ne colore pas les bordures
                 en `currentColor` par défaut, un `border-b-2` sans classe de
@@ -124,7 +124,7 @@ export function BandeauImages({
             onClick={() => defiler(1)}
             aria-label={libelles.suivant}
             title={libelles.suivant}
-            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue hover:text-ko-blue"
+            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue"
           >
             <span
               aria-hidden="true"
