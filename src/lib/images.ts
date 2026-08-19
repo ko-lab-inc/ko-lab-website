@@ -150,6 +150,26 @@ export const IMAGES = {
   realisationLab: unsplash('photo-1745448797900-35d08e85e9db'),
   /** Réutilisée par les Réalisations : la CNC porte déjà la section LAB. */
 
+  /**
+   * Photos réelles — Phase 5, section 4 (Opérations terrain), accueil.
+   * Deux fichiers pour le même sujet : `Vertical` recadre l'équipe pour un
+   * écran portrait plutôt que de forcer une photo pensée pour du paysage
+   * dans un cadre trop étroit (skill 11).
+   */
+  operationsCrew: medias('operations/operations-crew-2026.webp'),
+  operationsCrewVertical: medias('operations/operations-crew-vertical-2026.webp'),
+
+  /** Photos réelles — Phase 5, section 7 (Équipements et déploiement), accueil. */
+  deploiementRemorque: medias('deployment/deploiement-remorque-2026.webp'),
+  deploiementCamion: medias('deployment/deploiement-camion-2026.webp'),
+
+  /**
+   * Photos réelles — Phase 5, section 11 (Location), accueil.
+   * locationMobilier existe déjà plus haut (besoinLouer) : même photo,
+   * réutilisée ici pour le même besoin — duplication assumée, pas une erreur.
+   */
+  locationStructures: medias('rental/location-structures-2026.webp'),
+  locationAmbiance: medias('rental/location-ambiance-2026.webp'),
 } as const
 
 /**

@@ -121,13 +121,11 @@
     },
     "credibilite": {
       "label": "Crédibilité terrain",
+      "title": "Des équipes de confiance pour des organisations d'envergure.",
       "phrase": "Du gouvernement du Canada aux plus grands festivals de la région, nos équipes sont sur le terrain.",
       "detail": "Plus de 20 000 heures de travail terrain, plusieurs sites coordonnés simultanément, et une capacité complète : main-d'œuvre, coordination, transport, montage, démontage, logistique et soutien opérationnel."
     },
     "capacites": {
-      "label": "Nos capacités",
-      "title": "Planifier, fabriquer, installer, équiper, déployer",
-      "texte": "KO-LAB ne se présente pas uniquement comme une entreprise événementielle ou une agence de main-d'œuvre. Nous prenons en charge des projets complexes, du premier plan jusqu'au démontage.",
       "lien": "Voir toutes les capacités"
     },
     "operations": {

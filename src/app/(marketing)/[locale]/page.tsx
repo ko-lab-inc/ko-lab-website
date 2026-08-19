@@ -3,15 +3,18 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
 import { Besoins } from '@/components/sections/Besoins'
-import { Capacites } from '@/components/sections/Capacites'
+import { Boutique } from '@/components/sections/Boutique'
+import { CredibiliteTerrain } from '@/components/sections/CredibiliteTerrain'
 import { CtaFinal } from '@/components/sections/CtaFinal'
 import { Ecosysteme } from '@/components/sections/Ecosysteme'
+import { EquipementsDeploiement } from '@/components/sections/EquipementsDeploiement'
+import { GmLocations } from '@/components/sections/GmLocations'
 import { Hero } from '@/components/sections/Hero'
+import { Installations } from '@/components/sections/Installations'
 import { Lab } from '@/components/sections/Lab'
-import { Offres } from '@/components/sections/Offres'
-import { PreuveTerrain } from '@/components/sections/PreuveTerrain'
+import { Location } from '@/components/sections/Location'
+import { OperationsTerrain } from '@/components/sections/OperationsTerrain'
 import { Realisations } from '@/components/sections/Realisations'
-import { StatsBar } from '@/components/sections/StatsBar'
 import { IntroAnimee } from '@/components/ui/IntroAnimee'
 import { routing } from '@/i18n/routing'
 
@@ -65,18 +68,25 @@ export default async function AccueilPage({ params }: Props) {
   setRequestLocale(locale)
 
   /*
-   * Ordre du skill 19, et alternance clair/sombre de CLAUDE.md :
-   *   Hero        photo sombre, encartée sur fond de page clair
-   *   StatsBar    ko-black
-   *   Besoins     ko-white
-   *   Capacités   ko-cream
-   *   Le LAB      ko-black
-   *   Preuve      photo + voile sombre
-   *   Réalisations ko-white
-   *   Écosystème  ko-black
-   *   Offres      ko-cream
-   *   CTA final   ko-white
-   *   (Footer)    ko-black
+   * Ordre du document de cadrage Phase 5 (13 sections), remplace l'ancien
+   * ordre du skill 19 — StatsBar et PreuveTerrain fusionnées en
+   * CredibiliteTerrain, Capacites dissoute dans Operations/Installations/
+   * Equipements (+ un lien de sortie vers le hub, posé en fin de la section
+   * 7), Offres séparée en Location/Boutique :
+   *   1  Hero                    photo sombre, encartée sur fond clair
+   *   2  Besoins                 ko-white
+   *   3  CredibiliteTerrain      photo + voile sombre
+   *   4  OperationsTerrain       photo + voile sombre
+   *   5  Installations           ko-white (pas de photo — voir le fichier)
+   *   6  Lab                     ko-black
+   *   7  EquipementsDeploiement  ko-black
+   *   8  GmLocations             ko-cream
+   *   9  Réalisations            ko-white
+   *   10 Écosystème              ko-black
+   *   11 Location                ko-cream
+   *   12 Boutique                ko-cream
+   *   13 CTA final               ko-white
+   *   (Footer)                   ko-black
    */
   return (
     <>
@@ -85,14 +95,17 @@ export default async function AccueilPage({ params }: Props) {
           titre du hero, spécifique à cette page, qui clôt la séquence. */}
       <IntroAnimee />
       <Hero />
-      <StatsBar />
       <Besoins />
-      <Capacites />
+      <CredibiliteTerrain />
+      <OperationsTerrain />
+      <Installations />
       <Lab />
-      <PreuveTerrain />
+      <EquipementsDeploiement />
+      <GmLocations />
       <Realisations />
       <Ecosysteme />
-      <Offres />
+      <Location />
+      <Boutique />
       <CtaFinal />
     </>
   )
