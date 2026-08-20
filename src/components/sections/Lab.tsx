@@ -26,8 +26,10 @@ export async function Lab() {
       <div className="grid grid-cols-1 items-stretch lg:grid-cols-2">
         <Reveal className="relative aspect-[4/3] overflow-hidden rounded-b-2xl lg:aspect-auto lg:min-h-[640px] lg:rounded-b-none lg:rounded-r-2xl">
           {/*
-            ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
-            Voir skill 22 pour les critères de remplacement.
+            Photo réelle depuis le 20 août 2026 (IMAGES.lab — voir images.ts
+            pour le raisonnement complet sur le choix impression 3D plutôt que
+            laser/CNC). C'était la plus grande image Unsplash du site ; elle
+            ne l'est plus.
           */}
           {/* D — zoom lié au scroll, scale 1 → 1.1 sur la traversée.
               `mode="traversee"` et non le mode par défaut : celui-ci mesure la

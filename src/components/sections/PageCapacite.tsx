@@ -90,8 +90,9 @@ export async function PageCapacite({
         */}
         <Parallax distance={60} className="absolute inset-x-0 top-0 h-[calc(100%+80px)]">
           {/*
-            ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
-            Voir skill 22 pour les critères de remplacement.
+            Les quatre pages passent désormais une photo réelle (depuis le
+            20 août 2026, espaceAmenage2023 pour Opérations terrain — voir
+            son fichier) : plus aucune n'attend de remplacement Unsplash.
           */}
           <Image
             src={src}

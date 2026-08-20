@@ -68,9 +68,10 @@ export async function Besoins() {
       // l'imprimante 3D depuis le 20 août 2026 — montre la fabrication ET
       // l'installation d'une pièce complète, plus proche du positionnement
       // élargi (Phase 7) qu'une seule machine en action. labImpression3d
-      // reste le hero de la page Le LAB (nos-capacites/le-lab/page.tsx),
-      // disponible pour un autre usage. Les étincelles restent sous
-      // besoinFabriquer, le soudeur sous soudeur — toujours disponibles.
+      // reste le hero de la page Le LAB (nos-capacites/le-lab/page.tsx).
+      // besoinFabriquer (impression 3D, pièce dorée) sert désormais IMAGES.lab
+      // (section LAB de l'accueil) depuis le même jour ; le soudeur reste sous
+      // soudeur, toujours disponible.
       src: IMAGES.besoinFabriquerKiosque2025,
       cadrage: 'object-center',
       style: FILTRE_TERRAIN,

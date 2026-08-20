@@ -95,7 +95,7 @@ export default async function CarrieresPage({ params }: Props) {
     type: string
     description: string
     exigences: string[]
-    photo: 'operationsCrew' | 'operationsCrewVertical' | 'deploiementCamion' | 'labImpression3d' | null
+    photo: 'chantierBalisage2026' | 'amenagementSite2025' | 'deploiementCamion' | 'labImpression3d' | null
   }[]
 
   if (publiees) {

@@ -25,8 +25,11 @@ export async function CredibiliteTerrain() {
   return (
     <section className="relative overflow-hidden bg-ko-black">
       {/*
-        ⚠️ TEMPORAIRE — duplication en attente de la vraie photo KO-LAB 2025-2026
-        Reprend l'image du hero, comme avant la fusion. Assumé et visible.
+        Photo réelle depuis le 20 août 2026 (structureEclairee2024, dôme
+        gonflable éclairé de nuit) — ne reprend plus l'image du hero : elle y
+        apparaissait déjà, plus dans deux pages capacités (revue visuelle,
+        point 1). Section 3 de l'accueil, deux sections sous le hero :
+        priorité absolue pour une photo distincte, voir images.ts.
       */}
       <Parallax distance={0} zoom={0.1} mode="traversee" className="absolute inset-0">
         <Image

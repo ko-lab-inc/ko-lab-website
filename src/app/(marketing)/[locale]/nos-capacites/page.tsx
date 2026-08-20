@@ -109,11 +109,12 @@ export default async function CapacitesHubPage({ params }: Props) {
       titre: tInst('title'),
       intro: tInst('intro'),
       items: ITEMS_7.map((k) => tInst(k)),
-      src: IMAGES.besoinInstaller,
-      cadrage: CADRAGES.besoinInstaller,
-      // Photo réelle (Canada Day 2026, jour nuageux) — plus le contre-jour
-      // doré de l'ex-photo Unsplash que `desature` (FILTRE_TERRAIN_CHAUD)
-      // corrigeait. Voir Besoins.tsx pour le même correctif sur l'accueil.
+      // installationsAlternative (sapin décoré, hall d'hôtel) depuis le
+      // 20 août 2026 — remplace besoinInstaller, qui apparaissait déjà sur
+      // l'accueil (deux fois) et dans Realisations.tsx (revue visuelle,
+      // point 1 : chaque emplacement reçoit sa propre photo).
+      src: IMAGES.installationsAlternative,
+      cadrage: 'object-center',
       desature: false,
     },
     {
@@ -149,11 +150,17 @@ export default async function CapacitesHubPage({ params }: Props) {
           la page intérieure démarre à ras bord pour se distinguer de l'accueil. */}
       <section className="relative overflow-hidden bg-ko-black">
         {/*
-          ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
-          Voir skill 22 pour les critères de remplacement.
+          Photo réelle depuis le 20 août 2026 (espaceAmenage2023) — ne reprend
+          plus IMAGES.hero : cette même photo servait déjà l'accueil et la
+          page Opérations terrain (revue visuelle, point 1). enseignePoseAlt2026
+          envisagée d'abord, écartée : son texte publicitaire tiers (numéro de
+          téléphone, site web du client F.Auger) devenait le sujet dominant du
+          cadre une fois recadré en bannière étroite sur mobile — vérifié à
+          l'écran, pas supposé. espaceAmenage2023 n'a aucun texte lisible,
+          donc aucun risque de cadrage à n'importe quelle largeur.
         */}
         <Image
-          src={IMAGES.hero}
+          src={IMAGES.espaceAmenage2023}
           alt=""
           fill
           priority

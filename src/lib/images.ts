@@ -80,31 +80,35 @@ export const IMAGES = {
   /** Photo réelle — équipe KO-LAB (gilets orange) sur site, Canada Day 2026. */
   besoinInstaller: medias('home/besoin-installer-2026.webp'),
 
-  /** Photo réelle — impression 3D en cours, atelier Le LAB (pièce dorée drapée). */
+  /**
+   * Photo réelle — impression 3D en cours, atelier Le LAB (pièce dorée
+   * drapée). Réutilisée par `lab` plus bas (section LAB de l'accueil + hub
+   * capacités) depuis le 20 août 2026 — voir son commentaire pour le
+   * raisonnement complet.
+   */
   besoinFabriquer: medias('home/besoin-fabriquer-2026.webp'),
 
   /** Photo réelle — mobilier et aménagement de site loués, DEVFEST 2026. */
   besoinLouer: medias('rental/location-mobilier-2026.webp'),
 
   /**
-   * ⚠️ TOUJOURS UNSPLASH — aucune photo de découpe laser/CNC reçue.
-   * Le lot du 18 août 2026 (dossier `le lab 3d`) ne contient que des photos
-   * d'impression 3D (Bambu Lab) — aucune ne montre de découpe laser ni de
-   * CNC, le sujet exact que cette clé doit illustrer. Les quatre lots du
-   * 20 août 2026 (enseignes, HAP 2023, Feux sur glace 2024, créations 2025)
-   * revérifiés pour la même raison — toujours rien. Le watermark signalé
-   * ci-dessous reste donc non corrigé : ne pas la remplacer par une photo
-   * d'impression 3D, ce serait montrer autre chose que ce que le texte décrit.
+   * Photo réelle depuis le 20 août 2026 — remplace l'Unsplash (consigne
+   * Christian, revue visuelle du 20 août 2026, point 2 : « la plus grande
+   * image du site après le hero » ne pouvait pas rester une photo de stock).
+   * Impression 3D en cours (pièce dorée drapée), pas la découpe laser/CNC que
+   * le texte visait à l'origine — aucune photo de laser/CNC n'a jamais été
+   * reçue, dans aucun des cinq lots (revérifié une dernière fois ce jour-là).
+   * Christian a tranché explicitement : « le sujet exact compte moins que
+   * l'authenticité ». Home.lab.etape3_detail liste d'ailleurs « Laser, CNC,
+   * impression 3D » ensemble, pas la seule découpe — la photo illustre une
+   * des trois techniques nommées, pas un sujet inventé.
    *
-   * Découpe laser CNC en action, deux gerbes d'étincelles, fond noir.
-   * Section LAB de l'accueil — correspond à l'item « Laser et CNC ».
-   *
-   * ⚠️ watermark visible — à remplacer en priorité
-   * Signature de photographe incrustée en bas à droite, en rouge. Discrète sur
-   * fond sombre mais présente : c'est la première image à remplacer quand les
-   * photos KO-LAB arriveront.
+   * Même fichier que besoinFabriquer ci-dessus, dupliqué volontairement (même
+   * raison que hero/preuveTerrain). Sert la section LAB de l'accueil ET la
+   * carte « Le LAB » du hub /nos-capacites (même clé, deux consommateurs).
+   * `soudeur`/`realisationLab` restent seuls encore Unsplash — voir plus bas.
    */
-  lab: unsplash('photo-1711418235334-8895331a6cf9'),
+  lab: medias('home/besoin-fabriquer-2026.webp'),
 
   /**
    * Photo réelle — imprimante Bambu Lab X2D en cours d'impression, halo bleu
@@ -135,9 +139,11 @@ export const IMAGES = {
    * en PhotoPlaceholder : aucune photo propre disponible dans ces dossiers.
    *
    * installationsPrincipale est câblée dans Installations.tsx (section 5,
-   * accueil). Alternative et Guirlandes sont traitées et déposées, mais sans
-   * consommateur pour l'instant — même situation que boutiqueImpression3d
-   * (Phase 8) : disponibles pour un usage futur, pas câblées artificiellement.
+   * accueil). Alternative est câblée depuis le 20 août 2026 dans la carte
+   * « installations » du hub /nos-capacites — elle y remplace besoinInstaller,
+   * qui apparaissait déjà trois fois ailleurs sur le site (revue visuelle du
+   * 20 août 2026, point 1). Guirlandes sert désormais realisationInstallation
+   * plus bas, même raison.
    */
   installationsPrincipale: medias('installations/installation-principale-2025.webp'),
   installationsAlternative: medias('installations/installation-alt-2025.webp'),
@@ -150,14 +156,19 @@ export const IMAGES = {
    * passe la vérification individuelle (logos tiers, texte « lumivalli »,
    * personne identifiable, qualité) ; 8 écartées — voir le rapport de phase
    * pour le détail. Câblage complété le 20 août 2026 (galeries des quatre
-   * pages capacités, page Location, carte « Fabriquer » de l'accueil) : trois
-   * clés restent sans consommateur, aucune ne trouvait sa place dans la
-   * consigne de câblage reçue — `signalisationAlt2026` (alternative à
-   * `signalisation2026`, déjà utilisée dans la galerie Installations),
-   * `espaceAmenage2023` et `structureEclairee2024` (visée pour la section 5
-   * de l'accueil, qui n'a qu'un seul emplacement photo — pas forcée dedans,
-   * voir Installations.tsx). Événements d'avant 2025 non nommés dans les
-   * textes, consigne existante.
+   * pages capacités, page Location, carte « Fabriquer » de l'accueil), puis
+   * complété une seconde fois le même jour (revue visuelle, point 1 —
+   * redistribution des photos dupliquées) : `espaceAmenage2023` sert
+   * maintenant l'en-tête du hub /nos-capacites (remplace `hero`, qui y
+   * apparaissait en plus de l'accueil et de deux pages capacités) et
+   * `signalisationAlt2026` le hero de la page Opérations terrain (même
+   * raison). `enseignePoseAlt2026` essayée sur ces deux emplacements en
+   * premier, écartée des deux : son texte publicitaire tiers (numéro de
+   * téléphone et site web du client F.Auger) devient le sujet dominant du
+   * cadre une fois recadré en bannière étroite sur mobile — vérifié à
+   * l'écran. `structureEclairee2024` sert `preuveTerrain` plus bas. Seule
+   * `enseignePoseAlt2026` reste donc sans consommateur. Événements d'avant
+   * 2025 non nommés dans les textes, consigne existante.
    */
   // Enseignes F.Auger — le client dont l'enseigne est posée, jamais présenté
   // comme une marque KO-LAB (voir installationNacelle, qui réutilise la
@@ -224,14 +235,21 @@ export const IMAGES = {
    */
   soudeur: unsplash('photo-1745448797900-35d08e85e9db'),
 
-  // Duplication volontaire des emplacements ci-dessus (même raison qu'avant :
-  // c'est visible, pas caché). preuveTerrain, realisationInstallation et
-  // désormais realisationTerrain suivent hero/besoinInstaller/besoinDeployer,
-  // tous des photos réelles depuis le 20 août 2026. realisationLab (soudeur)
-  // reste seule encore Unsplash — voir son commentaire plus haut.
-  preuveTerrain: '/images/hero/hero-canada-day-2026.webp',
+  // preuveTerrain et realisationInstallation ne dupliquent plus hero et
+  // besoinInstaller depuis le 20 août 2026 (revue visuelle, point 1) : ces
+  // deux photos apparaissaient déjà 3-4 fois chacune ailleurs sur le site
+  // (accueil, deux pages capacités, cette section) — la règle du point 1 est
+  // qu'un emplacement proche du hero (deux sections plus bas) n'affiche
+  // jamais la même photo qu'une autre page déjà très visible. Elles reprennent
+  // maintenant structureEclairee2024 et installationsGuirlandes à la place,
+  // deux photos du lot du jour même qui n'avaient pas encore de consommateur.
+  // realisationTerrain continue de suivre besoinDeployer (photo réelle depuis
+  // le 20 août 2026, pas concernée par la redistribution — un seul autre
+  // emplacement, non consécutif). realisationLab (soudeur) reste seule encore
+  // Unsplash — voir son commentaire plus haut.
+  preuveTerrain: medias('installations/structure-eclairee-2024.webp'),
   realisationTerrain: medias('operations/preparation-terrain-2024.webp'),
-  realisationInstallation: medias('home/besoin-installer-2026.webp'),
+  realisationInstallation: medias('installations/installation-guirlandes-2025.webp'),
   realisationLab: unsplash('photo-1745448797900-35d08e85e9db'),
   /** Réutilisée par les Réalisations : la CNC porte déjà la section LAB. */
 

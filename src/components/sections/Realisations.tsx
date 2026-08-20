@@ -33,13 +33,16 @@ export async function Realisations() {
   // TYPE de projet attendu. Les trois titres différaient auparavant zéro : ils
   // affichaient tous « Réalisation à venir ».
   // Les trois cartes sont maintenant des photos réelles KO-LAB, toutes sur
-  // FILTRE_TERRAIN : realisationInstallation et desormais realisationTerrain
-  // suivent respectivement besoinInstaller et besoinDeployer (Besoins.tsx),
-  // même photo, même filtre des deux côtés — le bug du 19 août 2026 (carte
-  // orangée, « deux températures différentes » pour la même photo selon la
-  // section) s'appliquait à realisationInstallation ; corrigé ici pour
-  // realisationTerrain le 20 août 2026, en même temps que son remplacement
-  // par une vraie photo.
+  // FILTRE_TERRAIN. realisationTerrain suit toujours besoinDeployer
+  // (Besoins.tsx), même photo, même filtre des deux côtés — le bug du
+  // 19 août 2026 (carte orangée, « deux températures différentes » pour la
+  // même photo selon la section) s'appliquait ici ; corrigé le 20 août 2026,
+  // en même temps que son remplacement par une vraie photo.
+  // realisationInstallation, en revanche, ne suit plus besoinInstaller depuis
+  // le 20 août 2026 (revue visuelle, point 1) : cette photo apparaissait déjà
+  // sur l'accueil et dans le hub /nos-capacites. Elle affiche maintenant
+  // installationsGuirlandes (galerie de bureaux, décor de Noël) — une photo
+  // distincte, propre à cet emplacement.
   const grande = {
     cle: 'terrain',
     tag: tFiltres('filtre_terrain'),
@@ -55,7 +58,10 @@ export async function Realisations() {
       tag: tFiltres('filtre_installation'),
       titre: t('titre_installation'),
       src: IMAGES.realisationInstallation,
-      cadrage: CADRAGES.besoinInstaller,
+      // Recadrage neutre, à revérifier par capture d'écran réelle : l'ancien
+      // CADRAGES.besoinInstaller était calé sur une autre photo (Canada Day),
+      // sans rapport avec installationsGuirlandes.
+      cadrage: 'object-center',
       style: FILTRE_TERRAIN,
     },
     {

@@ -140,17 +140,25 @@ export const lireOffresPubliees = unstable_cache(lireDepuisBase, ['offres-publie
  * plus stable si un titre est reformulé, et les postes d'un même département
  * partagent le même type de terrain.
  *
+ * 'Opérations' et 'Logistique événementielle' ne renvoient plus
+ * operationsCrew/operationsCrewVertical depuis le 20 août 2026 (revue
+ * visuelle, point 1) : cette paire sert déjà OperationsTerrain.tsx (section 4
+ * de l'accueil) en pleine largeur — la revoir en miniature sur /carrieres
+ * était la 4ᵉ répétition d'une même photo signalée ce jour-là. chantierBalisage2026
+ * et amenagementSite2025 restent thématiquement justes (chantier/opérations,
+ * aménagement de site événementiel) sans dupliquer l'accueil.
+ *
  * Renvoie une clé de IMAGES, pas l'URL — l'appelant importe IMAGES lui-même,
  * ce module ne dépend pas de next/image.
  */
 export function photoPourDepartement(
   departement: string,
-): 'operationsCrew' | 'operationsCrewVertical' | 'deploiementCamion' | 'labImpression3d' | null {
+): 'chantierBalisage2026' | 'amenagementSite2025' | 'deploiementCamion' | 'labImpression3d' | null {
   switch (departement) {
     case 'Opérations':
-      return 'operationsCrew'
+      return 'chantierBalisage2026'
     case 'Logistique événementielle':
-      return 'operationsCrewVertical'
+      return 'amenagementSite2025'
     case 'Transport & logistique':
       return 'deploiementCamion'
     case 'Lab créatif':

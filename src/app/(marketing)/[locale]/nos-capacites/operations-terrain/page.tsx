@@ -55,7 +55,13 @@ export default async function OperationsTerrainPage({ params }: Props) {
         t('item_7'),
         t('item_8'),
       ]}
-      src={IMAGES.hero}
+      // signalisationAlt2026 depuis le 20 août 2026 (revue visuelle, point 1)
+      // — remplace IMAGES.hero, qui apparaissait déjà sur l'accueil et dans le
+      // hub /nos-capacites. espaceAmenage2023 sert finalement le hub à la
+      // place (voir nos-capacites/page.tsx) : son propre cadre n'a pas de
+      // texte à protéger d'un mauvais recadrage mobile, contrairement à
+      // enseignePoseAlt2026, écartée des deux emplacements pour cette raison.
+      src={IMAGES.signalisationAlt2026}
       cadrage="object-center"
       // Galerie ajoutée le 20 août 2026 — quatre photos réelles d'opérations
       // terrain (balisage, aménagement et préparation de site, déploiement
