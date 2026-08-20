@@ -32,10 +32,14 @@ export async function Realisations() {
   // La pastille porte la catégorie filtrable (skill 21), le titre décrit le
   // TYPE de projet attendu. Les trois titres différaient auparavant zéro : ils
   // affichaient tous « Réalisation à venir ».
-  // realisationTerrain et realisationInstallation reprennent les deux
-  // contre-jours ambrés de Besoins (grue, échafaudage) : même FILTRE_TERRAIN_CHAUD,
-  // sinon la même photo afficherait deux températures différentes sur la même
-  // page selon la section où elle apparaît.
+  // realisationTerrain (Unsplash, contre-jour ambré de grue) garde
+  // FILTRE_TERRAIN_CHAUD. realisationInstallation est la MÊME photo réelle que
+  // besoinInstaller (Besoins.tsx) — jour nuageux, pas de ciel doré à corriger.
+  // Elle recevait FILTRE_TERRAIN_CHAUD ici alors que Besoins.tsx lui applique
+  // déjà FILTRE_TERRAIN : exactement les « deux températures différentes sur
+  // la même page » que ce commentaire prévenait, pour la même photo — corrigé
+  // le 19 août 2026 (constaté en production, une carte au rendu orangé et
+  // daté au milieu de photos par ailleurs naturelles).
   const grande = {
     cle: 'terrain',
     tag: tFiltres('filtre_terrain'),
@@ -52,7 +56,7 @@ export async function Realisations() {
       titre: t('titre_installation'),
       src: IMAGES.realisationInstallation,
       cadrage: CADRAGES.besoinInstaller,
-      style: FILTRE_TERRAIN_CHAUD,
+      style: FILTRE_TERRAIN,
     },
     {
       cle: 'lab',
