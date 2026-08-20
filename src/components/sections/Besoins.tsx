@@ -64,11 +64,14 @@ export async function Besoins() {
       numero: '03',
       href: ROUTES.lab,
       Icone: IconePuce,
-      // Imprimante 3D plutôt que les étincelles de meuleuse : « Fabriquer une
-      // solution » renvoie au LAB, dont l'impression 3D est l'activité phare.
-      // Les étincelles restent dans images.ts sous besoinFabriquer, le soudeur
-      // sous soudeur — tous deux disponibles pour d'autres pages.
-      src: IMAGES.labImpression3d,
+      // Kiosque en bois fabriqué sur mesure (créations 2025) plutôt que
+      // l'imprimante 3D depuis le 20 août 2026 — montre la fabrication ET
+      // l'installation d'une pièce complète, plus proche du positionnement
+      // élargi (Phase 7) qu'une seule machine en action. labImpression3d
+      // reste le hero de la page Le LAB (nos-capacites/le-lab/page.tsx),
+      // disponible pour un autre usage. Les étincelles restent sous
+      // besoinFabriquer, le soudeur sous soudeur — toujours disponibles.
+      src: IMAGES.besoinFabriquerKiosque2025,
       cadrage: 'object-center',
       style: FILTRE_TERRAIN,
     },

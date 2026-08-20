@@ -195,6 +195,12 @@ export default async function MarketingLayout({ children, params }: Props) {
    *   IntroAnimee.tsx          → Home.intro, Home.hero.title (Phase 4, 19 août
    *                              2026) — l'intro reprend le titre du hero pour
    *                              la dernière phrase, jamais une copie séparée
+   *   GaleriePhotos.tsx        → Commun.galerie_* (20 août 2026) — montée par
+   *                              PageCapacite.tsx et /location ; seuls les cinq
+   *                              libellés de la bande/visionneuse passent, pas
+   *                              tout Commun (photo_placeholder etc. restent
+   *                              résolus côté serveur, PhotoPlaceholder n'est
+   *                              pas un composant client)
    *
    * CatalogueBoutique reçoit ses chaînes en props, résolues côté serveur —
    * c'est le modèle à privilégier pour tout nouveau composant.
@@ -202,12 +208,22 @@ export default async function MarketingLayout({ children, params }: Props) {
   const tousLesMessages = await getMessages()
 
   const boutique = tousLesMessages.Boutique
+  const commun = tousLesMessages.Commun
 
 
   const messagesClient = {
     Nav: tousLesMessages.Nav,
     Contact: tousLesMessages.Contact,
     Realisations: tousLesMessages.Realisations,
+    // Sous-ensemble pour GaleriePhotos.tsx (BandeauImages + SlideImages) —
+    // pas tout Commun, même discipline que Boutique plus bas.
+    Commun: {
+      galerie_groupe: commun.galerie_groupe,
+      galerie_position: commun.galerie_position,
+      galerie_precedent: commun.galerie_precedent,
+      galerie_suivant: commun.galerie_suivant,
+      galerie_fermer: commun.galerie_fermer,
+    },
     // Ajouté explicitement, PAS en élargissant au catalogue entier : le panier
     // vit côté client, ses libellés doivent y être — mais rien d'autre.
     Panier: tousLesMessages.Panier,

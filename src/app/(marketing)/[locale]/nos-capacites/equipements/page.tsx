@@ -55,6 +55,13 @@ export default async function EquipementsPage({ params }: Props) {
       ]}
       src={IMAGES.besoinLouer}
       cadrage="object-center"
+      // Galerie ajoutée le 20 août 2026 — transport ajouté au duo remorque/
+      // camion déjà utilisé sur l'accueil (Phase 5, section Équipements).
+      images={[
+        { src: IMAGES.transportRemorque2026, alt: 'Remorque chargée de matériel de transport' },
+        { src: IMAGES.deploiementRemorque, alt: 'Remorque de déploiement sur site' },
+        { src: IMAGES.deploiementCamion, alt: 'Camion de déploiement KO-LAB' },
+      ]}
     />
   )
 }

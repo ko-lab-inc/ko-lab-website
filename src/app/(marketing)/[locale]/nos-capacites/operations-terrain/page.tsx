@@ -57,6 +57,15 @@ export default async function OperationsTerrainPage({ params }: Props) {
       ]}
       src={IMAGES.hero}
       cadrage="object-center"
+      // Galerie ajoutée le 20 août 2026 — quatre photos réelles d'opérations
+      // terrain (balisage, aménagement et préparation de site, déploiement
+      // hivernal), le hero (Canada Day) reste inchangé.
+      images={[
+        { src: IMAGES.chantierBalisage2026, alt: 'Chantier balisé, nacelle en opération' },
+        { src: IMAGES.amenagementSite2025, alt: 'Aménagement de site public en cours' },
+        { src: IMAGES.chantierPreparation2025, alt: 'Préparation de mobilier avant transport' },
+        { src: IMAGES.besoinDeployer, alt: "Équipe KO-LAB en déploiement, conditions hivernales" },
+      ]}
     />
   )
 }

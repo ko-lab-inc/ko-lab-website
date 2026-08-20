@@ -688,7 +688,13 @@
     "page_introuvable_titre": "Page Not Found",
     "page_introuvable_texte": "This page doesn't exist or has been moved.",
     "photo_placeholder": "KO-LAB field photo",
-    "aller_au_contenu": "Skip to content"
+    "aller_au_contenu": "Skip to content",
+    "galerie_groupe": "Photo gallery",
+    "galerie_position": "{n} of {total}",
+    "galerie_precedent": "Previous photo",
+    "galerie_suivant": "Next photo",
+    "galerie_fermer": "Close",
+    "en_photos": "In Photos"
   },
   "Admin": {
     "espace": "Espace équipe",

@@ -3,12 +3,15 @@ import { getTranslations } from 'next-intl/server'
 
 import { BandeauVideos, type VignetteVideo } from '@/components/ui/BandeauVideos'
 import { buttonVariants } from '@/components/ui/Button'
+import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
 import { Parallax } from '@/components/ui/Parallax'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
+
+import type { VignetteBandeau } from '@/components/ui/BandeauImages'
 
 import type { CSSProperties } from 'react'
 
@@ -46,6 +49,15 @@ type PageCapaciteProps = {
    * capacités omettent simplement la prop.
    */
   videos?: readonly VignetteVideo[]
+  /**
+   * Galerie photo, entre la liste des capacités et la bande de vidéos —
+   * ajoutée le 20 août 2026 pour donner une deuxième preuve visuelle que la
+   * seule photo de hero. Contrairement à `videos`, une prop absente OU un
+   * tableau vide n'affichent tout simplement rien (GaleriePhotos/BandeauImages
+   * n'ont pas d'emplacement réservé à montrer) : pas de section vide sur les
+   * pages qui n'ont pas encore assez de photos propres pour ce sujet.
+   */
+  images?: readonly VignetteBandeau[]
 }
 
 export async function PageCapacite({
@@ -59,8 +71,10 @@ export async function PageCapacite({
   cadrage,
   desature = false,
   videos,
+  images,
 }: PageCapaciteProps) {
   const t = await getTranslations('Capacites.cta')
+  const tCommun = await getTranslations('Commun')
 
   return (
     <>
@@ -192,6 +206,24 @@ export async function PageCapacite({
           </Reveal>
         </div>
       </section>
+
+      {/* ------------------------------ Galerie ------------------------------ */}
+      {/* Deuxième preuve visuelle, après le hero et avant les vidéos — le
+          savoir-faire décrit en texte juste au-dessus, montré en photos avant
+          la bande de vidéos puis le CTA. Rien ne s'affiche si `images` est
+          absente ou vide (voir la note de la prop) : jamais de section vide. */}
+      {images && images.length > 0 && (
+        <section className="border-t border-ko-line bg-ko-cream py-16 lg:py-24">
+          <div className="mx-auto max-w-container px-6 lg:px-12">
+            <Reveal>
+              <p className="label-mono">{tCommun('en_photos')}</p>
+              <div className="mt-6">
+                <GaleriePhotos images={images} titre={titre} />
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      )}
 
       {/* ------------------------------ Vidéos ------------------------------ */}
       {/* Rendue dès que la prop est passée, même vide — la bande affiche alors

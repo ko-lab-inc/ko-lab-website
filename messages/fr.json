@@ -690,7 +690,13 @@
     "page_introuvable_titre": "Page introuvable",
     "page_introuvable_texte": "Cette page n'existe pas ou a été déplacée.",
     "photo_placeholder": "Photo terrain KO-LAB",
-    "aller_au_contenu": "Aller au contenu"
+    "aller_au_contenu": "Aller au contenu",
+    "galerie_groupe": "Galerie photo",
+    "galerie_position": "{n} sur {total}",
+    "galerie_precedent": "Photo précédente",
+    "galerie_suivant": "Photo suivante",
+    "galerie_fermer": "Fermer",
+    "en_photos": "En photos"
   },
   "Admin": {
     "espace": "Espace équipe",

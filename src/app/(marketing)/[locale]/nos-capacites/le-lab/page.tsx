@@ -60,6 +60,13 @@ export default async function LeLabPage({ params }: Props) {
       // distincts plutôt que la même image deux fois dans le parcours.
       src={IMAGES.labImpression3d}
       cadrage="object-center"
+      // Galerie ajoutée le 20 août 2026 — une seule photo, pas de découpe
+      // laser/CNC dans les lots reçus (voir images.ts), mais le câblage de
+      // précision illustre l'item « Électronique » du brief. Une vignette
+      // seule s'affiche sans flèches (voir BandeauImages), rien à corriger.
+      images={[
+        { src: IMAGES.precisionCablage2024, alt: 'Câblage de précision, travail électronique fin' },
+      ]}
       // Bande de vidéos façon bambulab.com, alimentée depuis /admin/videos
       // (migration 0016). Tableau vide = quatre emplacements « Vidéo à
       // venir », jamais une section masquée — voir BandeauVideos.tsx.

@@ -149,12 +149,15 @@ export const IMAGES = {
    * Christian sur l'ensemble. 25 destinations fournies, 17 ont une photo qui
    * passe la vérification individuelle (logos tiers, texte « lumivalli »,
    * personne identifiable, qualité) ; 8 écartées — voir le rapport de phase
-   * pour le détail. Seules `enseignePose2026` (→ installationNacelle) et
-   * `preparation-terrain-2024` (→ besoinDeployer/realisationTerrain,
-   * ci-dessus) ont un consommateur câblé pour l'instant ; les autres suivent
-   * le précédent boutiqueImpression3d (Phase 8) — disponibles, pas branchées
-   * artificiellement. Événements d'avant 2025 non nommés dans les textes,
-   * consigne existante.
+   * pour le détail. Câblage complété le 20 août 2026 (galeries des quatre
+   * pages capacités, page Location, carte « Fabriquer » de l'accueil) : trois
+   * clés restent sans consommateur, aucune ne trouvait sa place dans la
+   * consigne de câblage reçue — `signalisationAlt2026` (alternative à
+   * `signalisation2026`, déjà utilisée dans la galerie Installations),
+   * `espaceAmenage2023` et `structureEclairee2024` (visée pour la section 5
+   * de l'accueil, qui n'a qu'un seul emplacement photo — pas forcée dedans,
+   * voir Installations.tsx). Événements d'avant 2025 non nommés dans les
+   * textes, consigne existante.
    */
   // Enseignes F.Auger — le client dont l'enseigne est posée, jamais présenté
   // comme une marque KO-LAB (voir installationNacelle, qui réutilise la

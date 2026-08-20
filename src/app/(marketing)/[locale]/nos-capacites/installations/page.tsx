@@ -58,6 +58,16 @@ export default async function InstallationsPage({ params }: Props) {
       // bureaux ». L'échafaudage précédent ne montrait aucune installation.
       src={IMAGES.installationNacelle}
       cadrage={CADRAGES.installationNacelle}
+      // Galerie ajoutée le 20 août 2026 — c'est la page qui souffrait le plus
+      // du manque de photos réelles (Christian). Enseigne posée, enseigne
+      // commerciale, signalisation et décor : quatre facettes du même
+      // travail d'installation que le hero, pas des répétitions.
+      images={[
+        { src: IMAGES.enseignePosee2026, alt: "Enseigne d'un client installée sur son poteau" },
+        { src: IMAGES.enseigneCommerciale2026, alt: 'Enseigne commerciale installée en façade' },
+        { src: IMAGES.signalisation2026, alt: 'Signalisation numérotée installée sur un bâtiment' },
+        { src: IMAGES.decorStructure2025, alt: 'Décor et structure installés sur un site événementiel' },
+      ]}
     />
   )
 }
