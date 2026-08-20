@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/Icones'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
-import { CADRAGES, FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD, IMAGES } from '@/lib/images'
+import { CADRAGES, FILTRE_TERRAIN, IMAGES } from '@/lib/images'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/routes'
 
@@ -27,16 +27,14 @@ export async function Besoins() {
   const t = await getTranslations('Home.besoins')
 
   /**
-   * Seule 01 (besoinDeployer, encore Unsplash) reste un contre-jour de fin de
-   * journée : son ciel ambré très saturé entrait en concurrence avec le bleu
-   * accent du site. FILTRE_TERRAIN_CHAUD (images.ts) conserve les silhouettes
-   * et la profondeur, mais ramène la dominante orange au niveau des autres
-   * visuels.
-   *
-   * 02, 03 et 04 sont des photos réelles KO-LAB (2025-2026) sans ciel doré à
-   * corriger — 02 est un jour nuageux, 03 et 04 des scènes d'atelier/de site
-   * sur fond neutre. Toutes reçoivent FILTRE_TERRAIN — jamais `undefined` —
-   * pour partager le même socle colorimétrique que le reste du site.
+   * Les quatre sont désormais des photos réelles KO-LAB (2024-2026), aucune
+   * avec de ciel doré à corriger — 01 est un jour d'hiver couvert, 02 un jour
+   * nuageux, 03 et 04 des scènes d'atelier/de site sur fond neutre. Toutes
+   * reçoivent FILTRE_TERRAIN — jamais `undefined` — pour partager le même
+   * socle colorimétrique que le reste du site. 01 utilisait encore
+   * FILTRE_TERRAIN_CHAUD (pensé pour l'ex-silhouette Unsplash) jusqu'au
+   * 20 août 2026 — corrigé au même moment que son remplacement par une photo
+   * réelle, même bug que celui trouvé la veille sur Realisations.tsx.
    */
   const besoins = [
     {
@@ -46,7 +44,7 @@ export async function Besoins() {
       Icone: IconeEquipe,
       src: IMAGES.besoinDeployer,
       cadrage: CADRAGES.besoinDeployer,
-      style: FILTRE_TERRAIN_CHAUD,
+      style: FILTRE_TERRAIN,
     },
     {
       cle: 'installer',

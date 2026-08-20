@@ -4,7 +4,7 @@ import { getTranslations } from 'next-intl/server'
 import { buttonVariants } from '@/components/ui/Button'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
-import { CADRAGES, FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD, IMAGES } from '@/lib/images'
+import { CADRAGES, FILTRE_TERRAIN, IMAGES } from '@/lib/images'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/routes'
 
@@ -32,21 +32,21 @@ export async function Realisations() {
   // La pastille porte la catégorie filtrable (skill 21), le titre décrit le
   // TYPE de projet attendu. Les trois titres différaient auparavant zéro : ils
   // affichaient tous « Réalisation à venir ».
-  // realisationTerrain (Unsplash, contre-jour ambré de grue) garde
-  // FILTRE_TERRAIN_CHAUD. realisationInstallation est la MÊME photo réelle que
-  // besoinInstaller (Besoins.tsx) — jour nuageux, pas de ciel doré à corriger.
-  // Elle recevait FILTRE_TERRAIN_CHAUD ici alors que Besoins.tsx lui applique
-  // déjà FILTRE_TERRAIN : exactement les « deux températures différentes sur
-  // la même page » que ce commentaire prévenait, pour la même photo — corrigé
-  // le 19 août 2026 (constaté en production, une carte au rendu orangé et
-  // daté au milieu de photos par ailleurs naturelles).
+  // Les trois cartes sont maintenant des photos réelles KO-LAB, toutes sur
+  // FILTRE_TERRAIN : realisationInstallation et desormais realisationTerrain
+  // suivent respectivement besoinInstaller et besoinDeployer (Besoins.tsx),
+  // même photo, même filtre des deux côtés — le bug du 19 août 2026 (carte
+  // orangée, « deux températures différentes » pour la même photo selon la
+  // section) s'appliquait à realisationInstallation ; corrigé ici pour
+  // realisationTerrain le 20 août 2026, en même temps que son remplacement
+  // par une vraie photo.
   const grande = {
     cle: 'terrain',
     tag: tFiltres('filtre_terrain'),
     titre: t('titre_terrain'),
     src: IMAGES.realisationTerrain,
     cadrage: CADRAGES.besoinDeployer,
-    style: FILTRE_TERRAIN_CHAUD,
+    style: FILTRE_TERRAIN,
   }
 
   const petites = [

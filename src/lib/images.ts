@@ -68,13 +68,14 @@ export const IMAGES = {
   hero: '/images/hero/hero-canada-day-2026.webp',
 
   /**
-   * ⚠️ TOUJOURS UNSPLASH — aucune photo reçue pour ce besoin.
-   * Le dossier `canada day img/Déployer une équipe` du lot du 18 août 2026
-   * était VIDE (confirmé par recherche récursive) : la photo attendue pour
-   * ce besoin n'a jamais été fournie. Rien à remplacer tant qu'elle n'arrive
-   * pas — ne pas réutiliser une autre photo du lot à sa place sans validation.
+   * Photo réelle — équipe KO-LAB préparant un déploiement pyrotechnique en
+   * conditions hivernales, Feux sur glace 2024 (lot du 20 août 2026,
+   * `Préparation montage`). Remplace enfin l'Unsplash : le dossier Canada Day
+   * 2026 pour ce besoin était resté vide, celui-ci comble le manque.
+   * Événement volontairement non nommé dans les textes — mandat d'avant 2025,
+   * consigne existante (voir KO-LAB-PHOTOS/_metadonnees.txt).
    */
-  besoinDeployer: unsplash('photo-1579847188804-ecba0e2ea330'),
+  besoinDeployer: medias('operations/preparation-terrain-2024.webp'),
 
   /** Photo réelle — équipe KO-LAB (gilets orange) sur site, Canada Day 2026. */
   besoinInstaller: medias('home/besoin-installer-2026.webp'),
@@ -89,7 +90,9 @@ export const IMAGES = {
    * ⚠️ TOUJOURS UNSPLASH — aucune photo de découpe laser/CNC reçue.
    * Le lot du 18 août 2026 (dossier `le lab 3d`) ne contient que des photos
    * d'impression 3D (Bambu Lab) — aucune ne montre de découpe laser ni de
-   * CNC, le sujet exact que cette clé doit illustrer. Le watermark signalé
+   * CNC, le sujet exact que cette clé doit illustrer. Les quatre lots du
+   * 20 août 2026 (enseignes, HAP 2023, Feux sur glace 2024, créations 2025)
+   * revérifiés pour la même raison — toujours rien. Le watermark signalé
    * ci-dessous reste donc non corrigé : ne pas la remplacer par une photo
    * d'impression 3D, ce serait montrer autre chose que ce que le texte décrit.
    *
@@ -110,18 +113,17 @@ export const IMAGES = {
   labImpression3d: medias('lab/lab-machine-2026.webp'),
 
   /**
-   * ⚠️ TOUJOURS UNSPLASH — pas de photo réelle qui correspond au sujet.
-   * Le photographe de la série _87T75xx est confirmé interne depuis le 19 août
-   * 2026 (voir KO-LAB-PHOTOS/_metadonnees.txt) — ce n'est plus ce qui bloque
-   * ce remplacement. Trois photos du lot Installations sont maintenant réelles
-   * (installationsPrincipale/Alternative/Guirlandes, ci-dessous), mais aucune
-   * ne montre une nacelle ou un travail en hauteur sur façade : décision de
-   * Christian, ne pas forcer une correspondance approximative.
+   * Photo réelle — nacelle élévatrice en action, pose d'une enseigne F.Auger
+   * en hauteur (lot enseignes du 20 août 2026, `Installation d'enseigne en
+   * cours`). Remplace enfin l'Unsplash : montre bien une pose en hauteur,
+   * condition posée par Christian pour ce remplacement — même photo que
+   * `enseignePose2026` ci-dessous, dupliquée volontairement (même raison que
+   * `besoinLouer`/`locationStructures`).
    *
-   * Ouvrier sur nacelle élévatrice contre une façade de pierre, lumière rasante.
-   * Page Installations — « Centres commerciaux et tours à bureaux ».
+   * F.Auger est le CLIENT dont l'enseigne est posée, jamais présenté comme
+   * une marque KO-LAB — voir KO-LAB-PHOTOS/_metadonnees.txt.
    */
-  installationNacelle: unsplash('photo-1641384390864-dbfa6e39fd28'),
+  installationNacelle: medias('installations/enseigne-pose-2026.webp'),
 
   /**
    * Photos réelles — lot Installations, correspondance fournie par Christian
@@ -140,6 +142,52 @@ export const IMAGES = {
   installationsPrincipale: medias('installations/installation-principale-2025.webp'),
   installationsAlternative: medias('installations/installation-alt-2025.webp'),
   installationsGuirlandes: medias('installations/installation-guirlandes-2025.webp'),
+
+  /**
+   * Photos réelles — quatre nouveaux lots du 20 août 2026 (enseignes F.Auger,
+   * HAP 2023, Feux sur glace 2024, créations 2025), droits confirmés par
+   * Christian sur l'ensemble. 25 destinations fournies, 17 ont une photo qui
+   * passe la vérification individuelle (logos tiers, texte « lumivalli »,
+   * personne identifiable, qualité) ; 8 écartées — voir le rapport de phase
+   * pour le détail. Seules `enseignePose2026` (→ installationNacelle) et
+   * `preparation-terrain-2024` (→ besoinDeployer/realisationTerrain,
+   * ci-dessus) ont un consommateur câblé pour l'instant ; les autres suivent
+   * le précédent boutiqueImpression3d (Phase 8) — disponibles, pas branchées
+   * artificiellement. Événements d'avant 2025 non nommés dans les textes,
+   * consigne existante.
+   */
+  // Enseignes F.Auger — le client dont l'enseigne est posée, jamais présenté
+  // comme une marque KO-LAB (voir installationNacelle, qui réutilise la
+  // première de ces photos).
+  enseignePose2026: medias('installations/enseigne-pose-2026.webp'),
+  enseignePoseAlt2026: medias('installations/enseigne-pose-alt-2026.webp'),
+  enseignePosee2026: medias('installations/enseigne-posee-2026.webp'),
+  enseigneCommerciale2026: medias('installations/enseigne-commerciale-2026.webp'),
+  signalisation2026: medias('installations/signalisation-2026.webp'),
+  signalisationAlt2026: medias('installations/signalisation-alt-2026.webp'),
+  chantierBalisage2026: medias('operations/chantier-balisage-2026.webp'),
+  transportRemorque2026: medias('deployment/transport-remorque-2026.webp'),
+
+  // HAP 2023 — 2 destinations propres sur 6 (décor illuminé et montage en
+  // cours écartés : visage d'enfant identifiable + flou pour l'un, texte
+  // « lumivalli » pour l'autre ; logistique écartée pour logos tiers dominants).
+  espaceAmenage2023: medias('installations/espace-amenage-2023.webp'),
+  amenagementSalle2023: medias('rental/amenagement-salle-2023.webp'),
+
+  // Feux sur glace 2024 — precisionCablage2024 illustre un travail de
+  // précision (câblage de mise à feu), pas une découpe laser/CNC : ne pas
+  // l'utiliser comme preuve que `lab` (Unsplash, plus haut) est réglée.
+  precisionCablage2024: medias('lab/precision-cablage-2024.webp'),
+  structureEclairee2024: medias('installations/structure-eclairee-2024.webp'),
+
+  // Créations 2025 — 4 destinations propres sur 8 (fabrication-alternative,
+  // décor-alternative, activation de marque et structures montées écartées :
+  // logo FMG et/ou Desjardins dominant, une fois combiné à du texte
+  // « lumivalli » et des visages dont le statut équipe/public était incertain).
+  besoinFabriquerKiosque2025: medias('home/besoin-fabriquer-kiosque-2025.webp'),
+  decorStructure2025: medias('installations/decor-structure-2025.webp'),
+  amenagementSite2025: medias('operations/amenagement-site-2025.webp'),
+  chantierPreparation2025: medias('operations/chantier-preparation-2025.webp'),
 
   /**
    * Photo réelle — petite série de pièces imprimées (jaune-vert), tête
@@ -166,17 +214,20 @@ export const IMAGES = {
    */
   boutiqueImpression3d: medias('boutique/impression-3d-2026.webp'),
 
-  /** Soudeur au masque, arc blanc-bleu, atelier noyé dans le noir. Disponible. */
+  /**
+   * ⚠️ TOUJOURS UNSPLASH — aucune photo de soudure reçue, y compris dans les
+   * quatre lots du 20 août 2026 (revérifiés pour cette raison). Soudeur au
+   * masque, arc blanc-bleu, atelier noyé dans le noir.
+   */
   soudeur: unsplash('photo-1745448797900-35d08e85e9db'),
 
   // Duplication volontaire des emplacements ci-dessus (même raison qu'avant :
-  // c'est visible, pas caché). preuveTerrain et realisationInstallation
-  // suivent désormais hero/besoinInstaller, devenus des photos réelles.
-  // realisationTerrain (besoinDeployer) et realisationLab (soudeur) restent
-  // Unsplash tant que ces clés-source n'ont pas de remplacement — voir leurs
-  // commentaires respectifs plus haut.
+  // c'est visible, pas caché). preuveTerrain, realisationInstallation et
+  // désormais realisationTerrain suivent hero/besoinInstaller/besoinDeployer,
+  // tous des photos réelles depuis le 20 août 2026. realisationLab (soudeur)
+  // reste seule encore Unsplash — voir son commentaire plus haut.
   preuveTerrain: '/images/hero/hero-canada-day-2026.webp',
-  realisationTerrain: unsplash('photo-1579847188804-ecba0e2ea330'),
+  realisationTerrain: medias('operations/preparation-terrain-2024.webp'),
   realisationInstallation: medias('home/besoin-installer-2026.webp'),
   realisationLab: unsplash('photo-1745448797900-35d08e85e9db'),
   /** Réutilisée par les Réalisations : la CNC porte déjà la section LAB. */
@@ -208,8 +259,14 @@ export const IMAGES = {
  * un recadrage 16/9 couperait précisément les silhouettes qui font l'image.
  */
 export const CADRAGES = {
-  /** Silhouettes en haut à gauche du cadre. */
-  besoinDeployer: 'object-[30%_25%]',
+  /**
+   * Photo réelle (équipe KO-LAB, Feux sur glace 2024), format paysage 3:2
+   * recadré dans une carte 16/9 — l'équipe occupe le centre-haut du cadre,
+   * les caisses de mortiers le bas. Réglage initial, à revérifier par capture
+   * d'écran réelle comme besoinInstaller ci-dessous (l'ancien réglage 30%/25%
+   * était calé sur l'ex-silhouette Unsplash, sans rapport avec cette photo).
+   */
+  besoinDeployer: 'object-[50%_30%]',
   /**
    * Photo réelle (équipe KO-LAB, Canada Day 2026), format portrait recadré
    * dans une carte 16/9 — le groupe se tient dans le tiers bas du cadre.
@@ -218,6 +275,11 @@ export const CADRAGES = {
    * visionnant le rendu réel de la carte, pas en le supposant.
    */
   besoinInstaller: 'object-[55%_82%]',
-  /** Nacelle et ouvrier au centre, légèrement sous le milieu du cadre vertical. */
-  installationNacelle: 'object-[50%_58%]',
+  /**
+   * Photo réelle (nacelle F.Auger, lot enseignes 2026), format portrait en
+   * hero pleine largeur — nacelle et ouvrier dans le tiers supérieur du
+   * cadre. Réglage initial, à revérifier par capture d'écran réelle (l'ancien
+   * 50%/58% était calé sur l'ex-photo Unsplash).
+   */
+  installationNacelle: 'object-[62%_28%]',
 } as const

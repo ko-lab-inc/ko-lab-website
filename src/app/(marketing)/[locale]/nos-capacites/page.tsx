@@ -94,9 +94,12 @@ export default async function CapacitesHubPage({ params }: Props) {
       titre: tOps('title'),
       intro: tOps('intro'),
       items: ITEMS_8.map((k) => tOps(k)),
+      // Photo réelle depuis le 20 août 2026 (Feux sur glace 2024, jour
+      // couvert) — plus le contre-jour doré de l'ex-photo Unsplash que
+      // `desature` corrigeait. Voir Besoins.tsx pour le même correctif.
       src: IMAGES.besoinDeployer,
       cadrage: CADRAGES.besoinDeployer,
-      desature: true,
+      desature: false,
     },
     {
       cle: 'installations',
