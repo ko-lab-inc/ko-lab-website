@@ -1,29 +1,30 @@
+import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
-import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { buttonVariants } from '@/components/ui/Button'
 import { Link } from '@/i18n/navigation'
+import { IMAGES } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
 
 /**
  * Installations (résumé) — section 5 de l'accueil (Phase 5).
  *
  * Extraite de l'ancienne liste éditoriale Capacites.tsx, comme les sections
- * 4 et 7 — mais SANS photo : le lot promis (série _87T75xx) est bloqué, le
- * photographe n'est pas confirmé interne (voir images.ts, installationNacelle).
- * PhotoPlaceholder plutôt qu'une photo de stock : le skill 22 l'interdit
- * explicitement, et une photo Unsplash « installations » réintroduirait
- * exactement le problème de véracité que la Phase 1 a nettoyé.
+ * 4 et 7. Est restée sans photo (PhotoPlaceholder) jusqu'au 19 août 2026 :
+ * le lot promis (série _87T75xx) était bloqué, le photographe pas confirmé
+ * interne. Christian l'a confirmé ce jour-là — voir images.ts,
+ * installationsPrincipale (sapin décoré, atrium — la plus représentative des
+ * trois photos propres du lot, vérifiées une par une avant tout usage).
  *
  * Fond clair — pas seulement par défaut : cinq sections sombres consécutives
- * (Crédibilité, Opérations, cette section si elle avait une photo, Le LAB,
- * Équipements) auraient fusionné en une seule masse noire. L'absence de photo
- * devient ici une respiration bienvenue plutôt qu'un simple manque.
+ * (Crédibilité, Opérations, cette section, Le LAB, Équipements) auraient
+ * fusionné en une seule masse noire même avec une vraie photo ici — le fond
+ * clair reste la bonne respiration entre les deux blocs sombres qui
+ * l'encadrent.
  */
 export async function Installations() {
   const t = await getTranslations('Home.installations')
-  const tCommun = await getTranslations('Commun')
 
   return (
     <section className="bg-ko-white py-16 lg:py-28">
@@ -47,7 +48,16 @@ export async function Installations() {
           </Reveal>
 
           <Reveal>
-            <PhotoPlaceholder ratio="aspect-[4/3]" label={tCommun('photo_placeholder')} className="rounded-2xl" />
+            <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+              <Image
+                src={IMAGES.installationsPrincipale}
+                alt=""
+                fill
+                quality={80}
+                sizes="(max-width: 1024px) 100vw, 45vw"
+                className="object-cover object-top"
+              />
+            </div>
           </Reveal>
         </div>
       </div>

@@ -71,33 +71,51 @@ export default async function LocationPage({ params }: Props) {
               </p>
 
               <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-                {/* Masqué tant que LIEN_RENTMAN reste le repli '#'
-                    (lib/constantes.ts) — un bouton qui ne mène nulle part en
-                    production est pire que son absence. Le code du bouton
-                    reste en place, prêt dès que l'URL réelle arrive.
-                    Lien externe : <a> et non le <Link> localisé, qui
-                    préfixerait l'URL d'une locale. rel="noopener" est
-                    obligatoire avec target="_blank" — sans lui, la page
-                    ouverte accède à window.opener (skill 09). */}
-                {LIEN_RENTMAN !== '#' && (
-                  <a
-                    href={LIEN_RENTMAN}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                {/* Tant que LIEN_RENTMAN reste le repli '#' (lib/constantes.ts,
+                    URL jamais transmise par Christian), le bouton primaire
+                    pointe vers le formulaire de contact déjà existant
+                    (`?type=location`, celui que le lien secondaire ci-dessous
+                    utilise aussi normalement) plutôt que de rester masqué —
+                    « un bouton visible qui convertit vaut mieux qu'un bouton
+                    absent ». Le libellé change en conséquence : « Voir
+                    l'inventaire » mentirait sur ce que ce lien fait vraiment.
+                    Le lien secondaire redondant (même destination) disparaît
+                    dans cet état ; les deux boutons d'origine reviennent dès
+                    que Christian communique l'URL réelle — une seule ligne à
+                    changer dans constantes.ts. */}
+                {LIEN_RENTMAN !== '#' ? (
+                  <>
+                    {/* Lien externe : <a> et non le <Link> localisé, qui
+                        préfixerait l'URL d'une locale. rel="noopener" est
+                        obligatoire avec target="_blank" — sans lui, la page
+                        ouverte accède à window.opener (skill 09). */}
+                    <a
+                      href={LIEN_RENTMAN}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={buttonVariants({ variant: 'primary' })}
+                    >
+                      {t('cta_rentman')}
+                      <span aria-hidden="true">→</span>
+                    </a>
+
+                    <Link
+                      href={`${ROUTES.contact}?type=location`}
+                      className={buttonVariants({ variant: 'text' })}
+                    >
+                      {t('cta_demande')}
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </>
+                ) : (
+                  <Link
+                    href={`${ROUTES.contact}?type=location`}
                     className={buttonVariants({ variant: 'primary' })}
                   >
-                    {t('cta_rentman')}
+                    {t('cta_demande_temporaire')}
                     <span aria-hidden="true">→</span>
-                  </a>
+                  </Link>
                 )}
-
-                <Link
-                  href={`${ROUTES.contact}?type=location`}
-                  className={buttonVariants({ variant: 'text' })}
-                >
-                  {t('cta_demande')}
-                  <span aria-hidden="true">→</span>
-                </Link>
               </div>
             </div>
           </Reveal>

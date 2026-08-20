@@ -55,8 +55,9 @@ function unsplash(chemin: string): string {
 /**
  * Photos KO-LAB réelles — bucket public `medias`, Supabase Storage.
  * Déposées et redimensionnées le 18 août 2026 (mandats Canada Day 2026,
- * DEVFEST 2026, atelier Le LAB) — voir KO-LAB-PHOTOS/_metadonnees.txt
- * (hors dépôt, jamais commité) pour la source et le contexte de chaque photo.
+ * DEVFEST 2026, atelier Le LAB) puis le 19 août 2026 (lot Installations) —
+ * voir KO-LAB-PHOTOS/_metadonnees.txt (hors dépôt, jamais commité) pour la
+ * source et le contexte de chaque photo.
  */
 function medias(chemin: string): string {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/medias/${chemin}`
@@ -109,16 +110,36 @@ export const IMAGES = {
   labImpression3d: medias('lab/lab-machine-2026.webp'),
 
   /**
-   * ⚠️ TOUJOURS UNSPLASH — dossier Installations en attente.
-   * Le photographe des photos d'Installations (série _87T75xx, mandat décor
-   * de Noël concession automobile) n'est pas confirmé interne — voir
-   * KO-LAB-PHOTOS/_metadonnees.txt. Tenu à l'écart de tout usage (site
-   * générique comme réalisation) tant que l'autorisation n'est pas obtenue.
+   * ⚠️ TOUJOURS UNSPLASH — pas de photo réelle qui correspond au sujet.
+   * Le photographe de la série _87T75xx est confirmé interne depuis le 19 août
+   * 2026 (voir KO-LAB-PHOTOS/_metadonnees.txt) — ce n'est plus ce qui bloque
+   * ce remplacement. Trois photos du lot Installations sont maintenant réelles
+   * (installationsPrincipale/Alternative/Guirlandes, ci-dessous), mais aucune
+   * ne montre une nacelle ou un travail en hauteur sur façade : décision de
+   * Christian, ne pas forcer une correspondance approximative.
    *
    * Ouvrier sur nacelle élévatrice contre une façade de pierre, lumière rasante.
    * Page Installations — « Centres commerciaux et tours à bureaux ».
    */
   installationNacelle: unsplash('photo-1641384390864-dbfa6e39fd28'),
+
+  /**
+   * Photos réelles — lot Installations, correspondance fournie par Christian
+   * le 19 août 2026 (KO-LAB-PHOTOS/_metadonnees.txt). Sur les 5 destinations
+   * de la table, seules ces 3 ont une photo qui respecte la règle logos et ne
+   * montre personne d'identifiable — vérifié une par une, pas sur la foi de
+   * la liste d'exclusion fournie (elle s'est trompée de fichier une fois,
+   * voir _metadonnees.txt). Les deux autres (sapin, décor sur mesure) restent
+   * en PhotoPlaceholder : aucune photo propre disponible dans ces dossiers.
+   *
+   * installationsPrincipale est câblée dans Installations.tsx (section 5,
+   * accueil). Alternative et Guirlandes sont traitées et déposées, mais sans
+   * consommateur pour l'instant — même situation que boutiqueImpression3d
+   * (Phase 8) : disponibles pour un usage futur, pas câblées artificiellement.
+   */
+  installationsPrincipale: medias('installations/installation-principale-2025.webp'),
+  installationsAlternative: medias('installations/installation-alt-2025.webp'),
+  installationsGuirlandes: medias('installations/installation-guirlandes-2025.webp'),
 
   /**
    * Photo réelle — petite série de pièces imprimées (jaune-vert), tête
