@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { DocumentLegal } from '@/components/sections/DocumentLegal'
 import { routing } from '@/i18n/routing'
 import { lireReglages } from '@/lib/reglages'
-import { ROUTES } from '@/lib/routes'
+import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
 
@@ -24,6 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}${ROUTES.conditionsUtilisation}`,
+      languages: alternatesLangues(ROUTES.conditionsUtilisation),
     },
   }
 }

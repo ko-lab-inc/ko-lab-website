@@ -88,7 +88,7 @@ export default async function DetailCommandePage({ params }: Props) {
   // Toujours lu, plus seulement si modifiable : sert désormais aussi à
   // retrouver la photo de chaque ligne côté lecture seule (voir plus bas).
   // `lireProduitsPublies()` est mis en cache — le lire ici ne coûte rien.
-  const catalogue = await lireProduitsPublies()
+  const catalogue = await lireProduitsPublies(locale)
   const catalogueParId = new Map(catalogue.map((p) => [p.id, p]))
 
   const libellesStatuts: Record<string, string> = Object.fromEntries(

@@ -1,6 +1,6 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useEffect, useState } from 'react'
 
 import { Link, usePathname } from '@/i18n/navigation'
@@ -37,6 +37,12 @@ export function Nav({
   const t = useTranslations('Nav')
   const pathname = usePathname()
   const scrolled = useScrolled()
+  const locale = useLocale()
+
+  // Phase 9 : sélecteur de langue. `pathname` (next-intl) est déjà sans
+  // préfixe — `<Link locale={…}>` pose lui-même le bon préfixe cible, exact
+  // même chemin dans l'autre langue plutôt qu'un renvoi à l'accueil.
+  const autreLocale = locale === 'fr' ? 'en' : 'fr'
 
   const [menuOuvert, setMenuOuvert] = useState(false)
   const [capacitesOuvert, setCapacitesOuvert] = useState(false)
@@ -214,6 +220,18 @@ export function Nav({
             <IconeProfil taille={20} />
           </Link>
 
+          {/* Sélecteur de langue — endonyme de la langue CIBLE, jamais traduit :
+              un visiteur anglophone doit reconnaître « Français » écrit en
+              français, pas une version anglicisée. Exception délibérée à la
+              règle « aucune chaîne en dur ». */}
+          <Link
+            href={pathname}
+            locale={autreLocale}
+            className="flex min-h-[44px] items-center text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
+          >
+            {autreLocale === 'en' ? 'English' : 'Français'}
+          </Link>
+
           <Link href={ROUTES.contact} className={buttonVariants({ variant: 'primary', size: 'sm' })}>
             {t('cta')}
           </Link>
@@ -313,6 +331,14 @@ export function Nav({
             >
               <IconeProfil taille={18} />
               {t('compte')}
+            </Link>
+
+            <Link
+              href={pathname}
+              locale={autreLocale}
+              className="flex min-h-[44px] items-center text-sm text-ko-muted"
+            >
+              {autreLocale === 'en' ? 'English' : 'Français'}
             </Link>
 
             <Link

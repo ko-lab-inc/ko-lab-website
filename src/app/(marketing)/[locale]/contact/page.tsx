@@ -7,7 +7,7 @@ import { FormulaireContact } from '@/components/sections/FormulaireContact'
 import { Reveal } from '@/components/ui/Reveal'
 import { routing } from '@/i18n/routing'
 import { lireReglages } from '@/lib/reglages'
-import { ROUTES } from '@/lib/routes'
+import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
 
@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}${ROUTES.contact}`,
+      languages: alternatesLangues(ROUTES.contact),
     },
   }
 }

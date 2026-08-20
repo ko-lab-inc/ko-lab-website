@@ -51,21 +51,10 @@ function localeDeLUrl(chemin: string): string {
 }
 
 export default async function proxy(request: NextRequest) {
-  // ⚠️ /en n'est plus une locale valide (routing.ts). Sans ce retrait
-  // explicite, next-intl traiterait « en » comme un segment de PATHNAME
-  // inconnu et préfixerait la locale par défaut PAR-DESSUS — donnant
-  // /fr/en/realisations plutôt qu'un renvoi propre vers /fr/realisations.
-  //
-  // 308 (permanent, méthode préservée) et non 307 : un lien externe déjà
-  // indexé vers /en/... doit transmettre son autorité de référencement à la
-  // version française, pas seulement fonctionner une fois.
-  const { pathname } = request.nextUrl
-  if (pathname === '/en' || pathname.startsWith('/en/')) {
-    const cible = new URL(pathname.replace(/^\/en/, '/fr'), request.url)
-    cible.search = request.nextUrl.search
-    return NextResponse.redirect(cible, 308)
-  }
-
+  // Phase 9 : /en est de nouveau une locale valide (routing.ts). Le renvoi
+  // 308 vers /fr/... qui vivait ici pendant la période français-seul est
+  // retiré — le laisser aurait empêché quiconque d'atteindre les pages
+  // anglaises tout juste réactivées.
   const response = intl(request)
 
   // next-intl redirige (`/` -> `/fr`, langue manquante…) : inutile d'aller plus

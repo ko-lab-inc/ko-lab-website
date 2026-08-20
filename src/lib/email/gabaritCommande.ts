@@ -43,10 +43,26 @@
  * client de messagerie, qui n'a pas de notion d'« origine courante » :
  * `image()` ci-dessous préfixe systématiquement avec `origine`.
  * ---------------------------------------------------------------------------
+ *
+ * PHASE 9 — BILINGUE
+ *
+ * `locale` vient d'un champ caché du formulaire qui appelle ce gabarit
+ * (creerCommande, modifierCommande) — c'est la locale RÉELLE de la page que
+ * le client avait sous les yeux au moment d'agir, pas une locale déduite ni
+ * une valeur par défaut. C'est ce qui rend ce gabarit bilingue possible,
+ * contrairement à gabaritStatutCommande.ts (voir sa propre note) : la
+ * notification de changement de statut est déclenchée plus tard par l'équipe
+ * depuis /admin/commandes, où la seule « locale » disponible est celle de la
+ * ROUTE ADMIN elle-même (français, l'admin restant hors périmètre Phase 9) —
+ * pas la langue dans laquelle le client a commandé, qui n'est stockée nulle
+ * part.
+ * ---------------------------------------------------------------------------
  */
 
 import { EMAILS } from '@/lib/constantes'
 import { ROUTES } from '@/lib/routes'
+
+import type { AppLocale } from '@/i18n/routing'
 
 export type LigneEmailCommande = {
   nom: string
@@ -67,21 +83,84 @@ const LIGNE = '#e0ddd6'
 const DATE_LONGUE: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }
 const DATE_HEURE: Intl.DateTimeFormatOptions = { dateStyle: 'medium', timeStyle: 'short' }
 
-function formaterDate(date: Date, options: Intl.DateTimeFormatOptions): string {
-  // fr-CA directement plutôt que next-intl's getFormatter() : ce module est
-  // appelé depuis une Server Action, pas depuis un composant — pas de contexte
-  // de requête ici. Mêmes options que /compte/commandes/[id] (page.tsx), pour
-  // que la même commande s'affiche dans les mêmes mots aux deux endroits.
-  return new Intl.DateTimeFormat('fr-CA', options).format(date)
+function formaterDate(date: Date, options: Intl.DateTimeFormatOptions, locale: AppLocale): string {
+  // fr-CA/en-CA directement plutôt que next-intl's getFormatter() : ce module
+  // est appelé depuis une Server Action, pas depuis un composant — pas de
+  // contexte de requête ici. Mêmes options que /compte/commandes/[id]
+  // (page.tsx), pour que la même commande s'affiche dans les mêmes mots aux
+  // deux endroits.
+  return new Intl.DateTimeFormat(locale === 'en' ? 'en-CA' : 'fr-CA', options).format(date)
 }
 
-function formaterPrix(valeur: number): string {
-  return new Intl.NumberFormat('fr-CA', {
+function formaterPrix(valeur: number, locale: AppLocale): string {
+  return new Intl.NumberFormat(locale === 'en' ? 'en-CA' : 'fr-CA', {
     style: 'currency',
     currency: 'CAD',
     maximumFractionDigits: 0,
   }).format(valeur)
 }
+
+/**
+ * Tous les libellés fixes du gabarit, dans les deux langues. `signature`
+ * reprend mot pour mot Footer.signature/APropos.signature (messages/en.json)
+ * — décision de marque du 19 août 2026, plus une proposition.
+ */
+const TEXTES = {
+  fr: {
+    etiquetteCommande: 'Commande',
+    recueLe: (date: string) => `Commande reçue le ${date}`,
+    fenetreTexteHtml: (date: string) =>
+      `Vous pouvez ajouter des articles ou modifier les quantités jusqu'au <strong>${date}</strong>. Passé ce délai, la commande se ferme et notre équipe entame la préparation.`,
+    fenetreTexteBrut: (date: string) => [
+      `Vous pouvez ajouter des articles ou modifier les quantités jusqu'au ${date}.`,
+      `Passé ce délai, la commande se ferme et notre équipe entame la préparation.`,
+    ],
+    quantiteEtiquette: (n: number) => `Quantité : ${n}`,
+    surDemande: 'Sur demande',
+    totalIndicatif: 'Total indicatif',
+    noteHorsPrix: 'Hors produits à prix sur demande. ',
+    notePrix: 'Prix indicatifs — on revient vers vous pour les confirmer.',
+    modeLivraisonEtiquette: 'Mode de livraison',
+    voirCommande: 'Voir ma commande',
+    noteConnexion: [
+      "Si vous n'étiez pas connecté au moment d'ouvrir ce lien, on vous demandera de vous",
+      'connecter avant d\'afficher la commande.',
+    ],
+    signature: "De l'idée au terrain.",
+    confidentialite: 'Politique de confidentialité',
+    conditions: "Conditions d'utilisation",
+    envoiAutomatique: 'Courriel envoyé automatiquement, inutile d\'y répondre.',
+    expedition: 'Expédition',
+    ramassage: 'Ramassage sur place',
+  },
+  en: {
+    etiquetteCommande: 'Order',
+    recueLe: (date: string) => `Order received on ${date}`,
+    fenetreTexteHtml: (date: string) =>
+      `You can add items or change quantities until <strong>${date}</strong>. After that, the order closes and our team begins preparation.`,
+    fenetreTexteBrut: (date: string) => [
+      `You can add items or change quantities until ${date}.`,
+      `After that, the order closes and our team begins preparation.`,
+    ],
+    quantiteEtiquette: (n: number) => `Quantity: ${n}`,
+    surDemande: 'On request',
+    totalIndicatif: 'Indicative total',
+    noteHorsPrix: 'Excludes products priced on request. ',
+    notePrix: "Indicative prices — we'll get back to you to confirm them.",
+    modeLivraisonEtiquette: 'Delivery method',
+    voirCommande: 'View My Order',
+    noteConnexion: [
+      "If you weren't logged in when you opened this link, you'll be asked to",
+      'log in before the order is shown.',
+    ],
+    signature: 'From idea to ground.',
+    confidentialite: 'Privacy Policy',
+    conditions: 'Terms of Use',
+    envoiAutomatique: 'This email was sent automatically — no need to reply.',
+    expedition: 'Shipping',
+    ramassage: 'Pickup on site',
+  },
+} as const satisfies Record<AppLocale, unknown>
 
 /** Échappe le texte inséré dans le HTML — noms de produits notamment, saisis par l'équipe via /admin/catalogue. */
 function echapper(texte: string): string {
@@ -97,6 +176,7 @@ function image(src: string | null, origine: string): string | null {
 }
 
 export function gabaritConfirmationCommande({
+  locale,
   numero,
   creeLe,
   fenetreExpireLe,
@@ -106,6 +186,7 @@ export function gabaritConfirmationCommande({
   lienCommande,
   origine,
 }: {
+  locale: AppLocale
   numero: string
   /** `commandes.created_at` — affiché dans la ligne de statut, comme sur /compte/commandes/[id]. */
   creeLe: Date
@@ -117,11 +198,12 @@ export function gabaritConfirmationCommande({
   lienCommande: string
   origine: string
 }): { html: string; text: string } {
+  const tx = TEXTES[locale]
   const total = lignes.reduce((somme, l) => (l.prix != null ? somme + l.prix * l.quantite : somme), 0)
   const auMoinsUnPrixManquant = lignes.some((l) => l.prix == null)
-  const libelleLivraison = modeLivraison === 'expedition' ? 'Expédition' : 'Ramassage sur place'
-  const dateCreation = formaterDate(creeLe, DATE_LONGUE)
-  const dateExpiration = formaterDate(fenetreExpireLe, DATE_HEURE)
+  const libelleLivraison = modeLivraison === 'expedition' ? tx.expedition : tx.ramassage
+  const dateCreation = formaterDate(creeLe, DATE_LONGUE, locale)
+  const dateExpiration = formaterDate(fenetreExpireLe, DATE_HEURE, locale)
 
   const lignesHtml = lignes
     .map((l) => {
@@ -136,10 +218,10 @@ export function gabaritConfirmationCommande({
           <td style="padding:16px 0 16px 16px;border-bottom:1px solid ${LIGNE};font-family:Arial,Helvetica,sans-serif;">
             <div style="font-family:'Courier New',Courier,monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:${MUET};">${echapper(l.categorie)}</div>
             <div style="font-family:Georgia,'Times New Roman',serif;font-size:16px;color:${NOIR};margin-top:4px;">${echapper(l.nom)}</div>
-            <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${MUET};margin-top:4px;">Quantité : ${l.quantite}</div>
+            <div style="font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${MUET};margin-top:4px;">${tx.quantiteEtiquette(l.quantite)}</div>
           </td>
           <td style="padding:16px 0 16px 16px;border-bottom:1px solid ${LIGNE};font-family:'Courier New',Courier,monospace;font-size:14px;color:${NOIR};text-align:right;white-space:nowrap;vertical-align:top;">
-            ${l.prix != null ? formaterPrix(l.prix * l.quantite) : 'Sur demande'}
+            ${l.prix != null ? formaterPrix(l.prix * l.quantite, locale) : tx.surDemande}
           </td>
         </tr>`
     })
@@ -151,7 +233,7 @@ export function gabaritConfirmationCommande({
       : ''
 
   const html = `<!doctype html>
-<html lang="fr">
+<html lang="${locale}">
 <body style="margin:0;padding:0;background:${CREME};">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${CREME};">
     <tr>
@@ -168,7 +250,7 @@ export function gabaritConfirmationCommande({
           <!-- numéro de commande, en gros — même traitement que /compte/commandes/[id] -->
           <tr>
             <td style="padding:32px 32px 0;">
-              <span style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:${MUET};">Commande</span>
+              <span style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:${MUET};">${tx.etiquetteCommande}</span>
               <h1 style="margin:8px 0 0;font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:32px;color:${NOIR};">${echapper(numero)}</h1>
             </td>
           </tr>
@@ -176,7 +258,7 @@ export function gabaritConfirmationCommande({
           <!-- ligne de statut : reçue le, mode de livraison -->
           <tr>
             <td style="padding:12px 32px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:${MUET};">
-              Commande reçue le ${dateCreation} · ${libelleLivraison}
+              ${tx.recueLe(dateCreation)} · ${libelleLivraison}
             </td>
           </tr>
 
@@ -184,9 +266,7 @@ export function gabaritConfirmationCommande({
           <tr>
             <td style="padding:16px 32px 0;">
               <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.6;color:${NOIR};">
-                Vous pouvez ajouter des articles ou modifier les quantités jusqu'au
-                <strong>${dateExpiration}</strong>. Passé ce délai, la commande se ferme et
-                notre équipe entame la préparation.
+                ${tx.fenetreTexteHtml(dateExpiration)}
               </p>
             </td>
           </tr>
@@ -198,15 +278,15 @@ export function gabaritConfirmationCommande({
                 ${lignesHtml}
                 <tr>
                   <td colspan="2" style="padding:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${NOIR};font-weight:bold;">
-                    Total indicatif
+                    ${tx.totalIndicatif}
                   </td>
                   <td style="padding:16px 0 0;font-family:'Courier New',Courier,monospace;font-size:15px;color:${NOIR};font-weight:bold;text-align:right;white-space:nowrap;">
-                    ${formaterPrix(total)}
+                    ${formaterPrix(total, locale)}
                   </td>
                 </tr>
               </table>
               <p style="margin:8px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${MUET};">
-                ${auMoinsUnPrixManquant ? 'Hors produits à prix sur demande. ' : ''}Prix indicatifs — on revient vers vous pour les confirmer.
+                ${auMoinsUnPrixManquant ? tx.noteHorsPrix : ''}${tx.notePrix}
               </p>
             </td>
           </tr>
@@ -214,7 +294,7 @@ export function gabaritConfirmationCommande({
           <!-- livraison -->
           <tr>
             <td style="padding:28px 32px 0;">
-              <span style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:${MUET};">Mode de livraison</span>
+              <span style="font-family:'Courier New',Courier,monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:${MUET};">${tx.modeLivraisonEtiquette}</span>
               <p style="margin:4px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:${NOIR};">${libelleLivraison}</p>
               ${adresseHtml}
             </td>
@@ -224,11 +304,11 @@ export function gabaritConfirmationCommande({
           <tr>
             <td style="padding:28px 32px 32px;">
               <a href="${lienCommande}" style="display:inline-block;background:${BLEU};color:${NOIR};font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:bold;text-decoration:none;padding:14px 28px;">
-                Voir ma commande
+                ${tx.voirCommande}
               </a>
               <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${MUET};">
-                Si vous n'étiez pas connecté au moment d'ouvrir ce lien, on vous demandera de vous
-                connecter avant d'afficher la commande.
+                ${tx.noteConnexion[0]}
+                ${tx.noteConnexion[1]}
               </p>
             </td>
           </tr>
@@ -236,17 +316,17 @@ export function gabaritConfirmationCommande({
           <!-- pied -->
           <tr>
             <td style="background:${NOIR};padding:24px 32px;">
-              <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${BLANC};">De l'idée au terrain.</p>
+              <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:15px;color:${BLANC};">${tx.signature}</p>
               <p style="margin:8px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${MUET};">
                 Outaouais, Québec · <a href="mailto:${EMAILS.info}" style="color:${MUET};">${EMAILS.info}</a>
               </p>
               <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:${MUET};">
-                <a href="${origine}/fr${ROUTES.politiqueConfidentialite}" style="color:${MUET};">Politique de confidentialité</a>
+                <a href="${origine}/${locale}${ROUTES.politiqueConfidentialite}" style="color:${MUET};">${tx.confidentialite}</a>
                 &nbsp;·&nbsp;
-                <a href="${origine}/fr${ROUTES.conditionsUtilisation}" style="color:${MUET};">Conditions d'utilisation</a>
+                <a href="${origine}/${locale}${ROUTES.conditionsUtilisation}" style="color:${MUET};">${tx.conditions}</a>
               </p>
               <p style="margin:12px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:11px;color:${MUET};">
-                Courriel envoyé automatiquement, inutile d'y répondre.
+                ${tx.envoiAutomatique}
               </p>
             </td>
           </tr>
@@ -258,30 +338,33 @@ export function gabaritConfirmationCommande({
 </body>
 </html>`
 
+  const [fenetreLigne1, fenetreLigne2] = tx.fenetreTexteBrut(dateExpiration)
+
   const text = [
-    `Commande ${numero}`,
-    `Reçue le ${dateCreation} · ${libelleLivraison}`,
+    `${tx.etiquetteCommande} ${numero}`,
+    `${tx.recueLe(dateCreation)} · ${libelleLivraison}`,
     '',
-    `Vous pouvez ajouter des articles ou modifier les quantités jusqu'au ${dateExpiration}.`,
-    `Passé ce délai, la commande se ferme et notre équipe entame la préparation.`,
+    fenetreLigne1,
+    fenetreLigne2,
     '',
     ...lignes.map(
-      (l) => `— ${l.nom} × ${l.quantite}${l.prix != null ? ` (${formaterPrix(l.prix * l.quantite)})` : ' (sur demande)'}`,
+      (l) =>
+        `— ${l.nom} × ${l.quantite}${l.prix != null ? ` (${formaterPrix(l.prix * l.quantite, locale)})` : ` (${tx.surDemande})`}`,
     ),
     '',
-    `Total indicatif : ${formaterPrix(total)}`,
-    `Prix indicatifs — on revient vers vous pour les confirmer.`,
+    `${tx.totalIndicatif} : ${formaterPrix(total, locale)}`,
+    tx.notePrix,
     '',
-    `Mode de livraison : ${libelleLivraison}`,
+    `${tx.modeLivraisonEtiquette} : ${libelleLivraison}`,
     ...(modeLivraison === 'expedition' && adresseLivraison ? [adresseLivraison] : []),
     '',
     lienCommande,
     '',
-    `Si vous n'étiez pas connecté au moment d'ouvrir ce lien, on vous demandera`,
-    `de vous connecter avant d'afficher la commande.`,
+    tx.noteConnexion[0],
+    tx.noteConnexion[1],
     '',
-    `Politique de confidentialité : ${origine}/fr${ROUTES.politiqueConfidentialite}`,
-    `Conditions d'utilisation : ${origine}/fr${ROUTES.conditionsUtilisation}`,
+    `${tx.confidentialite} : ${origine}/${locale}${ROUTES.politiqueConfidentialite}`,
+    `${tx.conditions} : ${origine}/${locale}${ROUTES.conditionsUtilisation}`,
   ].join('\n')
 
   return { html, text }

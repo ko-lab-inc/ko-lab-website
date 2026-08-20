@@ -16,7 +16,7 @@ import { Link } from '@/i18n/navigation'
 import { routing, type AppLocale } from '@/i18n/routing'
 import { lireProduitsPublies } from '@/lib/produits'
 import { lireReglages } from '@/lib/reglages'
-import { ROUTES, routeProduit } from '@/lib/routes'
+import { alternatesLangues, ROUTES, routeProduit } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 import { origine } from '@/lib/utils/origine'
 
@@ -36,7 +36,7 @@ export const revalidate = 3600
 
 async function chargerProduit(locale: AppLocale, slug: string) {
   const t = await getTranslations({ locale, namespace: 'Boutique' })
-  const produits = await lireProduitsPublies()
+  const produits = await lireProduitsPublies(locale)
   const produit = produits.find((p) => p.slug === slug)
   if (!produit) return null
 
@@ -59,7 +59,9 @@ async function chargerProduit(locale: AppLocale, slug: string) {
  * dur qu'un produit ajouté en base ne pouvait jamais rejoindre.
  */
 export async function generateStaticParams() {
-  const produits = await lireProduitsPublies()
+  // Locale arbitraire : seuls les slugs comptent ici pour la liste des
+  // chemins à pré-générer, jamais nom/texte.
+  const produits = await lireProduitsPublies('fr')
   return routing.locales.flatMap((locale) =>
     produits.map((p) => ({ locale, slug: p.slug })),
   )
@@ -78,6 +80,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: produit.texte,
     alternates: {
       canonical: `/${locale}${routeProduit(slug)}`,
+      languages: alternatesLangues(routeProduit(slug)),
     },
   }
 }
@@ -92,7 +95,7 @@ export default async function FicheProduitPage({ params }: Props) {
   const format = await getFormatter({ locale })
 
   const reglages = await lireReglages()
-  const produits = await lireProduitsPublies()
+  const produits = await lireProduitsPublies(locale)
   const produit = produits.find((p) => p.slug === slug)
   if (!produit || (produit.categorie === 'conteneurs' && !reglages.solutionsModulaires)) notFound()
 

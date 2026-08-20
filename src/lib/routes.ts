@@ -79,3 +79,24 @@ export const ROUTES_CAPACITES = [
   { key: 'lab', href: ROUTES.lab },
   { key: 'equipements', href: ROUTES.equipements },
 ] as const
+
+/**
+ * hreflang pour une page RÉELLEMENT bilingue — Phase 9.
+ *
+ * ⚠️ Ne pas appeler sur une page dont le contenu anglais n'existe pas encore
+ * (copie du français en attendant sa traduction) : ça déclarerait à Google
+ * un « alternate » qui n'en est pas un. Voir sitemap.ts, ROUTES_BILINGUES,
+ * pour la liste à jour des pages concernées — les deux doivent rester en
+ * phase.
+ *
+ * `x-default` pointe sur le français : c'est la langue de référence du site
+ * (routing.ts, defaultLocale).
+ */
+export function alternatesLangues(chemin: string): Record<string, string> {
+  const suffixe = chemin === ROUTES.accueil ? '' : chemin
+  return {
+    fr: `/fr${suffixe}`,
+    en: `/en${suffixe}`,
+    'x-default': `/fr${suffixe}`,
+  }
+}

@@ -8,7 +8,7 @@ import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireReglages } from '@/lib/reglages'
 import { lireProduitsPublies } from '@/lib/produits'
-import { ROUTES } from '@/lib/routes'
+import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
 
@@ -40,6 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}${ROUTES.boutique}`,
+      languages: alternatesLangues(ROUTES.boutique),
     },
   }
 }
@@ -55,7 +56,7 @@ export default async function BoutiquePage({ params }: Props) {
   // Lu depuis produits_boutique (lib/produits.ts) — un produit créé et publié
   // depuis /admin/catalogue apparaît ici sans redéploiement.
   const reglages = await lireReglages()
-  const produits = await lireProduitsPublies()
+  const produits = await lireProduitsPublies(locale)
 
   // Le retrait se fait CÔTÉ SERVEUR : masquer en CSS aurait laissé les trois
   // conteneurs dans le HTML, donc lisibles par n'importe qui — ce qui revient

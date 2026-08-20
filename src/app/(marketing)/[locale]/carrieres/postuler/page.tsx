@@ -58,7 +58,7 @@ export default async function PostulerPage({ params, searchParams }: Props) {
    * repli qu'affiche la page publique — sinon ses boutons « Postuler »
    * mènent à un formulaire qui annonce « aucun poste ouvert ».
    */
-  const offres = await lireOffresPubliees()
+  const offres = await lireOffresPubliees(locale)
   const titres = offres
     ? offres.map((o) => o.titre)
     : await Promise.all(

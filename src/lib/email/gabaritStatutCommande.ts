@@ -24,6 +24,24 @@
  * de tableau conserve une hauteur précise en email sans dépendre du rendu de
  * texte d'un client à l'autre.
  * ---------------------------------------------------------------------------
+ *
+ * PHASE 9 — RESTE VOLONTAIREMENT FRANÇAIS, CONTRAIREMENT À gabaritCommande.ts
+ *
+ * gabaritCommande.ts est devenu bilingue parce que sa `locale` vient d'un
+ * champ caché posé par la page que le CLIENT avait sous les yeux au moment
+ * d'agir — un signal réel. Ici, `locale` (changerStatutCommande,
+ * admin/commandes/actions.ts) est la locale de la ROUTE ADMIN d'où l'équipe
+ * déclenche le changement de statut — toujours 'fr' aujourd'hui, l'admin
+ * restant hors périmètre Phase 9, mais rien ne l'empêcherait techniquement
+ * de devenir 'en' si un membre de l'équipe ouvrait /en/admin/... . Brancher
+ * ce gabarit sur cette valeur enverrait alors un courriel en anglais à un
+ * client qui a commandé en français (ou l'inverse) — un signal qui reflète
+ * qui a cliqué dans l'équipe, pas la langue dans laquelle le client a
+ * commandé. Cette langue n'est stockée nulle part (`commandes` n'a pas de
+ * colonne `locale`) : sans elle, ce gabarit ne peut pas être bilingue de
+ * façon fiable. Rester tout en français est le choix le plus honnête tant
+ * que ce manque n'est pas comblé — voir le rapport de Phase 9.
+ * ---------------------------------------------------------------------------
  */
 
 import { EMAILS } from '@/lib/constantes'

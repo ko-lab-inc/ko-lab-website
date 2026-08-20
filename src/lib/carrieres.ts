@@ -5,6 +5,8 @@ import { unstable_cache } from 'next/cache'
 import { createStaticClient } from '@/lib/supabase/static'
 import { TYPES_POSTE, type TypePoste } from '@/types'
 
+import type { AppLocale } from '@/i18n/routing'
+
 /**
  * Offres d'emploi publiées — lecture publique, mise en cache, avec repli.
  *
@@ -32,19 +34,18 @@ import { TYPES_POSTE, type TypePoste } from '@/types'
 
 export type PosteCarte = {
   id: string
-  titre: string
   /**
-   * Prête pour la Phase 9 (anglais confirmé), pas encore affichée : le site
-   * reste mono-langue jusque-là. `null` tant que titre_en n'est pas rempli
-   * en base pour ce poste — vrai pour la plupart aujourd'hui, voir le
-   * rapport de Phase 6.
-   *
-   * ⚠️ « Chef d'équipe terrain » (Logistique événementielle) a bien
-   * titre_en = 'Crew Leader', mais PAS description_en ni exigences_en —
-   * la fiche en doublon supprimée pendant la Phase 6 les avait, celle
-   * conservée non. À traduire avant d'activer l'anglais.
+   * Déjà résolu dans la langue demandée. Replie sur le français si
+   * titre_en/description_en/exigences_en sont vides pour ce poste — jamais
+   * une chaîne inventée (Phase 9 : trois postes sur neuf n'ont pas de titre
+   * anglais fourni par le brief, « Chauffeur-livreur », « Technicien 3D » et
+   * « Administration & coordination » — mieux vaut un titre français exact
+   * qu'un titre anglais deviné).
    */
-  titreEn: string | null
+  titre: string
+  /** RAW — toujours la valeur française de la base, jamais traduit : c'est
+   *  la clé que `photoPourDepartement` reconnaît. Utiliser un libellé
+   *  d'affichage séparé côté page pour le texte montré à l'écran. */
   departement: string
   type: TypePoste
   description: string
@@ -71,12 +72,14 @@ export const ETIQUETTE_CARRIERES = 'carrieres'
  */
 export const POSTES_REPLI = ['operateur', 'superviseur', 'chef_equipe'] as const
 
-async function lireDepuisBase(): Promise<PosteCarte[] | null> {
+async function lireDepuisBase(locale: AppLocale): Promise<PosteCarte[] | null> {
   try {
     const supabase = createStaticClient()
     const { data, error } = await supabase
       .from('postes_carrieres')
-      .select('id, titre_fr, titre_en, departement, type, description_fr, exigences_fr')
+      .select(
+        'id, titre_fr, titre_en, departement, type, description_fr, description_en, exigences_fr, exigences_en',
+      )
       .eq('actif', true)
       .order('ordre')
 
@@ -84,18 +87,27 @@ async function lireDepuisBase(): Promise<PosteCarte[] | null> {
 
     const valides = data
       .filter((p): p is typeof p & { type: TypePoste } => TYPES_POSTE.some((t) => t === p.type))
-      .map((p) => ({
-        id: p.id,
-        titre: p.titre_fr,
-        titreEn: p.titre_en,
-        departement: p.departement,
-        type: p.type,
-        description: p.description_fr ?? '',
-        exigences: (p.exigences_fr ?? '')
-          .split('\n')
-          .map((l) => l.trim())
-          .filter((l) => l !== ''),
-      }))
+      .map((p) => {
+        // Replie sur le français champ par champ, pas ligne par ligne : un
+        // poste peut avoir son titre traduit mais pas encore sa description
+        // (exactement le cas de « Chef d'équipe terrain » avant que la
+        // Phase 9 ne comble le trou laissé par la Phase 6).
+        const titre = (locale === 'en' ? p.titre_en : null) ?? p.titre_fr
+        const description = (locale === 'en' ? p.description_en : null) ?? p.description_fr ?? ''
+        const exigencesBrutes = (locale === 'en' ? p.exigences_en : null) ?? p.exigences_fr ?? ''
+
+        return {
+          id: p.id,
+          titre,
+          departement: p.departement,
+          type: p.type,
+          description,
+          exigences: exigencesBrutes
+            .split('\n')
+            .map((l) => l.trim())
+            .filter((l) => l !== ''),
+        }
+      })
 
     return valides.length > 0 ? valides : null
   } catch {
@@ -108,6 +120,10 @@ async function lireDepuisBase(): Promise<PosteCarte[] | null> {
 /**
  * ⚠️ Ne JAMAIS appeler depuis un composant client — le module importe
  * `server-only`, l'erreur arrive à la compilation plutôt qu'en production.
+ *
+ * `locale` fait partie de la clé de cache : `unstable_cache` incorpore les
+ * arguments d'appel en plus de `keyParts`, donc /fr et /en ont chacun leur
+ * entrée — jamais le français figé dans le cache anglais ou l'inverse.
  */
 export const lireOffresPubliees = unstable_cache(lireDepuisBase, ['offres-publiees'], {
   tags: [ETIQUETTE_CARRIERES],

@@ -1,9 +1,11 @@
 'use server'
 
+import { hasLocale } from 'next-intl'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
+import { routing } from '@/i18n/routing'
 import { EMAILS } from '@/lib/constantes'
 import { gabaritConfirmationCommande } from '@/lib/email/gabaritCommande'
 import { lireProduitsPublies } from '@/lib/produits'
@@ -44,7 +46,8 @@ export async function modifierCommande(
   _precedent: EtatModification,
   donnees: FormData,
 ): Promise<EtatModification> {
-  const locale = String(donnees.get('locale') ?? 'fr')
+  const localeBrute = String(donnees.get('locale') ?? 'fr')
+  const locale = hasLocale(routing.locales, localeBrute) ? localeBrute : 'fr'
   const id = String(donnees.get('id') ?? '')
   if (!estUuid(id)) return { erreur: 'donnees' }
 
@@ -127,7 +130,11 @@ export async function modifierCommande(
     return { erreur: 'donnees' }
   }
 
-  const catalogue = await lireProduitsPublies()
+  // Server Action : pas de `locale` de route disponible ici. 'fr' correspond
+  // à l'état actuel du parcours commande (priorité e de la Phase 9, pas
+  // encore traduit) — nom_produit est stocké tel quel en base, jamais
+  // affiché traduit tant que ce flux n'est pas dans le périmètre.
+  const catalogue = await lireProduitsPublies('fr')
   const parSlug = new Map(catalogue.map((p) => [p.slug, p]))
 
   const lignesValidees = analyse.data.flatMap((l) => {
@@ -207,6 +214,7 @@ export async function modifierCommande(
       const lienCommande = `${origine()}/${locale}${routeCommande(id)}`
 
       const { html, text } = gabaritConfirmationCommande({
+        locale,
         numero: commande.numero,
         creeLe: new Date(commande.created_at),
         fenetreExpireLe: new Date(commande.fenetre_modification_expire_at),
@@ -230,7 +238,12 @@ export async function modifierCommande(
         // (ko-lab.ca), pas dans une adresse jamais consultée. Voir lib/constantes.ts.
         replyTo: EMAILS.info,
         to: user.email,
-        subject: `Commande mise à jour — ${commande.numero}`,
+        // Sujet bilingue — voir la note d'en-tête de gabaritCommande.ts
+        // (PHASE 9 — BILINGUE) : proposition, en attente de Christian.
+        subject:
+          locale === 'en'
+            ? `Order Updated — ${commande.numero}`
+            : `Commande mise à jour — ${commande.numero}`,
         html,
         text,
       })

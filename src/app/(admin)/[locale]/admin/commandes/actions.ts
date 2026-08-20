@@ -115,7 +115,9 @@ async function notifierClient({
     // /compte/commandes/[id] : lignes_commande n'a jamais stocké d'image.
     const [{ data: lignesCommande }, catalogue] = await Promise.all([
       supabase.from('lignes_commande').select('nom_produit, categorie, quantite, produit_id').eq('commande_id', id),
-      lireProduitsPublies(),
+      // Admin reste francophone (hors périmètre Phase 9) — seule .src (image)
+      // est lue plus bas, jamais nom/texte.
+      lireProduitsPublies('fr'),
     ])
     const catalogueParId = new Map(catalogue.map((p) => [p.id, p]))
     const lignes = (lignesCommande ?? []).map((l) => ({

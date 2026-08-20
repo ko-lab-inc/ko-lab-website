@@ -39,6 +39,7 @@ const LIGNES = [
 describe('gabaritConfirmationCommande', () => {
   it('inclut le numéro en titre, la date de réception, le rappel 48h, les produits, le total et le lien — jamais un <script>', () => {
     const { html, text } = gabaritConfirmationCommande({
+      locale: 'fr',
       numero: 'CMD-2026-0099',
       creeLe: CREE_LE,
       fenetreExpireLe: FENETRE_EXPIRE_LE,
@@ -95,6 +96,7 @@ describe('gabaritConfirmationCommande', () => {
 
   it('mode ramassage : aucune adresse affichée', () => {
     const { html } = gabaritConfirmationCommande({
+      locale: 'fr',
       numero: 'CMD-2026-0100',
       creeLe: CREE_LE,
       fenetreExpireLe: FENETRE_EXPIRE_LE,
@@ -111,6 +113,7 @@ describe('gabaritConfirmationCommande', () => {
 
   it('échappe les caractères HTML dans un nom de produit', () => {
     const { html } = gabaritConfirmationCommande({
+      locale: 'fr',
       numero: 'CMD-2026-0101',
       creeLe: CREE_LE,
       fenetreExpireLe: FENETRE_EXPIRE_LE,
@@ -123,5 +126,38 @@ describe('gabaritConfirmationCommande', () => {
 
     expect(html).not.toContain('<b>Injecté</b>')
     expect(html).toContain('&lt;b&gt;Injecté&lt;/b&gt; &amp; Cie')
+  })
+
+  // Phase 9 — le gabarit devient bilingue (voir la note d'en-tête du fichier
+  // source) : preuve que la branche anglaise rend vraiment autre chose que
+  // la française, pas seulement que le paramètre est accepté.
+  it('locale "en" : contenu anglais, lang="en", liens légaux vers /en/, dates en anglais', () => {
+    const { html, text } = gabaritConfirmationCommande({
+      locale: 'en',
+      numero: 'CMD-2026-0102',
+      creeLe: CREE_LE,
+      fenetreExpireLe: FENETRE_EXPIRE_LE,
+      lignes: [LIGNES[0]!, LIGNES[2]!],
+      modeLivraison: 'expedition',
+      adresseLivraison: '123 rue Test, Gatineau (Québec) J8X 1A1',
+      lienCommande: 'https://ko-lab-center.ca/en/compte/commandes/abc-123',
+      origine: 'https://ko-lab-center.ca',
+    })
+
+    expect(html).toContain('<html lang="en">')
+    expect(html).toContain('View My Order')
+    expect(html).toContain('Shipping')
+    expect(html).toContain('On request')
+    expect(html).toContain('Indicative total')
+    expect(html).toContain('/en/politique-confidentialite')
+    expect(html).toContain('/en/conditions-utilisation')
+    // Pas de résidu français — le gabarit ne doit pas mélanger les deux langues.
+    expect(html).not.toContain('Voir ma commande')
+    expect(html).not.toContain('Sur demande')
+    expect(html).not.toContain('/fr/politique-confidentialite')
+
+    const dateAnglaise = new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium' }).format(CREE_LE)
+    expect(html).toContain(dateAnglaise)
+    expect(text).toContain('Order CMD-2026-0102')
   })
 })

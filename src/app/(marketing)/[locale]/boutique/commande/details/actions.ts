@@ -1,7 +1,9 @@
 'use server'
 
+import { hasLocale } from 'next-intl'
 import { headers } from 'next/headers'
 
+import { routing } from '@/i18n/routing'
 import { EMAILS } from '@/lib/constantes'
 import { gabaritConfirmationCommande } from '@/lib/email/gabaritCommande'
 import { lireProduitsPublies } from '@/lib/produits'
@@ -81,7 +83,8 @@ export async function creerCommande(
   _precedent: EtatCommande,
   donnees: FormData,
 ): Promise<EtatCommande> {
-  const locale = String(donnees.get('locale') ?? 'fr')
+  const localeBrute = String(donnees.get('locale') ?? 'fr')
+  const locale = hasLocale(routing.locales, localeBrute) ? localeBrute : 'fr'
 
   // Honeypot avant tout traitement — même motif que postuler/actions.ts : on
   // répond « succès » sans rien écrire, pour ne pas apprendre au robot qu'il
@@ -141,7 +144,10 @@ export async function creerCommande(
   // prétend. Un slug retiré ou dépublié depuis l'ajout au panier est
   // simplement écarté, pas de blocage sur le reste de la commande : c'est la
   // même tolérance que PagePanier applique déjà (`fiches[a.slug]?.prix`).
-  const catalogue = await lireProduitsPublies()
+  // Server Action : pas de `locale` de route disponible ici — même choix que
+  // compte/commandes/[id]/actions.ts, priorité e de la Phase 9, pas encore
+  // traduite.
+  const catalogue = await lireProduitsPublies('fr')
   const parSlug = new Map(catalogue.map((p) => [p.slug, p]))
 
   const lignesValidees = analyse.data.lignes.flatMap((l) => {
@@ -264,6 +270,7 @@ export async function creerCommande(
         // Gabarit illustré (produits, images, prix, politique de 48h) —
         // demande de Christian après le premier courriel en texte brut.
         const { html, text } = gabaritConfirmationCommande({
+          locale,
           numero: data.numero,
           creeLe: new Date(data.created_at),
           fenetreExpireLe: new Date(data.fenetre_modification_expire_at),
@@ -288,7 +295,13 @@ export async function creerCommande(
           // Voir lib/constantes.ts.
           replyTo: EMAILS.info,
           to: email,
-          subject: `Confirmation de commande — ${data.numero}`,
+          // Sujet bilingue — même distinction que le reste du gabarit (voir
+          // sa note d'en-tête, PHASE 9 — BILINGUE) : proposition, en attente
+          // de validation de Christian.
+          subject:
+            locale === 'en'
+              ? `Order Confirmation — ${data.numero}`
+              : `Confirmation de commande — ${data.numero}`,
           html,
           text,
         })

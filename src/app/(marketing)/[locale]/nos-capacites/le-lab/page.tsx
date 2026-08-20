@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { PageCapacite } from '@/components/sections/PageCapacite'
 import { routing } from '@/i18n/routing'
 import { IMAGES } from '@/lib/images'
-import { ROUTES } from '@/lib/routes'
+import { alternatesLangues, ROUTES } from '@/lib/routes'
 import { lireVideosPubliees } from '@/lib/videos'
 
 import type { Metadata } from 'next'
@@ -25,6 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}${ROUTES.lab}`,
+      languages: alternatesLangues(ROUTES.lab),
     },
   }
 }

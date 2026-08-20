@@ -5,6 +5,8 @@ import { unstable_cache } from 'next/cache'
 import { createStaticClient } from '@/lib/supabase/static'
 import { CATEGORIES_REALISATION, type CategorieRealisation, type Realisation } from '@/types'
 
+import type { AppLocale } from '@/i18n/routing'
+
 /**
  * Réalisations publiées — lecture publique, mise en cache, avec repli.
  *
@@ -40,10 +42,17 @@ export type ImageRealisation = { url: string; alt: string; ordre: number }
 
 export type RealisationPubliee = Omit<
   Realisation,
-  'categorie' | 'images' | 'titre_en' | 'description_en'
+  'categorie' | 'images' | 'titre_fr' | 'titre_en' | 'description_fr' | 'description_en'
 > & {
   categorie: CategorieRealisation
   images: ImageRealisation[]
+  /** Déjà résolu dans la langue demandée — replie sur le français si
+   *  titre_en/description_en sont vides pour cette réalisation (Phase 9,
+   *  même principe que postes_carrieres et produits_boutique). Jamais
+   *  suffixé _fr : contrairement à la colonne source, ce champ peut porter
+   *  de l'anglais. */
+  titre: string
+  description: string | null
 }
 
 /** Étiquette de cache — partagée avec les actions d'administration. */
@@ -78,12 +87,14 @@ export function validerImages(brut: unknown): ImageRealisation[] {
     .sort((a, b) => a.ordre - b.ordre)
 }
 
-async function lireDepuisBase(): Promise<RealisationPubliee[] | null> {
+async function lireDepuisBase(locale: AppLocale): Promise<RealisationPubliee[] | null> {
   try {
     const supabase = createStaticClient()
     const { data, error } = await supabase
       .from('realisations')
-      .select('id, slug, titre_fr, description_fr, categorie, tags, images, publie, ordre, created_at, updated_at')
+      .select(
+        'id, slug, titre_fr, titre_en, description_fr, description_en, categorie, tags, images, publie, ordre, created_at, updated_at',
+      )
       .eq('publie', true)
       .order('ordre')
 
@@ -91,7 +102,16 @@ async function lireDepuisBase(): Promise<RealisationPubliee[] | null> {
 
     const valides = data
       .filter((r) => CATEGORIES_REALISATION.some((c) => c === r.categorie))
-      .map((r) => ({ ...r, categorie: r.categorie as CategorieRealisation, images: validerImages(r.images) }))
+      .map((r) => {
+        const { titre_fr, titre_en, description_fr, description_en, ...reste } = r
+        return {
+          ...reste,
+          categorie: r.categorie as CategorieRealisation,
+          images: validerImages(r.images),
+          titre: (locale === 'en' ? titre_en : null) ?? titre_fr,
+          description: (locale === 'en' ? description_en : null) ?? description_fr,
+        }
+      })
       // Une réalisation sans la moindre photo n'a rien à montrer — elle
       // n'apparaîtrait sur la carte qu'en rectangle vide.
       .filter((r) => r.images.length > 0)
@@ -105,6 +125,9 @@ async function lireDepuisBase(): Promise<RealisationPubliee[] | null> {
 }
 
 /**
+ * `locale` fait partie de la clé de cache — même principe que
+ * lireOffresPubliees et lireProduitsPublies.
+ *
  * ⚠️ Ne JAMAIS appeler depuis un composant client — le module importe
  * `server-only`, l'erreur arrive à la compilation plutôt qu'en production.
  */

@@ -9,7 +9,7 @@ import {
 import { Reveal } from '@/components/ui/Reveal'
 import { routing } from '@/i18n/routing'
 import { lireRealisationsPubliees, type RealisationPubliee } from '@/lib/realisations'
-import { ROUTES } from '@/lib/routes'
+import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
 
@@ -28,6 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}${ROUTES.realisations}`,
+      languages: alternatesLangues(ROUTES.realisations),
     },
   }
 }
@@ -50,7 +51,7 @@ export default async function RealisationsPage({ params }: Props) {
    * CLAUDE.md. Cet état s'efface de lui-même dès que Christian publie une
    * première réalisation réelle, sans changement de code.
    */
-  const publiees = await lireRealisationsPubliees()
+  const publiees = await lireRealisationsPubliees(locale)
 
   const libellesCategories = {
     terrain: t('filtre_terrain'),
@@ -137,8 +138,8 @@ function versCarte(
   return {
     cle: r.slug,
     categorie: r.categorie,
-    titre: r.titre_fr,
-    description: r.description_fr ?? '',
+    titre: r.titre,
+    description: r.description ?? '',
     tag: libellesCategories[r.categorie] ?? r.categorie,
     // `premiere` est garantie par `lireRealisationsPubliees()`, qui écarte
     // déjà toute réalisation sans la moindre image.

@@ -17,6 +17,7 @@ import { OperationsTerrain } from '@/components/sections/OperationsTerrain'
 import { Realisations } from '@/components/sections/Realisations'
 import { IntroAnimee } from '@/components/ui/IntroAnimee'
 import { routing } from '@/i18n/routing'
+import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
 
@@ -47,11 +48,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}`,
+      languages: alternatesLangues(ROUTES.accueil),
     },
     openGraph: {
       type: 'website',
       siteName: 'KO-LAB Inc.',
-      locale: 'fr_CA',
+      locale: locale === 'en' ? 'en_CA' : 'fr_CA',
       url: `/${locale}`,
       title: t('title'),
       description: t('description'),

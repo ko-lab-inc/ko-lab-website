@@ -13,21 +13,29 @@ const siteUrl = DOMAINE
  * pages de connexion et des tableaux vides indexés n'apportent rien et
  * diluent le budget de crawl des vraies pages de contenu.
  */
+// Phase 9 : chaque chemin utilitaire existe aussi sous /en/... (routing.ts) —
+// même raison de le bloquer dans les deux langues, les URLs anglaises ne sont
+// pas traduites (routes.ts reste dans sa forme française, seul le préfixe de
+// locale change).
+const CHEMINS_UTILITAIRES = [
+  '/admin',
+  '/compte',
+  '/connexion',
+  '/inscription',
+  '/mot-de-passe-oublie',
+  '/mot-de-passe',
+  '/boutique/commande',
+  '/boutique/demande',
+]
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: {
       userAgent: '*',
       allow: '/',
       disallow: [
-        '/fr/admin',
-        '/fr/compte',
         '/api',
-        '/fr/connexion',
-        '/fr/inscription',
-        '/fr/mot-de-passe-oublie',
-        '/fr/mot-de-passe',
-        '/fr/boutique/commande',
-        '/fr/boutique/demande',
+        ...CHEMINS_UTILITAIRES.flatMap((chemin) => [`/fr${chemin}`, `/en${chemin}`]),
       ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,

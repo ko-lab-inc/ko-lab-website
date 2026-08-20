@@ -15,13 +15,9 @@ import type { MetadataRoute } from 'next'
  */
 const siteUrl = DOMAINE
 
-/**
- * Site francophone uniquement (routing.ts) : toutes les URL publiques
- * partagent le préfixe `/fr`. `/` n'a pas de forme locale-préfixée séparée à
- * lister — `ROUTES.accueil` ('/') devient simplement `/fr`.
- */
-function url(chemin: string): string {
-  return `${siteUrl}/fr${chemin === ROUTES.accueil ? '' : chemin}`
+/** `ROUTES.accueil` ('/') devient `/fr` ou `/en` sans segment de chemin en plus. */
+function url(chemin: string, locale: 'fr' | 'en'): string {
+  return `${siteUrl}/${locale}${chemin === ROUTES.accueil ? '' : chemin}`
 }
 
 /**
@@ -44,20 +40,71 @@ const ROUTES_STATIQUES = [
   ROUTES.conditionsUtilisation,
 ]
 
+/**
+ * Phase 9 : SEULES ces routes ont un contenu anglais réel aujourd'hui. Leur
+ * donner un hreflang vers /en/... est vrai. En donner un à une page dont
+ * /en/... sert encore le texte français serait un mensonge de référencement
+ * — Google indexerait un « alternate » qui n'en est pas un. Cette liste
+ * s'allonge au fur et à mesure que chaque page est réellement traduite —
+ * restent hors de cette liste (checkpoint 2, pas encore fait) : pages
+ * légales, Panier, Commande, Compte, Inscription, Connexion, Mot de passe,
+ * Aide.
+ */
+const ROUTES_BILINGUES = new Set<string>([
+  ROUTES.accueil,
+  ROUTES.capacites,
+  ...ROUTES_CAPACITES.map((r) => r.href),
+  // Phase 9, checkpoint 2 — priorité a) et b).
+  ROUTES.carrieres,
+  ROUTES.apropos,
+  ROUTES.contact,
+  ROUTES.location,
+  // Priorité c).
+  ROUTES.realisations,
+  ROUTES.boutique,
+  // Priorité d).
+  ROUTES.politiqueConfidentialite,
+  ROUTES.conditionsUtilisation,
+])
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Une fiche produit par produit PUBLIÉ — un produit incomplet ou hors
   // ligne ne doit pas apparaître dans le sitemap, même règle que sur la page
   // boutique elle-même (lireProduitsPublies filtre déjà `publie = true`).
-  const produits = await lireProduitsPublies()
+  // Locale arbitraire : seul p.slug est utilisé plus bas, jamais nom/texte.
+  const produits = await lireProduitsPublies('fr')
 
-  return [
-    ...ROUTES_STATIQUES.map((chemin) => ({
-      url: url(chemin),
-      lastModified: new Date(),
-    })),
-    ...produits.map((p) => ({
-      url: url(`${ROUTES.boutique}/${p.slug}`),
-      lastModified: new Date(),
-    })),
-  ]
+  const pagesStatiques: MetadataRoute.Sitemap = ROUTES_STATIQUES.map((chemin) => {
+    if (ROUTES_BILINGUES.has(chemin)) {
+      return {
+        url: url(chemin, 'fr'),
+        lastModified: new Date(),
+        alternates: {
+          languages: {
+            fr: url(chemin, 'fr'),
+            en: url(chemin, 'en'),
+          },
+        },
+      }
+    }
+    // Pas encore traduite : une seule entrée FR, pas de variante /en tant
+    // que son contenu réel n'existe pas.
+    return { url: url(chemin, 'fr'), lastModified: new Date() }
+  })
+
+  // Fiches produit : les treize produits publiés ont tous nom_en/description_en
+  // remplis (vérifié en direct, un seul manquait et a été traduit pendant
+  // cette phase) — hreflang vrai pour chacune.
+  const pagesProduits: MetadataRoute.Sitemap = produits.map((p) => ({
+    url: url(`${ROUTES.boutique}/${p.slug}`, 'fr'),
+    lastModified: new Date(),
+    alternates: {
+      languages: {
+        fr: url(`${ROUTES.boutique}/${p.slug}`, 'fr'),
+        en: url(`${ROUTES.boutique}/${p.slug}`, 'en'),
+      },
+    },
+  }))
+
+  return [...pagesStatiques, ...pagesProduits]
 }

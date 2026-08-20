@@ -115,11 +115,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}`,
+      // hreflang — l'accueil est bilingue réel depuis la Phase 9, donc vrai
+      // dans les deux sens. `x-default` pointe sur le français : c'est la
+      // langue de référence du site (routing.ts).
+      languages: {
+        fr: '/fr',
+        en: '/en',
+        'x-default': '/fr',
+      },
     },
     openGraph: {
       type: 'website',
       siteName: 'KO-LAB Inc.',
-      locale: 'fr_CA',
+      // Locale de la page courante, pas figée en français : un visiteur qui
+      // partage /en/... sur les réseaux doit voir l'anglais confirmé dans
+      // les métadonnées de la carte de partage.
+      locale: locale === 'en' ? 'en_CA' : 'fr_CA',
       title: t('title'),
       description: t('description'),
     },
@@ -251,7 +262,12 @@ export default async function MarketingLayout({ children, params }: Props) {
     '@type': 'Organization',
     name: 'KO-LAB Inc.',
     url: siteUrl,
-    slogan: "De l'idée au terrain.",
+    // Décision de marque du 19 août 2026 : « From idea to ground. » — les
+    // deux langues se répondent par « ground »/« terrain », plus une
+    // proposition. Jusqu'ici ce slogan restait toujours en français, même
+    // sur /en — Phase 9 l'a rendu sensible à la locale, comme le reste du
+    // JSON-LD n'en avait pas besoin avant que l'anglais n'existe.
+    slogan: locale === 'en' ? 'From idea to ground.' : "De l'idée au terrain.",
     email: reglages.contactCourriel,
     ...(reglages.contactTelephone ? { telephone: reglages.contactTelephone } : {}),
     areaServed: reglages.contactRegion,

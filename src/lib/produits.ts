@@ -7,6 +7,7 @@ import { statutSuggere } from '@/lib/stock'
 import { premiereImage } from '@/lib/utils/premiereImage'
 
 import type { IconeProps } from '@/components/ui/Icones'
+import type { AppLocale } from '@/i18n/routing'
 import type { ComponentType } from 'react'
 
 /**
@@ -161,7 +162,7 @@ function validerCouleurs(brut: unknown): VarianteCouleur[] {
     .filter((c) => c.nom !== '' && c.echantillon !== '' && c.src !== '')
 }
 
-async function lireDepuisBase(): Promise<ProduitCarte[]> {
+async function lireDepuisBase(locale: AppLocale): Promise<ProduitCarte[]> {
   // Lu une fois par appel plutôt que par carte : NEXT_PUBLIC_* est figé au
   // build, le refaire pour chaque ligne n'apporterait rien.
   const hoteStockage = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? '').replace(/\/+$/, '')
@@ -171,7 +172,7 @@ async function lireDepuisBase(): Promise<ProduitCarte[]> {
     const { data, error } = await supabase
       .from('produits_boutique')
       .select(
-        'id, slug, categorie, nom_fr, description_fr, prix, images, cadrage, couleurs, quantite, statut_stock',
+        'id, slug, categorie, nom_fr, nom_en, description_fr, description_en, prix, images, cadrage, couleurs, quantite, statut_stock',
       )
       .eq('publie', true)
       .order('ordre')
@@ -183,12 +184,20 @@ async function lireDepuisBase(): Promise<ProduitCarte[]> {
       .map((p) => {
         const enRupture = statutSuggere(p.statut_stock, p.quantite) === 'rupture'
 
+        // Replie sur le français champ par champ — un produit peut avoir son
+        // nom traduit sans sa description, ou l'inverse (Phase 9 : un seul
+        // des treize produits publiés manquait les deux, comblé pendant
+        // cette phase, mais le repli reste utile pour tout futur produit
+        // ajouté sans sa traduction anglaise).
+        const nom = (locale === 'en' ? p.nom_en : null) ?? p.nom_fr
+        const texte = (locale === 'en' ? p.description_en : null) ?? p.description_fr ?? ''
+
         return {
           id: p.id,
           slug: p.slug,
           categorie: p.categorie,
-          nom: p.nom_fr,
-          texte: p.description_fr ?? '',
+          nom,
+          texte,
           src: premiereImage(p.images, hoteStockage),
           cadrage: p.cadrage === 'cover' ? ('cover' as const) : ('contain' as const),
           couleurs: validerCouleurs(p.couleurs),
@@ -208,6 +217,10 @@ async function lireDepuisBase(): Promise<ProduitCarte[]> {
  * Produits publiés, triés par `ordre`. Mis en cache, invalidé par les actions
  * de /admin/catalogue (création, édition, publication, suppression).
  *
+ * `locale` fait partie de la clé de cache — `unstable_cache` incorpore les
+ * arguments d'appel, /fr et /en ont donc chacun leur entrée (même principe
+ * que lireOffresPubliees, lib/carrieres.ts).
+ *
  * ⚠️ Ne JAMAIS appeler depuis un composant client — le module importe
  * `server-only`, l'erreur arrive à la compilation plutôt qu'en production.
  */
@@ -224,8 +237,10 @@ export const lireProduitsPublies = unstable_cache(lireDepuisBase, ['produits-pub
  * semaines montre donc le prix et le visuel d'aujourd'hui, pas ceux figés au
  * moment de l'ajout.
  */
-export async function lireFichesPanier(): Promise<Record<string, FichePanier>> {
-  const produits = await lireProduitsPublies()
+export async function lireFichesPanier(
+  locale: AppLocale,
+): Promise<Record<string, FichePanier>> {
+  const produits = await lireProduitsPublies(locale)
   return Object.fromEntries(
     produits.map((p) => [
       p.slug,

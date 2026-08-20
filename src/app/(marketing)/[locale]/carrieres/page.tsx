@@ -11,7 +11,7 @@ import { routing } from '@/i18n/routing'
 import { lireOffresPubliees, photoPourDepartement, POSTES_REPLI } from '@/lib/carrieres'
 import { EMAILS } from '@/lib/constantes'
 import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
-import { ROUTES } from '@/lib/routes'
+import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
 
@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}${ROUTES.carrieres}`,
+      languages: alternatesLangues(ROUTES.carrieres),
     },
   }
 }
@@ -55,7 +56,8 @@ export default async function CarrieresPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Carrieres')
-  const publiees = await lireOffresPubliees()
+  const tCommun = await getTranslations('Commun')
+  const publiees = await lireOffresPubliees(locale)
 
   const libellesType: Record<string, string> = {
     'temps-plein': t('type_temps_plein'),
@@ -65,13 +67,31 @@ export default async function CarrieresPage({ params }: Props) {
     etudiant: t('type_etudiant'),
   }
 
+  /**
+   * Libellé d'AFFICHAGE du département — jamais la valeur passée à
+   * `photoPourDepartement`, qui doit rester la chaîne française brute de la
+   * base (voir PosteCarte.departement dans lib/carrieres.ts). Séparer les
+   * deux évite qu'une traduction ici ne casse le rattachement des photos.
+   */
+  const libellesDepartement: Record<string, string> =
+    locale === 'en'
+      ? {
+          Opérations: 'Operations',
+          'Logistique événementielle': 'Event Logistics',
+          Installation: 'Installation',
+          'Transport & logistique': 'Transport & Logistics',
+          Atelier: 'Workshop',
+          'Lab créatif': 'Creative Lab',
+          'Administration & coordination': 'Administration & Coordination',
+          Bureau: 'Office',
+        }
+      : {}
+
   let postes: {
     cle: string
     numero: string
     titre: string
-    /** Prête pour la Phase 9, pas encore affichée — voir lib/carrieres.ts. */
-    titreEn: string | null
-    departement: string
+    departementAffiche: string
     type: string
     description: string
     exigences: string[]
@@ -83,8 +103,7 @@ export default async function CarrieresPage({ params }: Props) {
       cle: p.id,
       numero: String(i + 1).padStart(2, '0'),
       titre: p.titre,
-      titreEn: p.titreEn,
-      departement: p.departement,
+      departementAffiche: libellesDepartement[p.departement] ?? p.departement,
       type: libellesType[p.type] ?? p.type,
       description: p.description,
       exigences: p.exigences,
@@ -104,8 +123,7 @@ export default async function CarrieresPage({ params }: Props) {
       cle: POSTES_REPLI[i] ?? String(i),
       numero: String(i + 1).padStart(2, '0'),
       titre: tp('titre'),
-      titreEn: null,
-      departement: tp('departement'),
+      departementAffiche: tp('departement'),
       type: t('type_temps_plein'),
       description: tp('description'),
       exigences: [tp('exigence_1'), tp('exigence_2'), tp('exigence_3'), tp('exigence_4')],
@@ -196,6 +214,7 @@ export default async function CarrieresPage({ params }: Props) {
                         <PhotoPlaceholder
                           ratio="aspect-[4/3]"
                           className="w-full max-w-[220px] rounded-lg"
+                          label={tCommun('photo_placeholder')}
                         />
                       )}
 
@@ -203,7 +222,7 @@ export default async function CarrieresPage({ params }: Props) {
                         <span className="font-serif text-[28px] font-light leading-none text-ko-cream2">
                           {poste.numero}
                         </span>
-                        <span className="label-mono">{poste.departement}</span>
+                        <span className="label-mono">{poste.departementAffiche}</span>
                       </div>
 
                       <h2 className="ko-h2 mt-4 max-w-[16ch] text-ko-ink">{poste.titre}</h2>

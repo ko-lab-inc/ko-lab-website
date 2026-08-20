@@ -55,7 +55,7 @@ export default async function DemandePrixPage({ params }: Props) {
   // Prix ET visuel, relus depuis la même source que la boutique (jamais
   // stockés dans le panier lui-même) : le récapitulatif reflète ainsi toujours
   // ce qui est affiché aujourd'hui, pas ce qui l'était le jour de l'ajout.
-  const fiches = await lireFichesPanier()
+  const fiches = await lireFichesPanier(locale)
 
   return (
     <>

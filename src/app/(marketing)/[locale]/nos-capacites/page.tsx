@@ -8,7 +8,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { CADRAGES, FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD, IMAGES } from '@/lib/images'
-import { ROUTES } from '@/lib/routes'
+import { alternatesLangues, ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
 import type { Metadata } from 'next'
@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: t('description'),
     alternates: {
       canonical: `/${locale}${ROUTES.capacites}`,
+      languages: alternatesLangues(ROUTES.capacites),
     },
   }
 }
