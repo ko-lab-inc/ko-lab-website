@@ -139,36 +139,61 @@ export default async function CarrieresPage({ params }: Props) {
           pas à faire défiler. */}
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
         <div className="mx-auto max-w-container px-6 lg:px-12">
-          <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
-          <h1 className="ko-display mt-6 max-w-[18ch] text-ko-ink">{t('banniere_titre')}</h1>
-          <p className="mt-7 max-w-[56ch] text-base leading-relaxed text-ko-muted lg:text-lg">
-            {t('banniere_phrase')}
-          </p>
+          {/* Photo ajoutée le 20 août 2026 (revue visuelle, point 5) : la
+              bannière n'avait aucun visuel, un vide remarqué sur une page de
+              conversion. operationsCrew (équipe KO-LAB, gilets orange) —
+              même gabarit texte-gauche/photo-droite qu'Installations.tsx
+              (section 5, accueil). N'apparaît plus ailleurs sur /carrieres
+              depuis le retrait de son usage par département (voir
+              lib/carrieres.ts) : aucune répétition sur cette page. */}
+          <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-20">
+            <div>
+              <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
+              <h1 className="ko-display mt-6 max-w-[18ch] text-ko-ink">{t('banniere_titre')}</h1>
+              <p className="mt-7 max-w-[56ch] text-base leading-relaxed text-ko-muted lg:text-lg">
+                {t('banniere_phrase')}
+              </p>
 
-          {/* Canal principal (formulaire interne) en avant, canal externe
-              (Google Form, temporaire — Phase 6.2) nettement plus discret :
-              un bouton plein contre un lien souligné, pas deux boutons de
-              même poids. Le lien externe passe par /api/… pour rester
-              traçable (voir cette route pour pourquoi ?utm_source= seul ne
-              suffit pas). */}
-          <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-            <Link href={ROUTES.carrieresPostuler} className={buttonVariants({ variant: 'primary' })}>
-              {t('cta_principal')}
-              <span aria-hidden="true">→</span>
-            </Link>
+              {/* Canal principal (formulaire interne) en avant, canal externe
+                  (Google Form, temporaire — Phase 6.2) nettement plus discret :
+                  un bouton plein contre un lien souligné, pas deux boutons de
+                  même poids. Le lien externe passe par /api/… pour rester
+                  traçable (voir cette route pour pourquoi ?utm_source= seul ne
+                  suffit pas). */}
+              <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+                <Link href={ROUTES.carrieresPostuler} className={buttonVariants({ variant: 'primary' })}>
+                  {t('cta_principal')}
+                  <span aria-hidden="true">→</span>
+                </Link>
 
-            <a
-              href="/api/carrieres/candidature-externe"
-              className={buttonVariants({ variant: 'text' })}
-            >
-              {t('cta_secondaire')}
-              <span aria-hidden="true">→</span>
-            </a>
+                <a
+                  href="/api/carrieres/candidature-externe"
+                  className={buttonVariants({ variant: 'text' })}
+                >
+                  {t('cta_secondaire')}
+                  <span aria-hidden="true">→</span>
+                </a>
+              </div>
+
+              <p className="mt-12 max-w-[62ch] border-t border-ko-line pt-8 text-sm leading-relaxed text-ko-muted lg:text-base">
+                {t('intro')}
+              </p>
+            </div>
+
+            <Reveal>
+              <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
+                <Image
+                  src={IMAGES.operationsCrew}
+                  alt=""
+                  fill
+                  quality={80}
+                  sizes="(max-width: 1024px) 100vw, 45vw"
+                  style={FILTRE_TERRAIN}
+                  className="object-cover object-center"
+                />
+              </div>
+            </Reveal>
           </div>
-
-          <p className="mt-12 max-w-[62ch] border-t border-ko-line pt-8 text-sm leading-relaxed text-ko-muted lg:text-base">
-            {t('intro')}
-          </p>
         </div>
       </section>
 

@@ -1,12 +1,6 @@
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
-import {
-  IconeCamion,
-  IconeEquipe,
-  IconeGrue,
-  IconePuce,
-} from '@/components/ui/Icones'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { CADRAGES, FILTRE_TERRAIN, IMAGES } from '@/lib/images'
@@ -22,6 +16,12 @@ import { ROUTES } from '@/lib/routes'
  * Grille 2 colonnes en desktop avec gap franc : les images portent désormais
  * la charge visuelle, l'effet « joint » à 2px les aurait collées les unes aux
  * autres sans respiration.
+ *
+ * Icônes retirées le 20 août 2026 (revue visuelle, point 6) : chacune ne
+ * faisait que répéter en pictogramme ce que le titre juste en dessous dit
+ * déjà en mots (Équipe → « Déployer », Grue → « Installer »...) — aucune
+ * information propre, contrairement à celles d'Ecosysteme.tsx qui distinguent
+ * quatre entités sans autre repère visuel.
  */
 export async function Besoins() {
   const t = await getTranslations('Home.besoins')
@@ -41,7 +41,6 @@ export async function Besoins() {
       cle: 'deployer',
       numero: '01',
       href: ROUTES.operations,
-      Icone: IconeEquipe,
       src: IMAGES.besoinDeployer,
       cadrage: CADRAGES.besoinDeployer,
       style: FILTRE_TERRAIN,
@@ -50,7 +49,6 @@ export async function Besoins() {
       cle: 'installer',
       numero: '02',
       href: ROUTES.installations,
-      Icone: IconeGrue,
       src: IMAGES.besoinInstaller,
       cadrage: CADRAGES.besoinInstaller,
       // Photo réelle (Canada Day 2026) — jour nuageux, pas le contre-jour doré
@@ -63,7 +61,6 @@ export async function Besoins() {
       cle: 'fabriquer',
       numero: '03',
       href: ROUTES.lab,
-      Icone: IconePuce,
       // Kiosque en bois fabriqué sur mesure (créations 2025) plutôt que
       // l'imprimante 3D depuis le 20 août 2026 — montre la fabrication ET
       // l'installation d'une pièce complète, plus proche du positionnement
@@ -80,7 +77,6 @@ export async function Besoins() {
       cle: 'louer',
       numero: '04',
       href: ROUTES.location,
-      Icone: IconeCamion,
       src: IMAGES.besoinLouer,
       cadrage: 'object-center',
       style: FILTRE_TERRAIN,
@@ -104,7 +100,7 @@ export async function Besoins() {
         </Reveal>
 
         <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2">
-          {besoins.map(({ cle, numero, href, Icone, src, cadrage, style }, i) => (
+          {besoins.map(({ cle, numero, href, src, cadrage, style }, i) => (
             <Reveal key={cle}>
               {/* `-m-3 p-3` : marge négative compensée par un padding égal —
                   la mise en page ne bouge pas d'un pixel, mais le fond au
@@ -143,14 +139,6 @@ export async function Besoins() {
                   />
                 </div>
 
-                {/* L'icône accompagne le titre, elle ne le remplace pas —
-                    d'où aria-hidden dans le composant. `rotate` au survol :
-                    animation E. */}
-                <Icone
-                  taille={24}
-                  className="mt-5 text-ko-blue transition-transform duration-300 group-hover:rotate-[5deg]"
-                />
-
                 {/*
                   Numéro agrandi — direction « écritures plus grosses » : un
                   filigrane serif pâle, même vocabulaire que le « 01 » du hero
@@ -160,7 +148,7 @@ export async function Besoins() {
                 */}
                 <p
                   aria-hidden="true"
-                  className="mt-3 select-none font-serif text-[56px] font-light leading-none text-ko-cream2 transition-transform duration-200 group-hover:-translate-y-1"
+                  className="mt-6 select-none font-serif text-[56px] font-light leading-none text-ko-cream2 transition-transform duration-200 group-hover:-translate-y-1"
                 >
                   {numero}
                 </p>

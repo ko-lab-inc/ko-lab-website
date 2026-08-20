@@ -13,9 +13,12 @@ import { ROUTES } from '@/lib/routes'
  * Extraite de Capacites.tsx, comme les sections 4 et 5. Split 50/50 comme
  * Le LAB juste au-dessus (section 6) — les deux capacités qui se suivent
  * partagent le même gabarit, lu comme une paire plutôt que deux templates
- * différents. Les deux photos réelles disponibles (remorque, camion) tiennent
- * côte à côte plutôt qu'une seule choisie arbitrairement : « équipements »
- * est pluriel, la composition l'est aussi.
+ * différents. Deux photos réelles côte à côte plutôt qu'une seule choisie
+ * arbitrairement : « équipements » est pluriel, la composition l'est aussi.
+ * deploiementRemorque et transportRemorque2026 depuis le 20 août 2026 (la
+ * seconde remplace deploiementCamion — voir images.ts, point 3 de la revue
+ * visuelle) : deux remorques plutôt qu'une remorque et un camion, assumé —
+ * le sujet exact compte moins que l'absence de logo tiers dans le cadre.
  *
  * Aucun bloc statistique ici — contrairement à la section 4, aucun chiffre de
  * Home.stats ne correspond honnêtement à « équipements et déploiement »
@@ -45,8 +48,15 @@ export async function EquipementsDeploiement() {
             />
           </div>
           <div className="relative aspect-[3/4] lg:aspect-auto">
+            {/*
+              transportRemorque2026 depuis le 20 août 2026 (revue visuelle,
+              point 3) — remplace deploiementCamion : sous le titre « Les bons
+              moyens permettent de livrer », une caisse de camionnette pleine
+              de bouteilles Gatorade et Eska (logos tiers dominants, lisibles)
+              dessert le propos plutôt que de le servir. Voir images.ts.
+            */}
             <Image
-              src={IMAGES.deploiementCamion}
+              src={IMAGES.transportRemorque2026}
               alt=""
               fill
               quality={80}

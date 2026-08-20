@@ -208,19 +208,19 @@ export const IMAGES = {
    * d'impression Bambu Lab visible en haut du cadre. Atelier KO-LAB,
    * lot du 18 août 2026 (dossier « le lab 3d » / Petite série production).
    *
-   * ⚠️ AUCUN CONSOMMATEUR ACTUEL — grep vérifié, cette clé n'est référencée
-   * nulle part dans src/ en dehors de sa propre définition (Phase 8). Le
-   * remplacement règle l'objectif « 0 URL Unsplash dans src/ » sans changer
-   * quoi que ce soit à l'écran ; câbler un usage reste à faire.
+   * Câblée le 20 août 2026 (revue visuelle, point 4) dans Boutique.tsx
+   * (section 12, accueil) — seule section sans consommateur depuis la
+   * Phase 8, où cette clé attendait justement un usage.
    *
    * ⚠️ MODÈLE — la machine visible porte la marque « Bambu Lab » (lisible,
    * réel) mais AUCUN numéro de modèle identifiable dans ce cadrage —
    * volontaire : le catalogue vend le X1 Carbon et le P1S, pas la machine
-   * de cette photo (un X2D, `lab/lab-machine-2026.webp`). Si cette clé est
-   * un jour posée sur UNE fiche produit précise plutôt qu'un usage
-   * générique « catégorie Impression 3D », vérifier que le modèle
-   * correspond à ce qui est vendu — sinon même défaut que l'ancien
-   * placeholder Unsplash, juste avec une vraie photo.
+   * de cette photo (un X2D, `lab/lab-machine-2026.webp`). L'usage actuel
+   * reste générique (carte d'accueil vers la boutique, pas une fiche
+   * produit précise) : si cette clé est un jour posée sur UNE fiche produit
+   * précise, vérifier que le modèle correspond à ce qui est vendu — sinon
+   * même défaut que l'ancien placeholder Unsplash, juste avec une vraie
+   * photo.
    *
    * Aucune mention de statut de revendeur nulle part autour de cette image
    * (RAPPEL Phase 8) : KO-LAB n'est ni revendeur ni distributeur autorisé
@@ -262,8 +262,22 @@ export const IMAGES = {
   operationsCrew: medias('operations/operations-crew-2026.webp'),
   operationsCrewVertical: medias('operations/operations-crew-vertical-2026.webp'),
 
-  /** Photos réelles — Phase 5, section 7 (Équipements et déploiement), accueil. */
+  /** Photo réelle — Phase 5, section 7 (Équipements et déploiement), accueil. */
   deploiementRemorque: medias('deployment/deploiement-remorque-2026.webp'),
+
+  /**
+   * ⚠️ Retirée de la section 7 le 20 août 2026 (revue visuelle, point 3) :
+   * caisse de camionnette pleine de bouteilles Gatorade et Eska, logos tiers
+   * dominants et lisibles — sous le titre « Les bons moyens permettent de
+   * livrer », ça dessert le propos plutôt que de le servir. Même catégorie de
+   * risque que les rendus produits retirés de la boutique ce jour-là (docs/
+   * audits/2026-08-20-visuels-produits.md), pas traitée à l'époque : cette
+   * section n'avait pas encore été revue. Remplacée par transportRemorque2026
+   * (voir plus haut, EquipementsDeploiement.tsx). AUCUN CONSOMMATEUR ACTUEL —
+   * fichier resté dans Storage ; décision de le retirer du bucket à prendre
+   * par Christian, pas exécutée ici (pas de fiche produit à protéger, mais
+   * pas non plus mon appel de vider un fichier du bucket sans consigne).
+   */
   deploiementCamion: medias('deployment/deploiement-camion-2026.webp'),
 
   /**

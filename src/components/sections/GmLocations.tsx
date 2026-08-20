@@ -19,20 +19,39 @@ import { Reveal } from '@/components/ui/Reveal'
  *
  * Aucun lien : GM Locations n'a pas de page sur ko-lab-center.ca, et son URL
  * externe n'a pas été fournie — rien à inventer ici (voir CLAUDE.md).
+ *
+ * Retouchée le 20 août 2026 (revue visuelle, point 4) : « sobre » avait
+ * dérivé vers « vide » — le titre tournait à `text-2xl/3xl` quand le reste
+ * du site est au minimum sur l'échelle de Lab.tsx (`clamp(28px,3.4vw,44px)`),
+ * et le bloc n'avait presque pas de respiration verticale. Toujours AUCUNE
+ * photo, AUCUNE carte pleine largeur — seule la typographie et l'espacement
+ * bougent, jamais le message de sobriété qui protège contre une apparence
+ * d'appartenance à KO-LAB. Le chiffre « 08 » posé en filigrane suit le même
+ * vocabulaire que les numéros de section ailleurs sur le site (Besoins.tsx,
+ * hub /nos-capacites) — un repère, pas une décoration ajoutée.
  */
 export async function GmLocations() {
   const t = await getTranslations('Home.gmLocations')
 
   return (
-    <section className="bg-ko-cream py-16 lg:py-24">
+    <section className="bg-ko-cream py-20 lg:py-28">
       <div className="mx-auto max-w-container px-6 lg:px-12">
         <Reveal>
-          <div className="flex flex-col items-start gap-6 border-y border-ko-line py-10 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:py-12">
-            <div className="max-w-[52ch]">
-              <p className="label-mono">{t('label')}</p>
-              <h2 className="mt-4 font-serif text-2xl font-light text-ko-ink lg:text-3xl">
-                {t('title')}
-              </h2>
+          <div className="flex flex-col gap-8 border-y border-ko-line py-14 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:py-20">
+            <div className="flex items-baseline gap-5 lg:gap-6">
+              <span
+                aria-hidden="true"
+                className="select-none font-serif text-[56px] font-light leading-none text-ko-cream2 lg:text-[72px]"
+              >
+                08
+              </span>
+
+              <div className="max-w-[52ch]">
+                <p className="label-mono">{t('label')}</p>
+                <h2 className="mt-4 font-serif text-[clamp(26px,3vw,36px)] font-light leading-tight text-ko-ink">
+                  {t('title')}
+                </h2>
+              </div>
             </div>
 
             <p className="max-w-[46ch] text-sm leading-relaxed text-ko-muted lg:text-right lg:text-base">

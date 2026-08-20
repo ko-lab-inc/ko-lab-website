@@ -5,12 +5,6 @@ import { notFound } from 'next/navigation'
 import { BoutonAjouter } from '@/components/ui/BoutonAjouter'
 import { buttonVariants } from '@/components/ui/Button'
 import { GalerieProduit } from '@/components/ui/GalerieProduit'
-import {
-  IconeAccompagnement,
-  IconeBadgeStock,
-  IconeCle,
-  IconeEtiquette,
-} from '@/components/ui/Icones'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing, type AppLocale } from '@/i18n/routing'
@@ -252,19 +246,26 @@ export default async function FicheProduitPage({ params }: Props) {
                     Ce sont quatre clés de traduction (Boutique.reassurance.*).
                     Si KO-LAB offre bien la livraison gratuite, une garantie ou
                     des retours, il suffit de les remplacer.
+
+                    Icônes retirées le 20 août 2026 (revue visuelle, point 6) :
+                    chacune répétait en pictogramme ce que le libellé juste en
+                    dessous dit déjà — même raisonnement que Besoins.tsx. Le
+                    tiret reprend le vocabulaire déjà utilisé pour les listes
+                    « ce que ça couvre » du hub /nos-capacites, plutôt qu'un
+                    texte nu sans aucun repère.
                   */}
-                  <ul className="mt-8 grid grid-cols-2 gap-x-4 gap-y-6 border-t border-ko-line pt-8 lg:grid-cols-4 lg:gap-x-2">
+                  <ul className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 border-t border-ko-line pt-8 lg:grid-cols-4">
                     {[
-                      { Icone: IconeEtiquette, texte: t('reassurance.prix') },
-                      { Icone: IconeBadgeStock, texte: t('reassurance.disponibilite') },
-                      { Icone: IconeAccompagnement, texte: t('reassurance.accompagnement') },
-                      { Icone: IconeCle, texte: t('reassurance.equipe') },
-                    ].map(({ Icone, texte }) => (
-                      <li key={texte} className="flex flex-col items-center gap-2.5 text-center">
-                        {/* Icône en trait, `aria-hidden` par construction :
-                            elle appuie le libellé, ne le remplace pas. */}
-                        <Icone taille={24} className="text-ko-blue" />
-                        <span className="text-xs leading-snug text-ko-muted">{texte}</span>
+                      t('reassurance.prix'),
+                      t('reassurance.disponibilite'),
+                      t('reassurance.accompagnement'),
+                      t('reassurance.equipe'),
+                    ].map((texte) => (
+                      <li key={texte} className="flex gap-2.5 text-sm leading-relaxed text-ko-muted">
+                        <span aria-hidden="true" className="text-ko-blue">
+                          —
+                        </span>
+                        <span>{texte}</span>
                       </li>
                     ))}
                   </ul>
