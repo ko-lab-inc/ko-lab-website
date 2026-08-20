@@ -28,13 +28,16 @@ export async function Footer() {
 
   const annee = new Date().getFullYear()
 
-  const liensEntreprise = [
-    { key: 'apropos', href: ROUTES.apropos },
-    { key: 'realisations', href: ROUTES.realisations },
-    { key: 'carrieres', href: ROUTES.carrieres },
-    { key: 'boutique', href: ROUTES.boutique },
-    { key: 'location', href: ROUTES.location },
-  ] as const
+  // boutiqueActive (0029) filtre l'entrée ici, même motif que Nav.tsx.
+  const liensEntreprise = (
+    [
+      { key: 'apropos', href: ROUTES.apropos },
+      { key: 'realisations', href: ROUTES.realisations },
+      { key: 'carrieres', href: ROUTES.carrieres },
+      { key: 'boutique', href: ROUTES.boutique },
+      { key: 'location', href: ROUTES.location },
+    ] as const
+  ).filter(({ key }) => key !== 'boutique' || reglages.boutiqueActive)
 
   const liensLegaux = [
     { key: 'confidentialite', href: ROUTES.politiqueConfidentialite },

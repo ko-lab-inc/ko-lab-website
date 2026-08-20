@@ -40,6 +40,8 @@ export type LibellesReglages = {
   panierAide: string
   modulaires: string
   modulairesAide: string
+  boutiqueActive: string
+  boutiqueActiveAide: string
   enregistrer: string
   enCours: string
   succes: string
@@ -217,6 +219,12 @@ export function FormulaireReglages({
           libelle={libelles.modulaires}
           aide={libelles.modulairesAide}
           defaut={reglages.solutionsModulaires}
+        />
+        <Interrupteur
+          nom="boutique_active"
+          libelle={libelles.boutiqueActive}
+          aide={libelles.boutiqueActiveAide}
+          defaut={reglages.boutiqueActive}
         />
       </fieldset>
 

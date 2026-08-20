@@ -863,6 +863,8 @@
     "reglages_panier_aide": "Désactivé, le panier disparaît de la navigation et de la boutique. Les visiteurs demandent alors chaque produit séparément.",
     "reglages_modulaires": "Conteneurs et solutions modulaires",
     "reglages_modulaires_aide": "Désactivé, cette catégorie et ses produits n'apparaissent plus dans la boutique.",
+    "reglages_boutique_active": "Boutique en ligne",
+    "reglages_boutique_active_aide": "Désactivée, la boutique disparaît entièrement du site : navigation, section d'accueil, sitemap, et ses pages deviennent introuvables. Différent de « Panier de demande groupée », qui laisse la boutique visible sans panier.",
     "reglages_enregistrer": "Enregistrer",
     "reglages_en_cours": "Enregistrement…",
     "reglages_succes": "Enregistré. Le site public suit.",

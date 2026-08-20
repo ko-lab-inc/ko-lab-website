@@ -42,6 +42,8 @@ const LIBELLES = {
   panierAide: 'Désactivé, le panier disparaît.',
   modulaires: 'Conteneurs et solutions modulaires',
   modulairesAide: 'Désactivé, la catégorie disparaît.',
+  boutiqueActive: 'Boutique en ligne',
+  boutiqueActiveAide: 'Désactivée, la boutique disparaît entièrement.',
   enregistrer: 'Enregistrer',
   enCours: 'Enregistrement…',
   succes: 'Enregistré.',
@@ -56,6 +58,7 @@ const REGLAGES = {
   contactRegion: 'Outaouais, Québec',
   panierActif: true,
   solutionsModulaires: false,
+  boutiqueActive: true,
 }
 
 function monter(reglages = REGLAGES) {
@@ -81,6 +84,7 @@ describe('FormulaireReglages', () => {
     expect(
       screen.getByRole('checkbox', { name: /Conteneurs et solutions modulaires/ }),
     ).not.toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /Boutique en ligne/ })).toBeChecked()
   })
 
   it('les interrupteurs sont de vraies cases à cocher', () => {
@@ -112,6 +116,7 @@ describe('FormulaireReglages', () => {
     // l'action serveur traduit « absent » en 'false' plutôt que de lire la
     // valeur du champ.
     expect(donnees.get('solutions_modulaires')).toBeNull()
+    expect(donnees.get('boutique_active')).toBe('true')
     expect(donnees.get('locale')).toBe('fr')
   })
 
@@ -132,5 +137,6 @@ describe('FormulaireReglages', () => {
     // La conséquence, si.
     expect(screen.getByText('Désactivé, le panier disparaît.')).toBeVisible()
     expect(screen.getByText('Désactivé, la catégorie disparaît.')).toBeVisible()
+    expect(screen.getByText('Désactivée, la boutique disparaît entièrement.')).toBeVisible()
   })
 })

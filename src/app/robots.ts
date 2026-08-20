@@ -1,4 +1,5 @@
 import { DOMAINE } from '@/lib/constantes'
+import { lireReglages } from '@/lib/reglages'
 
 import type { MetadataRoute } from 'next'
 
@@ -28,15 +29,23 @@ const CHEMINS_UTILITAIRES = [
   '/boutique/demande',
 ]
 
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  const reglages = await lireReglages()
+
+  // Boutique désactivée (0029) : ses routes répondent déjà 404
+  // (boutique/layout.tsx), mais un robot qui les avait déjà indexées avant
+  // la bascule doit être explicitement informé de ne plus les explorer —
+  // /boutique/commande et /boutique/demande sont alors un sous-ensemble
+  // redondant, sans conséquence à lister deux fois.
+  const chemins = reglages.boutiqueActive
+    ? CHEMINS_UTILITAIRES
+    : [...CHEMINS_UTILITAIRES, '/boutique']
+
   return {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: [
-        '/api',
-        ...CHEMINS_UTILITAIRES.flatMap((chemin) => [`/fr${chemin}`, `/en${chemin}`]),
-      ],
+      disallow: ['/api', ...chemins.flatMap((chemin) => [`/fr${chemin}`, `/en${chemin}`])],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   }

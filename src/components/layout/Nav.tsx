@@ -31,8 +31,11 @@ export function Nav({
    * redéploiement. C'est exactement ce qu'on voulait supprimer.
    */
   panierActif,
+  /** Même raison que panierActif — reçu en prop, pas lu ici (composant client). */
+  boutiqueActive,
 }: {
   panierActif: boolean
+  boutiqueActive: boolean
 }) {
   const t = useTranslations('Nav')
   const pathname = usePathname()
@@ -84,13 +87,18 @@ export function Nav({
     return () => window.removeEventListener('keydown', surTouche)
   }, [])
 
-  const liensSecondaires = [
-    { key: 'realisations', href: ROUTES.realisations },
-    { key: 'location', href: ROUTES.location },
-    { key: 'boutique', href: ROUTES.boutique },
-    { key: 'apropos', href: ROUTES.apropos },
-    { key: 'carrieres', href: ROUTES.carrieres },
-  ] as const
+  // boutiqueActive filtre l'entrée ici, en amont des deux .map() (desktop et
+  // mobile) qui consomment ce tableau plus bas — un seul endroit à tenir
+  // d'accord plutôt que deux rendus filtrés séparément.
+  const liensSecondaires = (
+    [
+      { key: 'realisations', href: ROUTES.realisations },
+      { key: 'location', href: ROUTES.location },
+      { key: 'boutique', href: ROUTES.boutique },
+      { key: 'apropos', href: ROUTES.apropos },
+      { key: 'carrieres', href: ROUTES.carrieres },
+    ] as const
+  ).filter(({ key }) => key !== 'boutique' || boutiqueActive)
 
   /**
    * Page courante — gras, demande initiale de Christian « gras + bleu ».
@@ -190,8 +198,10 @@ export function Nav({
           ))}
 
           {/* Piloté depuis Réglages › Parties du site. Décoché, le panier
-              disparaît d'ici comme de la boutique. */}
-          {panierActif && <LienPanier />}
+              disparaît d'ici comme de la boutique. boutiqueActive aussi : la
+              boutique désactivée n'a plus de panier à afficher, même si
+              panierActif reste coché. */}
+          {panierActif && boutiqueActive && <LienPanier />}
 
           {/*
             Compte — icône seule, comme le panier.
@@ -243,7 +253,7 @@ export function Nav({
             menu — or c'est un état en cours, il doit rester sous les yeux.
             Même réglage que la barre du haut. */}
         <div className="flex items-center gap-2 lg:hidden">
-          {panierActif && <LienPanier />}
+          {panierActif && boutiqueActive && <LienPanier />}
 
           <button
           type="button"

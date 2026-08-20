@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server'
 
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
+import { lireReglages } from '@/lib/reglages'
 import { ROUTES } from '@/lib/routes'
 
 /**
@@ -13,8 +14,16 @@ import { ROUTES } from '@/lib/routes'
  *
  * Survol : la bordure passe au bleu (skill 20, `.offre`). Aucun soulèvement,
  * aucune ombre — le skill 08 les interdit.
+ *
+ * ⚠️ boutiqueActive (0029) — lu ici plutôt que reçu en prop : les 13 sections
+ * de l'accueil sont toutes montées sans props depuis page.tsx (voir ce
+ * fichier), chacune résout ses propres besoins. Suivre ce même modèle évite
+ * d'être la seule section à casser ce motif pour une seule prop.
  */
 export async function Boutique() {
+  const reglages = await lireReglages()
+  if (!reglages.boutiqueActive) return null
+
   const t = await getTranslations('Home.offres')
 
   return (

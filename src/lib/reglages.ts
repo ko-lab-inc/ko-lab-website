@@ -51,6 +51,13 @@ export type Reglages = {
   contactRegion: string
   panierActif: boolean
   solutionsModulaires: boolean
+  /**
+   * Portée distincte de panierActif — voir la migration 0029. panierActif
+   * retire le panier d'une boutique qui reste visible ; boutiqueActive
+   * retire la boutique elle-même (nav, section accueil, routes, sitemap,
+   * robots).
+   */
+  boutiqueActive: boolean
 }
 
 /**
@@ -73,6 +80,11 @@ function repli(): Reglages {
     // drapeaux vivent désormais en base, ces variables ne servent plus qu'ici.
     panierActif: process.env.NEXT_PUBLIC_FEATURE_PANIER === 'true',
     solutionsModulaires: process.env.NEXT_PUBLIC_SOLUTIONS_MODULAIRES === 'true',
+    // Pas de variable d'environnement de repli ici, à la différence des deux
+    // au-dessus : ce drapeau n'a jamais existé avant 0029, donc aucun « état
+    // d'avant la table » à reproduire. `true` en dur reproduit directement
+    // « rien ne change tant que personne ne décoche la case ».
+    boutiqueActive: true,
   }
 }
 
@@ -83,6 +95,7 @@ const CLES = {
   contact_region: 'contactRegion',
   panier_actif: 'panierActif',
   solutions_modulaires: 'solutionsModulaires',
+  boutique_active: 'boutiqueActive',
 } as const
 
 export type CleReglage = keyof typeof CLES
@@ -105,7 +118,7 @@ async function lireDepuisBase(): Promise<Reglages> {
       const champ = CLES[ligne.cle as CleReglage]
       if (!champ) continue
 
-      if (champ === 'panierActif' || champ === 'solutionsModulaires') {
+      if (champ === 'panierActif' || champ === 'solutionsModulaires' || champ === 'boutiqueActive') {
         valeurs[champ] = ligne.valeur === 'true'
       } else {
         // Une valeur vide en base est une valeur VOULUE — « pas de téléphone à

@@ -312,7 +312,7 @@ export default async function MarketingLayout({ children, params }: Props) {
             {t('aller_au_contenu')}
           </a>
 
-          <Nav panierActif={reglages.panierActif} />
+          <Nav panierActif={reglages.panierActif} boutiqueActive={reglages.boutiqueActive} />
 
           <main id="contenu">{children}</main>
 

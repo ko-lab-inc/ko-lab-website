@@ -1,5 +1,6 @@
 import { DOMAINE } from '@/lib/constantes'
 import { lireProduitsPublies } from '@/lib/produits'
+import { lireReglages } from '@/lib/reglages'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
 
 import type { MetadataRoute } from 'next'
@@ -68,13 +69,22 @@ const ROUTES_BILINGUES = new Set<string>([
 ])
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const reglages = await lireReglages()
+
+  // Boutique désactivée (0029) : ni la page catalogue ni ses fiches produit
+  // n'existent plus (boutique/layout.tsx répond 404) — les lister ici
+  // enverrait Google indexer des pages introuvables.
+  const routesStatiques = reglages.boutiqueActive
+    ? ROUTES_STATIQUES
+    : ROUTES_STATIQUES.filter((chemin) => chemin !== ROUTES.boutique)
+
   // Une fiche produit par produit PUBLIÉ — un produit incomplet ou hors
   // ligne ne doit pas apparaître dans le sitemap, même règle que sur la page
   // boutique elle-même (lireProduitsPublies filtre déjà `publie = true`).
   // Locale arbitraire : seul p.slug est utilisé plus bas, jamais nom/texte.
-  const produits = await lireProduitsPublies('fr')
+  const produits = reglages.boutiqueActive ? await lireProduitsPublies('fr') : []
 
-  const pagesStatiques: MetadataRoute.Sitemap = ROUTES_STATIQUES.map((chemin) => {
+  const pagesStatiques: MetadataRoute.Sitemap = routesStatiques.map((chemin) => {
     if (ROUTES_BILINGUES.has(chemin)) {
       return {
         url: url(chemin, 'fr'),

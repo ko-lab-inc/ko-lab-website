@@ -15,19 +15,25 @@ type Props = { params: Promise<{ locale: string }> }
  * ---------------------------------------------------------------------------
  * CE QUI EST MODIFIABLE ICI, ET CE QUI NE L'EST PAS
  *
- * Ce qui l'est : les coordonnées, et les deux drapeaux qui ouvrent ou ferment
- * une partie du site. Ce sont précisément les réglages qui doivent pouvoir
- * bouger sans développeur — avant, changer une adresse de courriel demandait
- * un commit et un déploiement, et fermer la boutique passait par une variable
- * d'environnement Vercel que seul Moussa pouvait toucher.
+ * Ce qui l'est : les coordonnées, et les trois drapeaux qui ouvrent ou
+ * ferment une partie du site. Ce sont précisément les réglages qui doivent
+ * pouvoir bouger sans développeur — avant, changer une adresse de courriel
+ * demandait un commit et un déploiement, et fermer la boutique passait par
+ * une variable d'environnement Vercel que seul Moussa pouvait toucher.
  *
  * Ce qui ne l'est pas : les textes du site. La page le dit explicitement
  * plutôt que de laisser chercher.
  *
  * ⚠️ Sans la migration 0011, l'écran s'affiche avec les valeurs de repli et
- * l'enregistrement échoue proprement en annonçant pourquoi. C'est préférable à
- * une page qui refuse de se charger : le reste de l'administration reste
+ * l'enregistrement échoue proprement en annonçant pourquoi. C'est préférable
+ * à une page qui refuse de se charger : le reste de l'administration reste
  * utilisable.
+ *
+ * ⚠️ 0029 AUSSI, PAS SEULEMENT POUR boutique_active. L'action d'enregistrement
+ * met à jour les trois drapeaux en une seule fois (`Promise.all`) et échoue
+ * en bloc si UNE SEULE clé ne trouve aucune ligne à modifier (voir
+ * actions.ts) — sans 0029, ENREGISTRER NE FAIT PLUS RIEN DU TOUT, y compris
+ * pour les coordonnées de contact, tant que 0029 n'a pas tourné.
  * ---------------------------------------------------------------------------
  */
 export default async function Page({ params }: Props) {
@@ -63,6 +69,8 @@ export default async function Page({ params }: Props) {
           panierAide: t('reglages_panier_aide'),
           modulaires: t('reglages_modulaires'),
           modulairesAide: t('reglages_modulaires_aide'),
+          boutiqueActive: t('reglages_boutique_active'),
+          boutiqueActiveAide: t('reglages_boutique_active_aide'),
           enregistrer: t('reglages_enregistrer'),
           enCours: t('reglages_en_cours'),
           succes: t('reglages_succes'),

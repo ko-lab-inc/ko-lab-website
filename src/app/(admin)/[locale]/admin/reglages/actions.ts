@@ -52,6 +52,7 @@ const schema = z.object({
   contact_region: z.string().trim().max(120),
   panier_actif: z.enum(['true', 'false']),
   solutions_modulaires: z.enum(['true', 'false']),
+  boutique_active: z.enum(['true', 'false']),
 })
 
 /** Une case non cochée n'est PAS envoyée par le navigateur : absente = false. */
@@ -69,6 +70,7 @@ export async function enregistrerReglages(
     contact_region: donnees.get('contact_region') ?? '',
     panier_actif: coche(donnees, 'panier_actif'),
     solutions_modulaires: coche(donnees, 'solutions_modulaires'),
+    boutique_active: coche(donnees, 'boutique_active'),
   })
   if (!analyse.success) return { erreur: 'donnees' }
 
