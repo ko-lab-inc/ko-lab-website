@@ -57,6 +57,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: `/${locale}`,
       title: t('title'),
       description: t('description'),
+      // Répétée depuis le layout (Phase 10, étape 3) : ce bloc `openGraph`
+      // redéfini ici REMPLACE entièrement celui du layout, image comprise —
+      // sans cette ligne, l'accueil (la page la plus partagée) se
+      // retrouverait sans image alors que toutes les autres pages en
+      // hériteraient. Voir images.ts non concerné : ce fichier vit hors
+      // Storage, dans public/images/og/.
+      images: [{ url: '/images/og/og-defaut.jpg', width: 1200, height: 630 }],
     },
   }
 }

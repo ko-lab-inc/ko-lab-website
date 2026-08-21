@@ -6,7 +6,7 @@ import { FormulaireCandidature, type LibellesCandidature } from '@/components/se
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
-import { ROUTES } from '@/lib/routes'
+import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
 
@@ -38,7 +38,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: t('postuler_titre'),
     description: t('postuler_intro'),
-    alternates: { canonical: `/${locale}${ROUTES.carrieresPostuler}` },
+    // `languages` manquait (Phase 10, étape 3) : seule page indexable (pas de
+    // `robots: {index:false}`) sans hreflang, alors que /en/carrieres/postuler
+    // est un vrai formulaire traduit, pas une coquille vide.
+    alternates: {
+      canonical: `/${locale}${ROUTES.carrieresPostuler}`,
+      languages: alternatesLangues(ROUTES.carrieresPostuler),
+    },
   }
 }
 

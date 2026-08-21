@@ -133,6 +133,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       locale: locale === 'en' ? 'en_CA' : 'fr_CA',
       title: t('title'),
       description: t('description'),
+      // Image sociale ajoutée le 20 août 2026 (Phase 10, étape 3) — avant ce
+      // jour, AUCUNE image Open Graph n'existait nulle part sur le site : un
+      // partage sur Slack, iMessage ou LinkedIn produisait une carte sans
+      // visuel. Recadrage 1200×630 (attention crop, sharp) de la photo hero
+      // réelle (Canada Day 2026, déjà utilisée et déjà sous droits) — pas une
+      // création graphique, un recadrage d'une photo déjà approuvée. Sert de
+      // repli pour toute page qui ne fournit pas la sienne ; chaque page
+      // enfant qui définit SON PROPRE bloc `openGraph` doit répéter cette
+      // image ou la sienne — Next ne fusionne pas les sous-clés d'un objet
+      // déjà redéfini par un segment enfant.
+      images: [{ url: '/images/og/og-defaut.jpg', width: 1200, height: 630 }],
     },
   }
 }

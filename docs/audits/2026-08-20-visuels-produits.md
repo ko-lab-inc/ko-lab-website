@@ -47,6 +47,7 @@ moins exposés que ceux ci-dessus.
 | Éclairage temporaire de chantier | `public/images/produits/eclairage-temporaire.webp` | Tour d'éclairage **Atlas Copco « HiLight V5+ »** — marque et modèle réels, lisibles |
 | Outillage d'installation | `public/images/produits/outillage-installation.webp` | Coffret d'outils **DEKO** — marque réelle visible sur plusieurs outils à l'intérieur |
 | Conteneur 2 pieds | Bucket Storage `produits/conteneur-2-pieds-1785431399245.jpg` | Rendu 3D professionnel (bureau meublé dans un conteneur) — cohérent avec la mention « Saman Portable, Bangalore » déjà présente dans la description du produit |
+| Équipements et déploiement (accueil, section 7) — `deploiementCamion` | Storage `medias/deployment/deploiement-camion-2026.webp` (`images.ts`) | Caisse de camionnette pleine de bouteilles **Gatorade** et **Eska**, logos dominants — retirée de la section le 20 août 2026 (revue visuelle, point 3), remplacée par `transportRemorque2026`. Fichier resté dans Storage, plus aucun consommateur dans le code. |
 
 ## Signalés, laissés en place — risque jugé faible
 
