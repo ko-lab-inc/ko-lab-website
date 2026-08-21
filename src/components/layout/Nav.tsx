@@ -331,29 +331,37 @@ export function Nav({
             ))}
           </ul>
 
-          <div className="flex items-center justify-between gap-4">
-            {/* Sur mobile l'icône seule serait illisible hors du contexte de
-                la barre : le libellé est écrit. */}
-            <Link
-              href={ROUTES.compte}
-              prefetch={false}
-              className="flex min-h-[44px] items-center gap-2 text-sm text-ko-muted"
-            >
-              <IconeProfil taille={18} />
-              {t('compte')}
-            </Link>
+          {/* Deux rangées plutôt qu'une seule à trois éléments : à 375px,
+              « Mon compte » + langue + bouton ne tenaient pas côte à côte —
+              le libellé du compte cassait au milieu d'un mot et le bouton
+              passait sur deux lignes. Compte et langue partagent une rangée
+              (deux éléments courts, ça tient), le bouton prend la sienne en
+              pleine largeur. */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              {/* Sur mobile l'icône seule serait illisible hors du contexte de
+                  la barre : le libellé est écrit. */}
+              <Link
+                href={ROUTES.compte}
+                prefetch={false}
+                className="flex min-h-[44px] items-center gap-2 text-sm text-ko-muted"
+              >
+                <IconeProfil taille={18} />
+                {t('compte')}
+              </Link>
 
-            <Link
-              href={pathname}
-              locale={autreLocale}
-              className="flex min-h-[44px] items-center text-sm text-ko-muted"
-            >
-              {autreLocale === 'en' ? 'English' : 'Français'}
-            </Link>
+              <Link
+                href={pathname}
+                locale={autreLocale}
+                className="flex min-h-[44px] items-center text-sm text-ko-muted"
+              >
+                {autreLocale === 'en' ? 'English' : 'Français'}
+              </Link>
+            </div>
 
             <Link
               href={ROUTES.contact}
-              className={buttonVariants({ variant: 'primary', size: 'sm' })}
+              className={cn('w-full', buttonVariants({ variant: 'primary', size: 'sm' }))}
             >
               {t('cta')}
             </Link>
