@@ -160,15 +160,27 @@ export const IMAGES = {
    * complété une seconde fois le même jour (revue visuelle, point 1 —
    * redistribution des photos dupliquées) : `espaceAmenage2023` sert
    * maintenant l'en-tête du hub /nos-capacites (remplace `hero`, qui y
-   * apparaissait en plus de l'accueil et de deux pages capacités) et
-   * `signalisationAlt2026` le hero de la page Opérations terrain (même
-   * raison). `enseignePoseAlt2026` essayée sur ces deux emplacements en
-   * premier, écartée des deux : son texte publicitaire tiers (numéro de
-   * téléphone et site web du client F.Auger) devient le sujet dominant du
-   * cadre une fois recadré en bannière étroite sur mobile — vérifié à
-   * l'écran. `structureEclairee2024` sert `preuveTerrain` plus bas. Seule
-   * `enseignePoseAlt2026` reste donc sans consommateur. Événements d'avant
-   * 2025 non nommés dans les textes, consigne existante.
+   * apparaissait en plus de l'accueil et de deux pages capacités).
+   * `enseignePoseAlt2026` essayée sur ce même emplacement en premier, écartée :
+   * son texte publicitaire tiers (numéro de téléphone et site web du client
+   * F.Auger) devient le sujet dominant du cadre une fois recadré en bannière
+   * étroite sur mobile — vérifié à l'écran. `structureEclairee2024` sert
+   * `preuveTerrain` plus bas. `enseignePoseAlt2026` reste donc sans
+   * consommateur. Événements d'avant 2025 non nommés dans les textes,
+   * consigne existante.
+   *
+   * `enseigneCommerciale2026`, `signalisation2026` et `signalisationAlt2026`
+   * (photos initiales de ce lot) RETIRÉES le 21 août 2026 : en vérifiant un
+   * doute sur l'orientation EXIF, relecture des photos déjà en ligne — les
+   * trois montraient en réalité l'enseigne Pacini et la numérotation Village
+   * Transition, deux clients réels identifiables présentés comme des
+   * exemples génériques (« enseigne commerciale installée en façade »,
+   * « signalisation numérotée »), jamais sollicités pour figurer sur le site
+   * de KO-LAB. Fichiers laissés dans Storage (medias/installations/) —
+   * réutilisables si Christian obtient leur accord — mais plus référencés
+   * ici. Voir docs/audits/2026-08-21-photos-clients-non-autorisees.md et,
+   * dans ETAT-DU-PROJET.md, la règle de méthode sur les dossiers source
+   * réutilisés d'une phase à l'autre.
    */
   // Enseignes F.Auger — le client dont l'enseigne est posée, jamais présenté
   // comme une marque KO-LAB (voir installationNacelle, qui réutilise la
@@ -176,11 +188,19 @@ export const IMAGES = {
   enseignePose2026: medias('installations/enseigne-pose-2026.webp'),
   enseignePoseAlt2026: medias('installations/enseigne-pose-alt-2026.webp'),
   enseignePosee2026: medias('installations/enseigne-posee-2026.webp'),
-  enseigneCommerciale2026: medias('installations/enseigne-commerciale-2026.webp'),
-  signalisation2026: medias('installations/signalisation-2026.webp'),
-  signalisationAlt2026: medias('installations/signalisation-alt-2026.webp'),
   chantierBalisage2026: medias('operations/chantier-balisage-2026.webp'),
   transportRemorque2026: medias('deployment/transport-remorque-2026.webp'),
+
+  // Remplacement du 21 août 2026 (voir note ci-dessus) — lot « terrasse 2021 »,
+  // déjà vérifié sans marque tierce lisible ni personne identifiable au
+  // premier plan lors du traitement de la réalisation Terrasse LPG le même
+  // jour. terrasseStructure2021 reprend l'ancien emplacement hero
+  // (operations-terrain) de signalisationAlt2026 ; les deux autres reprennent
+  // les deux emplacements de galerie d'installations de enseigneCommerciale2026
+  // et signalisation2026.
+  terrasseStructure2021: medias('installations/terrasse-structure-2021.webp'),
+  terrasseAmenagee2021: medias('installations/terrasse-amenagee-2021.webp'),
+  terrasseLivraison2021: medias('installations/terrasse-livraison-2021.webp'),
 
   // HAP 2023 — 2 destinations propres sur 6 (décor illuminé et montage en
   // cours écartés : visage d'enfant identifiable + flou pour l'un, texte

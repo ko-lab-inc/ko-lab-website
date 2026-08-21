@@ -108,6 +108,7 @@ téléphone à la verticale ressort de travers.
 | Bundle JS commun | ~232 Ko chargés sur CHAQUE page contre 180 Ko visés. `react-hook-form` présent dans le socle commun alors que la plupart des pages n'ont aucun formulaire ; Crisp (14 Ko) chargé dès le premier rendu ; deux chunks de ~54 Ko non identifiés faute d'un bundle-analyzer. Détail dans `docs/phase-10-backlog.md`. Regroupé volontairement avec le prochain chantier (refonte de la gestion des médias en admin). |
 | LCP mobile | 4,4 s (accueil, production réelle) contre 2,5 s visés — probablement lié au bundle JS ci-dessus. Non bloquant (site fonctionnel, a11y à 96), laissé de côté sur décision de Christian. |
 | 4 visuels produits à droits incertains | Toujours en place (Atlas Copco, DEKO, conteneur Saman Portable, `deploiementCamion` orphelin en Storage) — décision explicite de Christian de les traiter plus tard. Inventaire complet : `docs/audits/2026-08-20-visuels-produits.md`. |
+| 4 photos de la réalisation Terrasse LPG montrent une enseigne de commerce voisin en arrière-plan (« Le Marché du Store » ×3, « La Baie » ×1, cette dernière non publiée) | Non traité — trouvé le 21 août en cherchant des remplacements pour un problème différent (voir §7 et `docs/audits/2026-08-21-photos-clients-non-autorisees.md`). Risque jugé moindre qu'une enseigne présentée comme le sujet de la photo (ici incidente), mais pas nul. |
 | `IMAGES.soudeur` / `IMAGES.realisationLab` | Deux clés, la même photo Unsplash — aucune photo de soudure reçue dans aucun des cinq lots traités, revérifié à chaque fois. Partiront quand une vraie photo de soudeur au travail existera. |
 | Image Open Graph | Un recadrage de la photo hero existante fait le travail, mais ce n'est pas une image pensée pour ce format. Une image de marque dédiée (logo lisible en miniature) est à demander à Christian. |
 | GRANT UPDATE/DELETE sur `anon` | Indéterminé — la sonde REST ne distingue pas l'absence de GRANT du blocage par RLS. Voir `SKILL-securite-audit.md`. |
@@ -123,6 +124,10 @@ téléphone à la verticale ressort de travers.
 - Bundle JS / LCP mobile — regroupé avec le prochain chantier (médias en admin)
 - Image Open Graph de marque, avec logo lisible en miniature
 - Les 4 visuels produits à droits incertains (§4) — retirer le fichier ou non
+- Les 4 photos Terrasse LPG avec enseigne de commerce voisin en
+  arrière-plan (§4) — remplacer, recadrer, ou garder tel quel
+- Pacini et Village Transition (§4, ancien) — contacter pour obtenir
+  l'accord avant de réutiliser leurs photos, ou les laisser hors ligne
 - Mentions légales et politique de retour — en attente d'informations
   corporatives qui n'ont pas été confirmées (nom légal exact, adresse
   d'affaires, NEQ) ; ne pas rédiger ces pages en devinant ces informations
@@ -204,3 +209,20 @@ Next.js.** Constaté une fois — `translate.goog` interfère avec le
 mécanisme de `next/image`. Ne pas utiliser la traduction automatique du
 navigateur pour vérifier le rendu d'une page ; comparer plutôt les vraies
 routes `/fr` et `/en`.
+
+**Un dossier source déjà utilisé une fois n'est pas acquis pour la suite.**
+Trouvé le 21 août 2026 : le dossier « enseignes install » avait servi le 20
+août à la fois pour alimenter des clés `IMAGES.*` publiées directement sur
+des pages marketing, et — plus tard le même jour — pour la réalisation
+« Réfection et réinstallation d'enseignes ». La vérification faite pour la
+réalisation (écarter les photos Pacini et Village Transition, mandats
+différents mélangés dans le dossier) n'a jamais été reportée sur l'usage
+antérieur, déjà en ligne, du même dossier — ces deux photos y sont restées
+présentées comme des exemples génériques anonymes jusqu'à leur découverte
+fortuite le lendemain. Voir
+`docs/audits/2026-08-21-photos-clients-non-autorisees.md`.
+
+Règle à appliquer désormais : **quand un dossier source a déjà servi plus
+tôt dans le chantier, revérifier les images déjà publiées qui en
+proviennent avant de traiter un nouveau lot du même dossier** — pas
+seulement vérifier le nouveau lot avec les critères à jour.
