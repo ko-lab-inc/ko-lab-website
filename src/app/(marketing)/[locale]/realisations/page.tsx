@@ -60,16 +60,24 @@ export default async function RealisationsPage({ params }: Props) {
     equipement: t('filtre_equipement'),
   }
 
-  // Les catégories du skill 21. `equipement` est proposée dès maintenant même
-  // sans réalisation associée : le message « aucun résultat » informe mieux
-  // qu'un filtre absent, qui laisserait croire que la catégorie n'existe pas.
-  const filtres = [
-    { valeur: 'all', label: t('filtre_tout') },
-    { valeur: 'terrain', label: t('filtre_terrain') },
-    { valeur: 'installation', label: t('filtre_installation') },
-    { valeur: 'lab', label: t('filtre_lab') },
-    { valeur: 'equipement', label: t('filtre_equipement') },
-  ] as const
+  // Un filtre ne s'affiche que s'il a au moins une réalisation derrière —
+  // corrigé le 20 août 2026 (enrichissement de la galerie) : un filtre vide
+  // qui retombe sur « aucun résultat » en informe moins qu'un filtre qui
+  // n'apparaît pas du tout. `installation` était le seul cas réel avant cet
+  // ajout (aucune réalisation publiée dans cette catégorie) ; ce calcul reste
+  // en place pour ne pas revivre la même vitrine vide si une catégorie se
+  // vide à nouveau plus tard (dépublication, suppression).
+  const categoriesPresentes = new Set(publiees?.map((r) => r.categorie) ?? [])
+
+  const filtres = (
+    [
+      { valeur: 'all', label: t('filtre_tout') },
+      { valeur: 'terrain', label: t('filtre_terrain') },
+      { valeur: 'installation', label: t('filtre_installation') },
+      { valeur: 'lab', label: t('filtre_lab') },
+      { valeur: 'equipement', label: t('filtre_equipement') },
+    ] as const
+  ).filter(({ valeur }) => valeur === 'all' || categoriesPresentes.has(valeur))
 
   return (
     <>
