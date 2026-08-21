@@ -244,14 +244,19 @@ export function GalerieRealisations({
                 )}
 
                 <div className="pointer-events-none absolute inset-x-4 bottom-4">
-                  <h3
+                  {/* h2, pas h3 (Phase 10, étape 2) : /realisations/page.tsx ne
+                      pose aucun h2 avant la galerie — le h1 de l'en-tête sautait
+                      directement à un h3 par carte, un niveau manquant. Chaque
+                      titre de réalisation est le premier vrai contenu de la
+                      page après le h1, pas une sous-section d'un h2 absent. */}
+                  <h2
                     className={cn(
                       'font-serif leading-tight text-ko-white',
                       i === 0 ? 'text-[26px]' : 'text-[20px]',
                     )}
                   >
                     {r.titre}
-                  </h3>
+                  </h2>
 
                   {/* Description révélée au survol. `max-h` plutôt que `hidden` :
                       le texte reste dans le DOM, donc accessible aux lecteurs

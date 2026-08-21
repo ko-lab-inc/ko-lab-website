@@ -100,7 +100,7 @@ export async function Besoins() {
         </Reveal>
 
         <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2">
-          {besoins.map(({ cle, numero, href, src, cadrage, style }, i) => (
+          {besoins.map(({ cle, numero, href, src, cadrage, style }) => (
             <Reveal key={cle}>
               {/* `-m-3 p-3` : marge négative compensée par un padding égal —
                   la mise en page ne bouge pas d'un pixel, mais le fond au
@@ -115,18 +115,18 @@ export async function Besoins() {
                     zoom de l'image, sinon le débordement casserait la grille. */}
                 <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-ko-cream2">
                   {/*
-                    ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
-                    Voir skill 22 pour les critères de remplacement.
+                    Photo réelle depuis le 20 août 2026 (les quatre le sont).
                   */}
                   <Image
                     src={src}
                     alt=""
                     fill
-                    // À 375px, la grille passe en une colonne : cette première
-                    // carte remonte juste sous le hero et Next la détecte comme
-                    // élément LCP. Sans priorité elle est chargée en différé,
-                    // ce qui retarde directement la mesure sur mobile.
-                    priority={i === 0}
+                    // `priority` retirée le 20 août 2026 (Phase 10, étape 2) :
+                    // le hero (Hero.tsx) reste l'élément LCP mesuré même avec
+                    // cette carte en priorité — vérifié par Lighthouse mobile,
+                    // pas supposé. Les deux préchargements se disputaient la
+                    // bande passante mobile pour rien ; la cible du chantier
+                    // est un seul média préchargé (le hero), voir CLAUDE.md.
                     quality={80}
                     sizes="(max-width: 768px) 100vw, 50vw"
                     style={style}

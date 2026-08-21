@@ -70,9 +70,17 @@ export async function Installations() {
               />
 
               {/* Repère textuel, pas un chiffre — décrit ce que montre la
-                  photo (sapin décoré, hall d'atrium), même vocabulaire de
-                  pastille que Realisations.tsx (bg-ko-scrim/60 + blur). */}
-              <span className="absolute left-4 top-4 rounded bg-ko-scrim/60 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ko-frost/90 backdrop-blur-sm">
+                  photo (sapin décoré, hall d'atrium).
+                  ⚠️ PAS bg-ko-scrim/60 comme Realisations.tsx (Phase 10,
+                  étape 2) : mesuré à l'écran contre CETTE photo précise, le
+                  coin haut-gauche tombe sur des ornements très clairs — même
+                  flouté, 60 % de noir ne les assombrit pas assez et le texte
+                  blanc s'y fond presque (contraste mesuré ~1:1). /80 remonte
+                  le contraste à un niveau sûr sur cette photo, plus foncée
+                  et moins « fêtes » que celles qui valident déjà /60
+                  ailleurs — la valeur se recalcule par photo, elle ne se
+                  copie pas (même principe que le voile d'OperationsTerrain.tsx). */}
+              <span className="absolute left-4 top-4 rounded bg-ko-scrim/80 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-ko-frost backdrop-blur-sm">
                 {t('pastille')}
               </span>
             </div>
