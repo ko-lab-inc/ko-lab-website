@@ -53,7 +53,7 @@ Ne pas les supprimer sans instruction explicite.
 
 ---
 
-## Signalé en cours de remplacement, non traité — même lot « terrasse 2021 »
+## Signalé en cours de remplacement, gardé tel quel — même lot « terrasse 2021 »
 
 En cherchant des photos de remplacement neutres dans ce même lot, 4 des 10
 photos déjà publiées dans la réalisation **Terrasse LPG — construction sur
@@ -74,12 +74,19 @@ travaillait dans leur stationnement, pas pour eux) — un risque de nature
 différente, probablement moindre, mais pas nul : ce sont quand même des
 noms de commerces réels, lisibles, non floutés.
 
-**Non traité** : ces 4 photos restent en ligne dans la réalisation
-Terrasse LPG. Les 6 autres photos de cette réalisation n'ont pas été
-revérifiées avec ce niveau d'attention (seul le besoin de trouver des
-remplacements a motivé cette relecture partielle). Décision à prendre par
-Christian : les remplacer, les recadrer pour exclure l'arrière-plan, ou les
-garder tel quel si le risque est jugé négligeable.
+**Décision (21 août 2026) : gardées telles quelles.** Le critère appliqué
+depuis le début des lots photo n'est pas « une marque tierce est-elle
+visible » mais « la marque domine-t-elle la composition et suggère-t-elle
+un mandat » (§3, règles photo établies). Ici, non aux deux : le sujet du
+chantier n'a aucun rapport avec ces commerces, l'enseigne est une enseigne
+de rue en arrière-plan, pas une référence client mise en scène — à la
+différence de Pacini/Village Transition ci-dessus, où l'enseigne du client
+ÉTAIT le sujet photographié. Christian reste libre de trancher autrement
+s'il n'est pas à l'aise en les revoyant — c'est le rôle de cet audit.
+
+Les 6 autres photos de cette réalisation n'ont pas été revérifiées avec ce
+niveau d'attention (seul le besoin de trouver des remplacements a motivé
+cette relecture partielle des 4 premières).
 
 ---
 
