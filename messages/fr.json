@@ -994,7 +994,15 @@
     "erreur_emplacement_introuvable": "Emplacement non trouvé.",
     "erreur_url_requise": "URL requise.",
     "erreur_refuse_emplacement": "Cette action a été refusée. Seul un administrateur peut modifier les emplacements médias.",
-    "erreur_serveur_emplacement": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste."
+    "erreur_serveur_emplacement": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste.",
+    "colonne_photo_poste": "Photo",
+    "modifier_photo_poste": "Modifier la photo",
+    "titre_photo_poste": "Photo du poste",
+    "aucune_photo_poste": "Aucune photo",
+    "champ_choix_photo_poste": "Choisir un fichier",
+    "option_aucune_photo_poste": "Aucune photo",
+    "supprimer_photo_poste": "Supprimer la photo",
+    "erreur_serveur_photo_poste": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste."
   },
   "Aide": {
     "ouvrir": "Poser une question",

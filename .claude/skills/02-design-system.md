@@ -6,7 +6,7 @@
 :root {
   --ko-black:    #111210;   /* fond sombre dominant */
   --ko-ink:      #2a2b28;   /* texte principal sur fond clair */
-  --ko-white:    #f8f6f1;   /* fond clair principal */
+  --ko-white:    #e8e8e8;   /* fond clair principal — gris clair froid depuis le 22 août 2026 */
   --ko-cream:    #f0ede6;   /* fond clair secondaire */
   --ko-cream-2:  #e8e4db;   /* fond clair tertiaire */
   --ko-blue:     #61b4db;   /* accent UNIQUE — depuis le 18 août 2026 */
@@ -63,7 +63,7 @@ em { font-style: italic; color: var(--ko-blue); }
 colors: {
   'ko-black':  '#111210',
   'ko-ink':    '#2a2b28',
-  'ko-white':  '#f8f6f1',
+  'ko-white':  '#e8e8e8',
   'ko-cream':  '#f0ede6',
   'ko-cream2': '#e8e4db',
   'ko-blue':   '#2f7fc9',

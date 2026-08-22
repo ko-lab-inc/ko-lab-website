@@ -222,6 +222,8 @@ export type Database = {
           actif: boolean
           ordre: number
           created_at: string
+          /** Migration 0032. NULL = aucune photo assignée. */
+          photo_url: string | null
         }
         Insert: {
           id?: string
@@ -236,6 +238,7 @@ export type Database = {
           actif?: boolean
           ordre?: number
           created_at?: string
+          photo_url?: string | null
         }
         Update: {
           id?: string
@@ -250,6 +253,7 @@ export type Database = {
           actif?: boolean
           ordre?: number
           created_at?: string
+          photo_url?: string | null
         }
         Relationships: []
       }

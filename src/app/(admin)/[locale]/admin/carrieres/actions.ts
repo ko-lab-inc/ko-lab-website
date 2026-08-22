@@ -15,8 +15,10 @@ import { TYPES_POSTE, ROLES_EQUIPE } from '@/types'
  * foi (0002), Server Actions inline pour la publication et la suppression,
  * composant client pour l'édition (renvoie les erreurs de validation).
  *
- * ⚠️ Pas de photo, pas de slug — postes_carrieres n'a ni l'une ni l'autre
- * colonne. Le formulaire le plus simple des trois construits cette session.
+ * ⚠️ Pas de slug — postes_carrieres n'a pas cette colonne. Une photo existe
+ * depuis la migration 0032 (photo_url) : voir attribuerPhotoPoste plus bas,
+ * une action à part du formulaire principal (FormulairePoste), au même titre
+ * que la publication.
  */
 
 export type EtatPoste = { erreur?: 'donnees' | 'refuse' | 'serveur'; succes?: boolean }
@@ -189,4 +191,57 @@ export async function supprimerPoste(donnees: FormData): Promise<void> {
 
   updateTag(ETIQUETTE_CARRIERES)
   revalidatePath(`/${locale}/admin/carrieres`)
+}
+
+/**
+ * Attribution (ou retrait) de la photo d'un poste — colonne photo_url,
+ * migration 0032.
+ *
+ * ⚠️ AUCUN updateTag ICI, volontairement. `ETIQUETTE_CARRIERES` invalide le
+ * cache de la page PUBLIQUE /carrieres (lib/carrieres.ts) — mais la lecture
+ * publique (photoPourDepartement) choisit encore la photo par département,
+ * pas par photo_url : cette colonne n'a aujourd'hui aucun lecteur public
+ * (« hors Route A »). Appeler updateTag ici invaliderait un cache pour une
+ * donnée qu'il ne sert pas. Pas de revalidatePath non plus : l'écran admin
+ * lit toujours en direct via le client de session (jamais de cache côté
+ * page), et le composant met à jour son état local dès la réponse —
+ * rafraîchir la page redemanderait la même donnée pour rien.
+ *
+ * `exigerRole(ROLES_EQUIPE)`, pas `['admin']` : assigner une photo est un
+ * geste d'édition courant, comme modifier le titre — même politique RLS
+ * (postes_maj_equipe, 0002) que modifierPoste ci-dessus, pas
+ * postes_suppression_admin.
+ *
+ * Signature en arguments positionnels, pas (prevState, FormData) : appelée
+ * directement depuis le composant client (SelecteurPhotoPoste), même patron
+ * que mettreAJourEmplacement (medias-emplacements/actions.ts).
+ */
+export async function attribuerPhotoPoste(
+  posteId: string,
+  urlStockage?: string | null,
+): Promise<{ success: boolean; error?: string }> {
+  if (!estUuid(posteId)) return { success: false, error: 'Poste introuvable.' }
+
+  try {
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) {
+      return { success: false, error: 'Cette action a été refusée. Réessayez, ou prévenez Moussa si ça persiste.' }
+    }
+    const { supabase } = acces
+
+    const { error } = await supabase
+      .from('postes_carrieres')
+      .update({ photo_url: urlStockage ?? null })
+      .eq('id', posteId)
+
+    if (error) {
+      console.error('[carrieres] attribution de photo refusée', error.message)
+      return { success: false, error: "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste." }
+    }
+  } catch (err) {
+    console.error('[carrieres] échec attribution de photo', err)
+    return { success: false, error: "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste." }
+  }
+
+  return { success: true }
 }

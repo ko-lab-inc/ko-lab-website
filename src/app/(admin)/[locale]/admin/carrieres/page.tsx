@@ -6,6 +6,7 @@ import { EnteteAdmin, PanneauAdmin } from '@/components/layout/CadreAdmin'
 import type { LibellesPoste } from '@/components/sections/FormulairePoste'
 import { TableauPostes } from '@/components/sections/TableauPostes'
 import { routing } from '@/i18n/routing'
+import { listerFichiersDisponibles } from '@/lib/medias-disponibles'
 import { createClient } from '@/lib/supabase/server'
 
 type Props = { params: Promise<{ locale: string }> }
@@ -29,12 +30,13 @@ export default async function CarrieresAdminPage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const [{ data: postes, error }, { data: moi }] = await Promise.all([
+  const [{ data: postes, error }, { data: moi }, fichiersDisponibles] = await Promise.all([
     supabase
       .from('postes_carrieres')
-      .select('id, titre_fr, departement, type, description_fr, exigences_fr, actif')
+      .select('id, titre_fr, departement, type, description_fr, exigences_fr, actif, photo_url')
       .order('ordre'),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
+    listerFichiersDisponibles(supabase),
   ])
 
   const estAdmin = moi?.role === 'admin'
@@ -87,6 +89,7 @@ export default async function CarrieresAdminPage({ params }: Props) {
         postes={postes ?? []}
         estAdmin={estAdmin}
         libelles={libelles}
+        fichiersDisponibles={fichiersDisponibles}
         textes={{
           vide: t('carrieres_vide'),
           actif: t('statut_publie'),
@@ -102,6 +105,19 @@ export default async function CarrieresAdminPage({ params }: Props) {
           titreEdition: t('titre_edition_poste'),
           titreCreation: t('nouveau_poste'),
           titreDetail: t('titre_detail_poste'),
+        }}
+        textesPhoto={{
+          colonnePhoto: t('colonne_photo_poste'),
+          modifierPhoto: t('modifier_photo_poste'),
+          titreModal: t('titre_photo_poste'),
+          aucunePhoto: t('aucune_photo_poste'),
+          champChoix: t('champ_choix_photo_poste'),
+          optionAucune: t('option_aucune_photo_poste'),
+          enregistrer: t('enregistrer'),
+          enCours: t('en_cours'),
+          supprimerPhoto: t('supprimer_photo_poste'),
+          fermer: t('fermer'),
+          erreurServeur: t('erreur_serveur_photo_poste'),
         }}
       />
     </>

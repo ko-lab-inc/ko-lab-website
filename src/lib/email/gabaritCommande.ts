@@ -75,7 +75,7 @@ export type LigneEmailCommande = {
 
 const NOIR = '#111210'
 const CREME = '#f0ede6'
-const BLANC = '#f8f6f1'
+const BLANC = '#e8e8e8' // ko-white — gris clair froid depuis le 22 août 2026 (migration 0032)
 const BLEU = '#61b4db'
 const MUET = '#7a7b76'
 const LIGNE = '#e0ddd6'

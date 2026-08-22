@@ -2,6 +2,7 @@ import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
+import { GalerieLab } from '@/components/sections/GalerieLab'
 import { PageCapacite } from '@/components/sections/PageCapacite'
 import { routing } from '@/i18n/routing'
 import { resoudreEmplacement } from '@/lib/medias-emplacements'
@@ -38,12 +39,20 @@ export default async function LeLabPage({ params }: Props) {
   const t = await getTranslations('Capacites.lab')
   const videos = await lireVideosPubliees()
 
-  // lab_1 (hero) et lab_2 (galerie) — migration 0031, route A. Repli sur les
-  // mêmes photos qu'avant (labImpression3d, precisionCablage2024) si la base
-  // ne répond pas — voir medias-repli.ts.
-  const [photoHero, photoGalerie] = await Promise.all([
+  // lab_1 reste le hero (inchangé) — resoudreEmplacement('lab_1') est
+  // rappelé séparément ci-dessous pour la galerie, sans coût réel : la
+  // fonction est mise en cache par unstable_cache (medias-emplacements.ts),
+  // même clé d'appel = même entrée. La galerie affiche maintenant les SEPT
+  // emplacements lab_1..lab_7 (migrations 0031 + 0033) — lab_1 y apparaît
+  // donc deux fois (hero + première vignette), duplication assumée, même
+  // principe que plusieurs clés d'images.ts (ex. locationStructures/
+  // besoinLouer). Remplace l'ancienne bande à une seule photo (lab_2 seule,
+  // via GaleriePhotos) : la nouvelle grille suit un patron différent, voir
+  // GalerieLab.tsx.
+  const clesLab = ['lab_1', 'lab_2', 'lab_3', 'lab_4', 'lab_5', 'lab_6', 'lab_7'] as const
+  const [photoHero, photosLab] = await Promise.all([
     resoudreEmplacement('lab_1'),
-    resoudreEmplacement('lab_2'),
+    Promise.all(clesLab.map((cle) => resoudreEmplacement(cle))),
   ])
 
   return (
@@ -68,15 +77,11 @@ export default async function LeLabPage({ params }: Props) {
       // distincts plutôt que la même image deux fois dans le parcours.
       src={photoHero.url}
       cadrage="object-center"
-      // Galerie ajoutée le 20 août 2026 — une seule photo, pas de découpe
-      // laser/CNC dans les lots reçus (voir images.ts), mais le câblage de
-      // précision illustre l'item « Électronique » du brief. Une vignette
-      // seule s'affiche sans flèches (voir BandeauImages), rien à corriger.
-      images={[{ src: photoGalerie.url, alt: photoGalerie.alt }]}
       // Bande de vidéos façon bambulab.com, alimentée depuis /admin/videos
       // (migration 0016). Tableau vide = quatre emplacements « Vidéo à
       // venir », jamais une section masquée — voir BandeauVideos.tsx.
       videos={videos}
+      contenuSupplementaire={<GalerieLab photos={photosLab} />}
     />
   )
 }

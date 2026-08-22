@@ -16,7 +16,13 @@
     --ko-black: #111210; /* fond sombre dominant */
     --ko-black-2: #0e1116; /* second noir, plus froid — sépare deux sections sombres adjacentes */
     --ko-ink: #2a2b28; /* texte principal sur fond clair */
-    --ko-white: #f8f6f1; /* fond clair principal */
+    /* Gris clair froid depuis le 22 août 2026 (remplace le beige #f8f6f1) —
+       décision Christian, migration 0032. Contraste bleu #61b4db mesuré à
+       1,89:1 (contre 2,15:1 avant) : la règle « bleu réservé aux gros
+       éléments graphiques sur fond clair » (skill 02, section ci-dessus)
+       reste valide, elle est même plus nettement justifiée qu'avant — pas
+       de 2,3:1 comme un chiffre annoncé le supposait, vérifié au calcul. */
+    --ko-white: #e8e8e8; /* fond clair principal */
     --ko-cream: #f0ede6; /* fond clair secondaire */
     --ko-cream-2: #e8e4db; /* fond clair tertiaire, filigranes, placeholders */
     /* #61b4db remplace #2f7fc9 le 18 août 2026 (décision direction, Phase 2
@@ -54,7 +60,7 @@
        sans effet. Ces deux variables alimentent les tokens ko-scrim et
        ko-frost, ce qui évite de retomber sur `black/88` codé en dur. */
     --ko-black-rgb: 17 18 16;
-    --ko-white-rgb: 248 246 241;
+    --ko-white-rgb: 232 232 232; /* doit rester synchronisé avec --ko-white ci-dessus — ko-frost (glassmorphism) en dépend */
     --ko-blue-rgb: 97 180 219;
   }
 

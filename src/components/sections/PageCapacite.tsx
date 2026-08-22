@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils/cn'
 
 import type { VignetteBandeau } from '@/components/ui/BandeauImages'
 
-import type { CSSProperties } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 /**
  * Gabarit commun aux quatre pages de capacités.
@@ -58,6 +58,15 @@ type PageCapaciteProps = {
    * pages qui n'ont pas encore assez de photos propres pour ce sujet.
    */
   images?: readonly VignetteBandeau[]
+  /**
+   * Emplacement libre entre la galerie et la bande de vidéos — ajouté pour
+   * la grille de 7 photos du LAB (medias_emplacements lab_1..lab_7), qui
+   * suit un patron différent de `images` ci-dessus (grille responsive, pas
+   * la bande + visionneuse de GaleriePhotos). Optionnel et rendu tel quel :
+   * les trois autres pages de capacités ne le passent pas, rien ne change
+   * pour elles.
+   */
+  contenuSupplementaire?: ReactNode
 }
 
 export async function PageCapacite({
@@ -72,6 +81,7 @@ export async function PageCapacite({
   desature = false,
   videos,
   images,
+  contenuSupplementaire,
 }: PageCapaciteProps) {
   const t = await getTranslations('Capacites.cta')
   const tCommun = await getTranslations('Commun')
@@ -225,6 +235,8 @@ export async function PageCapacite({
           </div>
         </section>
       )}
+
+      {contenuSupplementaire}
 
       {/* ------------------------------ Vidéos ------------------------------ */}
       {/* Rendue dès que la prop est passée, même vide — la bande affiche alors

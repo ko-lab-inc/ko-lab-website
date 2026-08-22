@@ -26,6 +26,7 @@ export type Poste = {
   description_fr: string | null
   exigences_fr: string | null
   actif: boolean
+  photo_url: string | null
 }
 
 export type LibellesPoste = {

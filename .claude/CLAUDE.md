@@ -82,7 +82,7 @@ tableau de conformité.
 ### Palette stricte — 3 couleurs de marque + 4 neutres, aucune autre
 ```
 --ko-black:   #111210   (dominant, fond sombre)
---ko-white:   #f8f6f1   (fond clair, texte sur noir)
+--ko-white:   #e8e8e8   (fond clair, texte sur noir — gris clair froid depuis le 22 août 2026, ex #f8f6f1)
 --ko-cream:   #f0ede6   (sections claires, arrière-plans)
 --ko-blue:    #61b4db   (accent UNIQUE — depuis le 18 août 2026, ex #2f7fc9)
 --ko-blue-2:  #37a0d2   (plus foncé que --ko-blue — hover, états actifs)
@@ -91,14 +91,15 @@ tableau de conformité.
 ```
 Ces 7 tokens sont la palette complète. N'en ajouter aucun, n'en retirer aucun.
 
-**Règle d'usage du bleu (Phase 2, 18 août 2026)** — accessibilité mesurée, pas
-suggérée :
+**Règle d'usage du bleu (Phase 2, 18 août 2026 ; recalculé au changement de
+--ko-white, 22 août 2026)** — accessibilité mesurée, pas suggérée :
 
 | Combinaison | Contraste | Verdict |
 |---|---|---|
 | `--ko-blue` sur `--ko-black` | 8,10:1 | OK |
 | Texte noir sur `--ko-blue` | 9,06:1 | OK |
-| `--ko-blue` sur `--ko-white`/`--ko-cream` | 2,15:1 | ÉCHOUE |
+| `--ko-blue` sur `--ko-white` | 1,89:1 | ÉCHOUE |
+| `--ko-blue` sur `--ko-cream` | 1,98:1 | ÉCHOUE |
 | Texte blanc sur `--ko-blue` | 2,32:1 | ÉCHOUE |
 
 - Fond sombre : bleu libre — texte, liens, labels, bordures, accents.
@@ -118,9 +119,9 @@ suggérée :
 
 ### Structure de page (alternance clair/sombre)
 1. Nav sticky (fond crème)
-2. Hero → fond clair (#f8f6f1) plein écran
+2. Hero → fond clair (#e8e8e8) plein écran
 3. Stats bar → fond sombre (#111210) — contraste
-4. Sections contenu → fond clair alternant (#f8f6f1 / #f0ede6)
+4. Sections contenu → fond clair alternant (#e8e8e8 / #f0ede6)
 5. Écosystème → fond sombre (#111210)
 6. CTA final → fond clair
 7. Footer → fond sombre (#111210)

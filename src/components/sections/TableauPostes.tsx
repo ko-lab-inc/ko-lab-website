@@ -8,6 +8,11 @@ import {
   type LibellesPoste,
   type Poste,
 } from '@/components/sections/FormulairePoste'
+import {
+  SelecteurPhotoPoste,
+  type FichierDisponible,
+  type TextesPhotoPoste,
+} from '@/components/sections/SelecteurPhotoPoste'
 import { buttonVariants } from '@/components/ui/Button'
 import {
   IconeAjouter,
@@ -33,6 +38,8 @@ export function TableauPostes({
   estAdmin,
   libelles,
   textes,
+  fichiersDisponibles,
+  textesPhoto,
 }: {
   locale: string
   postes: Poste[]
@@ -54,10 +61,18 @@ export function TableauPostes({
     titreCreation: string
     titreDetail: string
   }
+  fichiersDisponibles: FichierDisponible[]
+  textesPhoto: TextesPhotoPoste
 }) {
   const boite = useRef<HTMLDialogElement>(null)
   // `null` = création, un poste = édition, `undefined` = fermé.
   const [edite, setEdite] = useState<Poste | null | undefined>(undefined)
+
+  // Retouches locales de photo_url après un attribuerPhotoPoste réussi — la
+  // vignette se met à jour sans attendre un rechargement (pas de
+  // revalidatePath côté action, voir sa docstring). `undefined` = pas encore
+  // retouché, reprendre p.photo_url tel que chargé par la page.
+  const [photosRetouchees, setPhotosRetouchees] = useState<Record<string, string | null>>({})
 
   useEffect(() => {
     const el = boite.current
@@ -121,6 +136,17 @@ export function TableauPostes({
                     {p.departement}
                   </span>
                 </span>
+
+                <SelecteurPhotoPoste
+                  posteId={p.id}
+                  titrePoste={p.titre_fr}
+                  photoActuelle={p.id in photosRetouchees ? (photosRetouchees[p.id] ?? null) : p.photo_url}
+                  fichiersDisponibles={fichiersDisponibles}
+                  textes={textesPhoto}
+                  onChange={(nouvellePhoto) =>
+                    setPhotosRetouchees((prev) => ({ ...prev, [p.id]: nouvellePhoto }))
+                  }
+                />
 
                 <span className="label-mono hidden shrink-0 sm:block">
                   {libelles.types[p.type] ?? p.type}
