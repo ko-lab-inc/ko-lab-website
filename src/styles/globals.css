@@ -50,7 +50,11 @@
     --ko-blue-2: #37a0d2; /* hover bleu, et accent sur fond sombre */
     --ko-muted: #7a7b76; /* texte secondaire sur fond clair */
     --ko-muted-d: #b3b2ae; /* texte secondaire sur fond sombre — 8.85:1 sur --ko-black */
-    --ko-line: #e0ddd6; /* bordures sur fond clair */
+    /* Gris neutre depuis le 22 août 2026 (même correction « deux tons
+       neutres » que --ko-white/--ko-cream ci-dessus) — remplace #e0ddd6,
+       resté beige chaud après le premier passage et visible en bordure des
+       cartes admin, en rupture avec la paire blanc/gris neutre établie. */
+    --ko-line: #e5e5e5; /* bordures sur fond clair */
     --ko-line-d: rgba(255, 255, 255, 0.12); /* bordures sur fond sombre */
 
     /* Blanc PUR — cadres de photo produit de la boutique, et rien d'autre.

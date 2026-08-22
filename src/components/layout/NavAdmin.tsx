@@ -45,12 +45,12 @@ export type EntreeAdmin = {
   icone: ReactNode
 }
 /**
- * Entrée à sous-menu — ex. « Médias » (Emplacements + Vidéos).
+ * Entrée à sous-menu — ex. « Médias » (Réalisations, Emplacements, Vidéos).
  *
  * Pas de `href` propre : ce niveau ne correspond à aucun écran, seulement à
- * un regroupement visuel. Toujours DÉPLIÉ (pas d'accordéon, pas d'état) —
- * deux sous-entrées ne justifient pas de JS supplémentaire dans une nav déjà
- * économe en interactivité.
+ * un regroupement visuel. Accordéon : fermé par défaut, ouvert au clic ou
+ * automatiquement quand l'écran courant est une des sous-entrées — voir
+ * GroupeAdminMenu.
  */
 export type EntreeAdminGroupee = { label: string; icone: ReactNode; sousEntrees: EntreeAdmin[] }
 export type GroupeAdmin = { titre: string; entrees: (EntreeAdmin | EntreeAdminGroupee)[] }
@@ -214,34 +214,13 @@ export function NavAdmin({
             <p className="label-mono mb-3 text-ko-muted-d">{groupe.titre}</p>
 
             <ul className="flex flex-col items-stretch gap-0.5">
-              {groupe.entrees.map((entree) => {
-                if (estGroupee(entree)) {
-                  // Actif si l'ÉCRAN COURANT est une des sous-entrées — porté
-                  // par le libellé du groupe, qui n'a lui-même aucun lien.
-                  const unSousLienActif = entree.sousEntrees.some((s) => pathname.startsWith(s.href))
-
-                  return (
-                    <li key={entree.label}>
-                      <p
-                        className={cn(
-                          'flex min-h-[40px] items-center gap-3 px-3 py-2 text-sm',
-                          unSousLienActif ? 'font-medium text-ko-blue2' : 'text-ko-muted-d',
-                        )}
-                      >
-                        {entree.icone}
-                        {entree.label}
-                      </p>
-                      <ul className="ml-6 flex flex-col items-stretch gap-0.5 border-l border-ko-line-d pl-3">
-                        {entree.sousEntrees.map((sousEntree) => (
-                          <LienEntreeAdmin key={sousEntree.href} entree={sousEntree} pathname={pathname} racine={racine} />
-                        ))}
-                      </ul>
-                    </li>
-                  )
-                }
-
-                return <LienEntreeAdmin key={entree.href} entree={entree} pathname={pathname} racine={racine} />
-              })}
+              {groupe.entrees.map((entree) =>
+                estGroupee(entree) ? (
+                  <GroupeAdminMenu key={entree.label} entree={entree} pathname={pathname} racine={racine} />
+                ) : (
+                  <LienEntreeAdmin key={entree.href} entree={entree} pathname={pathname} racine={racine} />
+                ),
+              )}
             </ul>
           </div>
         ))}
@@ -250,15 +229,84 @@ export function NavAdmin({
   )
 }
 
+/**
+ * Groupe à sous-menu (« Médias ») — accordéon local, sans persistance.
+ *
+ * `ouvert = toggle || unSousLienActif` : un clic bascule `toggle`, mais le
+ * groupe reste visible tant que l'écran courant est une de ses sous-entrées,
+ * même si `toggle` est retombé à `false` — arriver directement sur
+ * /admin/videos doit montrer le sous-menu déplié sans clic préalable.
+ */
+function GroupeAdminMenu({
+  entree,
+  pathname,
+  racine,
+}: {
+  entree: EntreeAdminGroupee
+  pathname: string
+  racine: string
+}) {
+  const [toggle, setToggle] = useState(false)
+  const unSousLienActif = entree.sousEntrees.some((s) => pathname.startsWith(s.href))
+  const ouvert = toggle || unSousLienActif
+
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={() => setToggle((v) => !v)}
+        aria-expanded={ouvert}
+        className={cn(
+          'flex min-h-[40px] w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm transition-colors duration-200',
+          unSousLienActif
+            ? 'font-medium text-ko-blue2'
+            : 'text-ko-muted-d hover:bg-ko-frost/5 hover:text-ko-white',
+        )}
+      >
+        {entree.icone}
+        <span className="flex-1">{entree.label}</span>
+        <span
+          aria-hidden="true"
+          className={cn('text-[10px] transition-transform duration-200', ouvert && 'rotate-180')}
+        >
+          ▾
+        </span>
+      </button>
+
+      {ouvert && (
+        // Fond légèrement plus sombre pour différencier les sous-entrées —
+        // jamais un décalage horizontal : même px-3 que les entrées
+        // principales, sans icône (voir avecIcone plus bas), pour que le
+        // libellé démarre au même bord gauche, pas en retrait.
+        <ul className="mt-0.5 flex flex-col items-stretch gap-0.5 rounded-sm bg-ko-black2 py-0.5">
+          {entree.sousEntrees.map((sousEntree) => (
+            <LienEntreeAdmin
+              key={sousEntree.href}
+              entree={sousEntree}
+              pathname={pathname}
+              racine={racine}
+              avecIcone={false}
+            />
+          ))}
+        </ul>
+      )}
+    </li>
+  )
+}
+
 /** Un lien de nav, extrait pour être rendu identiquement à plat et en sous-entrée. */
 function LienEntreeAdmin({
   entree: { href, label, icone },
   pathname,
   racine,
+  avecIcone = true,
 }: {
   entree: EntreeAdmin
   pathname: string
   racine: string
+  /** `false` en sous-entrée de groupe : l'icône y créait un décalage entre
+   *  le début du libellé et celui des entrées principales (voir GroupeAdminMenu). */
+  avecIcone?: boolean
 }) {
   // Égalité stricte pour la racine (/fr/admin), qui est le préfixe de toutes
   // les autres entrées : un simple startsWith la laisserait active en
@@ -296,7 +344,7 @@ function LienEntreeAdmin({
       >
         {/* L'icône hérite de la couleur du lien via currentColor : elle passe
             au bleu avec le libellé, sans règle en plus. */}
-        {icone}
+        {avecIcone && icone}
         {label}
       </Link>
     </li>

@@ -67,7 +67,7 @@ async function connecter(page: import('@playwright/test').Page, email: string) {
   await page.waitForURL('**/admin', { timeout: 10_000 })
 }
 
-test('nav admin : « Médias » regroupe Emplacements et Vidéos', async ({ page, request }) => {
+test('nav admin : « Médias » est un accordéon fermé par défaut, à trois sous-entrées', async ({ page, request }) => {
   const compte = await creerCompteEditor(request)
   await connecter(page, compte.email)
 
@@ -77,18 +77,36 @@ test('nav admin : « Médias » regroupe Emplacements et Vidéos', async ({ page
   if (await hamburger.isVisible()) await hamburger.click()
 
   const nav = page.locator('nav')
-  // « Médias » : un en-tête de regroupement (pas un lien), pas « Vidéos » ni
-  // « Emplacements médias » directement — leurs LIENS existent toujours,
-  // mais nichés dessous, pas comme entrées à plat du groupe.
-  await expect(nav.getByText('Médias', { exact: true })).toBeVisible()
+  const boutonMedias = nav.getByRole('button', { name: 'Médias' })
+  await expect(boutonMedias).toBeVisible()
+  await expect(boutonMedias).toHaveAttribute('aria-expanded', 'false')
 
+  const lienRealisations = nav.getByRole('link', { name: 'Réalisations' })
   const lienEmplacements = nav.getByRole('link', { name: 'Emplacements médias' })
   const lienVideos = nav.getByRole('link', { name: 'Vidéos' })
+
+  // Fermé par défaut : les trois sous-entrées ne sont PAS dans l'arbre a11y.
+  await expect(lienRealisations).toHaveCount(0)
+  await expect(lienEmplacements).toHaveCount(0)
+  await expect(lienVideos).toHaveCount(0)
+
+  await boutonMedias.click()
+  await expect(boutonMedias).toHaveAttribute('aria-expanded', 'true')
+  await expect(lienRealisations).toBeVisible()
   await expect(lienEmplacements).toBeVisible()
   await expect(lienVideos).toBeVisible()
 
   await lienVideos.click()
   await page.waitForURL('**/admin/videos')
+
+  // Sous `lg`, le panneau entier se referme à chaque navigation (voir
+  // NavAdmin.tsx) — le rouvrir avant de vérifier l'état du groupe.
+  if (await hamburger.isVisible()) await hamburger.click()
+
+  // Arrivée directe sur une sous-route : le groupe est ouvert automatiquement,
+  // sans qu'il soit nécessaire de re-cliquer sur « Médias ».
+  await expect(nav.getByRole('button', { name: 'Médias' })).toHaveAttribute('aria-expanded', 'true')
+  await expect(nav.getByRole('link', { name: 'Vidéos' })).toBeVisible()
 })
 
 test('/admin/medias-emplacements : vignette Aperçu ouvre le modal en lecture seule', async ({ page, request }) => {

@@ -123,19 +123,17 @@ export default async function AdminLayout({ children, params }: Props) {
           icone: <IconeBadgeStock taille={17} />,
         },
         {
-          href: `/${locale}/admin/realisations`,
-          label: t('nav_realisations'),
-          icone: <IconeGalerie taille={17} />,
-        },
-        {
-          // Fusion de « Vidéos » et « Emplacements médias » (chacun un écran
-          // séparé jusqu'ici) en un seul point d'entrée « Médias » à deux
-          // sous-entrées — les deux gèrent le même genre de ressource
-          // (photo/vidéo servie sur le site public), et neuf lignes de nav à
-          // plat pour huit écrans + deux médias devenait dense.
+          // Regroupe les trois écrans qui gèrent une ressource média servie
+          // sur le site public — Réalisations rejoint ici Emplacements et
+          // Vidéos, retirée de sa position autonome ci-dessus.
           label: t('nav_medias'),
           icone: <IconeGalerie taille={17} />,
           sousEntrees: [
+            {
+              href: `/${locale}/admin/realisations`,
+              label: t('nav_realisations'),
+              icone: <IconeGalerie taille={17} />,
+            },
             {
               href: `/${locale}/admin/medias-emplacements`,
               label: t('nav_medias_emplacements'),
