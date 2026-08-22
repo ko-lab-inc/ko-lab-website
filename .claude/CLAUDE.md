@@ -82,8 +82,8 @@ tableau de conformité.
 ### Palette stricte — 3 couleurs de marque + 4 neutres, aucune autre
 ```
 --ko-black:   #111210   (dominant, fond sombre)
---ko-white:   #fafafa   (fond clair, texte sur noir — blanc cassé depuis le 22 août 2026, migration 0035, ex #fafafa, ex #f8f6f1)
---ko-cream:   #f0ede6   (sections claires, arrière-plans)
+--ko-white:   #ffffff   (fond de page, texte sur noir — blanc franc depuis le 22 août 2026, correction « deux tons neutres », ex #fafafa, ex #e8e8e8, ex #f8f6f1)
+--ko-cream:   #f5f5f5   (surfaces/blocs — gris neutre depuis le 22 août 2026, même correction, ex #f0ede6)
 --ko-blue:    #61b4db   (accent UNIQUE — depuis le 18 août 2026, ex #2f7fc9)
 --ko-blue-2:  #37a0d2   (plus foncé que --ko-blue — hover, états actifs)
 --ko-muted:   #7a7b76   (texte secondaire)
@@ -92,15 +92,15 @@ tableau de conformité.
 Ces 7 tokens sont la palette complète. N'en ajouter aucun, n'en retirer aucun.
 
 **Règle d'usage du bleu (Phase 2, 18 août 2026 ; recalculé à chaque changement
-de --ko-white, 22 août puis migration 0035 le même jour)** — accessibilité
-mesurée, pas suggérée :
+de --ko-white/--ko-cream — 22 août, migration 0035, puis correction « deux
+tons neutres » le même jour)** — accessibilité mesurée, pas suggérée :
 
 | Combinaison | Contraste | Verdict |
 |---|---|---|
 | `--ko-blue` sur `--ko-black` | 8,10:1 | OK |
 | Texte noir sur `--ko-blue` | 9,06:1 | OK |
-| `--ko-blue` sur `--ko-white` | 2,22:1 | ÉCHOUE |
-| `--ko-blue` sur `--ko-cream` | 1,98:1 | ÉCHOUE |
+| `--ko-blue` sur `--ko-white` | 2,32:1 | ÉCHOUE |
+| `--ko-blue` sur `--ko-cream` | 2,13:1 | ÉCHOUE |
 | Texte blanc sur `--ko-blue` | 2,32:1 | ÉCHOUE |
 
 - Fond sombre : bleu libre — texte, liens, labels, bordures, accents.
@@ -120,9 +120,9 @@ mesurée, pas suggérée :
 
 ### Structure de page (alternance clair/sombre)
 1. Nav sticky (fond crème)
-2. Hero → fond clair (#fafafa) plein écran
+2. Hero → fond clair (#ffffff) plein écran
 3. Stats bar → fond sombre (#111210) — contraste
-4. Sections contenu → fond clair alternant (#fafafa / #f0ede6)
+4. Sections contenu → fond clair alternant (#ffffff / #f5f5f5)
 5. Écosystème → fond sombre (#111210)
 6. CTA final → fond clair
 7. Footer → fond sombre (#111210)

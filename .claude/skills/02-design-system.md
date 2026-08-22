@@ -6,9 +6,9 @@
 :root {
   --ko-black:    #111210;   /* fond sombre dominant */
   --ko-ink:      #2a2b28;   /* texte principal sur fond clair */
-  --ko-white:    #fafafa;   /* fond clair principal — blanc cassé depuis le 22 août 2026 (migration 0035) */
-  --ko-cream:    #f0ede6;   /* fond clair secondaire */
-  --ko-cream-2:  #e8e4db;   /* fond clair tertiaire */
+  --ko-white:    #ffffff;   /* fond de page — blanc franc depuis le 22 août 2026 (correction « deux tons neutres ») */
+  --ko-cream:    #f5f5f5;   /* surfaces/blocs — gris neutre depuis le 22 août 2026, même correction */
+  --ko-cream-2:  #ebebeb;   /* fond clair tertiaire */
   --ko-blue:     #61b4db;   /* accent UNIQUE — depuis le 18 août 2026 */
   --ko-blue-2:   #37a0d2;   /* plus foncé que --ko-blue — hover, états actifs */
   --ko-muted:    #7a7b76;   /* texte secondaire */
@@ -63,9 +63,9 @@ em { font-style: italic; color: var(--ko-blue); }
 colors: {
   'ko-black':  '#111210',
   'ko-ink':    '#2a2b28',
-  'ko-white':  '#fafafa',
-  'ko-cream':  '#f0ede6',
-  'ko-cream2': '#e8e4db',
+  'ko-white':  '#ffffff',
+  'ko-cream':  '#f5f5f5',
+  'ko-cream2': '#ebebeb',
   'ko-blue':   '#2f7fc9',
   'ko-blue2':  '#5aa3e4',
   'ko-muted':  '#7a7b76',
