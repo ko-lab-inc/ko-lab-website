@@ -1,12 +1,14 @@
 import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 import { buttonVariants } from '@/components/ui/Button'
-import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
+import { FILTRE_TERRAIN } from '@/lib/images'
+import { resoudreEmplacement } from '@/lib/medias-emplacements'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -36,8 +38,9 @@ export default async function AProposPage({ params }: Props) {
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
+  const photoEquipe = await resoudreEmplacement('apropos_1')
+
   const t = await getTranslations('APropos')
-  const tCommun = await getTranslations('Commun')
   const tEco = await getTranslations('Home.ecosysteme')
   const tStats = await getTranslations('Home.stats')
   const tNav = await getTranslations('Nav')
@@ -86,16 +89,24 @@ export default async function AProposPage({ params }: Props) {
               </div>
 
               {/*
-                Emplacement réservé plutôt qu'une photo Unsplash : cette page
-                parle de QUI est KO-LAB. Une équipe anonyme y serait un
-                contresens — c'est précisément le cas que le skill 22 vise en
-                interdisant le stock. Ici, le placeholder est plus honnête.
+                Photo réelle depuis medias_emplacements (migration 0036, route
+                A de l'architecture média) — remplace le PhotoPlaceholder :
+                cette page parle de QUI est KO-LAB, une équipe anonyme y était
+                un contresens. `resoudreEmplacement` retombe sur la même photo
+                si la base ne répond pas ou si la ligne manque — jamais de
+                blanc (voir medias-repli.ts).
               */}
-              <PhotoPlaceholder
-                ratio="aspect-[4/3]"
-                label={tCommun('photo_placeholder')}
-                className="rounded-xl"
-              />
+              <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-ko-cream2">
+                <Image
+                  src={photoEquipe.url}
+                  alt={photoEquipe.alt}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  quality={80}
+                  style={FILTRE_TERRAIN}
+                  className="object-cover"
+                />
+              </div>
             </div>
           </Reveal>
         </div>

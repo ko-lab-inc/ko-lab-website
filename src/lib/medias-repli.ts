@@ -50,6 +50,18 @@ const REPLI_EMPLACEMENTS: Record<string, { url: string; alt: string }> = {
     url: IMAGES.deploiementRemorque,
     alt: 'Camion et remorque de déploiement KO-LAB, chargement de matériel',
   },
+  /**
+   * Pas d'ancienne clé `IMAGES.*` à reprendre ici : la section « Positionnement »
+   * de /a-propos affichait un `<PhotoPlaceholder>` avant la migration 0036, pas
+   * une vraie photo — donc pas de « photo qui servait déjà cet emplacement ».
+   * Le repli pointe directement vers le fichier téléversé pour ce même
+   * emplacement plutôt que vers une photo sans rapport : si la base ne répond
+   * pas, la page retombe sur la même image, pas sur un blanc ni un décalage.
+   */
+  apropos_1: {
+    url: 'https://faagcojkghpbzndgnfoi.supabase.co/storage/v1/object/public/medias/equipe/equipe-kolab-2024.webp',
+    alt: "Six membres de l'équipe KO-LAB posant ensemble lors d'un événement, en tenue de soirée.",
+  },
 }
 
 /**
