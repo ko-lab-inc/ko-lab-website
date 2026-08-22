@@ -142,12 +142,15 @@ export function TuileStat({
 /**
  * Grille de tuiles.
  *
- * `gap-px` sur fond ko-line : deux tuiles voisines partagent un seul filet,
- * au lieu d'en accoler deux et d'obtenir une ligne deux fois trop épaisse.
+ * Sans bordure ni filet entre tuiles (retiré du groupe stats uniquement,
+ * demande de Christian : « les cadres KPI ont une bordure trop visible ») —
+ * les tuiles blanches (TuileStat, bg-ko-white) se détachent déjà d'elles-
+ * mêmes sur le fond gris de la page, un vrai `gap` suffit à les séparer.
+ * Le reste de l'admin (tableaux, formulaires) garde sa bordure `ko-line`.
  */
 export function GrilleStats({ children }: { children: ReactNode }) {
   return (
-    <div className="grid grid-cols-2 gap-px border border-ko-line bg-ko-line lg:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
       {children}
     </div>
   )

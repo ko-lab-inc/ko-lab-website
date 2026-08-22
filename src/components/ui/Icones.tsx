@@ -365,6 +365,15 @@ export function IconeFermer(props: IconeProps) {
   )
 }
 
+/** Chevron bas — indicateur d'accordéon (groupe de nav déplié/replié). */
+export function IconeChevronBas(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M6 9l6 6 6-6" />
+    </Icone>
+  )
+}
+
 /* =============================================================================
  * Stats bar
  * ========================================================================== */

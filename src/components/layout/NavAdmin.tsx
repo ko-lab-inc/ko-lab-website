@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
+import { IconeChevronBas } from '@/components/ui/Icones'
 import { cn } from '@/lib/utils/cn'
 
 import type { ReactNode } from 'react'
@@ -265,20 +266,23 @@ function GroupeAdminMenu({
       >
         {entree.icone}
         <span className="flex-1">{entree.label}</span>
-        <span
-          aria-hidden="true"
-          className={cn('text-[10px] transition-transform duration-200', ouvert && 'rotate-180')}
-        >
-          ▾
-        </span>
+        {/* Même couleur que le libellé (currentColor, pas de classe de
+            couleur propre) — 16px comme les icônes de nav, pas le glyphe
+            texte ▾ trop petit d'avant. */}
+        <IconeChevronBas
+          taille={16}
+          className={cn('shrink-0 transition-transform duration-200', ouvert && 'rotate-180')}
+        />
       </button>
 
       {ouvert && (
-        // Fond légèrement plus sombre pour différencier les sous-entrées —
-        // jamais un décalage horizontal : même px-3 que les entrées
-        // principales, sans icône (voir avecIcone plus bas), pour que le
-        // libellé démarre au même bord gauche, pas en retrait.
-        <ul className="mt-0.5 flex flex-col items-stretch gap-0.5 rounded-sm bg-ko-black2 py-0.5">
+        // Fond plus sombre + retrait horizontal : les DEUX signalent
+        // l'appartenance au groupe (retiré puis remis sur demande de
+        // Christian — un retrait de nav se comprend d'un coup d'œil,
+        // « aligné avec le niveau racine » ne le signale pas). Le fond
+        // (bg-ko-black2) reste plein largeur, aligné sur les entrées
+        // principales ; seul le CONTENU (pl-6) est décalé.
+        <ul className="mt-0.5 flex flex-col items-stretch gap-0.5 rounded-sm bg-ko-black2 py-0.5 pl-10">
           {entree.sousEntrees.map((sousEntree) => (
             <LienEntreeAdmin
               key={sousEntree.href}
