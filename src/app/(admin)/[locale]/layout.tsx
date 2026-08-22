@@ -128,9 +128,25 @@ export default async function AdminLayout({ children, params }: Props) {
           icone: <IconeGalerie taille={17} />,
         },
         {
-          href: `/${locale}/admin/videos`,
-          label: t('nav_videos'),
-          icone: <IconeLecture taille={17} />,
+          // Fusion de « Vidéos » et « Emplacements médias » (chacun un écran
+          // séparé jusqu'ici) en un seul point d'entrée « Médias » à deux
+          // sous-entrées — les deux gèrent le même genre de ressource
+          // (photo/vidéo servie sur le site public), et neuf lignes de nav à
+          // plat pour huit écrans + deux médias devenait dense.
+          label: t('nav_medias'),
+          icone: <IconeGalerie taille={17} />,
+          sousEntrees: [
+            {
+              href: `/${locale}/admin/medias-emplacements`,
+              label: t('nav_medias_emplacements'),
+              icone: <IconeGalerie taille={17} />,
+            },
+            {
+              href: `/${locale}/admin/videos`,
+              label: t('nav_videos'),
+              icone: <IconeLecture taille={17} />,
+            },
+          ],
         },
         {
           href: `/${locale}/admin/carrieres`,
@@ -141,15 +157,6 @@ export default async function AdminLayout({ children, params }: Props) {
           href: `/${locale}/admin/candidatures`,
           label: t('nav_candidatures'),
           icone: <IconeEquipe taille={17} />,
-        },
-        {
-          href: `/${locale}/admin/medias-emplacements`,
-          label: t('nav_medias_emplacements'),
-          // Même icône que « Réalisations » — les deux sont des écrans de
-          // photos, aucune icône dédiée n'existait pour « emplacement média »
-          // spécifiquement et en ajouter une nouvelle sortait du périmètre
-          // de ce chantier (voir Icones.tsx).
-          icone: <IconeGalerie taille={17} />,
         },
       ],
     },

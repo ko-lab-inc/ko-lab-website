@@ -70,6 +70,8 @@ export default async function MediasEmplacementsAdminPage({ params }: Props) {
         estAdmin={estAdmin}
         textes={{
           colonneCle: t('colonne_cle'),
+          colonneApercu: t('colonne_apercu'),
+          voirApercu: t('voir_apercu'),
           colonneUrl: t('colonne_url_actuelle'),
           colonneAltFr: t('colonne_alt_fr'),
           colonneAltEn: t('colonne_alt_en'),
@@ -79,6 +81,8 @@ export default async function MediasEmplacementsAdminPage({ params }: Props) {
           enregistrer: t('enregistrer'),
           enCours: t('en_cours'),
           fermer: t('fermer'),
+          texteAlt: t('champ_image_alt'),
+          sansAlt: t('apercu_media_sans_alt'),
         }}
       />
     </>

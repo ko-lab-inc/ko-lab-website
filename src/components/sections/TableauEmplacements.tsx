@@ -1,10 +1,12 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useTransition } from 'react'
 
 import { mettreAJourEmplacement } from '@/app/(admin)/[locale]/admin/medias-emplacements/actions'
+import { PreviewMediaModal, type TextesApercuMedia } from '@/components/admin/PreviewMediaModal'
 import { buttonVariants } from '@/components/ui/Button'
-import { IconeCrayon, IconeFermer } from '@/components/ui/Icones'
+import { IconeCrayon, IconeFermer, IconeGalerie } from '@/components/ui/Icones'
 
 /**
  * Tableau des neuf emplacements médias — édition inline, pas de modal.
@@ -28,8 +30,10 @@ export type EmplacementMedia = {
   alt_text_en: string | null
 }
 
-type Textes = {
+type Textes = TextesApercuMedia & {
   colonneCle: string
+  colonneApercu: string
+  voirApercu: string
   colonneUrl: string
   colonneAltFr: string
   colonneAltEn: string
@@ -59,6 +63,7 @@ export function TableauEmplacements({
 }) {
   const [lignes, setLignes] = useState(emplacements)
   const [editionCle, setEditionCle] = useState<string | null>(null)
+  const [apercu, setApercu] = useState<EmplacementMedia | null>(null)
 
   return (
     <div className="overflow-x-auto border border-ko-line bg-ko-white">
@@ -66,6 +71,7 @@ export function TableauEmplacements({
         <thead>
           <tr className="border-b border-ko-line">
             <th className="label-mono px-4 py-3 font-normal text-ko-muted">{textes.colonneCle}</th>
+            <th className="label-mono px-4 py-3 font-normal text-ko-muted">{textes.colonneApercu}</th>
             <th className="label-mono px-4 py-3 font-normal text-ko-muted">{textes.colonneUrl}</th>
             <th className="label-mono px-4 py-3 font-normal text-ko-muted">{textes.colonneAltFr}</th>
             <th className="label-mono px-4 py-3 font-normal text-ko-muted">{textes.colonneAltEn}</th>
@@ -88,6 +94,9 @@ export function TableauEmplacements({
             ) : (
               <tr key={ligne.cle}>
                 <td className="px-4 py-3 align-top font-mono text-xs text-ko-ink">{ligne.cle}</td>
+                <td className="px-4 py-3 align-top">
+                  <VignetteEmplacement ligne={ligne} label={textes.voirApercu} onClick={() => setApercu(ligne)} />
+                </td>
                 <td
                   className="max-w-[280px] truncate px-4 py-3 align-top text-ko-muted"
                   title={ligne.url_stockage}
@@ -116,7 +125,55 @@ export function TableauEmplacements({
           )}
         </tbody>
       </table>
+
+      <PreviewMediaModal
+        ouvert={apercu !== null}
+        onFermer={() => setApercu(null)}
+        url={apercu?.url_stockage ?? null}
+        titre={apercu?.cle ?? ''}
+        altText={apercu?.alt_text_fr ?? null}
+        textes={textes}
+      />
     </div>
+  )
+}
+
+/** Vignette 80×80 — bouton cliquable en lecture, inerte pendant l'édition. */
+function VignetteEmplacement({
+  ligne,
+  label,
+  onClick,
+  desactive,
+}: {
+  ligne: EmplacementMedia
+  label: string
+  onClick: () => void
+  desactive?: boolean
+}) {
+  const [enErreur, setEnErreur] = useState(false)
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={desactive}
+      aria-label={`${label}`}
+      title={label}
+      className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden border border-ko-line bg-ko-cream2 transition-opacity duration-200 enabled:hover:opacity-80 disabled:cursor-default"
+    >
+      {ligne.url_stockage && !enErreur ? (
+        <Image
+          src={ligne.url_stockage}
+          alt=""
+          fill
+          sizes="80px"
+          className="object-cover"
+          onError={() => setEnErreur(true)}
+        />
+      ) : (
+        <IconeGalerie taille={20} className="text-ko-muted" />
+      )}
+    </button>
   )
 }
 
@@ -157,6 +214,12 @@ function LigneEdition({
   return (
     <tr className="bg-ko-cream">
       <td className="px-4 py-3 align-top font-mono text-xs text-ko-ink">{ligne.cle}</td>
+      <td className="px-4 py-3 align-top">
+        {/* Aperçu de la valeur ENREGISTRÉE, pas de la saisie en cours — même
+            logique que SelecteurPhotoPoste : un aperçu qui suit la frappe
+            appartient à un écran d'édition, pas à cette colonne de lecture. */}
+        <VignetteEmplacement ligne={ligne} label={ligne.cle} onClick={() => {}} desactive />
+      </td>
       <td className="px-4 py-3 align-top">
         <input
           value={url}

@@ -8,6 +8,7 @@ import {
   deplacerVideo,
   supprimerVideo,
 } from '@/app/(admin)/[locale]/admin/videos/actions'
+import { PreviewMediaModal, type TextesApercuMedia } from '@/components/admin/PreviewMediaModal'
 import { FormulaireVideo, type LibellesVideo, type Video } from '@/components/sections/FormulaireVideo'
 import { buttonVariants } from '@/components/ui/Button'
 import {
@@ -52,7 +53,7 @@ export function TableauVideos({
   videos: VideoListe[]
   estAdmin: boolean
   libelles: LibellesVideo
-  textes: {
+  textes: TextesApercuMedia & {
     vide: string
     enLigne: string
     horsLigne: string
@@ -68,6 +69,7 @@ export function TableauVideos({
     monter: string
     descendre: string
     apercu: string
+    voirApercu: string
     /** Gabarit, ex. « Page {page} sur {total} » — jamais une fonction en prop. */
     pageGabarit: string
     pagePrecedente: string
@@ -95,6 +97,7 @@ export function TableauVideos({
   const boite = useRef<HTMLDialogElement>(null)
   // `null` = création, une vidéo = édition, `undefined` = fermé.
   const [edite, setEdite] = useState<VideoListe | null | undefined>(undefined)
+  const [apercu, setApercu] = useState<VideoListe | null>(null)
 
   useEffect(() => {
     const el = boite.current
@@ -141,8 +144,18 @@ export function TableauVideos({
                 className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 transition-colors duration-200 hover:bg-ko-cream"
               >
                 {/* Vignette au format vidéo (16/9), pas carré : c'est ce que
-                    la page publique affiche, l'aperçu doit correspondre. */}
-                <div className="relative h-12 w-[5.25rem] shrink-0 overflow-hidden border border-ko-line bg-ko-photo">
+                    la page publique affiche, l'aperçu doit correspondre —
+                    conservé tel quel plutôt que forcé en 80×80, qui aurait
+                    recadré une image que Christian ne voit jamais recadrée
+                    ainsi ailleurs. */}
+                <button
+                  type="button"
+                  onClick={() => v.vignetteResolue && setApercu(v)}
+                  disabled={!v.vignetteResolue}
+                  aria-label={`${textes.voirApercu} — ${v.titre}`}
+                  title={textes.voirApercu}
+                  className="relative h-12 w-[5.25rem] shrink-0 overflow-hidden border border-ko-line bg-ko-photo transition-opacity duration-200 enabled:hover:opacity-80 disabled:cursor-default"
+                >
                   {v.vignetteResolue && (
                     <Image
                       src={v.vignetteResolue}
@@ -152,7 +165,7 @@ export function TableauVideos({
                       className="object-cover"
                     />
                   )}
-                </div>
+                </button>
 
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-base text-ko-ink">{v.titre}</span>
@@ -331,6 +344,17 @@ export function TableauVideos({
           )}
         </div>
       </dialog>
+
+      <PreviewMediaModal
+        ouvert={apercu !== null}
+        onFermer={() => setApercu(null)}
+        url={apercu?.vignetteResolue ?? null}
+        titre={apercu?.titre ?? ''}
+        // undefined, pas null : la table videos n'a pas de texte alternatif —
+        // voir la docstring de PreviewMediaModal.
+        altText={undefined}
+        textes={textes}
+      />
     </>
   )
 }

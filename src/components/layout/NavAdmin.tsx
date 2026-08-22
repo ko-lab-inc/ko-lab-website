@@ -44,7 +44,20 @@ export type EntreeAdmin = {
    */
   icone: ReactNode
 }
-export type GroupeAdmin = { titre: string; entrees: EntreeAdmin[] }
+/**
+ * Entrée à sous-menu — ex. « Médias » (Emplacements + Vidéos).
+ *
+ * Pas de `href` propre : ce niveau ne correspond à aucun écran, seulement à
+ * un regroupement visuel. Toujours DÉPLIÉ (pas d'accordéon, pas d'état) —
+ * deux sous-entrées ne justifient pas de JS supplémentaire dans une nav déjà
+ * économe en interactivité.
+ */
+export type EntreeAdminGroupee = { label: string; icone: ReactNode; sousEntrees: EntreeAdmin[] }
+export type GroupeAdmin = { titre: string; entrees: (EntreeAdmin | EntreeAdminGroupee)[] }
+
+function estGroupee(entree: EntreeAdmin | EntreeAdminGroupee): entree is EntreeAdminGroupee {
+  return 'sousEntrees' in entree
+}
 
 export function NavAdmin({
   identite,
@@ -201,58 +214,91 @@ export function NavAdmin({
             <p className="label-mono mb-3 text-ko-muted-d">{groupe.titre}</p>
 
             <ul className="flex flex-col items-stretch gap-0.5">
-              {groupe.entrees.map(({ href, label, icone }) => {
-                // Égalité stricte pour la racine (/fr/admin), qui est le préfixe
-                // de toutes les autres entrées : un simple startsWith la
-                // laisserait active en permanence.
-                const actif = href === racine ? pathname === href : pathname.startsWith(href)
+              {groupe.entrees.map((entree) => {
+                if (estGroupee(entree)) {
+                  // Actif si l'ÉCRAN COURANT est une des sous-entrées — porté
+                  // par le libellé du groupe, qui n'a lui-même aucun lien.
+                  const unSousLienActif = entree.sousEntrees.some((s) => pathname.startsWith(s.href))
 
-                return (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      // `replace` seulement en changeant d'onglet À onglet.
-                      // En quittant le tableau de bord (pathname === racine),
-                      // un push normal garde cette entrée comme marche fixe —
-                      // sans ce cas, remplacer directement l'entrée du
-                      // tableau de bord la faisait disparaître de
-                      // l'historique : le retour sautait PAR-DESSUS lui
-                      // plutôt que de s'y arrêter. Relevé par Christian : le
-                      // retour doit toujours finir sur le tableau de bord,
-                      // peu importe le nombre d'onglets visités entre-temps.
-                      replace={pathname !== racine}
-                      aria-current={actif ? 'page' : undefined}
-                      // Entrée active sur un aplat plutôt qu'un simple filet à
-                      // gauche : dans une barre pleine hauteur, un trait de
-                      // 2px se perdait.
-                      //
-                      // ⚠️ Sur fond sombre, l'aplat est un voile blanc
-                      // translucide (ko-frost) et non ko-blue-bg : ce bleu
-                      // très pâle est conçu pour un fond clair et deviendrait
-                      // un pavé lumineux sur le noir. Le texte passe à
-                      // ko-blue2 (6.37:1 sur ko-black) — variante d'état,
-                      // plus une nécessité de contraste depuis #61b4db
-                      // (ko-blue seul atteint déjà 8.10:1) — voir
-                      // label-mono-d dans globals.css.
-                      className={cn(
-                        'flex min-h-[40px] items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors duration-200',
-                        actif
-                          ? 'bg-ko-frost/10 font-medium text-ko-blue2'
-                          : 'text-ko-muted-d hover:bg-ko-frost/5 hover:text-ko-white',
-                      )}
-                    >
-                      {/* L'icône hérite de la couleur du lien via currentColor :
-                          elle passe au bleu avec le libellé, sans règle en plus. */}
-                      {icone}
-                      {label}
-                    </Link>
-                  </li>
-                )
+                  return (
+                    <li key={entree.label}>
+                      <p
+                        className={cn(
+                          'flex min-h-[40px] items-center gap-3 px-3 py-2 text-sm',
+                          unSousLienActif ? 'font-medium text-ko-blue2' : 'text-ko-muted-d',
+                        )}
+                      >
+                        {entree.icone}
+                        {entree.label}
+                      </p>
+                      <ul className="ml-6 flex flex-col items-stretch gap-0.5 border-l border-ko-line-d pl-3">
+                        {entree.sousEntrees.map((sousEntree) => (
+                          <LienEntreeAdmin key={sousEntree.href} entree={sousEntree} pathname={pathname} racine={racine} />
+                        ))}
+                      </ul>
+                    </li>
+                  )
+                }
+
+                return <LienEntreeAdmin key={entree.href} entree={entree} pathname={pathname} racine={racine} />
               })}
             </ul>
           </div>
         ))}
       </div>
     </nav>
+  )
+}
+
+/** Un lien de nav, extrait pour être rendu identiquement à plat et en sous-entrée. */
+function LienEntreeAdmin({
+  entree: { href, label, icone },
+  pathname,
+  racine,
+}: {
+  entree: EntreeAdmin
+  pathname: string
+  racine: string
+}) {
+  // Égalité stricte pour la racine (/fr/admin), qui est le préfixe de toutes
+  // les autres entrées : un simple startsWith la laisserait active en
+  // permanence.
+  const actif = href === racine ? pathname === href : pathname.startsWith(href)
+
+  return (
+    <li>
+      <Link
+        href={href}
+        // `replace` seulement en changeant d'onglet À onglet. En quittant le
+        // tableau de bord (pathname === racine), un push normal garde cette
+        // entrée comme marche fixe — sans ce cas, remplacer directement
+        // l'entrée du tableau de bord la faisait disparaître de l'historique :
+        // le retour sautait PAR-DESSUS lui plutôt que de s'y arrêter. Relevé
+        // par Christian : le retour doit toujours finir sur le tableau de
+        // bord, peu importe le nombre d'onglets visités entre-temps.
+        replace={pathname !== racine}
+        aria-current={actif ? 'page' : undefined}
+        // Entrée active sur un aplat plutôt qu'un simple filet à gauche : dans
+        // une barre pleine hauteur, un trait de 2px se perdait.
+        //
+        // ⚠️ Sur fond sombre, l'aplat est un voile blanc translucide
+        // (ko-frost) et non ko-blue-bg : ce bleu très pâle est conçu pour un
+        // fond clair et deviendrait un pavé lumineux sur le noir. Le texte
+        // passe à ko-blue2 (6.37:1 sur ko-black) — variante d'état, plus une
+        // nécessité de contraste depuis #61b4db (ko-blue seul atteint déjà
+        // 8.10:1) — voir label-mono-d dans globals.css.
+        className={cn(
+          'flex min-h-[40px] items-center gap-3 rounded-sm px-3 py-2 text-sm transition-colors duration-200',
+          actif
+            ? 'bg-ko-frost/10 font-medium text-ko-blue2'
+            : 'text-ko-muted-d hover:bg-ko-frost/5 hover:text-ko-white',
+        )}
+      >
+        {/* L'icône hérite de la couleur du lien via currentColor : elle passe
+            au bleu avec le libellé, sans règle en plus. */}
+        {icone}
+        {label}
+      </Link>
+    </li>
   )
 }
