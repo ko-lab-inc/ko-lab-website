@@ -5,6 +5,7 @@ import { buttonVariants } from '@/components/ui/Button'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
+import { resoudreEmplacement } from '@/lib/medias-emplacements'
 import { ROUTES } from '@/lib/routes'
 
 /**
@@ -32,14 +33,25 @@ export async function EquipementsDeploiement() {
   const t = await getTranslations('Home.equipements')
   const tCapacites = await getTranslations('Home.capacites')
 
+  // deployment_camion (migration 0031, route A) — pilote UNIQUEMENT la photo
+  // de GAUCHE. C'est elle qui correspond à cet emplacement : le repli défini
+  // dans medias-repli.ts pointe vers IMAGES.deploiementRemorque, pas
+  // IMAGES.deploiementCamion (celle-ci porte des logos tiers dominants —
+  // Gatorade, Eska — et a été retirée du site le 20 août 2026 pour cette
+  // raison ; voir le rapport de la conversation du 22 août 2026). La photo de
+  // DROITE (transportRemorque2026) n'a pas de ligne dans medias_emplacements
+  // et reste câblée en dur, hors périmètre de ce chantier — voir le rapport
+  // pour un problème de logos tiers repéré dessus, non traité ici.
+  const photoGauche = await resoudreEmplacement('deployment_camion')
+
   return (
     <section className="bg-ko-black">
       <div className="grid grid-cols-1 items-stretch lg:grid-cols-2">
         <Reveal className="grid grid-cols-2 gap-px overflow-hidden rounded-b-2xl bg-ko-line-d lg:aspect-auto lg:min-h-[640px] lg:rounded-b-none lg:rounded-r-2xl">
           <div className="relative aspect-[3/4] lg:aspect-auto">
             <Image
-              src={IMAGES.deploiementRemorque}
-              alt=""
+              src={photoGauche.url}
+              alt={photoGauche.alt}
               fill
               quality={80}
               sizes="(max-width: 1024px) 50vw, 25vw"
@@ -54,6 +66,11 @@ export async function EquipementsDeploiement() {
               moyens permettent de livrer », une caisse de camionnette pleine
               de bouteilles Gatorade et Eska (logos tiers dominants, lisibles)
               dessert le propos plutôt que de le servir. Voir images.ts.
+              ⚠️ Ce remplacement a lui-même un problème de logo tiers
+              (enseigne « LOCATION GM » + numéro de téléphone dominants,
+              Banque Scotia en arrière-plan) — repéré le 22 août 2026 en
+              construisant medias_emplacements, non corrigé ici (hors
+              périmètre de ce chantier). Voir le rapport de la conversation.
             */}
             <Image
               src={IMAGES.transportRemorque2026}

@@ -980,7 +980,21 @@
     "page_gabarit": "Page {page} sur {total}",
     "page_precedente": "Page précédente",
     "page_suivante": "Page suivante",
-    "champ_image_alt": "Texte alternatif"
+    "champ_image_alt": "Texte alternatif",
+    "nav_medias_emplacements": "Emplacements médias",
+    "medias_emplacements_titre": "Emplacements médias",
+    "medias_emplacements_intro": "Neuf emplacements fixes du site public. Remplacez l'URL et le texte alternatif d'une photo sans toucher au code — la photo précédente reste en secours si jamais la nouvelle URL est invalide.",
+    "colonne_cle": "Emplacement",
+    "colonne_url_actuelle": "URL actuelle",
+    "colonne_alt_fr": "Texte alternatif (français)",
+    "colonne_alt_en": "Texte alternatif (anglais)",
+    "champ_url_emplacement": "Nouvelle URL",
+    "emplacement_alt_en_vide": "Vide — reprend le texte français",
+    "emplacement_enregistre": "Enregistré.",
+    "erreur_emplacement_introuvable": "Emplacement non trouvé.",
+    "erreur_url_requise": "URL requise.",
+    "erreur_refuse_emplacement": "Cette action a été refusée. Seul un administrateur peut modifier les emplacements médias.",
+    "erreur_serveur_emplacement": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste."
   },
   "Aide": {
     "ouvrir": "Poser une question",

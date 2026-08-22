@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { PageCapacite } from '@/components/sections/PageCapacite'
 import { routing } from '@/i18n/routing'
 import { CADRAGES, IMAGES } from '@/lib/images'
+import { resoudreEmplacement } from '@/lib/medias-emplacements'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -35,6 +36,13 @@ export default async function InstallationsPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Capacites.installations')
+
+  // capacite_installations (migration 0031, route A) — remplace la position 2
+  // de la galerie ci-dessous, en dur jusqu'ici sur IMAGES.terrasseAmenagee2021.
+  // Pas le hero (IMAGES.installationNacelle) : cet emplacement précis n'a été
+  // pensé que pour cette vignette de galerie, voir le rapport de la
+  // conversation du 22 août 2026 sur medias_emplacements.
+  const photoInstallations = await resoudreEmplacement('capacite_installations')
 
   return (
     <PageCapacite
@@ -68,7 +76,7 @@ export default async function InstallationsPage({ params }: Props) {
       // IMAGES.terrasseAmenagee2021/terrasseLivraison2021 dans lib/images.ts).
       images={[
         { src: IMAGES.enseignePosee2026, alt: "Enseigne d'un client installée sur son poteau" },
-        { src: IMAGES.terrasseAmenagee2021, alt: 'Terrasse aménagée avec pergola et mobilier sur mesure' },
+        { src: photoInstallations.url, alt: photoInstallations.alt },
         { src: IMAGES.terrasseLivraison2021, alt: 'Livraison de matériaux de construction sur un chantier' },
         { src: IMAGES.decorStructure2025, alt: 'Décor et structure installés sur un site événementiel' },
       ]}

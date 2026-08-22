@@ -5,6 +5,7 @@ import { Parallax } from '@/components/ui/Parallax'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
+import { resoudreEmplacement } from '@/lib/medias-emplacements'
 import { ROUTES } from '@/lib/routes'
 
 /**
@@ -26,6 +27,16 @@ export async function OperationsTerrain() {
   const t = await getTranslations('Home.operations')
   const tStats = await getTranslations('Home.stats')
 
+  // operations_terrain (migration 0031, route A) — pilote UNIQUEMENT la photo
+  // desktop ci-dessous. La version mobile (operationsCrewVertical) reste
+  // câblée en dur sur images.ts : c'est un FICHIER différent, recadré pour un
+  // écran portrait, pas un simple object-position appliqué à la même image —
+  // un seul champ URL par emplacement (route A) ne peut pas représenter deux
+  // fichiers pour un même emplacement. Changer operations_terrain depuis
+  // l'admin ne changera donc que la photo desktop ; limite connue à
+  // documenter pour Christian, pas un oubli.
+  const photoOperations = await resoudreEmplacement('operations_terrain')
+
   return (
     <section className="relative overflow-hidden bg-ko-black">
       <Parallax distance={60} className="absolute inset-x-0 top-0 h-[calc(100%+80px)]">
@@ -33,8 +44,8 @@ export async function OperationsTerrain() {
             relais sous lg plutôt que de forcer un recadrage paysage dans un
             écran portrait (skill 11). */}
         <Image
-          src={IMAGES.operationsCrew}
-          alt=""
+          src={photoOperations.url}
+          alt={photoOperations.alt}
           fill
           quality={82}
           sizes="100vw"

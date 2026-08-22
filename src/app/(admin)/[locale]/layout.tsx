@@ -142,6 +142,15 @@ export default async function AdminLayout({ children, params }: Props) {
           label: t('nav_candidatures'),
           icone: <IconeEquipe taille={17} />,
         },
+        {
+          href: `/${locale}/admin/medias-emplacements`,
+          label: t('nav_medias_emplacements'),
+          // Même icône que « Réalisations » — les deux sont des écrans de
+          // photos, aucune icône dédiée n'existait pour « emplacement média »
+          // spécifiquement et en ajouter une nouvelle sortait du périmètre
+          // de ce chantier (voir Icones.tsx).
+          icone: <IconeGalerie taille={17} />,
+        },
       ],
     },
     {

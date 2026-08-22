@@ -105,7 +105,7 @@ téléphone à la verticale ressort de travers.
 | Élément | État |
 |---|---|
 | `commandes.locale` | Absent — la langue réelle du client à la commande n'est pas connue. Conséquence : `gabaritStatutCommande.ts` (courriel de changement de statut) reste volontairement français uniquement, faute de savoir quelle langue le client a réellement utilisée. |
-| Bundle JS commun | ~232 Ko chargés sur CHAQUE page contre 180 Ko visés. `react-hook-form` présent dans le socle commun alors que la plupart des pages n'ont aucun formulaire ; Crisp (14 Ko) chargé dès le premier rendu ; deux chunks de ~54 Ko non identifiés faute d'un bundle-analyzer. Détail dans `docs/phase-10-backlog.md`. Regroupé volontairement avec le prochain chantier (refonte de la gestion des médias en admin). |
+| Bundle JS commun | ~232 Ko chargés sur CHAQUE page contre 180 Ko visés. `@next/bundle-analyzer` installé et les chunks identifiés le 22 août 2026 (reconnaissance admin) : le socle réel est React+ReactDOM+runtime Next (~180 Ko) + le runtime next-intl (~19 Ko, 2 chunks) — `react-hook-form`/`zod` (23 Ko) ne sont PAS dans ce socle, ils ne chargent que sur `/contact` (`isInitialByEntrypoint`), contrairement à ce que cette ligne affirmait. Crisp (130 octets réels dans le bundle, script externe en `lazyOnload`, chargé seulement si `NEXT_PUBLIC_CRISP_WEBSITE_ID` est défini) n'est pas non plus chargé au premier rendu comme supposé ici. Reste ouvert : ~180 Ko de socle React/Next est la vraie cible d'optimisation, pas react-hook-form/Crisp. |
 | LCP mobile | 4,4 s (accueil, production réelle) contre 2,5 s visés — probablement lié au bundle JS ci-dessus. Non bloquant (site fonctionnel, a11y à 96), laissé de côté sur décision de Christian. |
 | 4 visuels produits à droits incertains | Toujours en place (Atlas Copco, DEKO, conteneur Saman Portable, `deploiementCamion` orphelin en Storage) — décision explicite de Christian de les traiter plus tard. Inventaire complet : `docs/audits/2026-08-20-visuels-produits.md`. |
 | 4 photos de la réalisation Terrasse LPG montrent une enseigne de commerce voisin en arrière-plan (« Le Marché du Store » ×3, « La Baie » ×1, cette dernière non publiée) | Tranché le 21 août 2026 : gardées telles quelles — l'enseigne est incidente, ne domine pas la composition et ne suggère aucun mandat, contrairement à Pacini/Village Transition ci-dessus. Voir `docs/audits/2026-08-21-photos-clients-non-autorisees.md`. |
@@ -116,6 +116,7 @@ téléphone à la verticale ressort de travers.
 | Outillage absent | ESLint installé mais sans config exploitable (`next lint` retiré de Next 16) ; gitleaks/trufflehog/semgrep absents ; aucune CI — tout audit reste manuel. |
 | Cloudflare pas en frontal | `ko-lab-center.ca` est en DNS only (nuage gris), nécessaire pour le certificat SSL de Vercel — `cf-connecting-ip` n'est donc jamais présent. |
 | Titre `<title>` de la page 404 | Hérite du titre par défaut du site plutôt que d'avoir le sien — mineur, le code HTTP 404 protège déjà le référencement. |
+| `IMAGES.transportRemorque2026` (accueil, section Équipements et déploiement, photo de droite) | Repérée le 22 août 2026 en vérifiant des candidates pour `medias_emplacements` (chantier architecture média) : montre une nacelle de location avec l'enseigne « LOCATION GM » et un numéro de téléphone parfaitement lisibles, plus une enseigne Banque Scotia en arrière-plan. Cette photo avait pourtant remplacé `deploiementCamion` le 20 août 2026 précisément pour un problème de logos tiers (Gatorade/Eska) — le remplacement reproduit le même défaut. Non corrigée : hors périmètre du chantier en cours, aucune ligne `medias_emplacements` ne la couvre. |
 
 ---
 
@@ -131,6 +132,8 @@ téléphone à la verticale ressort de travers.
   d'affaires, NEQ) ; ne pas rédiger ces pages en devinant ces informations
 - Prix réels et images officielles pour une partie du catalogue Bambu
   Lab/xTool (déjà partiellement retiré pour droits, voir §4)
+- `IMAGES.transportRemorque2026` (§4) — remplacer par une photo sans marque
+  tierce, ou accepter le risque en connaissance de cause
 
 ---
 

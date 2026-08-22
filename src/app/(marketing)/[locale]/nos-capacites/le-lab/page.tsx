@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { PageCapacite } from '@/components/sections/PageCapacite'
 import { routing } from '@/i18n/routing'
-import { IMAGES } from '@/lib/images'
+import { resoudreEmplacement } from '@/lib/medias-emplacements'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 import { lireVideosPubliees } from '@/lib/videos'
 
@@ -38,6 +38,14 @@ export default async function LeLabPage({ params }: Props) {
   const t = await getTranslations('Capacites.lab')
   const videos = await lireVideosPubliees()
 
+  // lab_1 (hero) et lab_2 (galerie) — migration 0031, route A. Repli sur les
+  // mêmes photos qu'avant (labImpression3d, precisionCablage2024) si la base
+  // ne répond pas — voir medias-repli.ts.
+  const [photoHero, photoGalerie] = await Promise.all([
+    resoudreEmplacement('lab_1'),
+    resoudreEmplacement('lab_2'),
+  ])
+
   return (
     <PageCapacite
       numero="03"
@@ -58,15 +66,13 @@ export default async function LeLabPage({ params }: Props) {
       // Imprimante 3D en cours d'impression — item « Impression 3D ».
       // La découpe laser sert la section LAB de l'accueil : deux visuels
       // distincts plutôt que la même image deux fois dans le parcours.
-      src={IMAGES.labImpression3d}
+      src={photoHero.url}
       cadrage="object-center"
       // Galerie ajoutée le 20 août 2026 — une seule photo, pas de découpe
       // laser/CNC dans les lots reçus (voir images.ts), mais le câblage de
       // précision illustre l'item « Électronique » du brief. Une vignette
       // seule s'affiche sans flèches (voir BandeauImages), rien à corriger.
-      images={[
-        { src: IMAGES.precisionCablage2024, alt: 'Câblage de précision, travail électronique fin' },
-      ]}
+      images={[{ src: photoGalerie.url, alt: photoGalerie.alt }]}
       // Bande de vidéos façon bambulab.com, alimentée depuis /admin/videos
       // (migration 0016). Tableau vide = quatre emplacements « Vidéo à
       // venir », jamais une section masquée — voir BandeauVideos.tsx.

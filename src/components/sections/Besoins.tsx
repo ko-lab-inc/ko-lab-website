@@ -3,7 +3,8 @@ import { getTranslations } from 'next-intl/server'
 
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
-import { CADRAGES, FILTRE_TERRAIN, IMAGES } from '@/lib/images'
+import { CADRAGES, FILTRE_TERRAIN } from '@/lib/images'
+import { resoudreEmplacement } from '@/lib/medias-emplacements'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/routes'
 
@@ -27,21 +28,32 @@ export async function Besoins() {
   const t = await getTranslations('Home.besoins')
 
   /**
-   * Les quatre sont désormais des photos réelles KO-LAB (2024-2026), aucune
-   * avec de ciel doré à corriger — 01 est un jour d'hiver couvert, 02 un jour
-   * nuageux, 03 et 04 des scènes d'atelier/de site sur fond neutre. Toutes
-   * reçoivent FILTRE_TERRAIN — jamais `undefined` — pour partager le même
-   * socle colorimétrique que le reste du site. 01 utilisait encore
-   * FILTRE_TERRAIN_CHAUD (pensé pour l'ex-silhouette Unsplash) jusqu'au
-   * 20 août 2026 — corrigé au même moment que son remplacement par une photo
-   * réelle, même bug que celui trouvé la veille sur Realisations.tsx.
+   * Les quatre photos viennent maintenant de medias_emplacements (migration
+   * 0031, route A de l'architecture média) plutôt que d'images.ts en dur —
+   * besoin_1..4 correspondent exactement aux quatre cartes ci-dessous, dans
+   * le même ordre (voir la note de la migration : le brief d'origine citait
+   * une clé « besoinCreer » inexistante, corrigée en se basant sur les
+   * quatre cartes réelles de ce fichier). `resoudreEmplacement` retombe sur
+   * la même photo qu'avant (images.ts) si la base ne répond pas ou si la
+   * ligne manque — jamais de blanc.
+   *
+   * Les quatre reçoivent toujours FILTRE_TERRAIN — jamais `undefined` — pour
+   * partager le même socle colorimétrique que le reste du site, quelle que
+   * soit la photo réellement servie par chaque emplacement.
    */
+  const [besoin1, besoin2, besoin3, besoin4] = await Promise.all([
+    resoudreEmplacement('besoin_1'),
+    resoudreEmplacement('besoin_2'),
+    resoudreEmplacement('besoin_3'),
+    resoudreEmplacement('besoin_4'),
+  ])
+
   const besoins = [
     {
       cle: 'deployer',
       numero: '01',
       href: ROUTES.operations,
-      src: IMAGES.besoinDeployer,
+      photo: besoin1,
       cadrage: CADRAGES.besoinDeployer,
       style: FILTRE_TERRAIN,
     },
@@ -49,7 +61,7 @@ export async function Besoins() {
       cle: 'installer',
       numero: '02',
       href: ROUTES.installations,
-      src: IMAGES.besoinInstaller,
+      photo: besoin2,
       cadrage: CADRAGES.besoinInstaller,
       // Photo réelle (Canada Day 2026) — jour nuageux, pas le contre-jour doré
       // de l'ex-photo Unsplash. FILTRE_TERRAIN_CHAUD assombrissait et
@@ -61,15 +73,7 @@ export async function Besoins() {
       cle: 'fabriquer',
       numero: '03',
       href: ROUTES.lab,
-      // Kiosque en bois fabriqué sur mesure (créations 2025) plutôt que
-      // l'imprimante 3D depuis le 20 août 2026 — montre la fabrication ET
-      // l'installation d'une pièce complète, plus proche du positionnement
-      // élargi (Phase 7) qu'une seule machine en action. labImpression3d
-      // reste le hero de la page Le LAB (nos-capacites/le-lab/page.tsx).
-      // besoinFabriquer (impression 3D, pièce dorée) sert désormais IMAGES.lab
-      // (section LAB de l'accueil) depuis le même jour ; le soudeur reste sous
-      // soudeur, toujours disponible.
-      src: IMAGES.besoinFabriquerKiosque2025,
+      photo: besoin3,
       cadrage: 'object-center',
       style: FILTRE_TERRAIN,
     },
@@ -77,7 +81,7 @@ export async function Besoins() {
       cle: 'louer',
       numero: '04',
       href: ROUTES.location,
-      src: IMAGES.besoinLouer,
+      photo: besoin4,
       cadrage: 'object-center',
       style: FILTRE_TERRAIN,
     },
@@ -100,7 +104,7 @@ export async function Besoins() {
         </Reveal>
 
         <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2">
-          {besoins.map(({ cle, numero, href, src, cadrage, style }) => (
+          {besoins.map(({ cle, numero, href, photo, cadrage, style }) => (
             <Reveal key={cle}>
               {/* `-m-3 p-3` : marge négative compensée par un padding égal —
                   la mise en page ne bouge pas d'un pixel, mais le fond au
@@ -115,11 +119,15 @@ export async function Besoins() {
                     zoom de l'image, sinon le débordement casserait la grille. */}
                 <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-ko-cream2">
                   {/*
-                    Photo réelle depuis le 20 août 2026 (les quatre le sont).
+                    alt réel depuis medias_emplacements (route A) — plus un
+                    alt="" décoratif : le numéro et le titre juste en dessous
+                    ne décrivent pas la photo elle-même, contrairement au
+                    patron alt="" des sections où un texte adjacent porte déjà
+                    l'information (voir CatalogueBoutique.tsx).
                   */}
                   <Image
-                    src={src}
-                    alt=""
+                    src={photo.url}
+                    alt={photo.alt}
                     fill
                     // `priority` retirée le 20 août 2026 (Phase 10, étape 2) :
                     // le hero (Hero.tsx) reste l'élément LCP mesuré même avec

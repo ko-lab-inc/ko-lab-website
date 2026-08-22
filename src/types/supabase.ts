@@ -496,6 +496,39 @@ export type Database = {
           },
         ]
       }
+
+      /** Migration 0031 — neuf emplacements fixes, architecture média route A. */
+      medias_emplacements: {
+        Row: {
+          id: string
+          cle: string
+          url_stockage: string
+          alt_text_fr: string
+          /** NULL jusqu'à Phase 9 bilingue — repli sur alt_text_fr en lecture. */
+          alt_text_en: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          cle: string
+          url_stockage: string
+          alt_text_fr: string
+          alt_text_en?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          cle?: string
+          url_stockage?: string
+          alt_text_fr?: string
+          alt_text_en?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
 
     Views: {
