@@ -33,9 +33,12 @@ export function Nav({
   panierActif,
   /** Même raison que panierActif — reçu en prop, pas lu ici (composant client). */
   boutiqueActive,
+  /** Idem — concoursActif (migration 0040). */
+  concoursActif,
 }: {
   panierActif: boolean
   boutiqueActive: boolean
+  concoursActif: boolean
 }) {
   const t = useTranslations('Nav')
   const pathname = usePathname()
@@ -87,18 +90,21 @@ export function Nav({
     return () => window.removeEventListener('keydown', surTouche)
   }, [])
 
-  // boutiqueActive filtre l'entrée ici, en amont des deux .map() (desktop et
-  // mobile) qui consomment ce tableau plus bas — un seul endroit à tenir
-  // d'accord plutôt que deux rendus filtrés séparément.
+  // boutiqueActive/concoursActif filtrent l'entrée ici, en amont des deux
+  // .map() (desktop et mobile) qui consomment ce tableau plus bas — un seul
+  // endroit à tenir d'accord plutôt que deux rendus filtrés séparément.
   const liensSecondaires = (
     [
       { key: 'realisations', href: ROUTES.realisations },
       { key: 'location', href: ROUTES.location },
       { key: 'boutique', href: ROUTES.boutique },
+      { key: 'concours', href: ROUTES.concours },
       { key: 'apropos', href: ROUTES.apropos },
       { key: 'carrieres', href: ROUTES.carrieres },
     ] as const
-  ).filter(({ key }) => key !== 'boutique' || boutiqueActive)
+  ).filter(
+    ({ key }) => (key !== 'boutique' || boutiqueActive) && (key !== 'concours' || concoursActif),
+  )
 
   /**
    * Page courante — gras, demande initiale de Christian « gras + bleu ».

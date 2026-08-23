@@ -144,6 +144,11 @@ export default async function AdminLayout({ children, params }: Props) {
               label: t('nav_videos'),
               icone: <IconeLecture taille={17} />,
             },
+            {
+              href: `/${locale}/admin/concours`,
+              label: t('nav_concours'),
+              icone: <IconeGalerie taille={17} />,
+            },
           ],
         },
         {

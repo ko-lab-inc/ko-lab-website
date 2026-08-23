@@ -29,6 +29,8 @@ export const ROUTES = {
    * nom et courriel ne s'y demandent plus, lus depuis auth.getUser().
    */
   boutiqueCommandeDetails: '/boutique/commande/details',
+  /** Masquée par concoursActif (migration 0040) — même mécanique que boutiqueActive. */
+  concours: '/concours',
   apropos: '/a-propos',
   carrieres: '/carrieres',
   /** Formulaire de candidature — le MÊME pour les neuf postes (0017). */

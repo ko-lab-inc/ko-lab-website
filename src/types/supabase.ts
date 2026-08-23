@@ -534,6 +534,133 @@ export type Database = {
         }
         Relationships: []
       }
+      concours: {
+        Row: {
+          id: string
+          slug: string
+          titre_fr: string
+          titre_en: string | null
+          accroche_fr: string | null
+          accroche_en: string | null
+          description_fr: string
+          description_en: string | null
+          reglement_fr: string | null
+          reglement_en: string | null
+          date_debut: string | null
+          date_fin: string | null
+          publie: boolean
+          ordre: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          slug: string
+          titre_fr: string
+          titre_en?: string | null
+          accroche_fr?: string | null
+          accroche_en?: string | null
+          description_fr: string
+          description_en?: string | null
+          reglement_fr?: string | null
+          reglement_en?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          publie?: boolean
+          ordre?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          slug?: string
+          titre_fr?: string
+          titre_en?: string | null
+          accroche_fr?: string | null
+          accroche_en?: string | null
+          description_fr?: string
+          description_en?: string | null
+          reglement_fr?: string | null
+          reglement_en?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          publie?: boolean
+          ordre?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      concours_photos: {
+        Row: {
+          id: string
+          concours_id: string
+          url_stockage: string
+          alt_fr: string
+          alt_en: string | null
+          ordre: number
+        }
+        Insert: {
+          id?: string
+          concours_id: string
+          url_stockage: string
+          alt_fr: string
+          alt_en?: string | null
+          ordre?: number
+        }
+        Update: {
+          id?: string
+          concours_id?: string
+          url_stockage?: string
+          alt_fr?: string
+          alt_en?: string | null
+          ordre?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concours_photos_concours_id_fkey"
+            columns: ["concours_id"]
+            isOneToOne: false
+            referencedRelation: "concours"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      concours_liens: {
+        Row: {
+          id: string
+          concours_id: string
+          libelle_fr: string
+          libelle_en: string | null
+          url: string
+          ordre: number
+        }
+        Insert: {
+          id?: string
+          concours_id: string
+          libelle_fr: string
+          libelle_en?: string | null
+          url: string
+          ordre?: number
+        }
+        Update: {
+          id?: string
+          concours_id?: string
+          libelle_fr?: string
+          libelle_en?: string | null
+          url?: string
+          ordre?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "concours_liens_concours_id_fkey"
+            columns: ["concours_id"]
+            isOneToOne: false
+            referencedRelation: "concours"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
 
     Views: {

@@ -1,6 +1,7 @@
 import { unstable_cache } from 'next/cache'
 
 import { ETIQUETTE_CARRIERES } from '@/lib/carrieres'
+import { ETIQUETTE_CONCOURS } from '@/lib/concours'
 import { DOMAINE } from '@/lib/constantes'
 import { ETIQUETTE_EMPLACEMENTS_MEDIAS } from '@/lib/medias-emplacements'
 import { ETIQUETTE_PRODUITS, lireProduitsPublies } from '@/lib/produits'
@@ -136,6 +137,32 @@ const dateRealisations = unstable_cache(lireDateRealisations, ['sitemap-date-rea
 })
 
 /**
+ * `concours`, comme `realisations`, a bien `updated_at` — trigger posé dès
+ * 0040 (voir sa note d'en-tête : « pas d'oubli cette fois », en référence au
+ * trou déjà connu sur postes_carrieres/produits_boutique).
+ */
+async function lireDateConcours(): Promise<Date> {
+  try {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase
+      .from('concours')
+      .select('updated_at')
+      .eq('publie', true)
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (error || !data) return DATE_CONTENU_STATIQUE
+    return new Date(data.updated_at)
+  } catch {
+    return DATE_CONTENU_STATIQUE
+  }
+}
+const dateConcours = unstable_cache(lireDateConcours, ['sitemap-date-concours'], {
+  revalidate: 3600,
+  tags: [ETIQUETTE_CONCOURS],
+})
+
+/**
  * Une date par produit publié — même limite que postes_carrieres :
  * `produits_boutique` n'a pas non plus de colonne `updated_at` (vérifié),
  * `created_at` sert de repli. Requête à part de `lireProduitsPublies()`
@@ -172,6 +199,7 @@ const DATES_PAR_ROUTE: Partial<Record<string, () => Promise<Date>>> = {
   [ROUTES.carrieres]: dateCarrieres,
   [ROUTES.realisations]: dateRealisations,
   [ROUTES.boutique]: async () => plusRecente(Object.values(await datesProduits())) ?? DATE_CONTENU_STATIQUE,
+  [ROUTES.concours]: dateConcours,
 }
 
 async function dateDeLaRoute(chemin: string): Promise<Date> {
@@ -192,6 +220,7 @@ const ROUTES_STATIQUES = [
   ROUTES.realisations,
   ROUTES.location,
   ROUTES.boutique,
+  ROUTES.concours,
   ROUTES.apropos,
   ROUTES.carrieres,
   ROUTES.contact,
@@ -221,6 +250,10 @@ const ROUTES_BILINGUES = new Set<string>([
   // Priorité c).
   ROUTES.realisations,
   ROUTES.boutique,
+  // Phase 10 — concours, même raisonnement que carrieres : la page a de
+  // vraies copies EN (titre, boutons, sections), même si un concours donné
+  // peut individuellement retomber sur le FR faute de champ EN rempli.
+  ROUTES.concours,
   // Priorité d).
   ROUTES.politiqueConfidentialite,
   ROUTES.conditionsUtilisation,
@@ -229,12 +262,15 @@ const ROUTES_BILINGUES = new Set<string>([
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const reglages = await lireReglages()
 
-  // Boutique désactivée (0029) : ni la page catalogue ni ses fiches produit
-  // n'existent plus (boutique/layout.tsx répond 404) — les lister ici
-  // enverrait Google indexer des pages introuvables.
-  const routesStatiques = reglages.boutiqueActive
-    ? ROUTES_STATIQUES
-    : ROUTES_STATIQUES.filter((chemin) => chemin !== ROUTES.boutique)
+  // Boutique et concours désactivés (0029, 0040) : leurs pages ne sont plus
+  // atteignables (layout.tsx répond 404) — les lister ici enverrait Google
+  // indexer des pages introuvables. Un seul filtre, deux drapeaux
+  // indépendants.
+  const routesStatiques = ROUTES_STATIQUES.filter((chemin) => {
+    if (chemin === ROUTES.boutique) return reglages.boutiqueActive
+    if (chemin === ROUTES.concours) return reglages.concoursActif
+    return true
+  })
 
   // Une fiche produit par produit PUBLIÉ — un produit incomplet ou hors
   // ligne ne doit pas apparaître dans le sitemap, même règle que sur la page

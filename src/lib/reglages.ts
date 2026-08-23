@@ -58,6 +58,12 @@ export type Reglages = {
    * robots).
    */
   boutiqueActive: boolean
+  /**
+   * Même mécanique que boutiqueActive, pour /concours (migration 0040).
+   * Retire la page de la nav, du footer, de la section accueil, du sitemap
+   * et de robots.txt, et rend ses routes introuvables (404).
+   */
+  concoursActif: boolean
 }
 
 /**
@@ -85,6 +91,10 @@ function repli(): Reglages {
     // d'avant la table » à reproduire. `true` en dur reproduit directement
     // « rien ne change tant que personne ne décoche la case ».
     boutiqueActive: true,
+    // `false`, PAS `true` comme boutiqueActive/panierActif/solutions_modulaires
+    // — inverse de leur raisonnement, pour la même raison : la page /concours
+    // elle-même est neuve (Phase 10), rien à laisser inchangé en son absence.
+    concoursActif: false,
   }
 }
 
@@ -96,6 +106,7 @@ const CLES = {
   panier_actif: 'panierActif',
   solutions_modulaires: 'solutionsModulaires',
   boutique_active: 'boutiqueActive',
+  concours_actif: 'concoursActif',
 } as const
 
 export type CleReglage = keyof typeof CLES
@@ -118,7 +129,12 @@ async function lireDepuisBase(): Promise<Reglages> {
       const champ = CLES[ligne.cle as CleReglage]
       if (!champ) continue
 
-      if (champ === 'panierActif' || champ === 'solutionsModulaires' || champ === 'boutiqueActive') {
+      if (
+        champ === 'panierActif' ||
+        champ === 'solutionsModulaires' ||
+        champ === 'boutiqueActive' ||
+        champ === 'concoursActif'
+      ) {
         valeurs[champ] = ligne.valeur === 'true'
       } else {
         // Une valeur vide en base est une valeur VOULUE — « pas de téléphone à

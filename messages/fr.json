@@ -44,6 +44,10 @@
       "title": "Carrières — KO-LAB",
       "description": "Rejoindre les équipes terrain KO-LAB en Outaouais."
     },
+    "concours": {
+      "title": "Concours — KO-LAB",
+      "description": "Les concours en cours et à venir chez KO-LAB."
+    },
     "contact": {
       "title": "Contact — KO-LAB",
       "description": "Démarrer un projet, demander une soumission ou poser une question à l'équipe KO-LAB."
@@ -67,6 +71,7 @@
     "realisations": "Réalisations",
     "location": "Location",
     "boutique": "Boutique",
+    "concours": "Concours",
     "apropos": "À propos",
     "carrieres": "Carrières",
     "contact": "Contact",
@@ -529,6 +534,15 @@
       }
     }
   },
+  "Concours": {
+    "titre_page": "Concours",
+    "intro": "Les concours en cours et à venir chez KO-LAB.",
+    "vide_titre": "Rien pour l'instant",
+    "vide_texte": "Aucun concours n'est actif en ce moment. Revenez bientôt.",
+    "du": "Du",
+    "au": "au",
+    "reglement_titre": "Règlement"
+  },
   "APropos": {
     "title": "À propos",
     "signature": "De l'idée au terrain.",
@@ -867,6 +881,8 @@
     "reglages_modulaires_aide": "Désactivé, cette catégorie et ses produits n'apparaissent plus dans la boutique.",
     "reglages_boutique_active": "Boutique en ligne",
     "reglages_boutique_active_aide": "Désactivée, la boutique disparaît entièrement du site : navigation, section d'accueil, sitemap, et ses pages deviennent introuvables. Différent de « Panier de demande groupée », qui laisse la boutique visible sans panier.",
+    "reglages_concours_actif": "Page Concours",
+    "reglages_concours_actif_aide": "Désactivée, la page Concours disparaît entièrement du site : navigation, pied de page, sitemap, et ses pages deviennent introuvables — même mécanique que la Boutique.",
     "reglages_enregistrer": "Enregistrer",
     "reglages_en_cours": "Enregistrement…",
     "reglages_succes": "Enregistré. Le site public suit.",
@@ -1020,7 +1036,54 @@
     "champ_choix_photo_poste": "Choisir un fichier",
     "option_aucune_photo_poste": "Aucune photo",
     "supprimer_photo_poste": "Supprimer la photo",
-    "erreur_serveur_photo_poste": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste."
+    "erreur_serveur_photo_poste": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste.",
+
+    "nav_concours": "Concours",
+    "concours_titre": "Concours",
+    "concours_admin_intro": "Créez et publiez les concours affichés sur le site. Un concours hors ligne reste modifiable, mais invisible du public.",
+    "concours_vide": "Aucun concours pour l'instant.",
+    "nouveau_concours": "Nouveau concours",
+    "titre_edition_concours": "Modifier le concours",
+    "titre_creation_concours": "Nouveau concours",
+    "titre_detail_concours": "Détail du concours",
+    "confirmer_suppression_concours": "Supprimer définitivement ce concours, ses photos et ses liens ?",
+    "concours_enregistre": "Concours enregistré.",
+    "erreur_lecture_concours": "Impossible de lire les concours pour le moment.",
+    "erreur_donnees_concours": "Vérifiez les champs : le titre et la description sont obligatoires.",
+    "erreur_slug_concours": "Ce slug est déjà utilisé par un autre concours. Choisissez-en un autre.",
+    "erreur_refuse_concours": "Cette action a été refusée. Réessayez, ou prévenez Moussa si ça persiste.",
+    "erreur_serveur_concours": "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste.",
+    "erreur_photo_concours": "La photo n'a pas pu être téléversée. Vérifiez son format et sa taille.",
+    "erreur_lien_concours": "Le lien doit commencer par https://",
+
+    "champ_titre_en": "Titre (anglais)",
+    "champ_description_en": "Description (anglais)",
+    "champ_publie": "Publié",
+    "champ_accroche_fr": "Accroche (français)",
+    "champ_accroche_en": "Accroche (anglais)",
+    "champ_reglement_fr": "Règlement (français)",
+    "champ_reglement_en": "Règlement (anglais)",
+    "champ_date_debut": "Date de début",
+    "champ_date_fin": "Date de fin",
+
+    "badge_traduction_concours_aide": "Traduction anglaise : {n} champ(s) sur 4 rempli(s)",
+
+    "champ_photos_concours_titre": "Photos du concours",
+    "champ_photos_concours_vide": "Aucune photo pour l'instant. Le concours n'apparaîtra pas dans la galerie publique tant qu'il n'en a pas au moins une.",
+    "champ_photo_nouvelle": "Ajouter une photo",
+    "champ_photo_nouvelle_aide": "WebP, JPEG, PNG ou AVIF, 5 Mo maximum.",
+    "champ_photo_televerser": "Téléverser",
+
+    "champ_liens_concours_titre": "Liens",
+    "champ_liens_concours_vide": "Aucun lien pour l'instant.",
+    "champ_lien_libelle": "Libellé (français)",
+    "champ_lien_libelle_en": "Libellé (anglais)",
+    "champ_lien_url": "Lien (URL)",
+    "champ_lien_url_aide": "Doit commencer par https:// — Facebook, YouTube, site externe, sans restriction de domaine.",
+    "action_ajouter_lien": "Ajouter le lien",
+    "action_retirer_lien": "Retirer ce lien",
+    "action_monter_lien": "Monter ce lien",
+    "action_descendre_lien": "Descendre ce lien"
   },
   "Aide": {
     "ouvrir": "Poser une question",

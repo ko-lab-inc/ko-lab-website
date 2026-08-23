@@ -71,6 +71,8 @@ export default async function Page({ params }: Props) {
           modulairesAide: t('reglages_modulaires_aide'),
           boutiqueActive: t('reglages_boutique_active'),
           boutiqueActiveAide: t('reglages_boutique_active_aide'),
+          concoursActif: t('reglages_concours_actif'),
+          concoursActifAide: t('reglages_concours_actif_aide'),
           enregistrer: t('reglages_enregistrer'),
           enCours: t('reglages_en_cours'),
           succes: t('reglages_succes'),

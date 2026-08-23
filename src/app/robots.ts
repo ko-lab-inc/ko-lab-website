@@ -32,14 +32,16 @@ const CHEMINS_UTILITAIRES = [
 export default async function robots(): Promise<MetadataRoute.Robots> {
   const reglages = await lireReglages()
 
-  // Boutique désactivée (0029) : ses routes répondent déjà 404
-  // (boutique/layout.tsx), mais un robot qui les avait déjà indexées avant
-  // la bascule doit être explicitement informé de ne plus les explorer —
-  // /boutique/commande et /boutique/demande sont alors un sous-ensemble
-  // redondant, sans conséquence à lister deux fois.
-  const chemins = reglages.boutiqueActive
-    ? CHEMINS_UTILITAIRES
-    : [...CHEMINS_UTILITAIRES, '/boutique']
+  // Boutique et concours désactivés (0029, 0040) : leurs routes répondent
+  // déjà 404 (layout.tsx respectif), mais un robot qui les avait déjà
+  // indexées avant la bascule doit être explicitement informé de ne plus
+  // les explorer — /boutique/commande et /boutique/demande restent listés
+  // séparément, sans conséquence à les redire.
+  const chemins = [
+    ...CHEMINS_UTILITAIRES,
+    ...(reglages.boutiqueActive ? [] : ['/boutique']),
+    ...(reglages.concoursActif ? [] : ['/concours']),
+  ]
 
   return {
     rules: {

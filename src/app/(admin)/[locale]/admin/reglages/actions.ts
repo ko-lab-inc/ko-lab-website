@@ -53,6 +53,7 @@ const schema = z.object({
   panier_actif: z.enum(['true', 'false']),
   solutions_modulaires: z.enum(['true', 'false']),
   boutique_active: z.enum(['true', 'false']),
+  concours_actif: z.enum(['true', 'false']),
 })
 
 /** Une case non cochée n'est PAS envoyée par le navigateur : absente = false. */
@@ -71,6 +72,7 @@ export async function enregistrerReglages(
     panier_actif: coche(donnees, 'panier_actif'),
     solutions_modulaires: coche(donnees, 'solutions_modulaires'),
     boutique_active: coche(donnees, 'boutique_active'),
+    concours_actif: coche(donnees, 'concours_actif'),
   })
   if (!analyse.success) return { erreur: 'donnees' }
 
