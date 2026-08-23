@@ -230,15 +230,20 @@ export async function supprimerPoste(donnees: FormData): Promise<void> {
  * Attribution (ou retrait) de la photo d'un poste — colonne photo_url,
  * migration 0032.
  *
- * ⚠️ AUCUN updateTag ICI, volontairement. `ETIQUETTE_CARRIERES` invalide le
- * cache de la page PUBLIQUE /carrieres (lib/carrieres.ts) — mais la lecture
- * publique (photoPourDepartement) choisit encore la photo par département,
- * pas par photo_url : cette colonne n'a aujourd'hui aucun lecteur public
- * (« hors Route A »). Appeler updateTag ici invaliderait un cache pour une
- * donnée qu'il ne sert pas. Pas de revalidatePath non plus : l'écran admin
- * lit toujours en direct via le client de session (jamais de cache côté
- * page), et le composant met à jour son état local dès la réponse —
- * rafraîchir la page redemanderait la même donnée pour rien.
+ * ⚠️ `updateTag(ETIQUETTE_CARRIERES)` EST NÉCESSAIRE ICI depuis le 23 août
+ * 2026 — ne pas le retirer. `lireOffresPubliees()` (lib/carrieres.ts) lit
+ * maintenant `photo_url` (resoudrePhotoPoste, lib/carrieres-photo.ts) : cette
+ * colonne a désormais un lecteur public, mis en cache 1h (`revalidate: 3600`)
+ * derrière `ETIQUETTE_CARRIERES`. Avant cette date, cet appel était
+ * délibérément absent — le commentaire disait alors que photo_url n'avait
+ * aucun lecteur public, ce qui était vrai jusqu'à ce que la page publique
+ * s'y branche. Sans cet appel, une photo assignée ici resterait invisible
+ * sur /carrieres jusqu'à l'expiration naturelle du cache.
+ *
+ * Pas de revalidatePath : l'écran admin lit toujours en direct via le client
+ * de session (jamais de cache côté page), et le composant met à jour son
+ * état local dès la réponse — rafraîchir la page redemanderait la même
+ * donnée pour rien.
  *
  * `exigerRole(ROLES_EQUIPE)`, pas `['admin']` : assigner une photo est un
  * geste d'édition courant, comme modifier le titre — même politique RLS
@@ -271,6 +276,8 @@ export async function attribuerPhotoPoste(
       console.error('[carrieres] attribution de photo refusée', error.message)
       return { success: false, error: "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste." }
     }
+
+    updateTag(ETIQUETTE_CARRIERES)
   } catch (err) {
     console.error('[carrieres] échec attribution de photo', err)
     return { success: false, error: "L'enregistrement a échoué. Réessayez, ou prévenez Moussa si ça persiste." }

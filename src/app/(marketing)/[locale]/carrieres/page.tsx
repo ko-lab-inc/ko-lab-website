@@ -8,7 +8,8 @@ import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
-import { lireOffresPubliees, photoPourDepartement, POSTES_REPLI } from '@/lib/carrieres'
+import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
+import { resoudrePhotoPoste, type ResolutionPhotoPoste } from '@/lib/carrieres-photo'
 import { EMAILS } from '@/lib/constantes'
 import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
@@ -69,7 +70,7 @@ export default async function CarrieresPage({ params }: Props) {
 
   /**
    * Libellé d'AFFICHAGE du département — jamais la valeur passée à
-   * `photoPourDepartement`, qui doit rester la chaîne française brute de la
+   * `resoudrePhotoPoste`, qui doit rester la chaîne française brute de la
    * base (voir PosteCarte.departement dans lib/carrieres.ts). Séparer les
    * deux évite qu'une traduction ici ne casse le rattachement des photos.
    */
@@ -95,7 +96,7 @@ export default async function CarrieresPage({ params }: Props) {
     type: string
     description: string
     exigences: string[]
-    photo: 'chantierBalisage2026' | 'amenagementSite2025' | 'deploiementCamion' | 'labImpression3d' | null
+    photo: ResolutionPhotoPoste
   }[]
 
   if (publiees) {
@@ -107,7 +108,7 @@ export default async function CarrieresPage({ params }: Props) {
       type: libellesType[p.type] ?? p.type,
       description: p.description,
       exigences: p.exigences,
-      photo: photoPourDepartement(p.departement),
+      photo: resoudrePhotoPoste(p.photoUrl, p.departement),
     }))
   } else {
     // Traducteurs cadrés par poste : chaque clé est ainsi vérifiée à la
@@ -127,7 +128,9 @@ export default async function CarrieresPage({ params }: Props) {
       type: t('type_temps_plein'),
       description: tp('description'),
       exigences: [tp('exigence_1'), tp('exigence_2'), tp('exigence_3'), tp('exigence_4')],
-      photo: photoPourDepartement(tp('departement')),
+      // Postes de repli (document de cadrage, pas de ligne en base) : pas de
+      // photo_url possible, seul le repli département s'applique.
+      photo: resoudrePhotoPoste(null, tp('departement')),
     }))
   }
 
@@ -216,17 +219,30 @@ export default async function CarrieresPage({ params }: Props) {
                   <article className="grid grid-cols-1 gap-8 border-b border-ko-line py-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 lg:py-16">
                     {/* Colonne gauche : identité du poste */}
                     <div>
-                      {/* Visuel — Phase 6.3 : aucune photo dédiée par poste,
-                          une photo réelle déjà en Storage quand le
-                          département correspond thématiquement
-                          (lib/carrieres.ts, photoPourDepartement), sinon
-                          PhotoPlaceholder. Jamais de stock (skill 22).
-                          Format modeste et non pleine largeur : la page
-                          reste un parcours court, pas une galerie. */}
-                      {poste.photo ? (
+                      {/* Visuel — photo_url (assignée depuis /admin/carrieres,
+                          migration 0032) fait foi ; repli sur une photo réelle
+                          déjà en Storage quand le département correspond
+                          thématiquement (lib/carrieres-photo.ts,
+                          photoPourDepartement, dette transitoire) tant
+                          qu'aucune n'est assignée ; PhotoPlaceholder sinon.
+                          Jamais de stock (skill 22). Format modeste et non
+                          pleine largeur : la page reste un parcours court,
+                          pas une galerie. */}
+                      {poste.photo.source === 'assignee' ? (
                         <div className="relative aspect-[4/3] w-full max-w-[220px] overflow-hidden rounded-lg bg-ko-cream2">
                           <Image
-                            src={IMAGES[poste.photo]}
+                            src={poste.photo.url}
+                            alt=""
+                            fill
+                            quality={75}
+                            sizes="220px"
+                            className="object-cover object-center"
+                          />
+                        </div>
+                      ) : poste.photo.source === 'repli' ? (
+                        <div className="relative aspect-[4/3] w-full max-w-[220px] overflow-hidden rounded-lg bg-ko-cream2">
+                          <Image
+                            src={IMAGES[poste.photo.cle]}
                             alt=""
                             fill
                             quality={75}

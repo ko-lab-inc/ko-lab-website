@@ -6,6 +6,8 @@ import { EnteteAdmin, PanneauAdmin } from '@/components/layout/CadreAdmin'
 import type { LibellesPoste } from '@/components/sections/FormulairePoste'
 import { TableauPostes } from '@/components/sections/TableauPostes'
 import { routing } from '@/i18n/routing'
+import { photoPourDepartement } from '@/lib/carrieres-photo'
+import { IMAGES } from '@/lib/images'
 import { listerFichiersDisponibles } from '@/lib/medias-disponibles'
 import { createClient } from '@/lib/supabase/server'
 
@@ -42,6 +44,23 @@ export default async function CarrieresAdminPage({ params }: Props) {
   ])
 
   const estAdmin = moi?.role === 'admin'
+
+  /**
+   * Même ordre de résolution que la page publique (lib/carrieres-photo.ts) :
+   * pour que l'admin montre exactement ce que le public voit, jamais un
+   * placeholder trompeur là où une photo de repli est déjà visible en ligne.
+   *
+   * ⚠️ Calculé pour TOUS les postes, MÊME ceux qui ont déjà une `photo_url` —
+   * pas seulement en son absence. `SelecteurPhotoPoste` applique lui-même la
+   * priorité (photoActuelle d'abord, photoRepli sinon) : après un retrait de
+   * photo dans la modale (état local, voir `photosRetouchees` plus bas dans
+   * TableauPostes.tsx, aucun rechargement de page), la vignette doit retomber
+   * sur le repli déjà connu, pas sur un `null` figé au moment du chargement.
+   */
+  const postesAvecRepli = (postes ?? []).map((p) => {
+    const cle = photoPourDepartement(p.departement)
+    return { ...p, photoRepli: cle ? IMAGES[cle] : null }
+  })
 
   // Table explicite plutôt que t(`poste_type_${cle}`) : les clés de messages
   // sont typées, et une clé construite à partir d'un `string` échappe au
@@ -93,7 +112,7 @@ export default async function CarrieresAdminPage({ params }: Props) {
 
       <TableauPostes
         locale={locale}
-        postes={postes ?? []}
+        postes={postesAvecRepli}
         estAdmin={estAdmin}
         libelles={libelles}
         fichiersDisponibles={fichiersDisponibles}
@@ -123,6 +142,7 @@ export default async function CarrieresAdminPage({ params }: Props) {
           modifierPhoto: t('modifier_photo_poste'),
           titreModal: t('titre_photo_poste'),
           aucunePhoto: t('aucune_photo_poste'),
+          repliPhoto: t('repli_photo_poste'),
           champChoix: t('champ_choix_photo_poste'),
           optionAucune: t('option_aucune_photo_poste'),
           enregistrer: t('enregistrer'),

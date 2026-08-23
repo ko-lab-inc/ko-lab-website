@@ -76,7 +76,9 @@ export function TableauPostes({
   textesPhoto,
 }: {
   locale: string
-  postes: Poste[]
+  /** `photoRepli` : url de repli département (lib/carrieres-photo.ts) quand
+   *  `photo_url` est vide — calculée par la page, voir SelecteurPhotoPoste. */
+  postes: (Poste & { photoRepli: string | null })[]
   estAdmin: boolean
   libelles: LibellesPoste
   textes: {
@@ -180,6 +182,7 @@ export function TableauPostes({
                   posteId={p.id}
                   titrePoste={p.titre_fr}
                   photoActuelle={p.id in photosRetouchees ? (photosRetouchees[p.id] ?? null) : p.photo_url}
+                  photoRepli={p.photoRepli}
                   fichiersDisponibles={fichiersDisponibles}
                   textes={textesPhoto}
                   onChange={(nouvellePhoto) =>

@@ -33,12 +33,15 @@ export type TextesPhotoPoste = {
   supprimerPhoto: string
   fermer: string
   erreurServeur: string
+  /** Marquage du repli département — voir la vignette ci-dessous. */
+  repliPhoto: string
 }
 
 export function SelecteurPhotoPoste({
   posteId,
   titrePoste,
   photoActuelle,
+  photoRepli,
   fichiersDisponibles,
   textes,
   onChange,
@@ -46,6 +49,12 @@ export function SelecteurPhotoPoste({
   posteId: string
   titrePoste: string
   photoActuelle: string | null
+  /** Photo que /carrieres afficherait pour ce poste EN L'ABSENCE de
+   *  `photoActuelle` (repli département, lib/carrieres-photo.ts) — `null` si
+   *  le département n'a pas de repli. Affichée avec un marquage visuel : ce
+   *  n'est pas une photo choisie pour ce poste, deux postes du même
+   *  département la partagent. */
+  photoRepli: string | null
   fichiersDisponibles: FichierDisponible[]
   textes: TextesPhotoPoste
   onChange: (nouvellePhoto: string | null) => void
@@ -116,12 +125,35 @@ export function SelecteurPhotoPoste({
       <button
         type="button"
         onClick={ouvrir}
-        aria-label={`${textes.modifierPhoto} — ${titrePoste}`}
-        title={textes.modifierPhoto}
+        aria-label={
+          photoActuelle
+            ? `${textes.modifierPhoto} — ${titrePoste}`
+            : photoRepli
+              ? `${textes.repliPhoto} — ${titrePoste}`
+              : `${textes.modifierPhoto} — ${titrePoste}`
+        }
+        title={photoActuelle ? textes.modifierPhoto : photoRepli ? textes.repliPhoto : textes.modifierPhoto}
         className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden border border-ko-line bg-ko-cream2 transition-opacity duration-200 hover:opacity-80"
       >
         {photoActuelle ? (
           <Image src={photoActuelle} alt="" width={80} height={80} className="h-full w-full object-cover" />
+        ) : photoRepli ? (
+          <>
+            <Image src={photoRepli} alt="" width={80} height={80} className="h-full w-full object-cover" />
+            {/* Marquage du repli — sans lui, deux postes du même département
+                afficheraient la même vignette sans qu'on comprenne pourquoi,
+                et on croirait à tort qu'une photo a été choisie pour CE
+                poste. `bg-ko-scrim`/`text-ko-white` : seuls tokens du projet
+                acceptant un modificateur d'opacité sur une photo (skill 02,
+                tailwind.config.ts). */}
+            {/* Label court et littéral, pas `textes.repliPhoto` (bien trop
+                long pour 80px) — même convention que <BadgeTraductionEn>
+                plus haut dans ce fichier : l'explication complète vit dans
+                le `title`/`aria-label` du bouton, pas dans le badge. */}
+            <span className="absolute inset-x-0 bottom-0 bg-ko-scrim/85 py-[3px] text-center font-mono text-[8px] uppercase leading-none tracking-wide text-ko-white">
+              Repli
+            </span>
+          </>
         ) : (
           <IconeGalerie taille={22} className="text-ko-muted" />
         )}

@@ -44,13 +44,18 @@ export type PosteCarte = {
    */
   titre: string
   /** RAW — toujours la valeur française de la base, jamais traduit : c'est
-   *  la clé que `photoPourDepartement` reconnaît. Utiliser un libellé
-   *  d'affichage séparé côté page pour le texte montré à l'écran. */
+   *  la clé que `photoPourDepartement` (lib/carrieres-photo.ts) reconnaît.
+   *  Utiliser un libellé d'affichage séparé côté page pour le texte montré
+   *  à l'écran. */
   departement: string
   type: TypePoste
   description: string
   /** Une exigence par ligne — voir exigences_fr, format texte multiligne. */
   exigences: string[]
+  /** Photo assignée depuis /admin/carrieres (migration 0032) — source de
+   *  vérité pour resoudrePhotoPoste (lib/carrieres-photo.ts), `null` tant
+   *  qu'aucune n'a été choisie. */
+  photoUrl: string | null
 }
 
 /** Étiquette de cache — partagée avec les actions d'administration. */
@@ -78,7 +83,7 @@ async function lireDepuisBase(locale: AppLocale): Promise<PosteCarte[] | null> {
     const { data, error } = await supabase
       .from('postes_carrieres')
       .select(
-        'id, titre_fr, titre_en, departement, type, description_fr, description_en, exigences_fr, exigences_en',
+        'id, titre_fr, titre_en, departement, type, description_fr, description_en, exigences_fr, exigences_en, photo_url',
       )
       .eq('actif', true)
       .order('ordre')
@@ -106,6 +111,7 @@ async function lireDepuisBase(locale: AppLocale): Promise<PosteCarte[] | null> {
             .split('\n')
             .map((l) => l.trim())
             .filter((l) => l !== ''),
+          photoUrl: p.photo_url,
         }
       })
 
@@ -131,42 +137,9 @@ export const lireOffresPubliees = unstable_cache(lireDepuisBase, ['offres-publie
 })
 
 /**
- * Visuel d'une fiche de poste — Phase 6.3.
- *
- * Aucune photo n'a été prise spécifiquement pour les postes : le document de
- * cadrage demande de réutiliser une photo déjà réelle (medias/) quand le
- * département y correspond thématiquement, PhotoPlaceholder sinon — jamais
- * une photo de stock (skill 22). Match par département plutôt que par titre :
- * plus stable si un titre est reformulé, et les postes d'un même département
- * partagent le même type de terrain.
- *
- * 'Opérations' et 'Logistique événementielle' ne renvoient plus
- * operationsCrew/operationsCrewVertical depuis le 20 août 2026 (revue
- * visuelle, point 1) : cette paire sert déjà OperationsTerrain.tsx (section 4
- * de l'accueil) en pleine largeur — la revoir en miniature sur /carrieres
- * était la 4ᵉ répétition d'une même photo signalée ce jour-là. chantierBalisage2026
- * et amenagementSite2025 restent thématiquement justes (chantier/opérations,
- * aménagement de site événementiel) sans dupliquer l'accueil.
- *
- * Renvoie une clé de IMAGES, pas l'URL — l'appelant importe IMAGES lui-même,
- * ce module ne dépend pas de next/image.
+ * Résolution de la photo d'un poste (photo_url en priorité, repli par
+ * département sinon) : voir lib/carrieres-photo.ts. Déplacée hors de ce
+ * fichier le 23 août 2026 — ce module importe `server-only`, incompatible
+ * avec l'usage côté client qu'en fait désormais /admin/carrieres
+ * (TableauPostes.tsx, SelecteurPhotoPoste.tsx).
  */
-export function photoPourDepartement(
-  departement: string,
-): 'chantierBalisage2026' | 'amenagementSite2025' | 'deploiementCamion' | 'labImpression3d' | null {
-  switch (departement) {
-    case 'Opérations':
-      return 'chantierBalisage2026'
-    case 'Logistique événementielle':
-      return 'amenagementSite2025'
-    case 'Transport & logistique':
-      return 'deploiementCamion'
-    case 'Lab créatif':
-      return 'labImpression3d'
-    // Installation, Atelier, Administration & coordination, Bureau : aucune
-    // photo réelle ne correspond honnêtement — PhotoPlaceholder (voir
-    // l'appelant).
-    default:
-      return null
-  }
-}
