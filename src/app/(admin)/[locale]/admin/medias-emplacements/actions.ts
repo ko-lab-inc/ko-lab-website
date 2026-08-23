@@ -31,6 +31,23 @@ import { ETIQUETTE_EMPLACEMENTS_MEDIAS } from '@/lib/medias-emplacements'
 
 export type ResultatEmplacement = { success: boolean; error?: string }
 
+/**
+ * Préfixe des fichiers publics du bucket `medias` — seule origine acceptée
+ * depuis la refonte en grille de sélection (plus de saisie libre d'URL).
+ *
+ * ⚠️ Le client envoie une URL choisie dans une grille déjà filtrée par
+ * `listerFichiersDisponibles`, mais une Server Action ne peut pas supposer
+ * que la requête vient forcément de ce composant — n'importe quel appelant
+ * peut poster n'importe quelle chaîne. Vérifier le PRÉFIXE ici, pas
+ * seulement `https://`/`/` comme avant : accepter une URL externe
+ * arbitraire aurait permis d'afficher, sous une clé du site KO-LAB,
+ * n'importe quelle image hébergée ailleurs.
+ */
+function prefixeBucketMedias(): string {
+  const base = process.env.NEXT_PUBLIC_SUPABASE_URL
+  return `${base}/storage/v1/object/public/medias/`
+}
+
 export async function mettreAJourEmplacement(
   cle: string,
   urlStockage: string,
@@ -42,14 +59,8 @@ export async function mettreAJourEmplacement(
   const url = urlStockage.trim()
   if (!url) return { success: false, error: t('erreur_url_requise') }
 
-  // Vérification LÉGÈRE, volontairement — pas un validateur d'URL complet.
-  // https:// couvre Supabase Storage et tout hôte externe ; / couvre un
-  // asset local servi depuis public/. JAMAIS /public/ dans la valeur finale :
-  // Next sert ces fichiers à la racine (IMAGES.hero = '/images/hero/...',
-  // pas '/public/images/...') — un chemin commençant par /public/ échouerait
-  // donc en 404 au lieu de servir l'image.
-  if (!url.startsWith('https://') && !url.startsWith('/')) {
-    return { success: false, error: t('erreur_url_requise') }
+  if (!url.startsWith(prefixeBucketMedias())) {
+    return { success: false, error: t('erreur_photo_invalide') }
   }
 
   try {

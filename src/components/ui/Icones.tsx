@@ -374,6 +374,15 @@ export function IconeChevronBas(props: IconeProps) {
   )
 }
 
+/** Coche — badge de sélection (grille de photos). */
+export function IconeCoche(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M5 13l4 4L19 7" />
+    </Icone>
+  )
+}
+
 /* =============================================================================
  * Stats bar
  * ========================================================================== */

@@ -4,8 +4,12 @@ import { expect, test, type APIRequestContext } from '@playwright/test'
 
 /**
  * Réorganisation de l'admin (fusion nav « Vidéos » + « Emplacements médias »
- * en « Médias », modal d'aperçu partagé PreviewMediaModal) : trois vérifications
- * en lecture seule, aucune écriture donc aucune restauration nécessaire.
+ * en « Médias » ; modal d'aperçu partagé PreviewMediaModal pour Vidéos ;
+ * grille de sélection dédiée SelecteurPhotoEmplacement pour Emplacements
+ * médias, admin uniquement) : vérifications structurelles, aucune écriture
+ * donc aucune restauration nécessaire — le test de bout en bout (bascule
+ * réelle + effet sur la page publique + restauration) a été fait
+ * manuellement lors du chantier, voir le rapport de session du 22 août 2026.
  */
 
 const env: Record<string, string> = {}
@@ -40,7 +44,7 @@ test.afterEach(async ({ request }) => {
   }
 })
 
-async function creerCompteEditor(request: APIRequestContext) {
+async function creerCompte(request: APIRequestContext, role: 'editor' | 'admin') {
   const email = `zzaudit_medias_nav_${Date.now()}@ko-lab.test`
   const rep = await request.post(`${SUPABASE_URL}/auth/v1/admin/users`, {
     headers: enTeteService,
@@ -52,12 +56,15 @@ async function creerCompteEditor(request: APIRequestContext) {
 
   const elevation = await request.patch(`${SUPABASE_URL}/rest/v1/profils?id=eq.${corps.id}`, {
     headers: enTeteService,
-    data: { role: 'editor' },
+    data: { role },
   })
-  if (elevation.status() >= 400) throw new Error(`élévation en editor impossible : ${await elevation.text()}`)
+  if (elevation.status() >= 400) throw new Error(`élévation en ${role} impossible : ${await elevation.text()}`)
 
   return { email }
 }
+
+const creerCompteEditor = (request: APIRequestContext) => creerCompte(request, 'editor')
+const creerCompteAdmin = (request: APIRequestContext) => creerCompte(request, 'admin')
 
 async function connecter(page: import('@playwright/test').Page, email: string) {
   await page.goto('/fr/connexion')
@@ -109,19 +116,50 @@ test('nav admin : « Médias » est un accordéon fermé par défaut, à trois s
   await expect(nav.getByRole('link', { name: 'Vidéos' })).toBeVisible()
 })
 
-test('/admin/medias-emplacements : vignette Aperçu ouvre le modal en lecture seule', async ({ page, request }) => {
+test('/admin/medias-emplacements : la vignette est inerte pour un editor (écriture admin uniquement)', async ({
+  page,
+  request,
+}) => {
   const compte = await creerCompteEditor(request)
   await connecter(page, compte.email)
 
   await page.goto('/fr/admin/medias-emplacements')
   const premiereLigne = page.locator('tbody tr').first()
+  // Plus de bouton « Voir l'aperçu » pour un editor depuis la refonte en
+  // grille de sélection : ouvrir un modal qui échouerait toujours à
+  // l'enregistrement (exigerRole(['admin'])) serait trompeur, pas discret.
+  await expect(premiereLigne.getByRole('button', { name: /Voir l'aperçu/i })).toHaveCount(0)
+  await expect(premiereLigne.locator('img')).toBeVisible()
+})
+
+test('/admin/medias-emplacements : grille de sélection — aucune URL visible, choix, aperçu public, restauration', async ({
+  page,
+  request,
+}) => {
+  const compte = await creerCompteAdmin(request)
+  await connecter(page, compte.email)
+
+  await page.goto('/fr/admin/medias-emplacements')
+
+  // Jamais d'URL Supabase en texte visible sur cet écran — demande explicite
+  // de la refonte du 22 août 2026 (l'ancien tableau exposait l'URL complète).
+  const texteVisible = await page.locator('body').innerText()
+  expect(texteVisible).not.toContain('supabase.co')
+
+  const premiereLigne = page.locator('tbody tr').first()
   await premiereLigne.getByRole('button', { name: /Voir l'aperçu/i }).click()
 
   const dialogue = page.locator('dialog[open]')
   await expect(dialogue).toBeVisible()
-  await expect(dialogue.locator('img')).toBeVisible()
-  // Le texte alternatif s'affiche en lecture seule (aucun <input>/<select> dans ce modal).
-  await expect(dialogue.locator('input, select, textarea')).toHaveCount(0)
+
+  // Une grille de vignettes cliquables, jamais un champ de saisie d'URL.
+  const vignettes = dialogue.locator('div.grid button')
+  await expect(vignettes.first()).toBeVisible()
+  expect(await dialogue.locator('input[type="url"], input[type="text"][value*="http"]').count()).toBe(0)
+
+  // Les deux textes alternatifs sont éditables dans la même modale.
+  await expect(dialogue.getByLabel('Texte alternatif (français)')).toBeVisible()
+  await expect(dialogue.getByLabel('Texte alternatif (anglais)')).toBeVisible()
 
   await dialogue.getByRole('button', { name: /Fermer/i }).click()
   await expect(dialogue).toBeHidden()
