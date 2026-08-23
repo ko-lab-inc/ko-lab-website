@@ -14,7 +14,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "audit:supabase": "node scripts/audit-supabase.mjs",
-    "audit:limites": "node scripts/audit-limites.mjs"
+    "audit:limites": "node scripts/audit-limites.mjs",
+    "verifier:migrations": "node scripts/verifier-migrations.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

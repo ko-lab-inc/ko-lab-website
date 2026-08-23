@@ -1,0 +1,101 @@
+-- =============================================================================
+-- 0039 — profils : rétablir le GRANT UPDATE pour authenticated
+-- =============================================================================
+--
+-- ⚠️ À EXÉCUTER PAR MOUSSA DANS LE SQL EDITOR SUPABASE, projet ko-lab-site.
+--
+-- -----------------------------------------------------------------------------
+-- CE QUE 0019 A FAIT, ET CE QU'ELLE N'A PAS ANTICIPÉ
+-- -----------------------------------------------------------------------------
+-- 0019 a fait `revoke update on public.profils from authenticated;`, en
+-- pariant que le trigger `interdire_auto_promotion` (SECURITY DEFINER)
+-- suffirait à protéger la table. Ce pari ne tient pas : un GRANT et une
+-- politique RLS (ou un trigger) sont deux couches INDÉPENDANTES — voir
+-- SKILL-securite-audit.md, Zone 1, et securite-reference.md §2
+-- « GRANT vs RLS ». Le GRANT manquant bloque la commande UPDATE elle-même,
+-- AVANT que RLS ou le trigger ne soient évalués — y compris pour un admin
+-- légitime passant par le client de SESSION, exactement ce que fait
+-- `changerRole()` (admin/utilisateurs/actions.ts) par choix documenté :
+-- « le client de session est utilisé, PAS la service role key — passer par
+-- cette dernière contournerait le RLS, le contrôle ne tiendrait plus qu'à
+-- quelques lignes de TypeScript ». 0019 a retiré ce GRANT sans tenir compte
+-- de cette dépendance.
+--
+-- -----------------------------------------------------------------------------
+-- PREUVE PAR SONDE — quatre cas, comptes jetables réels, GRANT posé à titre
+-- de test le 22 août 2026 avant d'être formalisé ici
+-- -----------------------------------------------------------------------------
+--
+-- (a) Non-admin tente de changer SON PROPRE role :
+--       PATCH profils?id=eq.<soi> {role:'admin'}  (jeton de session, non-admin)
+--       -> 200, corps [] — RLS BLOQUE (profils_maj_admin), PAS d'exception.
+--          `using (get_user_role() = 'admin')` échoue pour l'appelant, la
+--          ligne devient invisible pour l'UPDATE : 0 ligne touchée, aucune
+--          erreur levée. Le trigger n'a même pas eu l'occasion de s'exécuter.
+--
+-- (b) Admin élève un TIERS à 'editor' :
+--       PATCH profils?id=eq.<tiers> {role:'editor'}  (jeton de session, admin)
+--       -> 200, corps [{"id":...,"role":"editor",...}] — RLS passe
+--          (get_user_role() = 'admin' pour l'appelant), le trigger ne bloque
+--          pas un admin. Rôle réellement changé, vérifié avec la clé de
+--          service après coup.
+--
+-- (c) Admin modifie une colonne AUTRE que role sur un tiers (email) :
+--       -> 200, succès, role du tiers inchangé dans la réponse — confirme
+--          que interdire_auto_promotion() ne réagit QUE si
+--          `new.role is distinct from old.role` : une colonne quelconque
+--          passe sans même consulter le rôle de l'appelant.
+--
+-- (d) Non-admin modifie une colonne autre que role sur SON PROPRE compte :
+--       -> 200, corps [] — RLS bloque, comme (a). `profils_maj_admin` exige
+--          `get_user_role() = 'admin'` pour TOUT UPDATE, quelle que soit la
+--          colonne visée ; le trigger ne s'est pas non plus déclenché
+--          puisque `role` n'y change pas. Aucun écran du site ne tente
+--          aujourd'hui cette opération (`grep` sur tout src/ : `changerRole()`
+--          est le seul appelant de `.from('profils').update(...)` de tout le
+--          projet) — RLS ferme une porte, mais rien derrière ne s'en sert.
+--
+-- -----------------------------------------------------------------------------
+-- POURQUOI CE N'EST PAS UN AFFAIBLISSEMENT
+-- -----------------------------------------------------------------------------
+-- Le rôle par défaut à l'inscription reste 'client' (0009), `handle_new_user()`
+-- ne lit aucune métadonnée fournie par l'appelant (0001), et
+-- `interdire_auto_promotion` (0019) reste actif : les quatre cas ci-dessus le
+-- prouvent — RLS et le trigger décident QUI peut écrire QUOI, ce GRANT ne
+-- fait que rendre la commande UPDATE évaluable. Sans lui, tout échoue en
+-- `42501 permission denied` avant même que RLS soit consultée — ce qui est
+-- exactement ce qui s'est produit depuis 0019, bloquant `changerRole()` pour
+-- tout le monde, y compris les admins légitimes.
+--
+-- -----------------------------------------------------------------------------
+-- LIMITE CONNUE, PAS CORRIGÉE ICI — UN CHOIX, PAS UNE PROTECTION
+-- -----------------------------------------------------------------------------
+-- Un admin peut modifier le `role` de N'IMPORTE QUI, y compris se
+-- rétrograder lui-même — `profils_maj_admin` et `interdire_auto_promotion`
+-- ne distinguent jamais la ligne ciblée de l'appelant. Un admin unique qui se
+-- repasse en 'client' verrouille l'espace admin pour tout le monde, sans
+-- filet — `changerRole()` (admin/utilisateurs/actions.ts) documente déjà ce
+-- risque et l'interdit uniquement pour l'AUTO-modification
+-- (`if (user.id === id) return { erreur: 'soi_meme' }`), pas pour le dernier
+-- admin restant qui rétrograderait un AUTRE admin. Aucune correction proposée
+-- ici : documenté pour que la prochaine personne qui touche à ce fichier le
+-- sache, pas traité comme un défaut à combler dans cette migration.
+-- =============================================================================
+
+grant update on public.profils to authenticated;
+
+
+-- =============================================================================
+-- VÉRIFICATION
+-- =============================================================================
+--
+-- select grantee, privilege_type from information_schema.role_table_grants
+-- where table_name = 'profils';
+-- -- attendu : authenticated -> SELECT, UPDATE (SELECT venait déjà de 0004).
+--
+-- Non-régression — à refaire avec de vrais comptes jetables, jamais supposée :
+--   (a) non-admin change son propre role      -> RLS bloque, 200 []
+--   (b) admin élève un tiers                  -> 200, rôle changé
+--   (c) admin modifie une colonne autre, tiers -> 200, role inchangé
+--   (d) non-admin modifie une colonne autre, soi -> RLS bloque, 200 []
+-- =============================================================================

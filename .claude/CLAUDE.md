@@ -174,9 +174,23 @@ Il n'existe pas d'environnement de test séparé. Toute sonde touche les donnée
 - Sondes en lecture seule par défaut (GET, HEAD, PATCH no-op à valeur identique).
 - Toute écriture de test est préfixée `AUDIT_<timestamp>` et supprimée dans un `finally`.
 - Les comptes de test utilisent `audit+<timestamp>@ko-lab.test` et sont détruits en fin de run.
-- Ne jamais appeler `/rpc/rls_auto_enable` : fonction exposée par PostgREST, absente des
-  19 migrations, origine inconnue, nom suggérant une modification d'état.
+- Ne jamais appeler `/rpc/rls_auto_enable` : versionnée et documentée depuis la
+  migration 0020 (event trigger qui active la RLS sur toute nouvelle table de
+  `public`), pas une fonction à invoquer soi-même — `returns event_trigger`,
+  PostgreSQL refuse de toute façon l'appel direct.
 - Vérifier qu'aucun `npm run start` ne tourne avant Playwright (port 3000 occupé).
+- **Toute sonde REST doit reproduire les en-têtes du code réel, pas la
+  convention la plus pratique pour lire une réponse.** `Prefer:
+  return=representation` force `INSERT ... RETURNING *`, qui exige le
+  privilège **SELECT** en plus du privilège d'écriture — un privilège qu'`anon`
+  n'a pas et ne doit pas avoir sur `candidatures` (0019 le révoque exprès,
+  pour protéger les coordonnées des candidats). Une sonde qui l'utilise par
+  réflexe signale à tort un GRANT manquant qui existe pourtant bel et bien.
+  Le vrai code (`envoyerCandidature`, `.insert()` sans `.select()`) envoie
+  `return=minimal` — c'est ce header qu'une sonde doit envoyer pour juger de
+  ce que ce code peut vraiment faire. Erreur commise et corrigée le
+  22 août 2026 (`docs/audits/2026-08-22-audit-securite-reconnaissance.md`) :
+  deux tours d'aller-retour perdus à chercher une cause qui n'existait pas.
 
 ---
 
@@ -198,12 +212,6 @@ Tant qu'un outil est absent, la ligne correspondante du rapport est
 « non mesurable », jamais « conforme ».
 
 **Points de sécurité non tranchés** (retirer la ligne une fois close)
-- GRANT `UPDATE` / `DELETE` de `anon` : indéterminé. La sonde REST ne distingue pas
-  l'absence de GRANT du blocage RLS — voir la sonde PATCH no-op de
-  `SKILL-securite-audit.md`, ou
-  `information_schema.role_table_grants` dans l'éditeur SQL.
-- `rls_auto_enable` : origine inconnue. Lire sa définition avant tout appel ;
-  si `SECURITY DEFINER` et exécutable par `anon`, révoquer.
 - Cloudflare N'est PAS en frontal : `ko-lab-center.ca` est en DNS only (nuage
   gris) sur son enregistrement Vercel — nécessaire pour le certificat SSL de
   Vercel, mais `cf-connecting-ip` ne sera donc jamais présent. Testé quand
