@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
 import { buttonVariants } from '@/components/ui/Button'
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
@@ -32,6 +33,7 @@ import { ROUTES } from '@/lib/routes'
 export async function EquipementsDeploiement() {
   const t = await getTranslations('Home.equipements')
   const tCapacites = await getTranslations('Home.capacites')
+  const tCommun = await getTranslations('Commun')
 
   // deployment_camion (migration 0031, route A) — pilote UNIQUEMENT la photo
   // de GAUCHE. C'est elle qui correspond à cet emplacement : le repli défini
@@ -49,15 +51,25 @@ export async function EquipementsDeploiement() {
       <div className="grid grid-cols-1 items-stretch lg:grid-cols-2">
         <Reveal className="grid grid-cols-2 gap-px overflow-hidden rounded-b-2xl bg-ko-line-d lg:aspect-auto lg:min-h-[640px] lg:rounded-b-none lg:rounded-r-2xl">
           <div className="relative aspect-[3/4] lg:aspect-auto">
-            <Image
-              src={photoGauche.url}
-              alt={photoGauche.alt}
-              fill
-              quality={80}
-              sizes="(max-width: 1024px) 50vw, 25vw"
-              style={FILTRE_TERRAIN}
-              className="object-cover object-center"
-            />
+            {/* Vide assumé (migration 0037) : PhotoPlaceholder à la place,
+                jamais l'ancienne photo. */}
+            {photoGauche === null ? (
+              <PhotoPlaceholder
+                ratio=""
+                label={tCommun('photo_placeholder')}
+                className="absolute inset-0 h-full w-full"
+              />
+            ) : (
+              <Image
+                src={photoGauche.url}
+                alt={photoGauche.alt}
+                fill
+                quality={80}
+                sizes="(max-width: 1024px) 50vw, 25vw"
+                style={FILTRE_TERRAIN}
+                className="object-cover object-center"
+              />
+            )}
           </div>
           <div className="relative aspect-[3/4] lg:aspect-auto">
             {/*

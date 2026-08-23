@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { CADRAGES, FILTRE_TERRAIN } from '@/lib/images'
@@ -26,6 +27,7 @@ import { ROUTES } from '@/lib/routes'
  */
 export async function Besoins() {
   const t = await getTranslations('Home.besoins')
+  const tCommun = await getTranslations('Commun')
 
   /**
    * Les quatre photos viennent maintenant de medias_emplacements (migration
@@ -36,6 +38,12 @@ export async function Besoins() {
    * quatre cartes réelles de ce fichier). `resoudreEmplacement` retombe sur
    * la même photo qu'avant (images.ts) si la base ne répond pas ou si la
    * ligne manque — jamais de blanc.
+   *
+   * Depuis la migration 0037, `resoudreEmplacement` peut aussi renvoyer
+   * `null` : un « vide assumé » (photo retirée depuis l'admin), différent
+   * d'une ligne introuvable — voir sa docstring. Chaque carte affiche alors
+   * PhotoPlaceholder à la place, jamais l'ancienne photo ressuscitée par
+   * erreur.
    *
    * Les quatre reçoivent toujours FILTRE_TERRAIN — jamais `undefined` — pour
    * partager le même socle colorimétrique que le reste du site, quelle que
@@ -125,26 +133,38 @@ export async function Besoins() {
                     patron alt="" des sections où un texte adjacent porte déjà
                     l'information (voir CatalogueBoutique.tsx).
                   */}
-                  <Image
-                    src={photo.url}
-                    alt={photo.alt}
-                    fill
-                    // `priority` retirée le 20 août 2026 (Phase 10, étape 2) :
-                    // le hero (Hero.tsx) reste l'élément LCP mesuré même avec
-                    // cette carte en priorité — vérifié par Lighthouse mobile,
-                    // pas supposé. Les deux préchargements se disputaient la
-                    // bande passante mobile pour rien ; la cible du chantier
-                    // est un seul média préchargé (le hero), voir CLAUDE.md.
-                    quality={80}
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                    style={style}
-                    className={cn(
-                      'object-cover transition-transform duration-[400ms] group-hover:scale-[1.05]',
-                      // Deux des photos sont verticales : sans recentrage, le
-                      // recadrage 16/9 couperait les silhouettes.
-                      cadrage,
-                    )}
-                  />
+                  {photo === null ? (
+                    // Vide assumé (migration 0037) — PAS l'ancienne photo :
+                    // voir la docstring de resoudreEmplacement. Mêmes
+                    // dimensions que l'image qu'il remplace (absolute inset-0
+                    // sur le même conteneur aspect-[16/9]).
+                    <PhotoPlaceholder
+                      ratio=""
+                      label={tCommun('photo_placeholder')}
+                      className="absolute inset-0 h-full w-full rounded-xl"
+                    />
+                  ) : (
+                    <Image
+                      src={photo.url}
+                      alt={photo.alt}
+                      fill
+                      // `priority` retirée le 20 août 2026 (Phase 10, étape 2) :
+                      // le hero (Hero.tsx) reste l'élément LCP mesuré même avec
+                      // cette carte en priorité — vérifié par Lighthouse mobile,
+                      // pas supposé. Les deux préchargements se disputaient la
+                      // bande passante mobile pour rien ; la cible du chantier
+                      // est un seul média préchargé (le hero), voir CLAUDE.md.
+                      quality={80}
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      style={style}
+                      className={cn(
+                        'object-cover transition-transform duration-[400ms] group-hover:scale-[1.05]',
+                        // Deux des photos sont verticales : sans recentrage, le
+                        // recadrage 16/9 couperait les silhouettes.
+                        cadrage,
+                      )}
+                    />
+                  )}
                 </div>
 
                 {/*

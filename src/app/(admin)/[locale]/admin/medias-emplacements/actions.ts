@@ -48,18 +48,24 @@ function prefixeBucketMedias(): string {
   return `${base}/storage/v1/object/public/medias/`
 }
 
+/**
+ * `urlStockage` accepte `null` depuis la migration 0037 (colonne devenue
+ * nullable) — c'est le bouton « Retirer la photo » de SelecteurPhotoEmplacement
+ * qui l'envoie. Chaîne vide traitée comme `null` : un champ vidé à la main
+ * ne doit jamais finir en `''` dans une colonne qui distingue maintenant
+ * « vide assumé » (NULL) d'une vraie valeur — voir resoudreEmplacement.
+ */
 export async function mettreAJourEmplacement(
   cle: string,
-  urlStockage: string,
+  urlStockage: string | null,
   altFr: string,
   altEn?: string | null,
 ): Promise<ResultatEmplacement> {
   const t = await getTranslations('Admin')
 
-  const url = urlStockage.trim()
-  if (!url) return { success: false, error: t('erreur_url_requise') }
+  const url = urlStockage?.trim() || null
 
-  if (!url.startsWith(prefixeBucketMedias())) {
+  if (url !== null && !url.startsWith(prefixeBucketMedias())) {
     return { success: false, error: t('erreur_photo_invalide') }
   }
 

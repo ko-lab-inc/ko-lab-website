@@ -16,10 +16,14 @@ type Props = { params: Promise<{ locale: string }> }
  *
  * Pas de création ni de suppression : les clés sont posées par migration,
  * cet écran ne fait que REMPLACER la photo (choisie dans une grille, plus de
- * saisie d'URL — refonte du 22 août 2026) et l'alt text d'un emplacement. Si
- * une photo invalide finissait quand même enregistrée, le site public
- * retombe sur src/lib/images.ts via src/lib/medias-repli.ts — jamais de
- * blanc.
+ * saisie d'URL — refonte du 22 août 2026) et l'alt text d'un emplacement.
+ *
+ * ⚠️ Depuis la migration 0037, une photo peut aussi être RETIRÉE (bouton
+ * dédié dans SelecteurPhotoEmplacement) : `url_stockage` passe à NULL. Ce
+ * n'est plus « jamais de blanc » inconditionnellement — le repli
+ * (medias-repli.ts) ne joue que si la LIGNE est introuvable, jamais quand
+ * elle existe avec une photo volontairement retirée. Voir la docstring de
+ * `resoudreEmplacement` (lib/medias-emplacements.ts) pour le détail.
  *
  * ⚠️ Accès à la PAGE : pas d'exigerRole() ici — ce garde-fou sert les Server
  * Actions, qui s'invoquent hors du chemin protégé par proxy.ts + le layout
@@ -88,6 +92,11 @@ export default async function MediasEmplacementsAdminPage({ params }: Props) {
           modifier: t('action_modifier'),
           titreModal: t('titre_modifier_emplacement'),
           champChoix: t('champ_choix_photo_emplacement'),
+          aideChoix: t('aide_choix_photo_emplacement'),
+          photoActuelle: t('emplacement_photo_actuelle'),
+          retirerPhoto: t('emplacement_retirer_photo'),
+          confirmerRetrait: t('emplacement_confirmer_retrait'),
+          sansPhoto: t('emplacement_sans_photo'),
           enregistrer: t('enregistrer'),
           enCours: t('en_cours'),
           fermer: t('fermer'),

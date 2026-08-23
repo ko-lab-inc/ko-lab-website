@@ -35,6 +35,16 @@ import { cn } from '@/lib/utils/cn'
  * par une ligne de `medias_emplacements` — y compris CETTE ligne. Sans la
  * réintroduire explicitement, la grille se rechargerait vide de la seule
  * photo qu'on est en train de modifier. Voir `options` plus bas.
+ *
+ * ---------------------------------------------------------------------------
+ * PHOTO ACTUELLE ≠ SÉLECTION — deux marquages distincts, volontairement
+ *
+ * `photoActuelle` (prop) est ce qui est RÉELLEMENT en base ; `selection`
+ * (état local) est ce que la personne vient de cliquer, pas encore
+ * enregistré. Les deux peuvent différer pendant qu'on prévisualise un
+ * changement — la vignette « Photo actuelle » garde son étiquette même si
+ * une autre vignette porte la coche de sélection, pour qu'on comprenne
+ * toujours CE QUI VA ÊTRE REMPLACÉ.
  * ---------------------------------------------------------------------------
  */
 
@@ -43,9 +53,14 @@ export type FichierDisponible = { chemin: string; url: string }
 export type TextesSelecteurEmplacement = {
   titreModal: string
   champChoix: string
+  aideChoix: string
   colonneAltFr: string
   colonneAltEn: string
   altEnVide: string
+  photoActuelle: string
+  retirerPhoto: string
+  confirmerRetrait: string
+  sansPhoto: string
   enregistrer: string
   enCours: string
   fermer: string
@@ -66,15 +81,16 @@ export function SelecteurPhotoEmplacement({
   ouvert: boolean
   onFermer: () => void
   cle: string
-  photoActuelle: string
+  /** `null` : emplacement vide assumé (migration 0037), pas encore de photo. */
+  photoActuelle: string | null
   altFrActuel: string
   altEnActuel: string | null
   fichiersDisponibles: FichierDisponible[]
   textes: TextesSelecteurEmplacement
-  onEnregistre: (maj: { url_stockage: string; alt_text_fr: string; alt_text_en: string | null }) => void
+  onEnregistre: (maj: { url_stockage: string | null; alt_text_fr: string; alt_text_en: string | null }) => void
 }) {
   const boite = useRef<HTMLDialogElement>(null)
-  const [selection, setSelection] = useState(photoActuelle)
+  const [selection, setSelection] = useState<string | null>(photoActuelle)
   const [altFr, setAltFr] = useState(altFrActuel)
   const [altEn, setAltEn] = useState(altEnActuel ?? '')
   const [erreur, setErreur] = useState<string | null>(null)
@@ -119,9 +135,28 @@ export function SelecteurPhotoEmplacement({
     })
   }
 
-  const options = fichiersDisponibles.some((f) => f.url === photoActuelle)
-    ? fichiersDisponibles
-    : [{ chemin: cle, url: photoActuelle }, ...fichiersDisponibles]
+  // Geste direct (confirmation puis application immédiate), pas un simple
+  // changement de `selection` en attente d'Enregistrer — même patron que
+  // SelecteurPhotoPoste.supprimer(). Agit sur la photo réellement en base,
+  // indépendamment de ce qui est survolé dans la grille au moment du clic.
+  function retirer() {
+    if (!window.confirm(textes.confirmerRetrait)) return
+    setErreur(null)
+    demarrer(async () => {
+      const resultat = await mettreAJourEmplacement(cle, null, altFr, altEn || null)
+      if (!resultat.success) {
+        setErreur(resultat.error ?? textes.erreurServeur)
+        return
+      }
+      onEnregistre({ url_stockage: null, alt_text_fr: altFr, alt_text_en: altEn || null })
+      boite.current?.close()
+    })
+  }
+
+  const options =
+    photoActuelle && !fichiersDisponibles.some((f) => f.url === photoActuelle)
+      ? [{ chemin: cle, url: photoActuelle }, ...fichiersDisponibles]
+      : fichiersDisponibles
 
   return (
     <dialog
@@ -148,6 +183,11 @@ export function SelecteurPhotoEmplacement({
         </div>
 
         <label className="label-mono mb-2 block text-ko-muted">{textes.champChoix}</label>
+        {/* Texte d'aide court — sans lui, une grille de vignettes sans
+            contexte ne dit ni ce qu'elle montre, ni qu'un emplacement ne
+            porte qu'une photo à la fois. */}
+        <p className="mb-3 text-sm leading-relaxed text-ko-muted">{textes.aideChoix}</p>
+
         {/* Grille de vignettes du bucket — jamais une URL saisie à la main.
             `max-h` + défilement interne : jusqu'à ~40 fichiers disponibles
             au 22 août 2026, une grille non bornée aurait poussé le reste
@@ -155,6 +195,7 @@ export function SelecteurPhotoEmplacement({
         <div className="grid max-h-[280px] grid-cols-4 gap-2 overflow-y-auto border border-ko-line p-2 sm:grid-cols-5">
           {options.map((f) => {
             const estSelectionnee = f.url === selection
+            const estActuelle = f.url === photoActuelle
             return (
               <button
                 key={f.url}
@@ -164,10 +205,24 @@ export function SelecteurPhotoEmplacement({
                 title={f.chemin}
                 className={cn(
                   'relative aspect-square overflow-hidden border-2 bg-ko-cream2 transition-colors duration-200',
-                  estSelectionnee ? 'border-ko-ink' : 'border-transparent hover:border-ko-line',
+                  // Marquage renforcé : anneau + décalage (ring-offset) en
+                  // plus de la bordure, pour que la sélection se voie même
+                  // à côté de l'étiquette « Photo actuelle » sur une autre
+                  // vignette — une simple bordure de 2px passait inaperçue
+                  // (retour : « on ne sait pas laquelle est en place »).
+                  estSelectionnee
+                    ? 'border-ko-ink ring-2 ring-ko-ink ring-offset-2'
+                    : 'border-transparent hover:border-ko-line',
                 )}
               >
                 <Image src={f.url} alt="" fill sizes="100px" className="object-cover" />
+
+                {estActuelle && (
+                  <span className="absolute left-1 top-1 rounded bg-ko-ink px-1.5 py-0.5 font-mono text-[9px] uppercase leading-none tracking-wide text-ko-white">
+                    {textes.photoActuelle}
+                  </span>
+                )}
+
                 {estSelectionnee && (
                   <span
                     aria-hidden="true"
@@ -180,6 +235,10 @@ export function SelecteurPhotoEmplacement({
             )
           })}
         </div>
+
+        {photoActuelle === null && (
+          <p className="mt-2 text-xs italic text-ko-muted">{textes.sansPhoto}</p>
+        )}
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
@@ -213,7 +272,7 @@ export function SelecteurPhotoEmplacement({
           </p>
         )}
 
-        <div className="mt-6">
+        <div className="mt-6 flex items-center gap-5">
           <button
             type="button"
             onClick={enregistrer}
@@ -222,6 +281,20 @@ export function SelecteurPhotoEmplacement({
           >
             {enCours ? textes.enCours : textes.enregistrer}
           </button>
+          {/* Retire la photo EN BASE directement (confirmation puis
+              application) — n'apparaît que s'il y a effectivement une photo
+              à retirer. Jamais de suppression du fichier Storage : voir
+              actions.ts, seule la colonne url_stockage est modifiée. */}
+          {photoActuelle && (
+            <button
+              type="button"
+              onClick={retirer}
+              disabled={enCours}
+              className="text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
+            >
+              {textes.retirerPhoto}
+            </button>
+          )}
         </div>
       </div>
     </dialog>

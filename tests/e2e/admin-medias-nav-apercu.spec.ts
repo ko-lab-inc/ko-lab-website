@@ -197,6 +197,77 @@ test('/admin/medias-emplacements : grille de sélection — aucune URL visible, 
   await expect(dialogue).toBeHidden()
 })
 
+/**
+ * ⚠️ Exige la migration 0037 (url_stockage nullable) déjà appliquée en base —
+ * sans elle, ce test échoue par construction (contrainte NOT NULL toujours
+ * active côté Postgres), pas par un défaut du code. Vérifié manuellement le
+ * 22 août 2026 : tant que la migration n'est pas jouée, la tentative de
+ * retrait échoue proprement (message d'erreur affiché, modale reste ouverte,
+ * rien de corrompu) — voir le rapport de session pour la sonde qui l'a
+ * confirmé.
+ */
+test('/admin/medias-emplacements : retirer une photo affiche le placeholder public, réassigner la ramène', async ({
+  page,
+  request,
+}) => {
+  const compte = await creerCompteAdmin(request)
+  await connecter(page, compte.email)
+
+  const CLE_TEST = 'besoin_4'
+
+  async function lireLigneBase() {
+    const r = await request.get(
+      `${SUPABASE_URL}/rest/v1/medias_emplacements?cle=eq.${CLE_TEST}&select=url_stockage,alt_text_fr`,
+      { headers: enTeteService },
+    )
+    return (await r.json())[0] as { url_stockage: string | null; alt_text_fr: string }
+  }
+
+  const original = await lireLigneBase()
+  if (!original.url_stockage) test.skip(true, `${CLE_TEST} n'a déjà aucune photo — rien à retirer pour ce test`)
+
+  try {
+    async function ouvrirModale() {
+      await page.goto('/fr/admin/medias-emplacements')
+      const ligne = page.locator('tr', { hasText: CLE_TEST })
+      await ligne.getByRole('button', { name: new RegExp(`Modifier — ${CLE_TEST}`, 'i') }).click()
+      const dialogue = page.locator('dialog[open]')
+      await dialogue.waitFor({ state: 'visible' })
+      return dialogue
+    }
+
+    // --- Retrait, avec confirmation ---
+    const dialogue1 = await ouvrirModale()
+    page.once('dialog', (d) => d.accept())
+    await dialogue1.getByRole('button', { name: /Retirer la photo/i }).click()
+    await dialogue1.waitFor({ state: 'hidden', timeout: 10_000 })
+
+    const apresRetrait = await lireLigneBase()
+    expect(apresRetrait.url_stockage).toBeNull()
+
+    // Le fichier retiré reste dans la bibliothèque — pas supprimé du bucket.
+    const dialogue2 = await ouvrirModale()
+    await expect(dialogue2.locator(`button[title$="${original.url_stockage!.split('/medias/')[1]}"]`)).toHaveCount(1)
+    await dialogue2.getByRole('button', { name: /Fermer/i }).click()
+
+    // --- Réassignation de la même photo depuis la grille ---
+    const dialogue3 = await ouvrirModale()
+    const nomFichier = original.url_stockage!.split('/medias/')[1]!
+    await dialogue3.locator(`button[title$="${nomFichier}"]`).click()
+    await dialogue3.getByRole('button', { name: /^Enregistrer$/ }).click()
+    await dialogue3.waitFor({ state: 'hidden', timeout: 10_000 })
+
+    const apresReassignation = await lireLigneBase()
+    expect(apresReassignation.url_stockage).toBe(original.url_stockage)
+  } finally {
+    // Restauration explicite, même si une étape ci-dessus a échoué.
+    await request.patch(`${SUPABASE_URL}/rest/v1/medias_emplacements?cle=eq.${CLE_TEST}`, {
+      headers: enTeteService,
+      data: { url_stockage: original.url_stockage, alt_text_fr: original.alt_text_fr },
+    })
+  }
+})
+
 test('/admin/videos : vignette Aperçu ouvre le modal, sans bloc texte alternatif', async ({ page, request }) => {
   const compte = await creerCompteEditor(request)
   await connecter(page, compte.email)

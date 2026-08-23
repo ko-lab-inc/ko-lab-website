@@ -506,7 +506,8 @@ export type Database = {
         Row: {
           id: string
           cle: string
-          url_stockage: string
+          /** Nullable depuis la migration 0037 — retrait volontaire d'une photo. */
+          url_stockage: string | null
           alt_text_fr: string
           /** NULL jusqu'à Phase 9 bilingue — repli sur alt_text_fr en lecture. */
           alt_text_en: string | null
@@ -516,7 +517,7 @@ export type Database = {
         Insert: {
           id?: string
           cle: string
-          url_stockage: string
+          url_stockage?: string | null
           alt_text_fr: string
           alt_text_en?: string | null
           created_at?: string
@@ -525,7 +526,7 @@ export type Database = {
         Update: {
           id?: string
           cle?: string
-          url_stockage?: string
+          url_stockage?: string | null
           alt_text_fr?: string
           alt_text_en?: string | null
           created_at?: string

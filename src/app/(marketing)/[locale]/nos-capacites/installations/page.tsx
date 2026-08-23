@@ -74,9 +74,19 @@ export default async function InstallationsPage({ params }: Props) {
       // montraient l'enseigne Pacini et la numérotation Village Transition,
       // deux clients réels non sollicités pour figurer ici (voir la note sur
       // IMAGES.terrasseAmenagee2021/terrasseLivraison2021 dans lib/images.ts).
+      //
+      // ⚠️ `capacite_installations` omise (pas de tuile placeholder) si
+      // `resoudreEmplacement` renvoie `null` (vide assumé, migration 0037) :
+      // GaleriePhotos/BandeauImages/SlideImages sont des composants PARTAGÉS
+      // (aussi utilisés par les réalisations) bâtis pour de vraies photos
+      // cliquables vers une visionneuse plein écran — une tuile qui ouvrirait
+      // un cadre vide en plein écran n'aurait pas de sens dans ce mécanisme,
+      // et retoucher ces composants partagés pour ce seul cas était hors de
+      // portée de ce chantier (« Réalisations... inchangés »). Trois photos
+      // au lieu de quatre reste un rendu correct pour une bande défilante.
       images={[
         { src: IMAGES.enseignePosee2026, alt: "Enseigne d'un client installée sur son poteau" },
-        { src: photoInstallations.url, alt: photoInstallations.alt },
+        ...(photoInstallations ? [{ src: photoInstallations.url, alt: photoInstallations.alt }] : []),
         { src: IMAGES.terrasseLivraison2021, alt: 'Livraison de matériaux de construction sur un chantier' },
         { src: IMAGES.decorStructure2025, alt: 'Décor et structure installés sur un site événementiel' },
       ]}

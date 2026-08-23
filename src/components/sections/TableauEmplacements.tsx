@@ -24,7 +24,8 @@ import { cn } from '@/lib/utils/cn'
 
 export type EmplacementMedia = {
   cle: string
-  url_stockage: string
+  /** Nullable depuis la migration 0037 — vide assumé, aucune photo assignée. */
+  url_stockage: string | null
   alt_text_fr: string
   alt_text_en: string | null
 }

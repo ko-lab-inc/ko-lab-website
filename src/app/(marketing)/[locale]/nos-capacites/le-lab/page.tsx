@@ -75,7 +75,7 @@ export default async function LeLabPage({ params }: Props) {
       // Imprimante 3D en cours d'impression — item « Impression 3D ».
       // La découpe laser sert la section LAB de l'accueil : deux visuels
       // distincts plutôt que la même image deux fois dans le parcours.
-      src={photoHero.url}
+      src={photoHero?.url ?? null}
       cadrage="object-center"
       // Bande de vidéos façon bambulab.com, alimentée depuis /admin/videos
       // (migration 0016). Tableau vide = quatre emplacements « Vidéo à

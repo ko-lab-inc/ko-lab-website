@@ -1,5 +1,7 @@
 import Image from 'next/image'
+import { getTranslations } from 'next-intl/server'
 
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { FILTRE_TERRAIN } from '@/lib/images'
 
 /**
@@ -13,12 +15,19 @@ import { FILTRE_TERRAIN } from '@/lib/images'
  * règle inverse pour cette raison précise (voir Besoins.tsx, OperationsTerrain.tsx
  * etc.). Un composant client pour une grille statique n'aurait chargé du JS
  * pour rien.
+ *
+ * `photos[i]` peut être `null` depuis la migration 0037 (vide assumé, photo
+ * retirée depuis l'admin) — la tuile affiche alors PhotoPlaceholder plutôt
+ * que de disparaître : le nombre de tuiles ne doit pas changer selon quelles
+ * photos sont assignées.
  */
 
 export type PhotoGalerieLab = { url: string; alt: string }
 
-export function GalerieLab({ photos }: { photos: readonly PhotoGalerieLab[] }) {
+export async function GalerieLab({ photos }: { photos: readonly (PhotoGalerieLab | null)[] }) {
   if (photos.length === 0) return null
+
+  const tCommun = await getTranslations('Commun')
 
   return (
     <section className="border-t border-ko-line bg-ko-white py-16 lg:py-24">
@@ -29,14 +38,22 @@ export function GalerieLab({ photos }: { photos: readonly PhotoGalerieLab[] }) {
               key={i}
               className="relative aspect-square overflow-hidden rounded-xl bg-ko-cream2"
             >
-              <Image
-                src={photo.url}
-                alt={photo.alt}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                style={FILTRE_TERRAIN}
-                className="object-cover"
-              />
+              {photo === null ? (
+                <PhotoPlaceholder
+                  ratio=""
+                  label={tCommun('photo_placeholder')}
+                  className="absolute inset-0 h-full w-full"
+                />
+              ) : (
+                <Image
+                  src={photo.url}
+                  alt={photo.alt}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                  style={FILTRE_TERRAIN}
+                  className="object-cover"
+                />
+              )}
             </div>
           ))}
         </div>

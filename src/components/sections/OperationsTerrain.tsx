@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
 import { Parallax } from '@/components/ui/Parallax'
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
@@ -26,6 +27,7 @@ import { ROUTES } from '@/lib/routes'
 export async function OperationsTerrain() {
   const t = await getTranslations('Home.operations')
   const tStats = await getTranslations('Home.stats')
+  const tCommun = await getTranslations('Commun')
 
   // operations_terrain (migration 0031, route A) — pilote UNIQUEMENT la photo
   // desktop ci-dessous. La version mobile (operationsCrewVertical) reste
@@ -42,16 +44,26 @@ export async function OperationsTerrain() {
       <Parallax distance={60} className="absolute inset-x-0 top-0 h-[calc(100%+80px)]">
         {/* Deux fichiers pour le même sujet : le cadrage vertical prend le
             relais sous lg plutôt que de forcer un recadrage paysage dans un
-            écran portrait (skill 11). */}
-        <Image
-          src={photoOperations.url}
-          alt={photoOperations.alt}
-          fill
-          quality={82}
-          sizes="100vw"
-          style={FILTRE_TERRAIN}
-          className="hidden object-cover object-center lg:block"
-        />
+            écran portrait (skill 11). Vide assumé (migration 0037) : le
+            placeholder remplace SEULEMENT la version desktop — la verticale
+            mobile ci-dessous reste câblée en dur, hors de cet emplacement. */}
+        {photoOperations === null ? (
+          <PhotoPlaceholder
+            ratio=""
+            label={tCommun('photo_placeholder')}
+            className="absolute inset-0 hidden h-full w-full lg:flex"
+          />
+        ) : (
+          <Image
+            src={photoOperations.url}
+            alt={photoOperations.alt}
+            fill
+            quality={82}
+            sizes="100vw"
+            style={FILTRE_TERRAIN}
+            className="hidden object-cover object-center lg:block"
+          />
+        )}
         {/* Source verticale : sujet (équipe) sur le tiers bas du cadre, le
             reste est du ciel. Sans recadrage, le conteneur mobile (proche du
             ratio source) affiche quasiment tout le ciel et réduit l'équipe à

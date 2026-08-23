@@ -5,6 +5,7 @@ import { BandeauVideos, type VignetteVideo } from '@/components/ui/BandeauVideos
 import { buttonVariants } from '@/components/ui/Button'
 import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
 import { Parallax } from '@/components/ui/Parallax'
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD } from '@/lib/images'
@@ -34,7 +35,13 @@ type PageCapaciteProps = {
   phrase: string
   intro: string
   items: readonly string[]
-  src: string
+  /**
+   * `null` = vide assumé (migration 0037) : seule le-lab passe aujourd'hui
+   * une valeur qui peut être `null` (photoHero, résolue par
+   * resoudreEmplacement) — les trois autres pages de capacités passent
+   * toujours une clé `IMAGES.*` statique, jamais `null` en pratique.
+   */
+  src: string | null
   /** Classe object-position : deux photos sont verticales et se recadrent mal. */
   cadrage: string
   /** Désature les contre-jours ambrés, trop saturés pour la palette. */
@@ -103,17 +110,28 @@ export async function PageCapacite({
             Les quatre pages passent désormais une photo réelle (depuis le
             20 août 2026, espaceAmenage2023 pour Opérations terrain — voir
             son fichier) : plus aucune n'attend de remplacement Unsplash.
+            `src === null` : vide assumé (migration 0037, le-lab uniquement
+            aujourd'hui) — PhotoPlaceholder occupe exactement la même boîte
+            (absolute inset-0 sur le conteneur Parallax).
           */}
-          <Image
-            src={src}
-            alt=""
-            fill
-            priority
-            quality={85}
-            sizes="100vw"
-            style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
-            className={cn('object-cover', cadrage)}
-          />
+          {src === null ? (
+            <PhotoPlaceholder
+              ratio=""
+              label={tCommun('photo_placeholder')}
+              className="absolute inset-0 h-full w-full"
+            />
+          ) : (
+            <Image
+              src={src}
+              alt=""
+              fill
+              priority
+              quality={85}
+              sizes="100vw"
+              style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
+              className={cn('object-cover', cadrage)}
+            />
+          )}
         </Parallax>
 
         {/* Voile de lisibilité uniquement — jamais décoratif (skill 08). */}

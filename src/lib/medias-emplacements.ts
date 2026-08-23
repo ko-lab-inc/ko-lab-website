@@ -8,8 +8,8 @@ import { createStaticClient } from '@/lib/supabase/static'
 /**
  * Lecture cachée d'un emplacement média — table `medias_emplacements`
  * (migration 0031). Détail d'implémentation, pas une API publique : les
- * composants serveur qui affichent une des neuf sections importent
- * `obtenirEmplacement` directement depuis ce fichier, il n'est ni ré-exporté
+ * composants serveur qui affichent une des sections importent
+ * `resoudreEmplacement` directement depuis ce fichier, il n'est ni ré-exporté
  * ailleurs ni pensé pour un usage générique en dehors de ce besoin précis.
  *
  * ⚠️ `createStaticClient()`, PAS le client de session. `unstable_cache`
@@ -27,13 +27,19 @@ import { createStaticClient } from '@/lib/supabase/static'
 
 export const ETIQUETTE_EMPLACEMENTS_MEDIAS = 'emplacements-medias'
 
-type Emplacement = {
-  url: string
+/**
+ * `url` nullable depuis la migration 0037 : un emplacement peut exister sans
+ * photo, choix délibéré depuis /admin/medias-emplacements (bouton « Retirer
+ * la photo »). Cette forme reflète les trois colonnes telles quelles ; voir
+ * `resoudreEmplacement` pour la distinction « vide assumé » vs « introuvable ».
+ */
+type LigneEmplacement = {
+  url: string | null
   alt_fr: string
   alt_en: string | null
 }
 
-async function lireEmplacement(cle: string): Promise<Emplacement | null> {
+async function lireEmplacement(cle: string): Promise<LigneEmplacement | null> {
   const supabase = createStaticClient()
   const { data, error } = await supabase
     .from('medias_emplacements')
@@ -41,6 +47,10 @@ async function lireEmplacement(cle: string): Promise<Emplacement | null> {
     .eq('cle', cle)
     .maybeSingle()
 
+  // `null` ici veut dire UNIQUEMENT « ligne introuvable ou lecture en
+  // échec » — jamais « photo retirée ». Une ligne dont `url_stockage` est
+  // NULL est un résultat VALIDE, retourné tel quel ci-dessous, pas cette
+  // branche.
   if (error || !data) return null
 
   return {
@@ -53,9 +63,9 @@ async function lireEmplacement(cle: string): Promise<Emplacement | null> {
 /**
  * `cle` fait partie de la clé de cache : `unstable_cache` incorpore les
  * arguments d'appel en plus de `keyParts` — même patron que `locale` dans
- * `lib/carrieres.ts`. Chacun des neuf emplacements a donc sa propre entrée de
- * cache, invalidée globalement par `updateTag(ETIQUETTE_EMPLACEMENTS_MEDIAS)`
- * (à appeler depuis les Server Actions du futur écran admin).
+ * `lib/carrieres.ts`. Chaque emplacement a donc sa propre entrée de cache,
+ * invalidée globalement par `updateTag(ETIQUETTE_EMPLACEMENTS_MEDIAS)`
+ * (appelé depuis les Server Actions de /admin/medias-emplacements).
  */
 export const obtenirEmplacement = unstable_cache(lireEmplacement, ['emplacement-media'], {
   tags: [ETIQUETTE_EMPLACEMENTS_MEDIAS],
@@ -63,16 +73,41 @@ export const obtenirEmplacement = unstable_cache(lireEmplacement, ['emplacement-
 })
 
 /**
- * `obtenirEmplacement` renvoie `{ url, alt_fr, alt_en }` ou `null` ;
- * `repliEmplacement` (medias-repli.ts) renvoie `{ url, alt }`, jamais `null`.
- * Deux formes différentes par conception (l'une reflète les trois colonnes
- * de la base, l'autre le format déjà attendu par `<Image alt>`) — sans ce
- * point de résolution unique, chacun des composants consommateurs aurait dû
- * réconcilier les deux formes à la main. `alt_fr` seulement pour l'instant :
- * la bascule vers `alt_en` est pour la Phase 9 (bilingue), pas Route A.
+ * Résolution d'un emplacement média — trois issues distinctes, pas deux.
+ *
+ * ---------------------------------------------------------------------------
+ * ⚠️ « VIDE ASSUMÉ » ≠ « INTROUVABLE » — le point qui a changé avec la
+ * migration 0037.
+ *
+ * Avant, `url_stockage` était NOT NULL : une ligne sans photo n'existait pas,
+ * donc `obtenirEmplacement` renvoyant `null` (ligne absente, erreur réseau)
+ * était le SEUL cas où retomber sur `medias-repli.ts` avait un sens. Depuis
+ * que la colonne accepte NULL (retrait volontaire d'une photo depuis
+ * l'admin), il faut distinguer :
+ *
+ *   - Ligne ABSENTE en base (clé inconnue, lecture en échec)
+ *     → `obtenirEmplacement` renvoie `null` → repli sur `medias-repli.ts`,
+ *       comme avant : jamais de blanc pour une clé qui n'a simplement pas
+ *       encore été migrée ou pour une panne Supabase.
+ *   - Ligne PRÉSENTE avec `url_stockage` NULL
+ *     → `obtenirEmplacement` renvoie `{ url: null, ... }` → cette fonction
+ *       renvoie `null` SANS repli. C'est un choix éditorial délibéré
+ *       (quelqu'un a cliqué « Retirer la photo ») : le composant appelant
+ *       doit afficher `PhotoPlaceholder`, pas ressusciter l'ancienne image.
+ *
+ * Sans cette distinction, vider un emplacement depuis l'admin n'aurait eu
+ * AUCUN effet visible sur le site public — le repli aurait simplement repris
+ * la même photo qu'avant, silencieusement.
+ * ---------------------------------------------------------------------------
+ *
+ * `null` en retour = « affiche PhotoPlaceholder ». Tout le reste (repli
+ * inclus) renvoie `{ url, alt }`, jamais un objet à moitié rempli.
  */
-export async function resoudreEmplacement(cle: string): Promise<{ url: string; alt: string }> {
-  const emplacement = await obtenirEmplacement(cle)
-  if (emplacement) return { url: emplacement.url, alt: emplacement.alt_fr }
-  return repliEmplacement(cle)
+export async function resoudreEmplacement(cle: string): Promise<{ url: string; alt: string } | null> {
+  const ligne = await obtenirEmplacement(cle)
+
+  if (ligne === null) return repliEmplacement(cle)
+  if (ligne.url === null) return null
+
+  return { url: ligne.url, alt: ligne.alt_fr }
 }

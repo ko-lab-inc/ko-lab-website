@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 import { buttonVariants } from '@/components/ui/Button'
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
@@ -41,6 +42,7 @@ export default async function AProposPage({ params }: Props) {
   const photoEquipe = await resoudreEmplacement('apropos_1')
 
   const t = await getTranslations('APropos')
+  const tCommun = await getTranslations('Commun')
   const tEco = await getTranslations('Home.ecosysteme')
   const tStats = await getTranslations('Home.stats')
   const tNav = await getTranslations('Nav')
@@ -90,22 +92,30 @@ export default async function AProposPage({ params }: Props) {
 
               {/*
                 Photo réelle depuis medias_emplacements (migration 0036, route
-                A de l'architecture média) — remplace le PhotoPlaceholder :
-                cette page parle de QUI est KO-LAB, une équipe anonyme y était
-                un contresens. `resoudreEmplacement` retombe sur la même photo
-                si la base ne répond pas ou si la ligne manque — jamais de
-                blanc (voir medias-repli.ts).
+                A de l'architecture média). `resoudreEmplacement` retombe sur
+                la même photo si la ligne est introuvable — mais renvoie
+                `null` (PAS de repli) si la ligne existe avec url_stockage
+                NULL : un retrait volontaire depuis l'admin, migration 0037.
+                PhotoPlaceholder revient alors, mêmes dimensions.
               */}
               <div className="relative aspect-[4/3] overflow-hidden rounded-xl bg-ko-cream2">
-                <Image
-                  src={photoEquipe.url}
-                  alt={photoEquipe.alt}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  quality={80}
-                  style={FILTRE_TERRAIN}
-                  className="object-cover"
-                />
+                {photoEquipe === null ? (
+                  <PhotoPlaceholder
+                    ratio=""
+                    label={tCommun('photo_placeholder')}
+                    className="absolute inset-0 h-full w-full"
+                  />
+                ) : (
+                  <Image
+                    src={photoEquipe.url}
+                    alt={photoEquipe.alt}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    quality={80}
+                    style={FILTRE_TERRAIN}
+                    className="object-cover"
+                  />
+                )}
               </div>
             </div>
           </Reveal>
