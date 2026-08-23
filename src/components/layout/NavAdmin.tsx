@@ -233,10 +233,19 @@ export function NavAdmin({
 /**
  * Groupe à sous-menu (« Médias ») — accordéon local, sans persistance.
  *
- * `ouvert = toggle || unSousLienActif` : un clic bascule `toggle`, mais le
- * groupe reste visible tant que l'écran courant est une de ses sous-entrées,
- * même si `toggle` est retombé à `false` — arriver directement sur
- * /admin/videos doit montrer le sous-menu déplié sans clic préalable.
+ * ⚠️ `ouvert` ne dérive PLUS de `unSousLienActif` à chaque rendu — c'était
+ * le bug : `toggle || unSousLienActif` reste `true` pour toujours tant que
+ * la route active appartient au groupe, quel que soit `toggle`, donc un
+ * clic pour REFERMER le groupe depuis une de ses propres pages n'avait
+ * visuellement aucun effet. `unSousLienActif` ne sert plus qu'à DEUX choses,
+ * découplées : l'état initial de `toggle` (déplié par défaut en arrivant
+ * directement sur une sous-route) et le style « actif » du libellé — jamais
+ * à forcer `ouvert` en continu.
+ *
+ * Resynchronisé au CHANGEMENT DE ROUTE, pas à chaque rendu — même motif que
+ * `cheminPrecedent` plus haut dans ce fichier (nav mobile) : comparer
+ * pendant le rendu, pas dans un effet. Entre deux changements de route, le
+ * clic de l'utilisateur prime sans jamais être écrasé.
  */
 function GroupeAdminMenu({
   entree,
@@ -247,9 +256,16 @@ function GroupeAdminMenu({
   pathname: string
   racine: string
 }) {
-  const [toggle, setToggle] = useState(false)
   const unSousLienActif = entree.sousEntrees.some((s) => pathname.startsWith(s.href))
-  const ouvert = toggle || unSousLienActif
+  const [toggle, setToggle] = useState(unSousLienActif)
+
+  const [pathPrecedent, setPathPrecedent] = useState(pathname)
+  if (pathname !== pathPrecedent) {
+    setPathPrecedent(pathname)
+    setToggle(unSousLienActif)
+  }
+
+  const ouvert = toggle
 
   return (
     <li>
@@ -259,8 +275,12 @@ function GroupeAdminMenu({
         aria-expanded={ouvert}
         className={cn(
           'flex min-h-[40px] w-full items-center gap-3 rounded-sm px-3 py-2 text-left text-sm transition-colors duration-200',
+          // Même traitement que les entrées de premier niveau actives
+          // (LienEntreeAdmin ci-dessous) — indépendant de `ouvert` : fermé
+          // sur une page du groupe, « Médias » doit rester visuellement
+          // repérable comme actif, pas juste en gras.
           unSousLienActif
-            ? 'font-medium text-ko-blue2'
+            ? 'bg-ko-frost/10 font-medium text-ko-blue2'
             : 'text-ko-muted-d hover:bg-ko-frost/5 hover:text-ko-white',
         )}
       >

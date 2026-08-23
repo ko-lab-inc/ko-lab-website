@@ -116,6 +116,38 @@ test('nav admin : « Médias » est un accordéon fermé par défaut, à trois s
   await expect(nav.getByRole('link', { name: 'Vidéos' })).toBeVisible()
 })
 
+test('nav admin : le chevron répond toujours au clic, même sur une page du groupe', async ({ page, request }) => {
+  const compte = await creerCompteEditor(request)
+  await connecter(page, compte.email)
+
+  const hamburger = page.getByRole('button', { name: /menu/i })
+
+  // Arrivée directe sur /admin/realisations : ouvert automatiquement.
+  await page.goto('/fr/admin/realisations')
+  if (await hamburger.isVisible()) await hamburger.click()
+
+  const nav = page.locator('nav')
+  const boutonMedias = nav.getByRole('button', { name: 'Médias' })
+  await expect(boutonMedias).toHaveAttribute('aria-expanded', 'true')
+
+  // Bug corrigé : `ouvert = toggle || unSousLienActif` ne répondait jamais
+  // à un clic de fermeture depuis une page du groupe — `unSousLienActif`
+  // gardait `ouvert` à `true` en continu, quel que soit `toggle`.
+  await boutonMedias.click()
+  await expect(boutonMedias).toHaveAttribute('aria-expanded', 'false')
+  await expect(nav.getByRole('link', { name: 'Réalisations' })).toHaveCount(0)
+  // Fermé, mais toujours marqué actif : même style que les entrées de
+  // premier niveau actives (bg-ko-frost/10 + texte ko-blue2).
+  await expect(boutonMedias).toHaveClass(/bg-ko-frost\/10/)
+  await expect(boutonMedias).toHaveClass(/text-ko-blue2/)
+
+  // Un reclic doit pouvoir rouvrir — l'utilisateur garde la main dans les
+  // deux sens, pas seulement pour fermer.
+  await boutonMedias.click()
+  await expect(boutonMedias).toHaveAttribute('aria-expanded', 'true')
+  await expect(nav.getByRole('link', { name: 'Réalisations' })).toBeVisible()
+})
+
 test('/admin/medias-emplacements : la vignette est inerte pour un editor (écriture admin uniquement)', async ({
   page,
   request,
