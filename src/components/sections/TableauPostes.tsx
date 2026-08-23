@@ -24,6 +24,40 @@ import {
 import { cn } from '@/lib/utils/cn'
 
 /**
+ * Nombre de champs anglais remplis (0 à 3) — sert le badge de complétude
+ * bilingue de chaque ligne, voir <BadgeTraductionEn> plus bas.
+ */
+function compterChampsEnRemplis(p: Poste): number {
+  return [p.titre_en, p.description_en, p.exigences_en].filter((v) => v && v.trim() !== '').length
+}
+
+/**
+ * Pastille discrète (pas une colonne) signalant la complétude de la
+ * traduction anglaise d'un poste. Trois états rendus par TRAIT et REMPLISSAGE,
+ * jamais par une teinte hors palette (skill 02 : 3 couleurs de marque + 4
+ * neutres, aucune autre) — pas de vert/orange/rouge sémantique ici.
+ */
+function BadgeTraductionEn({ poste, aide }: { poste: Poste; aide: string }) {
+  const n = compterChampsEnRemplis(poste)
+  return (
+    <span
+      title={aide.replace('{n}', String(n))}
+      className={cn(
+        'label-mono shrink-0 rounded-full border px-2 py-0.5 text-[10px]',
+        n === 3 && 'border-ko-ink text-ko-ink',
+        n > 0 && n < 3 && 'border-ko-muted text-ko-muted',
+        // `opacity-60`, pas `text-ko-line` : ce token est un gris de bordure
+        // (#e5e5e5), texte quasi illisible sur blanc — l'état « vide » doit
+        // rester visible, juste plus discret que « partiel ».
+        n === 0 && 'border-ko-line text-ko-muted opacity-60',
+      )}
+    >
+      EN {n}/3
+    </span>
+  )
+}
+
+/**
  * Tableau des postes — même architecture que TableauProduits/TableauRealisations.
  *
  * Le plus simple des trois : pas de photo, pas de slug, pas de série
@@ -60,6 +94,8 @@ export function TableauPostes({
     titreEdition: string
     titreCreation: string
     titreDetail: string
+    /** Gabarit avec `{n}`, ex. « Traduction anglaise : {n} champ(s) sur 3 rempli(s) ». */
+    badgeTraductionAide: string
   }
   fichiersDisponibles: FichierDisponible[]
   textesPhoto: TextesPhotoPoste
@@ -131,7 +167,10 @@ export function TableauPostes({
                 className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 transition-colors duration-200 hover:bg-ko-cream"
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-base text-ko-ink">{p.titre_fr}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="truncate text-base text-ko-ink">{p.titre_fr}</span>
+                    <BadgeTraductionEn poste={p} aide={textes.badgeTraductionAide} />
+                  </span>
                   <span className="block truncate font-mono text-xs text-ko-muted">
                     {p.departement}
                   </span>

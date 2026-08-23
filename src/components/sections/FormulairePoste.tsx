@@ -25,6 +25,9 @@ export type Poste = {
   type: string
   description_fr: string | null
   exigences_fr: string | null
+  titre_en: string | null
+  description_en: string | null
+  exigences_en: string | null
   actif: boolean
   photo_url: string | null
 }
@@ -36,6 +39,11 @@ export type LibellesPoste = {
   description: string
   exigences: string
   exigencesAide: string
+  titreEn: string
+  descriptionEn: string
+  exigencesEn: string
+  sectionFr: string
+  sectionEn: string
   types: Record<string, string>
   enregistrer: string
   creer: string
@@ -99,18 +107,6 @@ export function FormulairePoste({
       {poste && <input type="hidden" name="id" value={poste.id} />}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Champ id="poste-titre" libelle={libelles.titre}>
-          <input
-            id="poste-titre"
-            name="titre_fr"
-            required
-            minLength={2}
-            maxLength={150}
-            defaultValue={poste?.titre_fr}
-            className={CHAMP}
-          />
-        </Champ>
-
         <Champ id="poste-departement" libelle={libelles.departement}>
           <input
             id="poste-departement"
@@ -123,45 +119,98 @@ export function FormulairePoste({
           />
         </Champ>
 
-        <div className="sm:col-span-2">
-          <Champ id="poste-type" libelle={libelles.type}>
-            <select
-              id="poste-type"
-              name="type"
-              defaultValue={poste?.type ?? 'temps-plein'}
-              className={CHAMP}
-            >
-              {Object.entries(libelles.types).map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
-            </select>
-          </Champ>
-        </div>
+        <Champ id="poste-type" libelle={libelles.type}>
+          <select
+            id="poste-type"
+            name="type"
+            defaultValue={poste?.type ?? 'temps-plein'}
+            className={CHAMP}
+          >
+            {Object.entries(libelles.types).map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </Champ>
       </div>
 
-      <Champ id="poste-description" libelle={libelles.description}>
-        <textarea
-          id="poste-description"
-          name="description"
-          rows={3}
-          defaultValue={poste?.description_fr ?? ''}
-          maxLength={2000}
-          className={cn(CHAMP, 'resize-y')}
-        />
-      </Champ>
+      {/*
+        Deux colonnes FR/EN, champ par champ sur la même ligne — pas deux
+        blocs empilés : c'est ce qui permet de repérer un champ EN vide d'un
+        coup d'œil, en face de son équivalent FR rempli (demande explicite).
+        Les trois champs EN sont tous optionnels — lib/carrieres.ts retombe
+        sur le FR champ par champ si l'un d'eux manque, voir sa docstring.
+      */}
+      <div className="grid grid-cols-1 gap-x-6 gap-y-4 lg:grid-cols-2">
+        <p className="label-mono -mb-1 text-ko-muted lg:col-span-1">{libelles.sectionFr}</p>
+        <p className="label-mono -mb-1 hidden text-ko-muted lg:col-span-1 lg:block">
+          {libelles.sectionEn}
+        </p>
 
-      <Champ id="poste-exigences" libelle={libelles.exigences} aide={libelles.exigencesAide}>
-        <textarea
-          id="poste-exigences"
-          name="exigences"
-          rows={4}
-          defaultValue={poste?.exigences_fr ?? ''}
-          maxLength={2000}
-          className={cn(CHAMP, 'resize-y')}
-        />
-      </Champ>
+        <Champ id="poste-titre" libelle={libelles.titre}>
+          <input
+            id="poste-titre"
+            name="titre_fr"
+            required
+            minLength={2}
+            maxLength={150}
+            defaultValue={poste?.titre_fr}
+            className={CHAMP}
+          />
+        </Champ>
+        <Champ id="poste-titre-en" libelle={libelles.titreEn}>
+          <input
+            id="poste-titre-en"
+            name="titre_en"
+            maxLength={150}
+            defaultValue={poste?.titre_en ?? ''}
+            className={CHAMP}
+          />
+        </Champ>
+
+        <Champ id="poste-description" libelle={libelles.description}>
+          <textarea
+            id="poste-description"
+            name="description"
+            rows={3}
+            defaultValue={poste?.description_fr ?? ''}
+            maxLength={2000}
+            className={cn(CHAMP, 'resize-y')}
+          />
+        </Champ>
+        <Champ id="poste-description-en" libelle={libelles.descriptionEn}>
+          <textarea
+            id="poste-description-en"
+            name="description_en"
+            rows={3}
+            defaultValue={poste?.description_en ?? ''}
+            maxLength={2000}
+            className={cn(CHAMP, 'resize-y')}
+          />
+        </Champ>
+
+        <Champ id="poste-exigences" libelle={libelles.exigences} aide={libelles.exigencesAide}>
+          <textarea
+            id="poste-exigences"
+            name="exigences"
+            rows={4}
+            defaultValue={poste?.exigences_fr ?? ''}
+            maxLength={2000}
+            className={cn(CHAMP, 'resize-y')}
+          />
+        </Champ>
+        <Champ id="poste-exigences-en" libelle={libelles.exigencesEn}>
+          <textarea
+            id="poste-exigences-en"
+            name="exigences_en"
+            rows={4}
+            defaultValue={poste?.exigences_en ?? ''}
+            maxLength={2000}
+            className={cn(CHAMP, 'resize-y')}
+          />
+        </Champ>
+      </div>
 
       {erreur && (
         <p role="alert" className="text-sm text-ko-ink">

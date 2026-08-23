@@ -39,6 +39,30 @@ const schemaPoste = z.object({
     .max(2000)
     .optional()
     .transform((v) => v || null),
+  // Trois champs anglais, tous optionnels — mêmes contraintes de longueur
+  // que leur équivalent français, sans le `min(2)` de titre_fr (un titre EN
+  // absent est un champ vide légitime, pas une saisie invalide). Chaîne
+  // vide → null, jamais '' : c'est ce qui permet à lib/carrieres.ts de
+  // retomber sur le FR champ par champ (repli déjà en place, voir sa
+  // docstring — inchangé par ce chantier).
+  titre_en: z
+    .string()
+    .trim()
+    .max(150)
+    .optional()
+    .transform((v) => v || null),
+  description_en: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .transform((v) => v || null),
+  exigences_en: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .transform((v) => v || null),
 })
 
 function lire(donnees: FormData) {
@@ -48,6 +72,9 @@ function lire(donnees: FormData) {
     type: donnees.get('type'),
     description: donnees.get('description'),
     exigences: donnees.get('exigences'),
+    titre_en: donnees.get('titre_en'),
+    description_en: donnees.get('description_en'),
+    exigences_en: donnees.get('exigences_en'),
   })
 }
 
@@ -78,6 +105,9 @@ export async function creerPoste(_precedent: EtatPoste, donnees: FormData): Prom
       type: analyse.data.type,
       description_fr: analyse.data.description,
       exigences_fr: analyse.data.exigences,
+      titre_en: analyse.data.titre_en,
+      description_en: analyse.data.description_en,
+      exigences_en: analyse.data.exigences_en,
       ordre,
       // `actif: true` dès la création — même décision que le catalogue
       // (publie: true) : un poste ajouté doit être visible immédiatement,
@@ -119,6 +149,9 @@ export async function modifierPoste(_precedent: EtatPoste, donnees: FormData): P
         type: analyse.data.type,
         description_fr: analyse.data.description,
         exigences_fr: analyse.data.exigences,
+        titre_en: analyse.data.titre_en,
+        description_en: analyse.data.description_en,
+        exigences_en: analyse.data.exigences_en,
       })
       .eq('id', id)
 

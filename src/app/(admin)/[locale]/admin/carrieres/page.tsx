@@ -33,7 +33,9 @@ export default async function CarrieresAdminPage({ params }: Props) {
   const [{ data: postes, error }, { data: moi }, fichiersDisponibles] = await Promise.all([
     supabase
       .from('postes_carrieres')
-      .select('id, titre_fr, departement, type, description_fr, exigences_fr, actif, photo_url')
+      .select(
+        'id, titre_fr, departement, type, description_fr, exigences_fr, titre_en, description_en, exigences_en, actif, photo_url',
+      )
       .order('ordre'),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
     listerFichiersDisponibles(supabase),
@@ -59,6 +61,11 @@ export default async function CarrieresAdminPage({ params }: Props) {
     description: t('champ_description'),
     exigences: t('champ_exigences'),
     exigencesAide: t('champ_exigences_aide'),
+    titreEn: t('champ_titre_poste_en'),
+    descriptionEn: t('champ_description_poste_en'),
+    exigencesEn: t('champ_exigences_poste_en'),
+    sectionFr: t('section_langue_fr'),
+    sectionEn: t('section_langue_en'),
     types: libellesTypes,
     enregistrer: t('enregistrer'),
     creer: t('nouveau_poste'),
@@ -105,6 +112,11 @@ export default async function CarrieresAdminPage({ params }: Props) {
           titreEdition: t('titre_edition_poste'),
           titreCreation: t('nouveau_poste'),
           titreDetail: t('titre_detail_poste'),
+          // t.raw(), pas t() : la chaîne contient un `{n}` littéral destiné à
+          // un .replace() côté client (TableauPostes), pas une interpolation
+          // ICU immédiate — t() sans valeur pour `n` lève FORMATTING_ERROR
+          // (même piège que page_gabarit dans /admin/videos, pré-existant).
+          badgeTraductionAide: t.raw('badge_traduction_en_aide'),
         }}
         textesPhoto={{
           colonnePhoto: t('colonne_photo_poste'),
