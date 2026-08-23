@@ -695,7 +695,8 @@
     "galerie_precedent": "Previous photo",
     "galerie_suivant": "Next photo",
     "galerie_fermer": "Close",
-    "en_photos": "In Photos"
+    "en_photos": "In Photos",
+    "retour_haut": "Back to top"
   },
   "Admin": {
     "espace": "Espace équipe",

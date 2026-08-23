@@ -275,18 +275,15 @@ export default async function AdminLayout({ children, params }: Props) {
               la structure. */}
           <header className="shrink-0 border-b border-ko-line bg-ko-white">
             <div className="flex items-center justify-between gap-6 px-6 py-4 lg:px-8">
-              {/* Onglet séparé, mais TOUJOURS LE MÊME : la session équipe reste
-                  ouverte et le travail en cours (un formulaire à moitié
-                  rempli, par exemple) n'est jamais perdu. `target="_blank"`
-                  seul rouvrait un nouvel onglet à CHAQUE clic — relevé par
-                  Christian, trois onglets après trois clics. Un nom de cible
-                  fixe fait que le navigateur réutilise le même onglet nommé
-                  s'il existe déjà, exactement comme un lien HTML classique
-                  vers une fenêtre nommée. */}
+              {/* Navigation dans l'onglet courant — `target="ko-lab-site"`
+                  était censé réutiliser le même onglet nommé au lieu d'en
+                  ouvrir un nouveau à chaque clic (`target="_blank"` seul en
+                  ouvrait un nouveau à CHAQUE clic — relevé par Christian,
+                  trois onglets après trois clics). Ça n'a pas tenu sa
+                  promesse en pratique — retiré, exactement comme un lien
+                  interne classique. */}
               <Link
                 href={`/${locale}`}
-                target="ko-lab-site"
-                rel="noopener noreferrer"
                 className="text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
               >
                 {t('voir_site')}
