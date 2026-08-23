@@ -337,8 +337,26 @@ export default async function AdminLayout({ children, params }: Props) {
           </header>
 
           {/* Seule zone qui défile : l'en-tête au-dessus et la barre à gauche
-              restent en place. */}
-          <main className="min-w-0 flex-1 px-6 py-8 lg:overflow-y-auto lg:px-8 lg:py-10">
+              restent en place.
+
+              ⚠️ `relative` — sans lui, un `<input>` masqué en `sr-only`
+              (Tailwind : `position: absolute`) à l'intérieur de ce conteneur
+              n'a AUCUN ancêtre positionné avant le document lui-même. Au
+              focus (clic sur son `<label>`, ou Tab), le navigateur calcule sa
+              géométrie dans le référentiel du document plutôt que de cette
+              zone, et fait défiler la FENÊTRE au lieu de `<main>` pour
+              l'amener dans la vue — ce qui pousse l'en-tête (au-dessus,
+              hors de ce conteneur) hors de l'écran, `overflow-hidden` sur le
+              `<body>` n'empêchant qu'un défilement à la molette, pas un
+              `scrollIntoView` programmatique. Repéré via l'interrupteur
+              « Page Concours » de /admin/reglages (23 août 2026), mais
+              affecte identiquement les quatre interrupteurs de ce formulaire
+              ET `InterrupteurPublie` de FormulaireConcours.tsx : ce sont deux
+              copies du même motif `sr-only`, sans ancêtre positionné avant
+              ce `<main>` dans les deux cas. Corriger ICI plutôt que dans
+              chaque copie couvre les deux d'un coup, et toute case
+              masquée future dans l'espace admin. */}
+          <main className="relative min-w-0 flex-1 px-6 py-8 lg:overflow-y-auto lg:px-8 lg:py-10">
             {children}
           </main>
         </div>
