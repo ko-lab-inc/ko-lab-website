@@ -35,6 +35,22 @@ import { cn } from '@/lib/utils/cn'
  * dynamiquement (79 à 97px selon la largeur — voir WidgetAide.tsx). Ce bouton
  * ne suit pas ce décalage ; un chevauchement à cet endroit précis est possible
  * et resterait à vérifier séparément si observé.
+ *
+ * ---------------------------------------------------------------------------
+ * ⚠️ BLEU SUR FOND CLAIR — ÉCART VOLONTAIRE À LA RÈGLE DE CONTRASTE, NE PAS
+ * « CORRIGER » PAR RÉFLEXE
+ *
+ * CLAUDE.md (skill 02) mesure `--ko-blue` à 2,32:1 sur `--ko-white` — sous le
+ * seuil AA — et réserve donc le bleu, sur fond clair, aux « gros éléments
+ * graphiques (filets, aplats, chiffres XXL, soulignements) », jamais au texte
+ * courant ni aux petits contrôles. Cette flèche EST un gros élément
+ * graphique de ce genre (~30px, seule, sans texte à côté) — décision du
+ * 23 août 2026, volontaire, pas un oubli de la règle.
+ *
+ * Si elle devient invisible à l'usage sur une section à fond blanc, la
+ * corriger en repassant à `text-ko-black` — ne pas revenir au bleu par
+ * défaut ailleurs sur le site pour autant : la règle CLAUDE.md reste
+ * générale, cette flèche en est l'exception documentée, pas le prétexte.
  * ---------------------------------------------------------------------------
  */
 
@@ -85,13 +101,16 @@ export function BoutonRetourHaut() {
         // Focus clavier : la règle globale `:focus-visible` (globals.css)
         // pose déjà l'anneau bleu, seul signal d'interaction du système —
         // rien à ajouter ici.
-        'fixed bottom-24 right-4 z-40 flex h-10 w-10 items-center justify-center',
-        'rounded-sm bg-ko-black text-ko-white shadow-card',
-        'transition-opacity duration-200 lg:right-6',
+        //
+        // Pas de fond, pas de bordure : la flèche seule porte le bouton.
+        // La zone 44×44 reste pour la cible tactile (accessibilité), invisible
+        // tant qu'aucun fond ne la dessine.
+        'fixed bottom-24 right-4 z-40 flex h-11 w-11 items-center justify-center',
+        'text-ko-blue transition duration-200 hover:text-ko-black lg:right-6',
         visible ? 'opacity-100' : 'pointer-events-none opacity-0',
       )}
     >
-      <IconeChevronBas taille={18} className="rotate-180" />
+      <IconeChevronBas taille={30} strokeWidth={2.5} className="rotate-180" />
     </button>
   )
 }
