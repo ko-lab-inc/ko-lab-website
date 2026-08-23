@@ -1,3 +1,4 @@
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { Fraunces, Instrument_Sans, JetBrains_Mono } from 'next/font/google'
@@ -343,6 +344,17 @@ export default async function MarketingLayout({ children, params }: Props) {
           {CRISP_CONFIGURE ? <ChatCrisp /> : <WidgetAide />}
           </PanierProvider>
         </NextIntlClientProvider>
+
+        {/*
+          Données de terrain réelles (LCP au 75e percentile mobile, etc.) —
+          absentes jusqu'ici (chantier LCP du 22-23 août 2026 : diagnostiqué
+          à l'aveugle, Lighthouse ponctuel contre la prod comme seul thermomètre).
+          Beacon envoyé à /_vercel/speed-insights/vitals, même origine —
+          couvert par `connect-src 'self'` de la CSP (next.config.ts), rien à
+          y ajouter. Hors du <NextIntlClientProvider> : ce composant ne lit
+          aucune traduction.
+        */}
+        <SpeedInsights />
       </body>
     </html>
   )

@@ -126,6 +126,11 @@ export async function PageCapacite({
               alt=""
               fill
               priority
+              // Voir Hero.tsx : `priority` ne pose plus `fetchpriority="high"`
+              // automatiquement sur Next 16.2.11 (vérifié dans get-img-props.js) —
+              // posé ici explicitement pour le hero de chacune des 4 pages
+              // de capacités, même bug que celui trouvé sur l'accueil.
+              fetchPriority="high"
               quality={85}
               sizes="100vw"
               style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}

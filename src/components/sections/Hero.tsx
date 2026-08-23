@@ -44,6 +44,16 @@ export async function Hero() {
           alt=""
           fill
           priority
+          // ⚠️ `priority` NE POSE PLUS `fetchpriority="high"` automatiquement
+          // sur Next 16.2.11 — vérifié en lisant get-img-props.js : la prop
+          // `fetchPriority` de l'<Image> alimente directement l'attribut,
+          // sans dérivation depuis `priority`/`preload` (contrairement à ce
+          // que la doc historique de Next laissait supposer). Constaté en
+          // production, Lighthouse : `priorityHinted: false` sur le hero
+          // malgré `priority`, ni le <img> ni son <link rel="preload"> ne
+          // portaient l'attribut. Posé ici explicitement — comportement de
+          // la librairie qu'on ne contrôle pas, pas un bug KO-LAB.
+          fetchPriority="high"
           quality={85}
           sizes="100vw"
           // data-hero-photo : cible du zoom de scroll (voir HeroScrollEffets).
