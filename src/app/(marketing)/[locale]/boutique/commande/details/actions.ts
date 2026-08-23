@@ -4,7 +4,7 @@ import { hasLocale } from 'next-intl'
 import { headers } from 'next/headers'
 
 import { routing } from '@/i18n/routing'
-import { EMAILS } from '@/lib/constantes'
+import { EMAILS, VERSION_POLITIQUES } from '@/lib/constantes'
 import { gabaritConfirmationCommande } from '@/lib/email/gabaritCommande'
 import { lireProduitsPublies } from '@/lib/produits'
 import { routeCommande } from '@/lib/routes'
@@ -133,6 +133,7 @@ export async function creerCommande(
     codePostal: donnees.get('codePostal'),
     province: donnees.get('province'),
     lignes: lignesBrutes,
+    consentement: donnees.get('consentement'),
     _hp: donnees.get('_hp'),
   })
 
@@ -200,6 +201,12 @@ export async function creerCommande(
         organisation: analyse.data.organisation ?? null,
         mode_livraison: analyse.data.modeLivraison,
         adresse_livraison: adresseLivraison,
+        // Loi 25 (audit du 23 août 2026, migration 0041) — `analyse.data`
+        // n'existe qu'après un `consentement` validé (z.literal('true')) :
+        // aucune commande ne peut atteindre cette ligne sans être passée par
+        // ce contrôle.
+        consentement_le: new Date().toISOString(),
+        consentement_version: VERSION_POLITIQUES,
       })
       .select('id, numero, created_at, fenetre_modification_expire_at')
       .single()

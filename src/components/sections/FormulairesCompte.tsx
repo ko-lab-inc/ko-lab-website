@@ -59,6 +59,13 @@ export function FormulaireInscription({
     confirmation: string
     afficher: string
     masquer: string
+    /**
+     * Loi 25 (audit du 23 août 2026, migration 0041) — texte de la case de
+     * consentement, liens vers les deux politiques déjà résolus en JSX. Reçu
+     * en prop plutôt que construit ici : modèle du fichier (voir l'en-tête),
+     * et évite d'élargir la liste blanche client pour du texte enrichi.
+     */
+    consentement: React.ReactNode
     creer: string
     enCours: string
     succesTitre: string
@@ -69,6 +76,7 @@ export function FormulaireInscription({
     erreurTentatives: string
     erreurRefuse: string
     erreurCourriel: string
+    erreurConsentement: string
     erreurServeur: string
   }
 }) {
@@ -88,6 +96,7 @@ export function FormulaireInscription({
   const messages: Record<string, string> = {
     confirmation: libelles.erreurConfirmation,
     faible: libelles.erreurFaible,
+    consentement: libelles.erreurConsentement,
     trop_de_tentatives: libelles.erreurTentatives,
     refuse: libelles.erreurRefuse,
     courriel: libelles.erreurCourriel,
@@ -142,6 +151,22 @@ export function FormulaireInscription({
         libelleAfficher={libelles.afficher}
         libelleMasquer={libelles.masquer}
       />
+
+      {/* Loi 25 (audit du 23 août 2026, migration 0041) — case NON
+          pré-cochée, obligatoire. Validée aussi côté serveur (schemaInscription,
+          z.literal('true')) : une case cochable en désactivant JavaScript ne
+          prouverait rien. */}
+      <label className="flex cursor-pointer items-start gap-3 border-t border-ko-line pt-4 text-sm leading-relaxed text-ko-ink">
+        <input
+          type="checkbox"
+          name="consentement"
+          value="true"
+          required
+          className="mt-0.5 h-4 w-4 shrink-0 accent-ko-blue"
+        />
+        <span>{libelles.consentement}</span>
+      </label>
+
       <Erreur message={message} />
       <button
         type="submit"

@@ -92,6 +92,22 @@ export const EMAILS = {
 export const LIEN_CANDIDATURE_EXTERNE = 'https://forms.gle/s3wDqWFj3UQU13Q57'
 
 /**
+ * Version des politiques en vigueur au moment du consentement — Loi 25
+ * (audit du 23 août 2026, migration 0041).
+ *
+ * ⚠️ CHANGER CETTE VALEUR À CHAQUE MODIFICATION SUBSTANTIELLE de
+ * /conditions-utilisation ou /politique-confidentialite (pas une correction
+ * de faute de frappe — un changement qui touche ce qui est collecté, pourquoi,
+ * combien de temps, ou avec qui c'est partagé). Chaque consentement enregistré
+ * (profils.consentement_version, candidatures, demandes_contact, commandes)
+ * fige la version en vigueur AU MOMENT de ce consentement — une date au
+ * format AAAA-MM-JJ suffit, elle n'a pas besoin d'être plus précise qu'un jour.
+ * Un consentement donné sous une ancienne version reste une preuve valide de
+ * CE qui a été accepté CE jour-là ; il ne se met jamais à jour tout seul.
+ */
+export const VERSION_POLITIQUES = '2026-08-23'
+
+/**
  * ⚠️ INCONNU — l'URL réelle de l'inventaire Rentman n'a jamais été
  * transmise. `location/page.tsx` utilisait déjà `'#'` en repli explicite
  * (jamais une URL inventée, pour qu'un lien mort reste facile à repérer) ;

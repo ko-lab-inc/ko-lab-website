@@ -98,6 +98,28 @@ export default async function PostulerPage({ params, searchParams }: Props) {
     source: tf('source'),
     sources: [tf('source_reseaux'), tf('source_bouche'), tf('source_site'), tf('source_autre')],
     confirmation: tf('confirmation'),
+    consentement: tf.rich('consentement', {
+      lienConditions: (chunks) => (
+        <Link
+          href={ROUTES.conditionsUtilisation}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+        >
+          {chunks}
+        </Link>
+      ),
+      lienPolitique: (chunks) => (
+        <Link
+          href={ROUTES.politiqueConfidentialite}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+        >
+          {chunks}
+        </Link>
+      ),
+    }),
     oui: tf('oui'),
     non: tf('non'),
     envoyer: tf('envoyer'),

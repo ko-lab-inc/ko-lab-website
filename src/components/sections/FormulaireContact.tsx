@@ -9,6 +9,8 @@ import { useForm } from 'react-hook-form'
 import { formaterDemande, usePanier } from '@/lib/panier/PanierContext'
 
 import { Button } from '@/components/ui/Button'
+import { Link } from '@/i18n/navigation'
+import { ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 import { schemaContact, type DonneesContact } from '@/lib/validation'
 import { TYPES_DEMANDE, type TypeDemande } from '@/types'
@@ -65,14 +67,16 @@ export function FormulaireContact() {
     formState: { errors },
   } = useForm<DonneesContact>({
     resolver: zodResolver(schemaContact),
-    defaultValues: { type: typeInitial, message: messageInitial, _hp: '' },
+    defaultValues: { type: typeInitial, message: messageInitial, consentement: false, _hp: '' },
   })
 
   // `pret` bascule après la lecture de localStorage, donc APRÈS le premier
   // rendu du formulaire : sans cette resynchronisation, le champ message
   // resterait vide alors que le panier contient des produits.
   useEffect(() => {
-    if (messageInitial) reset({ type: typeInitial, message: messageInitial, _hp: '' })
+    if (messageInitial) {
+      reset({ type: typeInitial, message: messageInitial, consentement: false, _hp: '' })
+    }
   }, [messageInitial, reset, typeInitial])
 
   const envoyer = handleSubmit(async (donnees) => {
@@ -86,7 +90,7 @@ export function FormulaireContact() {
 
       if (rep.ok) {
         setEtat('succes')
-        reset({ type: typeInitial, message: '', _hp: '' })
+        reset({ type: typeInitial, message: '', consentement: false, _hp: '' })
         // Vidé UNIQUEMENT après un 200 : sur erreur réseau ou 500, la
         // sélection doit survivre pour que le visiteur puisse réessayer.
         if (articles.length > 0) vider()
@@ -197,6 +201,48 @@ export function FormulaireContact() {
           className={cn(CHAMP, 'resize-y', errors.message && 'border-ko-blue')}
         />
       </Champ>
+
+      {/* Loi 25 (audit du 23 août 2026, migration 0041) — case NON pré-cochée,
+          obligatoire, distincte de toute autre case du formulaire. Pas de
+          `value` sur l'input : react-hook-form traite alors ce champ comme un
+          booléen (`checked`), ce qui correspond à `z.literal(true)` dans
+          schemaContact — voir sa note d'en-tête pour pourquoi ce schéma-ci
+          diffère de schemaInscription/schemaCommande (FormData vs JSON). */}
+      <label className="flex cursor-pointer items-start gap-3 border-t border-ko-line pt-6 text-sm leading-relaxed text-ko-ink">
+        <input
+          type="checkbox"
+          aria-invalid={!!errors.consentement}
+          {...register('consentement')}
+          className="mt-0.5 h-4 w-4 shrink-0 accent-ko-blue"
+        />
+        <span>
+          {t.rich('form.consentement', {
+            lienConditions: (chunks) => (
+              <Link
+                href={ROUTES.conditionsUtilisation}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+              >
+                {chunks}
+              </Link>
+            ),
+            lienPolitique: (chunks) => (
+              <Link
+                href={ROUTES.politiqueConfidentialite}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
+        </span>
+      </label>
+      {errors.consentement && (
+        <p className="text-sm font-medium text-ko-ink">{t('erreurs.consentement_requis')}</p>
+      )}
 
       {/* aria-live : l'erreur survient après une action asynchrone, sans
           déplacement du focus — sans annonce, elle passerait inaperçue. */}

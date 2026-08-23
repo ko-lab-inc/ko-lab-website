@@ -52,6 +52,15 @@ export type LibellesCandidature = {
   source: string
   sources: string[]
   confirmation: string
+  /**
+   * Loi 25 (audit du 23 août 2026, migration 0041) — texte de la case de
+   * consentement, DISTINCTE de `confirmation` ci-dessus. Reçu en JSX déjà
+   * résolu (liens vers les deux politiques inclus), pas en chaîne : même
+   * modèle que le reste du projet pour du texte enrichi — voir la note
+   * d'en-tête de (marketing)/[locale]/layout.tsx sur les props résolues
+   * côté serveur plutôt qu'un élargissement de la liste blanche client.
+   */
+  consentement: React.ReactNode
   oui: string
   non: string
   envoyer: string
@@ -343,6 +352,26 @@ export function FormulaireCandidature({
         />
         <span>
           {libelles.confirmation}
+          <span aria-label={libelles.champObligatoire} className="ml-1 text-ko-ink">
+            *
+          </span>
+        </span>
+      </label>
+
+      {/* Loi 25 (audit du 23 août 2026, migration 0041) — case DISTINCTE de
+          celle juste au-dessus : « confirmation » porte sur l'exactitude des
+          données, celle-ci sur le consentement à leur collecte. Ne jamais
+          les fusionner. */}
+      <label className="flex cursor-pointer items-start gap-3 pt-1 text-base leading-relaxed text-ko-ink">
+        <input
+          type="checkbox"
+          name="consentement"
+          value="true"
+          required
+          className="mt-1 h-4 w-4 shrink-0 accent-ko-blue"
+        />
+        <span>
+          {libelles.consentement}
           <span aria-label={libelles.champObligatoire} className="ml-1 text-ko-ink">
             *
           </span>

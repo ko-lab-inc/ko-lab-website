@@ -37,6 +37,19 @@ export const schemaContact = z.object({
 
   message: z.string().trim().min(10).max(2000),
 
+  // Loi 25 (audit du 23 août 2026, migration 0041) — même discipline que
+  // schemaInscription, adaptée au type réel transmis ici : ce schéma valide
+  // du JSON déjà désérialisé (fetch), pas un FormData, donc react-hook-form
+  // fournit un vrai booléen pour une case à cocher isolée (sans `value`).
+  //
+  // `z.boolean().refine(...)`, PAS `z.literal(true)` : le formulaire doit
+  // pouvoir partir avec `consentement: false` en valeur initiale (case
+  // décochée par défaut) sans que ÇA seul soit une erreur de TYPE — c'est une
+  // erreur de VALIDATION, distincte, qui ne doit apparaître qu'à la
+  // soumission. `z.literal(true)` rendrait `false` inassignable au type
+  // même du champ, ce que defaultValues doit pourtant pouvoir exprimer.
+  consentement: z.boolean().refine((v) => v === true, { message: 'consentement_requis' }),
+
   /**
    * Honeypot — skill 15. Champ masqué que seul un robot remplit.
    *
@@ -154,6 +167,11 @@ export const schemaCommande = z
     // Au moins une ligne : une commande vide n'a pas de sens, et le panier
     // affiche déjà son propre état « vide » avant d'en arriver là.
     lignes: z.array(schemaLigneCommande).min(1).max(50),
+
+    // Loi 25 (audit du 23 août 2026, migration 0041) — même case que
+    // schemaInscription et le schéma de candidature : un `<form>` natif en
+    // FormData, donc `z.literal('true')`, pas le booléen de schemaContact.
+    consentement: z.literal('true'),
 
     // Honeypot — même motif que schemaContact : accepté sans borne stricte,
     // testé dans l'action, jamais annoncé par un refus de validation.
@@ -293,6 +311,13 @@ export const schemaInscription = z
     email: z.string().trim().email().max(200),
     motDePasse: schemaMotDePasse,
     confirmation: z.string().max(200),
+    // Loi 25 (audit du 23 août 2026, migration 0041) — une case NON
+    // pré-cochée, obligatoire. `z.literal('true')` rejette aussi bien
+    // l'absence du champ (case décochée : un <input type="checkbox"> non
+    // coché n'est jamais envoyé par le navigateur, donc `null` ici) qu'une
+    // valeur falsifiée qui ne serait pas exactement 'true' — vérifié
+    // CÔTÉ SERVEUR, une case contournable côté client ne prouve rien.
+    consentement: z.literal('true'),
   })
   // Vérifié côté serveur AUSSI, pas seulement dans le navigateur : la
   // confirmation évite une faute de frappe qui rendrait le compte

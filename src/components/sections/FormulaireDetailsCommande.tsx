@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { creerCommande, type EtatCommande } from '@/app/(marketing)/[locale]/boutique/commande/details/actions'
 import { ChampsLivraison } from '@/components/sections/ChampsLivraison'
 import { buttonVariants } from '@/components/ui/Button'
-import { useRouter } from '@/i18n/navigation'
+import { Link, useRouter } from '@/i18n/navigation'
 import { usePanier } from '@/lib/panier/PanierContext'
 import { ROUTES, routeCommande } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
@@ -134,6 +134,43 @@ export function FormulaireDetailsCommande({ locale }: { locale: string }) {
       {/* Pas d'adresse actuelle à la création : les champs restent
           obligatoires en expédition, voir la note d'en-tête de ChampsLivraison. */}
       <ChampsLivraison modeDefaut="ramassage" />
+
+      {/* Loi 25 (audit du 23 août 2026, migration 0041) — case NON
+          pré-cochée, obligatoire. La boutique est désactivée par ailleurs,
+          mais ce code doit rester conforme : il sera réactivé tel quel. */}
+      <label className="flex cursor-pointer items-start gap-3 border-t border-ko-line pt-6 text-sm leading-relaxed text-ko-ink">
+        <input
+          type="checkbox"
+          name="consentement"
+          value="true"
+          required
+          className="mt-0.5 h-4 w-4 shrink-0 accent-ko-blue"
+        />
+        <span>
+          {t.rich('consentement', {
+            lienConditions: (chunks) => (
+              <Link
+                href={ROUTES.conditionsUtilisation}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+              >
+                {chunks}
+              </Link>
+            ),
+            lienPolitique: (chunks) => (
+              <Link
+                href={ROUTES.politiqueConfidentialite}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+              >
+                {chunks}
+              </Link>
+            ),
+          })}
+        </span>
+      </label>
 
       {erreur && (
         <p role="alert" className="text-base text-ko-ink">

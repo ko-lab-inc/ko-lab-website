@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
-import { EMAILS } from '@/lib/constantes'
+import { EMAILS, VERSION_POLITIQUES } from '@/lib/constantes'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { lireReglages } from '@/lib/reglages'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
@@ -59,6 +59,11 @@ export async function POST(req: NextRequest) {
       telephone: donnees.telephone ?? null,
       organisation: donnees.organisation ?? null,
       message: donnees.message,
+      // Loi 25 (audit du 23 août 2026, migration 0041) — `donnees.consentement`
+      // vaut forcément `true` ici : schemaContact.safeParse a déjà rejeté toute
+      // autre valeur plus haut (z.literal(true)) avant d'atteindre ce bloc.
+      consentement_le: new Date().toISOString(),
+      consentement_version: VERSION_POLITIQUES,
     })
 
     if (error) throw error

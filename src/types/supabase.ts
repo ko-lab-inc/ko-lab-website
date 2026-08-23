@@ -180,6 +180,9 @@ export type Database = {
           /** CHECK : 'nouveau' | 'lu' | 'traite' */
           statut: string
           created_at: string
+          /** Migration 0041. NULL = ligne antérieure à l'ajout de la case de consentement. */
+          consentement_le: string | null
+          consentement_version: string | null
         }
         Insert: {
           id?: string
@@ -191,6 +194,8 @@ export type Database = {
           message: string
           statut?: string
           created_at?: string
+          consentement_le?: string | null
+          consentement_version?: string | null
         }
         Update: {
           id?: string
@@ -202,6 +207,8 @@ export type Database = {
           message?: string
           statut?: string
           created_at?: string
+          consentement_le?: string | null
+          consentement_version?: string | null
         }
         Relationships: []
       }
@@ -280,6 +287,9 @@ export type Database = {
           /** CHECK : 'nouveau' | 'lu' | 'traite' */
           statut: string
           created_at: string
+          /** Migration 0041. NULL = ligne antérieure à l'ajout de la case de consentement. */
+          consentement_le: string | null
+          consentement_version: string | null
         }
         Insert: {
           id?: string
@@ -297,6 +307,8 @@ export type Database = {
           canal?: string
           statut?: string
           created_at?: string
+          consentement_le?: string | null
+          consentement_version?: string | null
         }
         Update: {
           id?: string
@@ -314,6 +326,8 @@ export type Database = {
           canal?: string
           statut?: string
           created_at?: string
+          consentement_le?: string | null
+          consentement_version?: string | null
         }
         Relationships: []
       }
@@ -369,6 +383,9 @@ export type Database = {
           statut: string
           fenetre_modification_expire_at: string
           created_at: string
+          /** Migration 0041. NULL = ligne antérieure à l'ajout de la case de consentement. */
+          consentement_le: string | null
+          consentement_version: string | null
         }
         Insert: {
           id?: string
@@ -383,6 +400,8 @@ export type Database = {
           statut?: string
           fenetre_modification_expire_at?: string
           created_at?: string
+          consentement_le?: string | null
+          consentement_version?: string | null
         }
         Update: {
           id?: string
@@ -397,6 +416,8 @@ export type Database = {
           statut?: string
           fenetre_modification_expire_at?: string
           created_at?: string
+          consentement_le?: string | null
+          consentement_version?: string | null
         }
         Relationships: [
           {
@@ -477,18 +498,25 @@ export type Database = {
           role: string
           nom: string | null
           email: string | null
+          /** Migration 0041. NULL = compte créé avant l'ajout de la case de consentement. */
+          consentement_le: string | null
+          consentement_version: string | null
         }
         Insert: {
           id: string
           role?: string
           nom?: string | null
           email?: string | null
+          consentement_le?: string | null
+          consentement_version?: string | null
         }
         Update: {
           id?: string
           role?: string
           nom?: string | null
           email?: string | null
+          consentement_le?: string | null
+          consentement_version?: string | null
         }
         Relationships: [
           {

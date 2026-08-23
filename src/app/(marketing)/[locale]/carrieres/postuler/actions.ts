@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { z } from 'zod'
 
+import { VERSION_POLITIQUES } from '@/lib/constantes'
 import { createClient } from '@/lib/supabase/server'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
@@ -67,6 +68,12 @@ const schemaCandidature = z.object({
     .transform((v) => v || null),
   // Case « Je confirme que les informations fournies sont exactes ».
   confirmation: z.literal('oui'),
+  // Loi 25 (audit du 23 août 2026, migration 0041) — case DISTINCTE de
+  // `confirmation` ci-dessus : l'une porte sur l'exactitude des données,
+  // l'autre sur le consentement à leur collecte. Ne jamais les fusionner —
+  // ce sont deux déclarations différentes, chacune doit rester vérifiable
+  // séparément.
+  consentement: z.literal('true'),
 })
 
 /**
@@ -141,6 +148,7 @@ export async function envoyerCandidature(
     experience_texte: donnees.get('experience_texte'),
     source: donnees.get('source'),
     confirmation: donnees.get('confirmation'),
+    consentement: donnees.get('consentement'),
   })
 
   if (!analyse.success) return { erreur: 'donnees' }
@@ -192,6 +200,9 @@ export async function envoyerCandidature(
       // rien ne signale l'anomalie. C'est exactement ce qui s'est produit
       // ici, repéré par un envoi de test de bout en bout.
       cv_chemin: cvChemin,
+      // Loi 25 (audit du 23 août 2026, migration 0041).
+      consentement_le: new Date().toISOString(),
+      consentement_version: VERSION_POLITIQUES,
     })
 
     if (error) {

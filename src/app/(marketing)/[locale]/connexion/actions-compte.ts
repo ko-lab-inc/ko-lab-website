@@ -4,6 +4,8 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { routing } from '@/i18n/routing'
+import { VERSION_POLITIQUES } from '@/lib/constantes'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { schemaInscription, schemaMotDePasse } from '@/lib/validation'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
@@ -35,6 +37,7 @@ export type EtatInscription = {
     | 'donnees'
     | 'confirmation'
     | 'faible'
+    | 'consentement'
     | 'trop_de_tentatives'
     | 'refuse'
     | 'courriel'
@@ -80,6 +83,7 @@ export async function inscrire(
     email: donnees.get('email'),
     motDePasse: donnees.get('motDePasse'),
     confirmation: donnees.get('confirmation'),
+    consentement: donnees.get('consentement'),
   })
 
   if (!analyse.success) {
@@ -94,12 +98,22 @@ export async function inscrire(
     if (codes.includes('courant') || codes.includes('reprend_courriel')) {
       return { erreur: 'faible' }
     }
+    // Testé AVANT le générique 'donnees' : la case de consentement (Loi 25,
+    // migration 0041) mérite un message qui dit precisément quoi cocher,
+    // pas « vérifiez les champs » — la seule autre cause possible ici serait
+    // un contournement du `required` côté client, donc un cas anormal à
+    // nommer clairement, pas à noyer dans un message générique.
+    if (analyse.error.issues.some((i) => i.path[0] === 'consentement')) {
+      return { erreur: 'consentement' }
+    }
     return { erreur: 'donnees' }
   }
 
+  let idNouveauCompte: string | null = null
+
   try {
     const supabase = await createClient()
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: analyse.data.email,
       password: analyse.data.motDePasse,
       options: {
@@ -150,9 +164,41 @@ export async function inscrire(
 
       return { erreur: 'donnees' }
     }
+
+    idNouveauCompte = data.user?.id ?? null
   } catch (err) {
     console.error('[inscription] échec', err)
     return { erreur: 'serveur' }
+  }
+
+  /**
+   * Loi 25 (audit du 23 août 2026, migration 0041) — enregistré ici, avec le
+   * client SERVICE ROLE, pas avec la session courante :
+   *
+   * - Le compte vient d'être créé sans confirmation de courriel : il n'existe
+   *   encore AUCUNE session à ce stade pour porter un `.update()` normal.
+   * - Même une fois confirmé, `profils_maj_admin` (RLS) interdit à un compte
+   *   non-admin de modifier sa PROPRE ligne — vérifié en détail (4 cas réels,
+   *   session par session) lors de la justification du GRANT profils
+   *   (migration 0039). Le contournement RLS du service role est donc la
+   *   seule voie possible ici, pas un raccourci de commodité.
+   *
+   * Un échec ici n'annule pas l'inscription : le compte existe déjà côté
+   * Supabase Auth (signUp a réussi juste avant) — le signaler comme un échec
+   * d'inscription mentirait sur ce qui s'est réellement passé.
+   */
+  if (idNouveauCompte) {
+    try {
+      await getSupabaseAdmin()
+        .from('profils')
+        .update({
+          consentement_le: new Date().toISOString(),
+          consentement_version: VERSION_POLITIQUES,
+        })
+        .eq('id', idNouveauCompte)
+    } catch (err) {
+      console.error('[inscription] échec enregistrement consentement', err)
+    }
   }
 
   /**

@@ -53,6 +53,29 @@ export default async function InscriptionPage({ params, searchParams }: Props) {
             afficher: t('afficher_mot_de_passe'),
             masquer: t('masquer_mot_de_passe'),
           confirmation: t('confirmation'),
+          consentement: (
+            <>
+              {t('consentement_avant')}
+              <Link
+                href={ROUTES.conditionsUtilisation}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+              >
+                {t('consentement_lien_conditions')}
+              </Link>
+              {t('consentement_milieu')}
+              <Link
+                href={ROUTES.politiqueConfidentialite}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+              >
+                {t('consentement_lien_politique')}
+              </Link>
+              {t('consentement_apres')}
+            </>
+          ),
           creer: t('creer'),
           enCours: t('en_cours'),
           succesTitre: t('succes_titre'),
@@ -63,6 +86,7 @@ export default async function InscriptionPage({ params, searchParams }: Props) {
           erreurTentatives: t('erreur_tentatives'),
           erreurRefuse: t('erreur_refuse'),
           erreurCourriel: t('erreur_courriel'),
+          erreurConsentement: t('erreur_consentement'),
           erreurServeur: t('erreur_serveur'),
         }}
       />
