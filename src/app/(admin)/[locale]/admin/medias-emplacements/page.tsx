@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { EnteteAdmin, PanneauAdmin } from '@/components/layout/CadreAdmin'
 import { TableauEmplacements } from '@/components/sections/TableauEmplacements'
 import { routing } from '@/i18n/routing'
-import { listerFichiersDisponibles } from '@/lib/medias-disponibles'
+import { DOSSIERS_MEDIAS, listerFichiersDisponibles } from '@/lib/medias-disponibles'
 import { createClient } from '@/lib/supabase/server'
 
 type Props = { params: Promise<{ locale: string }> }
@@ -82,6 +82,7 @@ export default async function MediasEmplacementsAdminPage({ params }: Props) {
         emplacements={emplacements ?? []}
         estAdmin={estAdmin}
         fichiersDisponibles={fichiersDisponibles}
+        dossiers={DOSSIERS_MEDIAS}
         textes={{
           colonneCle: t('colonne_cle'),
           colonneApercu: t('colonne_apercu'),
@@ -93,6 +94,11 @@ export default async function MediasEmplacementsAdminPage({ params }: Props) {
           titreModal: t('titre_modifier_emplacement'),
           champChoix: t('champ_choix_photo_emplacement'),
           aideChoix: t('aide_choix_photo_emplacement'),
+          champTeleverser: t('champ_televerser_emplacement'),
+          aideTeleverser: t('aide_televerser_emplacement'),
+          champDossier: t('champ_dossier_emplacement'),
+          contraintesPhoto: t('contraintes_photo_emplacement'),
+          televersementEnCours: t('televersement_en_cours_emplacement'),
           photoActuelle: t('emplacement_photo_actuelle'),
           retirerPhoto: t('emplacement_retirer_photo'),
           confirmerRetrait: t('emplacement_confirmer_retrait'),

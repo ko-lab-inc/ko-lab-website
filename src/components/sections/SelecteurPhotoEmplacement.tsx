@@ -3,7 +3,10 @@
 import Image from 'next/image'
 import { useEffect, useRef, useState, useTransition } from 'react'
 
-import { mettreAJourEmplacement } from '@/app/(admin)/[locale]/admin/medias-emplacements/actions'
+import {
+  mettreAJourEmplacement,
+  televerserPhotoEmplacement,
+} from '@/app/(admin)/[locale]/admin/medias-emplacements/actions'
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeCoche, IconeFermer } from '@/components/ui/Icones'
 import { cn } from '@/lib/utils/cn'
@@ -45,6 +48,23 @@ import { cn } from '@/lib/utils/cn'
  * changement — la vignette « Photo actuelle » garde son étiquette même si
  * une autre vignette porte la coche de sélection, pour qu'on comprenne
  * toujours CE QUI VA ÊTRE REMPLACÉ.
+ *
+ * ---------------------------------------------------------------------------
+ * TÉLÉVERSEMENT (27 août 2026) — DÉPÔT IMMÉDIAT, ENREGISTREMENT DIFFÉRÉ
+ *
+ * Choisir un fichier lance `televerserPhotoEmplacement` tout de suite : le
+ * fichier atterrit dans le bucket `medias` et son URL rejoint `selection`,
+ * exactement comme un clic sur une vignette de la grille — pas d'attente du
+ * bouton Enregistrer pour ce dépôt-là. La ligne `medias_emplacements`, elle,
+ * n'est écrite qu'à l'Enregistrer (`mettreAJourEmplacement`, inchangée) :
+ * fermer la modale sans enregistrer laisse le fichier dans le bucket, non
+ * référencé — même compromis que les photos de FormulaireRealisation
+ * (skill 22), un fichier orphelin coûte de l'espace, pas une panne.
+ *
+ * `fichiersTeleverses` (état local) place la ou les photos tout juste
+ * déposées EN TÊTE de la grille, avant `fichiersDisponibles` (calculée côté
+ * serveur, donc jamais au courant d'un dépôt qui vient de se produire côté
+ * client) — c'est le rafraîchissement demandé, sans recharger la page.
  * ---------------------------------------------------------------------------
  */
 
@@ -54,6 +74,14 @@ export type TextesSelecteurEmplacement = {
   titreModal: string
   champChoix: string
   aideChoix: string
+  /** Libellé du champ de fichier — distingue le geste de la grille juste
+   *  au-dessus (« Ou téléverser une nouvelle photo »). */
+  champTeleverser: string
+  aideTeleverser: string
+  champDossier: string
+  /** Formats acceptés + taille max, affiché sous le champ de fichier. */
+  contraintesPhoto: string
+  televersementEnCours: string
   colonneAltFr: string
   colonneAltEn: string
   altEnVide: string
@@ -67,6 +95,19 @@ export type TextesSelecteurEmplacement = {
   erreurServeur: string
 }
 
+/**
+ * Dossier de destination par défaut : celui de la photo ACTUELLE de
+ * l'emplacement si elle vient bien du bucket `medias` et que son dossier
+ * figure dans la liste connue, sinon le premier dossier de la liste — jamais
+ * une chaîne vide, `televerserPhotoEmplacement` refuse tout `dossier` hors
+ * liste blanche.
+ */
+function dossierParDefaut(url: string | null, dossiers: readonly string[]): string {
+  const segment = url?.split('/storage/v1/object/public/medias/')[1]?.split('/')[0]
+  if (segment && dossiers.includes(segment)) return segment
+  return dossiers[0] ?? ''
+}
+
 export function SelecteurPhotoEmplacement({
   ouvert,
   onFermer,
@@ -75,6 +116,7 @@ export function SelecteurPhotoEmplacement({
   altFrActuel,
   altEnActuel,
   fichiersDisponibles,
+  dossiers,
   textes,
   onEnregistre,
 }: {
@@ -86,15 +128,29 @@ export function SelecteurPhotoEmplacement({
   altFrActuel: string
   altEnActuel: string | null
   fichiersDisponibles: FichierDisponible[]
+  /** Dossiers connus du bucket `medias` (lib/medias-disponibles.ts,
+   *  `DOSSIERS_MEDIAS`) — options du sélecteur de destination du
+   *  téléversement. */
+  dossiers: readonly string[]
   textes: TextesSelecteurEmplacement
   onEnregistre: (maj: { url_stockage: string | null; alt_text_fr: string; alt_text_en: string | null }) => void
 }) {
   const boite = useRef<HTMLDialogElement>(null)
+  const inputFichier = useRef<HTMLInputElement>(null)
   const [selection, setSelection] = useState<string | null>(photoActuelle)
   const [altFr, setAltFr] = useState(altFrActuel)
   const [altEn, setAltEn] = useState(altEnActuel ?? '')
   const [erreur, setErreur] = useState<string | null>(null)
   const [enCours, demarrer] = useTransition()
+
+  // Fichiers déposés PENDANT cette session d'édition — voir la docstring du
+  // fichier (« TÉLÉVERSEMENT »). Distinct de `fichiersDisponibles` (calculée
+  // côté serveur avant l'ouverture de la modale) : c'est ce qui permet à la
+  // grille de montrer un dépôt tout juste fait, sans recharger la page.
+  const [fichiersTeleverses, setFichiersTeleverses] = useState<FichierDisponible[]>([])
+  const [dossier, setDossier] = useState(() => dossierParDefaut(photoActuelle, dossiers))
+  const [erreurTeleversement, setErreurTeleversement] = useState<string | null>(null)
+  const [televersementEnCours, demarrerTeleversement] = useTransition()
 
   useEffect(() => {
     const el = boite.current
@@ -112,7 +168,11 @@ export function SelecteurPhotoEmplacement({
     setAltFr(altFrActuel)
     setAltEn(altEnActuel ?? '')
     setErreur(null)
-  }, [ouvert, photoActuelle, altFrActuel, altEnActuel])
+    setFichiersTeleverses([])
+    setDossier(dossierParDefaut(photoActuelle, dossiers))
+    setErreurTeleversement(null)
+    if (inputFichier.current) inputFichier.current.value = ''
+  }, [ouvert, photoActuelle, altFrActuel, altEnActuel, dossiers])
 
   useEffect(() => {
     const el = boite.current
@@ -153,10 +213,54 @@ export function SelecteurPhotoEmplacement({
     })
   }
 
-  const options =
-    photoActuelle && !fichiersDisponibles.some((f) => f.url === photoActuelle)
+  /**
+   * Choisir un fichier lance le dépôt tout de suite (voir la docstring du
+   * fichier) : pas de bouton « Téléverser » séparé, `onChange` suffit — le
+   * geste attendu est « je choisis mon fichier », pas « je choisis puis je
+   * confirme une deuxième fois ».
+   */
+  function televerser(e: React.ChangeEvent<HTMLInputElement>) {
+    const fichier = e.target.files?.[0]
+    if (!fichier) return
+    setErreurTeleversement(null)
+    demarrerTeleversement(async () => {
+      const donnees = new FormData()
+      donnees.append('cle', cle)
+      donnees.append('dossier', dossier)
+      donnees.append('fichier', fichier)
+
+      const resultat = await televerserPhotoEmplacement(donnees)
+      // Vidé dans tous les cas — un échec ne doit pas laisser le champ sur un
+      // fichier qu'on ne peut de toute façon pas retéléverser tel quel sans
+      // le resélectionner.
+      if (inputFichier.current) inputFichier.current.value = ''
+
+      if (!resultat.success) {
+        setErreurTeleversement(resultat.error)
+        return
+      }
+
+      setFichiersTeleverses((f) => [resultat.fichier, ...f])
+      setSelection(resultat.fichier.url)
+    })
+  }
+
+  // ⚠️ `!fichiersTeleverses.some(...)` en plus de la vérification déjà en
+  // place sur `fichiersDisponibles` : sans elle, la vignette tout juste
+  // déposée réapparaissait UNE SECONDE FOIS après Enregistrer — une fois via
+  // `fichiersTeleverses` (jamais vidé à la fermeture, seulement à la
+  // réouverture), une fois via ce repli synthétique, `photoActuelle` valant
+  // désormais la même URL. Deux entrées de grille pour la même clé React
+  // (`f.url`), symptôme observé en test E2E (avertissement React « two
+  // children with the same key »).
+  const options = [
+    ...fichiersTeleverses,
+    ...(photoActuelle &&
+    !fichiersDisponibles.some((f) => f.url === photoActuelle) &&
+    !fichiersTeleverses.some((f) => f.url === photoActuelle)
       ? [{ chemin: cle, url: photoActuelle }, ...fichiersDisponibles]
-      : fichiersDisponibles
+      : fichiersDisponibles),
+  ]
 
   return (
     <dialog
@@ -239,6 +343,62 @@ export function SelecteurPhotoEmplacement({
         {photoActuelle === null && (
           <p className="mt-2 text-xs italic text-ko-muted">{textes.sansPhoto}</p>
         )}
+
+        {/* Téléversement — geste distinct de la grille au-dessus, libellé
+            séparé pour ne pas laisser croire que c'est la même action. */}
+        <div className="mt-6 border-t border-ko-line pt-5">
+          <label htmlFor={`televerser-${cle}`} className="label-mono mb-2 block text-ko-muted">
+            {textes.champTeleverser}
+          </label>
+          <p className="mb-3 text-sm leading-relaxed text-ko-muted">{textes.aideTeleverser}</p>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="sm:w-44 sm:shrink-0">
+              <label
+                htmlFor={`dossier-${cle}`}
+                className="mb-1.5 block font-mono text-[10px] uppercase tracking-widest text-ko-muted"
+              >
+                {textes.champDossier}
+              </label>
+              <select
+                id={`dossier-${cle}`}
+                value={dossier}
+                onChange={(e) => setDossier(e.target.value)}
+                disabled={televersementEnCours}
+                className="min-h-[40px] w-full border border-ko-line bg-ko-white px-3 py-2 text-sm text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none disabled:opacity-60"
+              >
+                {dossiers.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <input
+              ref={inputFichier}
+              id={`televerser-${cle}`}
+              type="file"
+              accept="image/webp,image/jpeg,image/png,image/avif"
+              disabled={televersementEnCours}
+              onChange={televerser}
+              className="min-w-0 flex-1 text-sm text-ko-ink file:mr-4 file:min-h-[36px] file:cursor-pointer file:border file:border-ko-line file:bg-ko-cream file:px-4 file:text-sm file:text-ko-ink hover:file:border-ko-ink disabled:opacity-60"
+            />
+          </div>
+
+          <p className="mt-2 text-xs text-ko-muted">{textes.contraintesPhoto}</p>
+
+          {televersementEnCours && (
+            <p role="status" className="mt-2 text-sm text-ko-muted">
+              {textes.televersementEnCours}
+            </p>
+          )}
+          {erreurTeleversement && (
+            <p role="alert" className="mt-2 text-sm text-ko-ink">
+              {erreurTeleversement}
+            </p>
+          )}
+        </div>
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>

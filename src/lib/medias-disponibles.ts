@@ -42,8 +42,16 @@ const EXCLUS_DROITS_INCERTAINS = new Set([
  * fichiers à plat sans les distinguer par un champ fiable dans ce SDK — une
  * liste explicite, à étendre le jour où un nouveau dossier apparaît, reste
  * plus sûre qu'une heuristique.
+ *
+ * Exportée : `medias-emplacements/actions.ts` (téléversement) s'en sert comme
+ * liste blanche de destination — un `dossier` posté par le client qui n'y
+ * figure pas est refusé, jamais déposé à la racine du bucket ni dans un
+ * chemin arbitraire. Le composant client (SelecteurPhotoEmplacement) reçoit
+ * cette même liste en prop depuis la page serveur : il ne peut pas l'importer
+ * lui-même, ce module est `server-only`.
  */
-const DOSSIERS = ['boutique', 'deployment', 'home', 'installations', 'lab', 'operations', 'rental'] as const
+export const DOSSIERS_MEDIAS = ['boutique', 'deployment', 'home', 'installations', 'lab', 'operations', 'rental'] as const
+const DOSSIERS = DOSSIERS_MEDIAS
 
 export type FichierDisponible = { chemin: string; url: string }
 

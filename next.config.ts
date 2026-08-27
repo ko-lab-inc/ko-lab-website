@@ -143,6 +143,36 @@ const nextConfig: NextConfig = {
   // Retire X-Powered-By: Next.js — moins d'empreinte pour un attaquant (skill 15).
   poweredByHeader: false,
 
+  /**
+   * ⚠️ CORRECTIF 27 août 2026 — le défaut de Next (1 Mo) coupait TOUT
+   * téléversement par Server Action au-dessus de cette taille, AVANT même
+   * que le code applicatif ne s'exécute : `Error: Body exceeded 1 MB limit`,
+   * 500 non attrapé, React démonté côté client. Trouvé en testant le nouveau
+   * téléversement de SelecteurPhotoEmplacement avec un fichier de 6 Mo — pas
+   * en lisant le code, qui ne le montre pas. Ce plafond est GLOBAL (toutes
+   * les Server Actions du site), donc `construireImages` (realisations,
+   * mêmes 5 Mo annoncés) avait exactement le même défaut, invisible tant
+   * qu'aucun fichier réel n'avait dépassé 1 Mo.
+   *
+   * `7mb` : au-dessus des 5 Mo que `TAILLE_MAX`/`TAILLE_MAX_PHOTO_EMPLACEMENT`
+   * acceptent (realisations/actions.ts, medias-emplacements/actions.ts), pour
+   * laisser de la marge à l'encodage multipart et aux autres champs du
+   * formulaire — sans ça, un fichier de 5,0 Mo pile authentique retomberait
+   * sur CE plafond au lieu du message lisible que le code produit exprès.
+   * C'est maintenant le code applicatif qui décide du rejet, pas Next.
+   *
+   * ⚠️ Reste sous `experimental` dans Next 16.2.11 malgré la stabilité des
+   * Server Actions elles-mêmes — un essai en clé top-level a échoué au
+   * démarrage (« Unrecognized key(s) in object: 'serverActions' »),
+   * confirmé par `node_modules/next/dist/server/config-shared.d.ts` :
+   * `bodySizeLimit` est typé sous `ExperimentalConfig`, pas `NextConfig`.
+   */
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '7mb',
+    },
+  },
+
   images: {
     formats: ['image/avif', 'image/webp'],
     // ⚠️ OBLIGATOIRE depuis Next 16 : `qualities` n'autorise que [75] par

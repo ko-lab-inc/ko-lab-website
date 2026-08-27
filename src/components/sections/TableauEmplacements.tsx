@@ -44,6 +44,7 @@ export function TableauEmplacements({
   emplacements,
   estAdmin,
   fichiersDisponibles,
+  dossiers,
   textes,
 }: {
   emplacements: EmplacementMedia[]
@@ -53,6 +54,10 @@ export function TableauEmplacements({
    *  dans l'action, pas ce booléen. */
   estAdmin: boolean
   fichiersDisponibles: FichierDisponible[]
+  /** Dossiers connus du bucket `medias` (lib/medias-disponibles.ts,
+   *  `DOSSIERS_MEDIAS`) — le module d'origine est `server-only`, cette page
+   *  ne peut donc pas l'importer elle-même. */
+  dossiers: readonly string[]
   textes: Textes
 }) {
   const [lignes, setLignes] = useState(emplacements)
@@ -121,6 +126,7 @@ export function TableauEmplacements({
           altFrActuel={ligne.alt_text_fr}
           altEnActuel={ligne.alt_text_en}
           fichiersDisponibles={fichiersDisponibles}
+          dossiers={dossiers}
           textes={textes}
           onEnregistre={(maj) => {
             setLignes((prev) =>
