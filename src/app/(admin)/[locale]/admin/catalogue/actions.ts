@@ -105,7 +105,8 @@ function lire(donnees: FormData) {
 /** 23505 = violation d'unicité. Le seul index unique ici porte sur `slug`. */
 const slugDejaPris = (code?: string) => code === '23505'
 
-const TAILLE_MAX = 5 * 1024 * 1024
+// 4 Mo, pas 5 — voir next.config.ts (plafond Vercel de 4,5 Mo par requête).
+const TAILLE_MAX = 4 * 1024 * 1024
 const TYPES_IMAGE = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
 
 /**

@@ -109,7 +109,7 @@ test.describe('bug — téléversement galeries, page d\'erreur brute', () => {
 
       const bouton = section.getByRole('button', { name: /Téléverser/i })
       await expect(bouton).toBeDisabled()
-      await expect(section.getByText(/8\.0 Mo.*limite est de 6\.0 Mo/i)).toBeVisible()
+      await expect(section.getByText(/8\.0 Mo.*limite est de 4\.0 Mo/i)).toBeVisible()
 
       // Tentative de contournement : Entrée dans le champ alt.
       await section.locator('input[name="alt_fr"]').press('Enter')

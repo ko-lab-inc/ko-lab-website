@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 
 import {
   envoyerCandidature,
@@ -76,6 +76,22 @@ export type LibellesCandidature = {
 
 const CHAMP =
   'min-h-[44px] w-full border border-ko-line bg-ko-white px-4 py-3 text-base text-ko-ink transition-colors duration-200 placeholder:text-ko-muted focus:border-ko-blue focus:outline-none'
+
+/**
+ * Plafond CÔTÉ CLIENT — même bug que GestionGaleriesPhotos.tsx (27 août
+ * 2026), sur le formulaire PUBLIC cette fois. `TAILLE_CV_MAX`
+ * (postuler/actions.ts) annonçait 10 Mo, jamais atteignable en production :
+ * Vercel plafonne le corps de toute Function serverless à 4,5 Mo, en amont
+ * du code Next (voir next.config.ts) — 4 Mo ici, même valeur que côté
+ * serveur. Pur ajout progressif : sans JavaScript, ce garde-fou ne s'exécute
+ * simplement pas, et l'envoi natif atteint le serveur comme avant (voir la
+ * docstring du fichier — ce formulaire doit fonctionner sans JS).
+ */
+const TAILLE_CV_MAX = 4 * 1024 * 1024
+
+function formaterMo(octets: number): string {
+  return (octets / (1024 * 1024)).toFixed(1)
+}
 
 function Champ({
   id,
@@ -160,6 +176,18 @@ export function FormulaireCandidature({
   libelles: LibellesCandidature
 }) {
   const [etat, action, enCours] = useActionState<EtatCandidature, FormData>(envoyerCandidature, {})
+  const [erreurTailleCv, setErreurTailleCv] = useState<string | null>(null)
+
+  function cvChoisi(e: React.ChangeEvent<HTMLInputElement>) {
+    const fichier = e.target.files?.[0]
+    if (!fichier || fichier.size <= TAILLE_CV_MAX) {
+      setErreurTailleCv(null)
+      return
+    }
+    setErreurTailleCv(
+      `${fichier.name} fait ${formaterMo(fichier.size)} Mo — la limite est de ${formaterMo(TAILLE_CV_MAX)} Mo. Choisissez un fichier plus léger.`,
+    )
+  }
 
   const messages: Record<string, string> = {
     donnees: libelles.erreurDonnees,
@@ -191,6 +219,9 @@ export function FormulaireCandidature({
     <form
       action={action}
       encType="multipart/form-data"
+      onSubmit={(e) => {
+        if (erreurTailleCv) e.preventDefault()
+      }}
       className="max-w-[640px] space-y-7"
     >
       {/* Piège à robots : hors flux visuel et hors tabulation, mais rempli
@@ -327,8 +358,14 @@ export function FormulaireCandidature({
           name="cv"
           type="file"
           accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          onChange={cvChoisi}
           className="w-full text-sm text-ko-ink file:mr-4 file:min-h-[40px] file:cursor-pointer file:border file:border-ko-line file:bg-ko-cream file:px-4 file:text-sm file:text-ko-ink hover:file:border-ko-ink"
         />
+        {erreurTailleCv && (
+          <p role="alert" className="mt-1.5 text-sm text-ko-ink">
+            {erreurTailleCv}
+          </p>
+        )}
       </Champ>
 
       <Champ id="c-source" libelle={libelles.source} marqueur={libelles.champObligatoire}>
@@ -386,7 +423,7 @@ export function FormulaireCandidature({
 
       <button
         type="submit"
-        disabled={enCours}
+        disabled={enCours || erreurTailleCv !== null}
         className={buttonVariants({ variant: 'primary' })}
       >
         {enCours ? libelles.enCours : libelles.envoyer}

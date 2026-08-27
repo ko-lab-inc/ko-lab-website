@@ -71,7 +71,11 @@ function lireChamps(donnees: FormData) {
 /** 23505 = violation d'unicité. Le seul index unique ici porte sur `slug`. */
 const slugDejaPris = (code?: string) => code === '23505'
 
-const TAILLE_MAX = 5 * 1024 * 1024
+// 4 Mo, pas 5 — Vercel plafonne le corps de toute Function serverless à
+// 4,5 Mo (voir next.config.ts). 5 Mo était annoncé mais jamais atteignable
+// en production ; 4 Mo laisse la marge nécessaire à l'encodage multipart et
+// aux autres champs du formulaire.
+const TAILLE_MAX = 4 * 1024 * 1024
 const TYPES_IMAGE = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
 
 /**

@@ -144,22 +144,34 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
 
   /**
-   * ⚠️ CORRECTIF 27 août 2026 — le défaut de Next (1 Mo) coupait TOUT
-   * téléversement par Server Action au-dessus de cette taille, AVANT même
-   * que le code applicatif ne s'exécute : `Error: Body exceeded 1 MB limit`,
-   * 500 non attrapé, React démonté côté client. Trouvé en testant le nouveau
-   * téléversement de SelecteurPhotoEmplacement avec un fichier de 6 Mo — pas
-   * en lisant le code, qui ne le montre pas. Ce plafond est GLOBAL (toutes
-   * les Server Actions du site), donc `construireImages` (realisations,
-   * mêmes 5 Mo annoncés) avait exactement le même défaut, invisible tant
-   * qu'aucun fichier réel n'avait dépassé 1 Mo.
+   * ⚠️⚠️ CORRECTIF 27 août 2026, DEUXIÈME COUCHE — ce réglage ne protège PAS
+   * contre un 413 sur Vercel, quelle que soit sa valeur.
    *
-   * `7mb` : au-dessus des 5 Mo que `TAILLE_MAX`/`TAILLE_MAX_PHOTO_EMPLACEMENT`
-   * acceptent (realisations/actions.ts, medias-emplacements/actions.ts), pour
-   * laisser de la marge à l'encodage multipart et aux autres champs du
-   * formulaire — sans ça, un fichier de 5,0 Mo pile authentique retomberait
-   * sur CE plafond au lieu du message lisible que le code produit exprès.
-   * C'est maintenant le code applicatif qui décide du rejet, pas Next.
+   * Premier correctif (même jour, plus tôt) : le défaut de Next (1 Mo)
+   * coupait tout téléversement au-dessus de cette taille avant même que le
+   * code applicatif ne s'exécute — porté à `7mb` pour laisser de la marge
+   * aux 5 Mo annoncés partout. Ce correctif était INCOMPLET : testé
+   * seulement en local (`next start`), jamais sur le vrai déploiement.
+   *
+   * Repéré en production le jour même : Moussa a vu la page d'erreur
+   * (attrapée cette fois par error.tsx, voir sa propre note) sur un envoi
+   * de 4,48 Mo — sous les 5 Mo annoncés ET sous ce plafond de 7 Mo. Cause
+   * réelle : Vercel plafonne le corps de TOUTE Function serverless à
+   * 4,5 Mo, EN AMONT du code Next — une limite d'infrastructure, pas une
+   * option. `bodySizeLimit` ne peut pas la relever ; au-delà, Vercel renvoie
+   * lui-même une 413 (FUNCTION_PAYLOAD_TOO_LARGE) avant que ce fichier de
+   * config ne soit même consulté. Confirmé : recherche externe, doc Vercel.
+   * `next start` ne reproduit jamais ce plafond — d'où le bug invisible en
+   * local, seulement 27 minutes après le premier correctif.
+   *
+   * `4.5mb` ICI, PAS un chiffre plus généreux : aligner ce plafond LOCAL sur
+   * le vrai plafond de production, pour que `next start`/`next dev`
+   * reproduisent enfin la même limite que Vercel — plus jamais un test qui
+   * passe en local et casse en prod pour cette raison précise. Les tailles
+   * RÉELLEMENT acceptées restent décidées par le code applicatif, plus bas
+   * que ça (4 Mo par fichier, voir TAILLE_MAX et équivalents) : la marge
+   * entre 4 Mo (annoncé) et 4,5 Mo (ce plafond) couvre l'encodage multipart
+   * et les autres champs du formulaire, jamais le fichier seul.
    *
    * ⚠️ Reste sous `experimental` dans Next 16.2.11 malgré la stabilité des
    * Server Actions elles-mêmes — un essai en clé top-level a échoué au
@@ -169,7 +181,7 @@ const nextConfig: NextConfig = {
    */
   experimental: {
     serverActions: {
-      bodySizeLimit: '7mb',
+      bodySizeLimit: '4.5mb',
     },
   },
 

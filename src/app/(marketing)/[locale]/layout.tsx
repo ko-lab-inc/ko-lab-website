@@ -215,6 +215,11 @@ export default async function MarketingLayout({ children, params }: Props) {
    *                              résolus côté serveur, PhotoPlaceholder n'est
    *                              pas un composant client)
    *   BoutonRetourHaut.tsx     → Commun.retour_haut (23 août 2026)
+   *   error.tsx (ce dossier)   → Commun.erreur_* (27 août 2026) — filet
+   *                              d'erreur admin-wide répliqué côté public,
+   *                              après le 413 Vercel repéré sur le
+   *                              formulaire de candidature (aucun error.tsx
+   *                              ne couvrait le site public avant ce jour)
    *
    * CatalogueBoutique reçoit ses chaînes en props, résolues côté serveur —
    * c'est le modèle à privilégier pour tout nouveau composant.
@@ -240,6 +245,10 @@ export default async function MarketingLayout({ children, params }: Props) {
       // BoutonRetourHaut.tsx (23 août 2026) — un seul libellé, l'aria-label
       // du bouton.
       retour_haut: commun.retour_haut,
+      // error.tsx (27 août 2026) — filet d'erreur public, voir plus haut.
+      erreur_titre: commun.erreur_titre,
+      erreur_texte: commun.erreur_texte,
+      erreur_reessayer: commun.erreur_reessayer,
     },
     // Ajouté explicitement, PAS en élargissant au catalogue entier : le panier
     // vit côté client, ses libellés doivent y être — mais rien d'autre.

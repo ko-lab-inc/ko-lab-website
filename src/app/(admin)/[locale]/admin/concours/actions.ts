@@ -227,7 +227,8 @@ export type EtatPhotoConcours = {
   succes?: boolean
 }
 
-const TAILLE_PHOTO_MAX = 5 * 1024 * 1024
+// 4 Mo, pas 5 — voir next.config.ts (plafond Vercel de 4,5 Mo par requête).
+const TAILLE_PHOTO_MAX = 4 * 1024 * 1024
 const TYPES_PHOTO = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
 
 const schemaPhoto = z.object({

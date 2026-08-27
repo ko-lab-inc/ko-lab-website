@@ -163,7 +163,8 @@ export type ResultatTeleversementEmplacement =
   | { success: true; fichier: { chemin: string; url: string } }
   | { success: false; error: string }
 
-const TAILLE_MAX_PHOTO_EMPLACEMENT = 5 * 1024 * 1024
+// 4 Mo, pas 5 — voir next.config.ts (plafond Vercel de 4,5 Mo par requête).
+const TAILLE_MAX_PHOTO_EMPLACEMENT = 4 * 1024 * 1024
 const TYPES_IMAGE_EMPLACEMENT = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
 
 export async function televerserPhotoEmplacement(
@@ -264,7 +265,11 @@ export type EtatPhotoGalerie = {
 
 export type ResultatGalerie = { success: boolean; error?: string }
 
-const TAILLE_MAX_PHOTO_GALERIE = 5 * 1024 * 1024
+// 4 Mo, pas 5 — voir next.config.ts (plafond Vercel de 4,5 Mo par requête).
+// Bug réel du 27 août 2026 : un fichier de 4,48 Mo, sous les 5 Mo annoncés,
+// a quand même produit un 413 Vercel — l'encodage multipart et les autres
+// champs du formulaire suffisent à dépasser 4,5 Mo à partir de là.
+const TAILLE_MAX_PHOTO_GALERIE = 4 * 1024 * 1024
 const TYPES_PHOTO_GALERIE = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
 
 /**

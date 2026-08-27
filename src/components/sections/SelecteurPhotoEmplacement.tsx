@@ -116,16 +116,15 @@ export type TextesSelecteurEmplacement = {
 }
 
 /**
- * Plafond CÔTÉ CLIENT — même bug, même correction que GestionGaleriesPhotos.tsx
- * (« page d'erreur brute » sur /admin/medias-emplacements, 27 août 2026) :
- * `televerser` ci-dessous appelait `televerserPhotoEmplacement` sans jamais
- * vérifier la taille du fichier — un seul fichier assez lourd dépasse
- * `serverActions.bodySizeLimit` (7 Mo, next.config.ts) avant même que
- * l'action ne s'exécute. Pas de bouton « Téléverser » séparé ici (dépôt au
- * `onChange`), donc pas de gel de bouton à ajouter — seul le garde-fou de
- * taille s'applique.
+ * Plafond CÔTÉ CLIENT — même bug, même correction que GestionGaleriesPhotos.tsx.
+ * Révisé le même jour : le vrai mur n'est pas `bodySizeLimit` (7 Mo) mais le
+ * plafond Vercel de 4,5 Mo par corps de requête, en amont du code Next (voir
+ * next.config.ts). 4 Mo, pas 6 — marge de 0,5 Mo sous 4,5 Mo, même valeur
+ * que `TAILLE_MAX_PHOTO_EMPLACEMENT` côté serveur (medias-emplacements/actions.ts).
+ * Pas de bouton « Téléverser » séparé ici (dépôt au `onChange`), donc pas de
+ * gel de bouton à ajouter — seul le garde-fou de taille s'applique.
  */
-const TAILLE_MAX_PHOTO = 6 * 1024 * 1024
+const TAILLE_MAX_PHOTO = 4 * 1024 * 1024
 
 function formaterMo(octets: number): string {
   return (octets / (1024 * 1024)).toFixed(1)

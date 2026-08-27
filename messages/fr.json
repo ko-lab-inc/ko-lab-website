@@ -706,6 +706,7 @@
     "chargement": "Chargement…",
     "erreur_titre": "Une erreur est survenue",
     "erreur_texte": "Réessayez, ou écrivez-nous si le problème persiste.",
+    "erreur_reessayer": "Réessayer",
     "retour_accueil": "Retour à l'accueil",
     "page_introuvable_titre": "Page introuvable",
     "page_introuvable_texte": "Cette page n'existe pas ou a été déplacée.",

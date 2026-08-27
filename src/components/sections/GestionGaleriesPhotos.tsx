@@ -76,20 +76,20 @@ export type LibellesGaleriesPhotos = {
 
 /**
  * Plafond CÔTÉ CLIENT — bug « page d'erreur brute » corrigé le 27 août 2026,
- * même mécanisme que FormulaireRealisation.tsx (bug initial sur
- * /admin/realisations, reproduit ensuite ici sur une autre route puisque
- * error.tsx ne couvrait alors que son propre segment — voir `[locale]/error.tsx`).
+ * RÉVISÉ le même jour : ce plafond de 6 Mo, basé sur les 7 Mo de
+ * `bodySizeLimit`, n'a pas suffi. Un fichier de 4,48 Mo — sous ce plafond ET
+ * sous les 5 Mo annoncés — a quand même produit un 413 en production. Cause
+ * réelle : Vercel plafonne le corps de toute Function serverless à 4,5 Mo,
+ * EN AMONT du code Next, indépendamment de `bodySizeLimit` (voir la note de
+ * next.config.ts, corrigé à `4.5mb` pour que le local reproduise enfin cette
+ * limite). L'encodage multipart et les autres champs du formulaire suffisent
+ * à faire dépasser 4,5 Mo à partir de là.
  *
- * Un SEUL fichier suffit à dépasser `serverActions.bodySizeLimit` (7 Mo,
- * next.config.ts) : reproduit avec un fichier de 8 Mo — `Error: Body
- * exceeded 7mb limit`, rejeté par Next AVANT que `ajouterPhotoGalerie` ne
- * s'exécute, donc rien à attraper dans l'action elle-même. 6 Mo, pas 5 —
- * même marge que `TAILLE_MAX_CUMULEE_PHOTOS` : le serveur annonce 5 Mo
- * (`TAILLE_MAX_PHOTO_GALERIE`), ce plafond CLIENT reste dessous pour ne
- * jamais laisser passer un fichier qui talonnerait les 7 Mo globaux à cause
- * de l'encodage multipart et des autres champs du formulaire.
+ * 4 Mo, pas 6 : marge de 0,5 Mo sous le plafond Vercel — même valeur que
+ * `TAILLE_MAX_PHOTO_GALERIE` côté serveur (medias-emplacements/actions.ts),
+ * désormais 4 Mo elle aussi.
  */
-const TAILLE_MAX_PHOTO = 6 * 1024 * 1024
+const TAILLE_MAX_PHOTO = 4 * 1024 * 1024
 
 function formaterMo(octets: number): string {
   return (octets / (1024 * 1024)).toFixed(1)

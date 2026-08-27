@@ -95,25 +95,26 @@ const CHAMP_PETIT =
 
 /**
  * Plafond CUMULÉ des nouvelles photos d'un même envoi — bug 2 corrigé le
- * 27 août 2026.
+ * 27 août 2026, RÉVISÉ le même jour (bug reproduit sur les galeries).
  *
- * `experimental.serverActions.bodySizeLimit` (next.config.ts) plafonne le
- * corps ENTIER de la requête à 7 Mo, pas chaque fichier séparément — trois
- * photos de 3 Mo (chacune sous les 5 Mo annoncés par `TAILLE_MAX`,
- * realisations/actions.ts) totalisent 9 Mo et dépassent quand même ce
- * plafond global. Next rejette alors la requête AVANT que la Server Action
- * ne s'exécute (« Body exceeded 7mb limit », reproduit et confirmé dans le
- * journal serveur) — aucun code applicatif n'a la main à ce stade, donc rien
- * à intercepter côté serveur pour CE cas précis : la seule protection fiable
- * est d'empêcher l'envoi de partir. `error.tsx` (même dossier que page.tsx)
- * reste le filet pour tout ce qui contournerait cette validation.
+ * `experimental.serverActions.bodySizeLimit` plafonne le corps ENTIER de la
+ * requête, pas chaque fichier séparément — mais ce plafond applicatif
+ * n'était pas le vrai mur : Vercel plafonne le corps de toute Function
+ * serverless à 4,5 Mo, EN AMONT du code Next, quelle que soit la valeur de
+ * `bodySizeLimit` (voir next.config.ts, corrigé à `4.5mb` pour que le local
+ * reproduise enfin cette limite). Next rejette alors la requête AVANT que la
+ * Server Action ne s'exécute — aucun code applicatif n'a la main à ce stade,
+ * donc rien à intercepter côté serveur pour CE cas précis : la seule
+ * protection fiable est d'empêcher l'envoi de partir. `error.tsx` (admin,
+ * niveau [locale]) reste le filet pour tout ce qui contournerait cette
+ * validation.
  *
- * 6 Mo, pas 7 : marge d'1 Mo pour l'encodage multipart et le reste du
- * formulaire (titre, descriptions, alt de chaque photo déjà en base) — même
- * logique que le Mo de marge déjà laissé entre `TAILLE_MAX` (5 Mo, un seul
- * fichier) et `bodySizeLimit` (7 Mo), voir la note de next.config.ts.
+ * 4 Mo, pas 6 : marge de 0,5 Mo sous le plafond Vercel de 4,5 Mo, pour
+ * l'encodage multipart et le reste du formulaire (titre, descriptions, alt
+ * de chaque photo déjà en base) — même marge que `TAILLE_MAX`
+ * (realisations/actions.ts, 4 Mo par fichier lui aussi).
  */
-const TAILLE_MAX_CUMULEE_PHOTOS = 6 * 1024 * 1024
+const TAILLE_MAX_CUMULEE_PHOTOS = 4 * 1024 * 1024
 
 function formaterMo(octets: number): string {
   return (octets / (1024 * 1024)).toFixed(1)

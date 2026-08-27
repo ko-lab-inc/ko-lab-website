@@ -704,6 +704,7 @@
     "chargement": "Loading…",
     "erreur_titre": "Something went wrong",
     "erreur_texte": "Try again, or write to us if the problem continues.",
+    "erreur_reessayer": "Try again",
     "retour_accueil": "Back to Home",
     "page_introuvable_titre": "Page Not Found",
     "page_introuvable_texte": "This page doesn't exist or has been moved.",

@@ -35,8 +35,16 @@ export type EtatCandidature = {
   succes?: boolean
 }
 
-/** 10 Mo — même plafond que le bucket (0017) et que le formulaire d'origine. */
-const TAILLE_CV_MAX = 10 * 1024 * 1024
+/**
+ * 4 Mo, pas 10 — corrigé le 27 août 2026. Le bucket (migration 0017)
+ * autorise toujours 10 Mo, aucune migration nécessaire : un plafond de
+ * BUCKET plus haut que ce que l'app envoie jamais est sans effet. Mais
+ * Vercel plafonne le corps de toute Function serverless à 4,5 Mo, EN AMONT
+ * de ce code (voir next.config.ts) — les 10 Mo annoncés ici n'ont jamais
+ * été atteignables en production, et rien ne les validait côté client
+ * avant ce correctif.
+ */
+const TAILLE_CV_MAX = 4 * 1024 * 1024
 
 const TYPES_CV = [
   'application/pdf',

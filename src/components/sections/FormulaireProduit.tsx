@@ -83,6 +83,19 @@ export type LibellesProduit = {
 const CHAMP =
   'min-h-[40px] w-full border border-ko-line bg-ko-white px-3 py-2 text-sm text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none'
 
+/**
+ * Plafond CÔTÉ CLIENT — même bug que GestionGaleriesPhotos.tsx (27 août
+ * 2026) : ce formulaire n'avait AUCUNE vérification de taille avant l'envoi.
+ * Vercel plafonne le corps de toute Function serverless à 4,5 Mo, en amont
+ * du code Next (voir next.config.ts) — 4 Mo ici, même valeur que
+ * `TAILLE_MAX` côté serveur (catalogue/actions.ts).
+ */
+const TAILLE_MAX_PHOTO = 4 * 1024 * 1024
+
+function formaterMo(octets: number): string {
+  return (octets / (1024 * 1024)).toFixed(1)
+}
+
 function Champ({
   id,
   libelle,
@@ -134,6 +147,18 @@ export function FormulaireProduit({
    */
   const [quantite, setQuantite] = useState(produit?.quantite ?? 0)
   const [statutStock, setStatutStock] = useState(produit?.statut_stock ?? 'en_stock')
+  const [erreurTaillePhoto, setErreurTaillePhoto] = useState<string | null>(null)
+
+  function photoChoisie(e: React.ChangeEvent<HTMLInputElement>) {
+    const fichier = e.target.files?.[0]
+    if (!fichier || fichier.size <= TAILLE_MAX_PHOTO) {
+      setErreurTaillePhoto(null)
+      return
+    }
+    setErreurTaillePhoto(
+      `${fichier.name} fait ${formaterMo(fichier.size)} Mo — la limite est de ${formaterMo(TAILLE_MAX_PHOTO)} Mo. Choisissez un fichier plus léger.`,
+    )
+  }
 
   function surChangementQuantite(e: React.ChangeEvent<HTMLInputElement>) {
     const valeur = Math.max(0, Math.trunc(Number(e.target.value) || 0))
@@ -170,7 +195,13 @@ export function FormulaireProduit({
   const erreur = etat.erreur ? (messages[etat.erreur] ?? libelles.erreurServeur) : null
 
   return (
-    <form action={action} className="space-y-4">
+    <form
+      action={action}
+      onSubmit={(e) => {
+        if (erreurTaillePhoto) e.preventDefault()
+      }}
+      className="space-y-4"
+    >
       <input type="hidden" name="locale" value={locale} />
       {produit && <input type="hidden" name="id" value={produit.id} />}
 
@@ -294,8 +325,14 @@ export function FormulaireProduit({
           name="photo"
           type="file"
           accept="image/webp,image/jpeg,image/png,image/avif"
+          onChange={photoChoisie}
           className="w-full text-sm text-ko-ink file:mr-4 file:min-h-[36px] file:cursor-pointer file:border file:border-ko-line file:bg-ko-cream file:px-4 file:text-sm file:text-ko-ink hover:file:border-ko-ink"
         />
+        {erreurTaillePhoto && (
+          <p role="alert" className="mt-1 text-xs text-ko-ink">
+            {erreurTaillePhoto}
+          </p>
+        )}
       </Champ>
 
       {erreur && (
@@ -311,7 +348,7 @@ export function FormulaireProduit({
 
       <button
         type="submit"
-        disabled={enCours}
+        disabled={enCours || erreurTaillePhoto !== null}
         className={buttonVariants({ variant: 'primary', size: 'sm' })}
       >
         {enCours ? libelles.enCours : produit ? libelles.enregistrer : libelles.creer}
