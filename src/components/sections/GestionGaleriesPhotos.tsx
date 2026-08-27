@@ -69,6 +69,30 @@ export type LibellesGaleriesPhotos = {
   retirer: string
   confirmerRetrait: string
   erreurFichier: string
+  manqueFichier: string
+  manqueAltFr: string
+  manqueFichierEtAlt: string
+}
+
+/**
+ * Plafond CÔTÉ CLIENT — bug « page d'erreur brute » corrigé le 27 août 2026,
+ * même mécanisme que FormulaireRealisation.tsx (bug initial sur
+ * /admin/realisations, reproduit ensuite ici sur une autre route puisque
+ * error.tsx ne couvrait alors que son propre segment — voir `[locale]/error.tsx`).
+ *
+ * Un SEUL fichier suffit à dépasser `serverActions.bodySizeLimit` (7 Mo,
+ * next.config.ts) : reproduit avec un fichier de 8 Mo — `Error: Body
+ * exceeded 7mb limit`, rejeté par Next AVANT que `ajouterPhotoGalerie` ne
+ * s'exécute, donc rien à attraper dans l'action elle-même. 6 Mo, pas 5 —
+ * même marge que `TAILLE_MAX_CUMULEE_PHOTOS` : le serveur annonce 5 Mo
+ * (`TAILLE_MAX_PHOTO_GALERIE`), ce plafond CLIENT reste dessous pour ne
+ * jamais laisser passer un fichier qui talonnerait les 7 Mo globaux à cause
+ * de l'encodage multipart et des autres champs du formulaire.
+ */
+const TAILLE_MAX_PHOTO = 6 * 1024 * 1024
+
+function formaterMo(octets: number): string {
+  return (octets / (1024 * 1024)).toFixed(1)
 }
 
 export function GestionGaleriesPhotos({
@@ -98,17 +122,59 @@ function SectionGalerie({
   const formulaireAjout = useRef<HTMLFormElement>(null)
   const [enCoursOrdre, demarrerOrdre] = useTransition()
 
+  // Suit l'état du formulaire d'ajout EN DEHORS de FormData — c'est ce qui
+  // permet de désactiver « Téléverser » tant que le fichier et l'alt FR ne
+  // sont pas tous les deux prêts, et de dire LEQUEL manque. `fichierPret`
+  // est `false` aussi bien quand aucun fichier n'est choisi que quand celui
+  // choisi dépasse TAILLE_MAX_PHOTO — un fichier trop lourd n'est pas
+  // « prêt », même s'il est techniquement sélectionné.
+  const [fichierPret, setFichierPret] = useState(false)
+  const [altFr, setAltFr] = useState('')
+  const [erreurTaille, setErreurTaille] = useState<string | null>(null)
+
   const [etat, action, ajoutEnCours] = useActionState<EtatPhotoGalerie, FormData>(
     async (precedent, donnees) => {
       const resultat = await ajouterPhotoGalerie(precedent, donnees)
       if (resultat.succes) {
         formulaireAjout.current?.reset()
+        setFichierPret(false)
+        setAltFr('')
+        setErreurTaille(null)
         router.refresh()
       }
       return resultat
     },
     {},
   )
+
+  function fichierChoisi(e: React.ChangeEvent<HTMLInputElement>) {
+    const fichier = e.target.files?.[0]
+    if (!fichier) {
+      setFichierPret(false)
+      setErreurTaille(null)
+      return
+    }
+    if (fichier.size > TAILLE_MAX_PHOTO) {
+      setFichierPret(false)
+      setErreurTaille(
+        `${fichier.name} fait ${formaterMo(fichier.size)} Mo — la limite est de ${formaterMo(TAILLE_MAX_PHOTO)} Mo. Choisissez un fichier plus léger.`,
+      )
+      return
+    }
+    setFichierPret(true)
+    setErreurTaille(null)
+  }
+
+  const pret = fichierPret && altFr.trim() !== ''
+  const messageManquant = erreurTaille
+    ? erreurTaille
+    : !fichierPret && !altFr.trim()
+      ? libelles.manqueFichierEtAlt
+      : !fichierPret
+        ? libelles.manqueFichier
+        : !altFr.trim()
+          ? libelles.manqueAltFr
+          : null
 
   function deplacer(photoId: string, sens: 'haut' | 'bas') {
     demarrerOrdre(async () => {
@@ -160,6 +226,11 @@ function SectionGalerie({
       <form
         ref={formulaireAjout}
         action={action}
+        onSubmit={(e) => {
+          // Filet redondant avec `disabled` sur le bouton — un clavier ou un
+          // agent automatisé peut encore déclencher un submit natif.
+          if (!pret) e.preventDefault()
+        }}
         className="flex flex-wrap items-end gap-3 border-t border-ko-line pt-5"
       >
         <input type="hidden" name="page" value={groupe.page} />
@@ -173,6 +244,7 @@ function SectionGalerie({
             type="file"
             required
             accept="image/webp,image/jpeg,image/png,image/avif"
+            onChange={fichierChoisi}
             className="w-full text-sm text-ko-ink file:mr-4 file:min-h-[36px] file:cursor-pointer file:border file:border-ko-line file:bg-ko-cream file:px-3 file:text-sm file:text-ko-ink hover:file:border-ko-ink"
           />
           <p className="mt-1 text-xs text-ko-muted">{libelles.aideFichier}</p>
@@ -186,6 +258,8 @@ function SectionGalerie({
             name="alt_fr"
             required
             maxLength={200}
+            value={altFr}
+            onChange={(e) => setAltFr(e.target.value)}
             className="min-h-[40px] w-full border border-ko-line bg-ko-white px-3 py-2 text-sm text-ko-ink focus:border-ko-blue focus:outline-none"
           />
         </div>
@@ -201,10 +275,23 @@ function SectionGalerie({
             className="min-h-[40px] w-full border border-ko-line bg-ko-white px-3 py-2 text-sm text-ko-ink focus:border-ko-blue focus:outline-none"
           />
         </div>
-        <button type="submit" disabled={ajoutEnCours} className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+        <button
+          type="submit"
+          disabled={ajoutEnCours || !pret}
+          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+        >
           {ajoutEnCours ? libelles.televersementEnCours : libelles.televerser}
         </button>
       </form>
+
+      {/* Ce qui bloque le bouton — disparaît dès que le fichier ET l'alt FR
+          sont prêts. Distinct de `erreur` juste en dessous (retour du
+          SERVEUR après un envoi tenté) : celui-ci est un état, pas un échec. */}
+      {!pret && !ajoutEnCours && messageManquant && (
+        <p role={erreurTaille ? 'alert' : 'status'} className="mt-2 text-sm text-ko-muted">
+          {messageManquant}
+        </p>
+      )}
 
       {erreur && (
         <p role="alert" className="mt-2 text-sm text-ko-ink">

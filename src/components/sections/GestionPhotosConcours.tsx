@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useActionState, useRef, useTransition } from 'react'
+import { useActionState, useRef, useState, useTransition } from 'react'
 
 import {
   ajouterPhotoConcours,
@@ -54,6 +54,23 @@ export type LibellesPhotosConcours = {
   retirer: string
   erreurFichier: string
   enCours: string
+  manqueFichier: string
+  manqueAltFr: string
+  manqueFichierEtAlt: string
+}
+
+/**
+ * Plafond CÔTÉ CLIENT — même bug, même correction que GestionGaleriesPhotos.tsx
+ * (« page d'erreur brute » sur /admin/medias-emplacements, 27 août 2026) :
+ * un seul fichier assez lourd dépasse `serverActions.bodySizeLimit` (7 Mo,
+ * next.config.ts) avant même que `ajouterPhotoConcours` ne s'exécute. Cet
+ * écran partage exactement la même ligne d'ajout (fichier + alt FR requis,
+ * bouton non gardé côté client) — même défaut, même remède.
+ */
+const TAILLE_MAX_PHOTO = 6 * 1024 * 1024
+
+function formaterMo(octets: number): string {
+  return (octets / (1024 * 1024)).toFixed(1)
 }
 
 export function GestionPhotosConcours({
@@ -69,17 +86,54 @@ export function GestionPhotosConcours({
   const [enCours, demarrer] = useTransition()
   const formulaireAjout = useRef<HTMLFormElement>(null)
 
+  // Voir GestionGaleriesPhotos.tsx — même mécanique de suivi hors FormData.
+  const [fichierPret, setFichierPret] = useState(false)
+  const [altFr, setAltFr] = useState('')
+  const [erreurTaille, setErreurTaille] = useState<string | null>(null)
+
   const [etat, action, ajoutEnCours] = useActionState<EtatPhotoConcours, FormData>(
     async (precedent, donnees) => {
       const resultat = await ajouterPhotoConcours(precedent, donnees)
       if (resultat.succes) {
         formulaireAjout.current?.reset()
+        setFichierPret(false)
+        setAltFr('')
+        setErreurTaille(null)
         router.refresh()
       }
       return resultat
     },
     {},
   )
+
+  function fichierChoisi(e: React.ChangeEvent<HTMLInputElement>) {
+    const fichier = e.target.files?.[0]
+    if (!fichier) {
+      setFichierPret(false)
+      setErreurTaille(null)
+      return
+    }
+    if (fichier.size > TAILLE_MAX_PHOTO) {
+      setFichierPret(false)
+      setErreurTaille(
+        `${fichier.name} fait ${formaterMo(fichier.size)} Mo — la limite est de ${formaterMo(TAILLE_MAX_PHOTO)} Mo. Choisissez un fichier plus léger.`,
+      )
+      return
+    }
+    setFichierPret(true)
+    setErreurTaille(null)
+  }
+
+  const pret = fichierPret && altFr.trim() !== ''
+  const messageManquant = erreurTaille
+    ? erreurTaille
+    : !fichierPret && !altFr.trim()
+      ? libelles.manqueFichierEtAlt
+      : !fichierPret
+        ? libelles.manqueFichier
+        : !altFr.trim()
+          ? libelles.manqueAltFr
+          : null
 
   function deplacer(photoId: string, sens: 'haut' | 'bas') {
     demarrer(async () => {
@@ -155,7 +209,14 @@ export function GestionPhotosConcours({
         </ul>
       )}
 
-      <form ref={formulaireAjout} action={action} className="flex flex-wrap items-end gap-3 border-t border-ko-line pt-4">
+      <form
+        ref={formulaireAjout}
+        action={action}
+        onSubmit={(e) => {
+          if (!pret) e.preventDefault()
+        }}
+        className="flex flex-wrap items-end gap-3 border-t border-ko-line pt-4"
+      >
         <input type="hidden" name="concours_id" value={concoursId} />
         <div className="min-w-0 flex-1">
           <label htmlFor="photo-fichier" className="label-mono mb-1.5 block text-ko-muted">
@@ -167,6 +228,7 @@ export function GestionPhotosConcours({
             type="file"
             required
             accept="image/webp,image/jpeg,image/png,image/avif"
+            onChange={fichierChoisi}
             className="w-full text-sm text-ko-ink file:mr-4 file:min-h-[36px] file:cursor-pointer file:border file:border-ko-line file:bg-ko-cream file:px-3 file:text-sm file:text-ko-ink hover:file:border-ko-ink"
           />
           <p className="mt-1 text-xs text-ko-muted">{libelles.nouvelleAide}</p>
@@ -180,6 +242,8 @@ export function GestionPhotosConcours({
             name="alt_fr"
             required
             maxLength={200}
+            value={altFr}
+            onChange={(e) => setAltFr(e.target.value)}
             className="min-h-[40px] w-full border border-ko-line bg-ko-white px-3 py-2 text-sm text-ko-ink focus:border-ko-blue focus:outline-none"
           />
         </div>
@@ -194,10 +258,20 @@ export function GestionPhotosConcours({
             className="min-h-[40px] w-full border border-ko-line bg-ko-white px-3 py-2 text-sm text-ko-ink focus:border-ko-blue focus:outline-none"
           />
         </div>
-        <button type="submit" disabled={ajoutEnCours} className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
+        <button
+          type="submit"
+          disabled={ajoutEnCours || !pret}
+          className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+        >
           {ajoutEnCours ? libelles.enCours : libelles.televerser}
         </button>
       </form>
+
+      {!pret && !ajoutEnCours && messageManquant && (
+        <p role={erreurTaille ? 'alert' : 'status'} className="mt-2 text-sm text-ko-muted">
+          {messageManquant}
+        </p>
+      )}
 
       {erreur && (
         <p role="alert" className="mt-2 text-sm text-ko-ink">

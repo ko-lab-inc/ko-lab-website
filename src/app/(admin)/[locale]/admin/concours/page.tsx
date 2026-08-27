@@ -85,6 +85,9 @@ export default async function ConcoursAdminPage({ params }: Props) {
       retirer: t('action_retirer_image'),
       erreurFichier: t('erreur_photo_concours'),
       enCours: t('en_cours'),
+      manqueFichier: t('ajout_photo_manque_fichier'),
+      manqueAltFr: t('ajout_photo_manque_alt_fr'),
+      manqueFichierEtAlt: t('ajout_photo_manque_fichier_et_alt'),
     },
     liens: {
       titre: t('champ_liens_concours_titre'),

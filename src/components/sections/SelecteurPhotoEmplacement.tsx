@@ -116,6 +116,22 @@ export type TextesSelecteurEmplacement = {
 }
 
 /**
+ * Plafond CÔTÉ CLIENT — même bug, même correction que GestionGaleriesPhotos.tsx
+ * (« page d'erreur brute » sur /admin/medias-emplacements, 27 août 2026) :
+ * `televerser` ci-dessous appelait `televerserPhotoEmplacement` sans jamais
+ * vérifier la taille du fichier — un seul fichier assez lourd dépasse
+ * `serverActions.bodySizeLimit` (7 Mo, next.config.ts) avant même que
+ * l'action ne s'exécute. Pas de bouton « Téléverser » séparé ici (dépôt au
+ * `onChange`), donc pas de gel de bouton à ajouter — seul le garde-fou de
+ * taille s'applique.
+ */
+const TAILLE_MAX_PHOTO = 6 * 1024 * 1024
+
+function formaterMo(octets: number): string {
+  return (octets / (1024 * 1024)).toFixed(1)
+}
+
+/**
  * Dossier de destination par défaut : celui de la photo ACTUELLE de
  * l'emplacement si elle vient bien du bucket `medias` et que son dossier
  * figure dans la liste connue, sinon le premier dossier de la liste — jamais
@@ -242,6 +258,13 @@ export function SelecteurPhotoEmplacement({
   function televerser(e: React.ChangeEvent<HTMLInputElement>) {
     const fichier = e.target.files?.[0]
     if (!fichier) return
+    if (fichier.size > TAILLE_MAX_PHOTO) {
+      setErreurTeleversement(
+        `${fichier.name} fait ${formaterMo(fichier.size)} Mo — la limite est de ${formaterMo(TAILLE_MAX_PHOTO)} Mo. Choisissez un fichier plus léger.`,
+      )
+      if (inputFichier.current) inputFichier.current.value = ''
+      return
+    }
     setErreurTeleversement(null)
     demarrerTeleversement(async () => {
       const donnees = new FormData()

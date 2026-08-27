@@ -196,6 +196,9 @@ export default async function MediasEmplacementsAdminPage({ params, searchParams
             retirer: t('action_retirer_image'),
             confirmerRetrait: t('confirmer_retrait_galerie'),
             erreurFichier: t('erreur_photo'),
+            manqueFichier: t('ajout_photo_manque_fichier'),
+            manqueAltFr: t('ajout_photo_manque_alt_fr'),
+            manqueFichierEtAlt: t('ajout_photo_manque_fichier_et_alt'),
           }}
         />
       )}

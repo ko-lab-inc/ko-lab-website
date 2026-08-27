@@ -1116,6 +1116,9 @@
     "champ_photo_nouvelle": "Ajouter une photo",
     "champ_photo_nouvelle_aide": "WebP, JPEG, PNG ou AVIF, 5 Mo maximum.",
     "champ_photo_televerser": "Téléverser",
+    "ajout_photo_manque_fichier": "Choisissez d'abord un fichier.",
+    "ajout_photo_manque_alt_fr": "Le texte alternatif (français) est requis.",
+    "ajout_photo_manque_fichier_et_alt": "Choisissez un fichier et remplissez le texte alternatif (français).",
 
     "champ_liens_concours_titre": "Liens",
     "champ_liens_concours_vide": "Aucun lien pour l'instant.",
