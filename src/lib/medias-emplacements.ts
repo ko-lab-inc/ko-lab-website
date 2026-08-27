@@ -5,6 +5,8 @@ import { unstable_cache } from 'next/cache'
 import { repliEmplacement } from '@/lib/medias-repli'
 import { createStaticClient } from '@/lib/supabase/static'
 
+import type { AppLocale } from '@/i18n/routing'
+
 /**
  * Lecture cachée d'un emplacement média — table `medias_emplacements`
  * (migration 0031). Détail d'implémentation, pas une API publique : les
@@ -102,12 +104,35 @@ export const obtenirEmplacement = unstable_cache(lireEmplacement, ['emplacement-
  *
  * `null` en retour = « affiche PhotoPlaceholder ». Tout le reste (repli
  * inclus) renvoie `{ url, alt }`, jamais un objet à moitié rempli.
+ *
+ * ---------------------------------------------------------------------------
+ * ⚠️ CORRIGÉ 27 août 2026 — `alt_en` LU EN BASE MAIS JAMAIS APPLIQUÉ
+ *
+ * Avant cette date, cette fonction ne prenait pas de `locale` et renvoyait
+ * toujours `ligne.alt_fr` — les 15 traductions anglaises saisies depuis
+ * /admin/medias-emplacements n'atteignaient donc aucun visiteur, alors que
+ * `alt_en` était bien lue en base (`LigneEmplacement.alt_en`) et bien
+ * PRÉSENTE dans la valeur retournée par `obtenirEmplacement`. Le trou était
+ * dans cette résolution-ci, pas dans la lecture.
+ *
+ * Repli champ par champ, même patron que `titre`/`description` dans
+ * lib/carrieres.ts : `alt_en` vide pour CETTE ligne retombe sur `alt_fr`,
+ * jamais une chaîne inventée.
+ *
+ * `locale` ne fait PAS partie de la clé de cache d'`obtenirEmplacement` —
+ * volontairement : la ligne lue en base porte déjà les DEUX langues en une
+ * seule requête, la résolution par langue n'a lieu qu'ICI, après le cache.
+ * Une clé de cache par langue dupliquerait inutilement la même ligne.
+ * ---------------------------------------------------------------------------
  */
-export async function resoudreEmplacement(cle: string): Promise<{ url: string; alt: string } | null> {
+export async function resoudreEmplacement(
+  cle: string,
+  locale: AppLocale,
+): Promise<{ url: string; alt: string } | null> {
   const ligne = await obtenirEmplacement(cle)
 
   if (ligne === null) return repliEmplacement(cle)
   if (ligne.url === null) return null
 
-  return { url: ligne.url, alt: ligne.alt_fr }
+  return { url: ligne.url, alt: (locale === 'en' ? ligne.alt_en : null) ?? ligne.alt_fr }
 }

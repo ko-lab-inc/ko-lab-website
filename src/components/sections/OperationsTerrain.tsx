@@ -9,6 +9,8 @@ import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
 import { resoudreEmplacement } from '@/lib/medias-emplacements'
 import { ROUTES } from '@/lib/routes'
 
+import type { AppLocale } from '@/i18n/routing'
+
 /**
  * Opérations terrain (résumé) — section 4 de l'accueil (Phase 5).
  *
@@ -24,7 +26,7 @@ import { ROUTES } from '@/lib/routes'
  * statistique nouvelle propre aux Opérations terrain n'a été fournie, et
  * CLAUDE.md interdit d'affirmer un nombre sans preuve.
  */
-export async function OperationsTerrain() {
+export async function OperationsTerrain({ locale }: { locale: AppLocale }) {
   const t = await getTranslations('Home.operations')
   const tStats = await getTranslations('Home.stats')
   const tCommun = await getTranslations('Commun')
@@ -37,7 +39,7 @@ export async function OperationsTerrain() {
   // fichiers pour un même emplacement. Changer operations_terrain depuis
   // l'admin ne changera donc que la photo desktop ; limite connue à
   // documenter pour Christian, pas un oubli.
-  const photoOperations = await resoudreEmplacement('operations_terrain')
+  const photoOperations = await resoudreEmplacement('operations_terrain', locale)
 
   return (
     <section className="relative overflow-hidden bg-ko-black">

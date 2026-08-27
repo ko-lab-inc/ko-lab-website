@@ -9,6 +9,8 @@ import { resoudreEmplacement } from '@/lib/medias-emplacements'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES } from '@/lib/routes'
 
+import type { AppLocale } from '@/i18n/routing'
+
 /**
  * Les quatre besoins — section 3 de l'accueil.
  *
@@ -25,7 +27,7 @@ import { ROUTES } from '@/lib/routes'
  * information propre, contrairement à celles d'Ecosysteme.tsx qui distinguent
  * quatre entités sans autre repère visuel.
  */
-export async function Besoins() {
+export async function Besoins({ locale }: { locale: AppLocale }) {
   const t = await getTranslations('Home.besoins')
   const tCommun = await getTranslations('Commun')
 
@@ -50,10 +52,10 @@ export async function Besoins() {
    * soit la photo réellement servie par chaque emplacement.
    */
   const [besoin1, besoin2, besoin3, besoin4] = await Promise.all([
-    resoudreEmplacement('besoin_1'),
-    resoudreEmplacement('besoin_2'),
-    resoudreEmplacement('besoin_3'),
-    resoudreEmplacement('besoin_4'),
+    resoudreEmplacement('besoin_1', locale),
+    resoudreEmplacement('besoin_2', locale),
+    resoudreEmplacement('besoin_3', locale),
+    resoudreEmplacement('besoin_4', locale),
   ])
 
   const besoins = [

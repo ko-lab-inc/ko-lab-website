@@ -39,7 +39,7 @@ export default async function AProposPage({ params }: Props) {
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
-  const photoEquipe = await resoudreEmplacement('apropos_1')
+  const photoEquipe = await resoudreEmplacement('apropos_1', locale)
 
   const t = await getTranslations('APropos')
   const tCommun = await getTranslations('Commun')

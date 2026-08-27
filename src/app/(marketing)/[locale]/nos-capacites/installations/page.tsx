@@ -42,7 +42,7 @@ export default async function InstallationsPage({ params }: Props) {
   // Pas le hero (IMAGES.installationNacelle) : cet emplacement précis n'a été
   // pensé que pour cette vignette de galerie, voir le rapport de la
   // conversation du 22 août 2026 sur medias_emplacements.
-  const photoInstallations = await resoudreEmplacement('capacite_installations')
+  const photoInstallations = await resoudreEmplacement('capacite_installations', locale)
 
   return (
     <PageCapacite

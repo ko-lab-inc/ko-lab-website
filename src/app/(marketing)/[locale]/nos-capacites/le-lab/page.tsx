@@ -51,8 +51,8 @@ export default async function LeLabPage({ params }: Props) {
   // GalerieLab.tsx.
   const clesLab = ['lab_1', 'lab_2', 'lab_3', 'lab_4', 'lab_5', 'lab_6', 'lab_7'] as const
   const [photoHero, photosLab] = await Promise.all([
-    resoudreEmplacement('lab_1'),
-    Promise.all(clesLab.map((cle) => resoudreEmplacement(cle))),
+    resoudreEmplacement('lab_1', locale),
+    Promise.all(clesLab.map((cle) => resoudreEmplacement(cle, locale))),
   ])
 
   return (

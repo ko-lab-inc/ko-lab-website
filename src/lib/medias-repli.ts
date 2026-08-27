@@ -12,6 +12,18 @@ import { IMAGES } from '@/lib/images'
  * voir le rapport de la conversation du 22 août 2026 pour le détail par
  * photo, notamment pourquoi `deployment_camion` pointe vers
  * `deploiementRemorque` et non `deploiementCamion` ou `transportRemorque2026`.
+ *
+ * ⚠️ UN SEUL `alt` PAR CLÉ, PAS DE PAIRE FR/EN — vérifié le 27 août 2026 en
+ * corrigeant le bilingue de `resoudreEmplacement` : ce fichier n'a PAS le
+ * même trou, par construction. Ce repli ne joue que si la ligne est
+ * INTROUVABLE en base (`obtenirEmplacement` renvoie `null` — table pas
+ * encore peuplée, ligne supprimée à la main, Supabase injoignable), jamais
+ * pour une ligne existante dont `alt_text_en` serait simplement vide — ce
+ * cas-là est un repli FR→FR normal, déjà géré par `resoudreEmplacement`
+ * elle-même. Un visiteur anglophone qui tombe sur ce repli lit donc un texte
+ * français plutôt qu'un texte anglais deviné — acceptable, l'alternative
+ * (traduire ces neuf textes de secours) n'a de valeur que dans une panne
+ * Supabase, pas dans l'usage normal du site.
  */
 const REPLI_EMPLACEMENTS: Record<string, { url: string; alt: string }> = {
   besoin_1: {

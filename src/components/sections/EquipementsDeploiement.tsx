@@ -9,6 +9,8 @@ import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
 import { resoudreEmplacement } from '@/lib/medias-emplacements'
 import { ROUTES } from '@/lib/routes'
 
+import type { AppLocale } from '@/i18n/routing'
+
 /**
  * Équipements et déploiement (résumé) — section 7 de l'accueil (Phase 5).
  *
@@ -30,7 +32,7 @@ import { ROUTES } from '@/lib/routes'
  * Referme aussi le bloc des capacités (4/5/6/7) avec un lien vers le hub
  * /nos-capacites, voir plus bas.
  */
-export async function EquipementsDeploiement() {
+export async function EquipementsDeploiement({ locale }: { locale: AppLocale }) {
   const t = await getTranslations('Home.equipements')
   const tCapacites = await getTranslations('Home.capacites')
   const tCommun = await getTranslations('Commun')
@@ -44,7 +46,7 @@ export async function EquipementsDeploiement() {
   // DROITE (transportRemorque2026) n'a pas de ligne dans medias_emplacements
   // et reste câblée en dur, hors périmètre de ce chantier — voir le rapport
   // pour un problème de logos tiers repéré dessus, non traité ici.
-  const photoGauche = await resoudreEmplacement('deployment_camion')
+  const photoGauche = await resoudreEmplacement('deployment_camion', locale)
 
   return (
     <section className="bg-ko-black">

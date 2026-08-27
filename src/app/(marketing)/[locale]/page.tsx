@@ -104,12 +104,12 @@ export default async function AccueilPage({ params }: Props) {
           titre du hero, spécifique à cette page, qui clôt la séquence. */}
       <IntroAnimee />
       <Hero />
-      <Besoins />
+      <Besoins locale={locale} />
       <CredibiliteTerrain />
-      <OperationsTerrain />
+      <OperationsTerrain locale={locale} />
       <Installations />
       <Lab />
-      <EquipementsDeploiement />
+      <EquipementsDeploiement locale={locale} />
       <GmLocations />
       <Realisations />
       <Ecosysteme />
