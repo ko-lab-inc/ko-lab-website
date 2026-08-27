@@ -8,15 +8,24 @@ import { EnteteAdmin, EnteteTableau, PanneauAdmin } from '@/components/layout/Ca
  *
  * Utilisateurs, Vendeurs et Livreurs partagent tous la même table `profils` —
  * ListeProfils lit un COMPTE, avec identifiants et rôle. Une candidature n'en
- * a pas : c'est un formulaire public, sans connexion (migration 0017). Décision
- * de Christian : un candidat retenu comme chauffeur-livreur doit apparaître
- * dans Livreurs SANS qu'on lui crée d'accès au site. Fusionner les deux
- * données dans une requête `profils` aurait exigé de fabriquer un compte pour
- * chacun — exactement ce qu'on ne veut pas.
+ * a pas : c'est un formulaire public, sans connexion (migration 0017).
  *
- * C'est donc un second bloc, en lecture seule, sous la liste des comptes
- * réels. Aucune action ici (pas de changement de rôle, pas de suppression) :
- * ces gestes existent déjà sur l'écran Candidatures, qui reste la source.
+ * ⚠️ DÉCISION RENVERSÉE LE 27 AOÛT 2026 (Moussa) — un candidat retenu
+ * POURRA recevoir un accès. L'ancienne décision de Christian (« un candidat
+ * retenu comme chauffeur-livreur doit apparaître dans Livreurs SANS qu'on
+ * lui crée d'accès au site ») ne tient plus : une candidature au statut
+ * « retenue » pourra déclencher une invitation comme livreur, après
+ * confirmation explicite dans l'interface — jamais automatique. Voir
+ * migration 0045 (colonnes `compte_id`, `poste_id`, `invitation_envoyee_le`
+ * sur `candidatures`) pour le schéma qui porte ce lien. Ce composant reste
+ * néanmoins en lecture seule AUJOURD'HUI : l'action d'invitation elle-même
+ * n'est pas encore construite (étape 1/3, migration seulement) — ce
+ * commentaire documente l'intention, pas encore le geste.
+ *
+ * C'est donc un second bloc, sous la liste des comptes réels. Aucune action
+ * ici pour l'instant (pas de changement de rôle, pas de suppression, pas
+ * encore d'invitation) : ces gestes existent déjà sur l'écran Candidatures,
+ * qui reste la source — l'invitation les rejoindra là, pas ici.
  * ---------------------------------------------------------------------------
  */
 export function RepertoireLivreurs({
