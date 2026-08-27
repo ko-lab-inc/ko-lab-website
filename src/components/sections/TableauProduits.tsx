@@ -305,11 +305,12 @@ export function TableauProduits({
                       entre l'administration et la vitrine. */}
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden border border-ko-line bg-ko-photo">
                     {image ? (
+                      // 64px partagé admin-wide, pas 48px — voir TableauRealisations.tsx.
                       <Image
                         src={image}
                         alt=""
                         fill
-                        sizes="48px"
+                        sizes="64px"
                         className={cn(
                           p.cadrage === 'cover' ? 'object-cover' : 'object-contain p-1',
                         )}
@@ -537,11 +538,12 @@ export function TableauProduits({
                 {(() => {
                   const image = premiereImage(voir.images, hoteStockage)
                   return image ? (
+                    // 256px partagé admin-wide, pas 320px — voir TableauRealisations.tsx.
                     <Image
                       src={image}
                       alt=""
                       fill
-                      sizes="320px"
+                      sizes="256px"
                       className={cn(
                         voir.cadrage === 'cover' ? 'object-cover' : 'object-contain p-5',
                       )}

@@ -160,7 +160,8 @@ export function TableauConcours({
                 >
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden border border-ko-line bg-ko-photo">
                     {c.apercu ? (
-                      <Image src={c.apercu} alt="" fill sizes="48px" className="object-cover" />
+                      // 64px partagé admin-wide, pas 48px — voir TableauRealisations.tsx.
+                      <Image src={c.apercu} alt="" fill sizes="64px" className="object-cover" />
                     ) : (
                       <span className="sr-only">{textes.sansImage}</span>
                     )}
@@ -319,7 +320,8 @@ export function TableauConcours({
                 <ul className="grid grid-cols-3 gap-3">
                   {voir.photos.map((p) => (
                     <li key={p.id} className="relative aspect-square overflow-hidden border border-ko-line bg-ko-photo">
-                      <Image src={p.url_stockage} alt="" fill sizes="200px" className="object-cover" />
+                      {/* 256px partagé admin-wide, pas 200px — voir TableauRealisations.tsx. */}
+                      <Image src={p.url_stockage} alt="" fill sizes="256px" className="object-cover" />
                     </li>
                   ))}
                 </ul>

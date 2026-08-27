@@ -263,13 +263,28 @@ function CartePhotoGalerie({
   return (
     <div className="border border-ko-line bg-ko-white p-3">
       <div className="relative aspect-square overflow-hidden bg-ko-cream2">
-        <Image
-          src={photo.url_stockage}
-          alt=""
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-          className="object-cover"
-        />
+        {/*
+         * PERFORMANCE ADMIN — corrigé le 27 août 2026 (constat : écrans
+         * admin lents à l'ouverture).
+         *
+         * L'ancien `sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw,
+         * 25vw"` calculait une fraction du VIEWPORT, sans tenir compte de la
+         * sidebar admin fixe (240px, CadreAdmin/layout.tsx) ni du padding —
+         * sur cet écran, `25vw` d'un viewport de 1280px demandait 320px
+         * alors que la cellule de grille réelle (grid-cols-4, gap 16px, sous
+         * la sidebar) fait environ 230px. Résultat mesuré : la seule
+         * combinaison largeur × format de tout l'admin à dépasser 96px,
+         * demandée pour CHACUNE des photos affichées simultanément (jusqu'à
+         * 21 sur cet écran) — 330 Ko rien que pour cette grille, contre 5 à
+         * 12 Ko sur les autres écrans admin.
+         *
+         * `256px` fixe : même largeur partagée que les panneaux « voir » de
+         * réalisations/concours/carrières (voir TableauRealisations.tsx) —
+         * DEUX largeurs pour tout l'admin (64px, 256px) au lieu d'une par
+         * écran, pour limiter le nombre de combinaisons distinctes que
+         * l'optimiseur doit produire et mettre en cache.
+         */}
+        <Image src={photo.url_stockage} alt="" fill sizes="256px" className="object-cover" />
       </div>
 
       <label className="mt-3 block">

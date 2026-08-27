@@ -136,10 +136,12 @@ export function SelecteurPhotoPoste({
         className="relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden border border-ko-line bg-ko-cream2 transition-opacity duration-200 hover:opacity-80"
       >
         {photoActuelle ? (
-          <Image src={photoActuelle} alt="" width={80} height={80} className="h-full w-full object-cover" />
+          // 64px partagé admin-wide, pas 80px — voir TableauRealisations.tsx.
+          <Image src={photoActuelle} alt="" width={64} height={64} className="h-full w-full object-cover" />
         ) : photoRepli ? (
           <>
-            <Image src={photoRepli} alt="" width={80} height={80} className="h-full w-full object-cover" />
+            {/* 64px partagé admin-wide, pas 80px — voir TableauRealisations.tsx. */}
+            <Image src={photoRepli} alt="" width={64} height={64} className="h-full w-full object-cover" />
             {/* Marquage du repli — sans lui, deux postes du même département
                 afficheraient la même vignette sans qu'on comprenne pourquoi,
                 et on croirait à tort qu'une photo a été choisie pour CE
@@ -186,7 +188,9 @@ export function SelecteurPhotoPoste({
               changement de sélection dans le dropdown, avant tout enregistrement. */}
           <div className="relative mx-auto flex h-[200px] w-[200px] items-center justify-center overflow-hidden border border-ko-line bg-ko-cream2">
             {selection ? (
-              <Image src={selection} alt="" width={200} height={200} className="h-full w-full object-cover" />
+              // 256px partagé admin-wide (couvre le minimum 200×200 demandé) —
+              // voir TableauRealisations.tsx.
+              <Image src={selection} alt="" width={256} height={256} className="h-full w-full object-cover" />
             ) : (
               <span className="px-4 text-center text-sm text-ko-muted">{textes.aucunePhoto}</span>
             )}

@@ -200,8 +200,16 @@ export function TableauRealisations({
                   className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 transition-colors duration-200 hover:bg-ko-cream"
                 >
                   <div className="relative h-12 w-12 shrink-0 overflow-hidden border border-ko-line bg-ko-photo">
+                    {/* `sizes="64px"` malgré une case de 48px (h-12/w-12) :
+                        largeur PARTAGÉE avec le reste de l'admin (icônes de
+                        ligne) plutôt qu'une par écran — chaque combinaison
+                        largeur × format payée par l'optimiseur au premier
+                        appel (audit perf du 27 août 2026), 2 largeurs
+                        admin-wide (64px, 256px) au lieu de 6. Le léger
+                        surdimensionnement (64 vs 48) est invisible sur une
+                        icône de cette taille. */}
                     {premiere ? (
-                      <Image src={premiere.url} alt="" fill sizes="48px" className="object-cover" />
+                      <Image src={premiere.url} alt="" fill sizes="64px" className="object-cover" />
                     ) : (
                       <span className="sr-only">{textes.sansImage}</span>
                     )}
@@ -394,7 +402,7 @@ export function TableauRealisations({
                     {voir.images.map((img) => (
                       <li key={img.url}>
                         <div className="relative aspect-square overflow-hidden border border-ko-line bg-ko-photo">
-                          <Image src={img.url} alt="" fill sizes="200px" className="object-cover" />
+                          <Image src={img.url} alt="" fill sizes="256px" className="object-cover" />
                         </div>
                         {img.alt_fr && (
                           <p className="mt-1 truncate text-xs text-ko-muted" title={img.alt_fr}>

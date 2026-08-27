@@ -114,7 +114,8 @@ export function GestionPhotosConcours({
           {photos.map((photo, i) => (
             <li key={photo.id} className="flex items-center gap-3 border border-ko-line bg-ko-white p-2">
               <div className="relative h-14 w-14 shrink-0 overflow-hidden bg-ko-cream2">
-                <Image src={photo.url_stockage} alt="" fill className="object-cover" sizes="56px" />
+                {/* 64px partagé admin-wide, pas 56px — voir TableauRealisations.tsx. */}
+                <Image src={photo.url_stockage} alt="" fill className="object-cover" sizes="64px" />
               </div>
               <span className="min-w-0 flex-1 truncate text-sm text-ko-ink">{photo.alt_fr || '—'}</span>
               <div className="flex shrink-0 items-center gap-1">

@@ -158,11 +158,12 @@ function VignetteEmplacement({
 
   const contenu =
     ligne.url_stockage && !enErreur ? (
+      // 64px partagé admin-wide, pas 80px — voir TableauRealisations.tsx.
       <Image
         src={ligne.url_stockage}
         alt=""
         fill
-        sizes="80px"
+        sizes="64px"
         className="object-cover"
         onError={() => setEnErreur(true)}
       />

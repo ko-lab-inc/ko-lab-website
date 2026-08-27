@@ -378,7 +378,8 @@ export function FormulaireRealisation({
                 <input type="hidden" name={`image_ordre_${i}`} value={img.ordre} />
 
                 <div className="relative h-14 w-14 shrink-0 overflow-hidden border border-ko-line bg-ko-photo">
-                  <Image src={img.url} alt="" fill sizes="56px" className="object-cover" />
+                  {/* 64px partagé admin-wide, pas 56px — voir TableauRealisations.tsx. */}
+                  <Image src={img.url} alt="" fill sizes="64px" className="object-cover" />
                 </div>
 
                 {/* Deux champs empilés, pas côte à côte — la ligne porte déjà
