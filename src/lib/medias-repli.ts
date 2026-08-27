@@ -1,16 +1,21 @@
 import { IMAGES } from '@/lib/images'
 
 /**
- * Repli des neuf emplacements de `medias_emplacements` (migration 0031) vers
+ * Repli de huit emplacements de `medias_emplacements` (migration 0031) vers
  * `src/lib/images.ts`. Si une clé manque en base (table pas encore peuplée,
  * ligne supprimée à la main, Supabase injoignable), le composant appelant
  * reprend la photo qui servait déjà cet emplacement avant l'architecture
  * média — jamais de blanc.
  *
- * Les neuf valeurs alt reprennent celles posées par la migration 0031, elles-
- * mêmes vérifiées contre la photo réelle (pas contre le nom de fichier) —
- * voir le rapport de la conversation du 22 août 2026 pour le détail par
- * photo, notamment pourquoi `deployment_camion` pointe vers
+ * ⚠️ `lab_1`/`lab_2` retirées le 27 août 2026 (étape 3/3, migration 0043) :
+ * la galerie Le LAB lit désormais `galeries_photos`, plus `medias_emplacements`
+ * — ce repli n'a donc plus de raison d'être appelé pour ces deux clés (`lab_1`
+ * n'existe même plus comme ligne de `medias_emplacements`, voir migration 0044).
+ *
+ * Les valeurs alt restantes reprennent celles posées par la migration 0031,
+ * elles-mêmes vérifiées contre la photo réelle (pas contre le nom de
+ * fichier) — voir le rapport de la conversation du 22 août 2026 pour le
+ * détail par photo, notamment pourquoi `deployment_camion` pointe vers
  * `deploiementRemorque` et non `deploiementCamion` ou `transportRemorque2026`.
  *
  * ⚠️ UN SEUL `alt` PAR CLÉ, PAS DE PAIRE FR/EN — vérifié le 27 août 2026 en
@@ -22,7 +27,7 @@ import { IMAGES } from '@/lib/images'
  * cas-là est un repli FR→FR normal, déjà géré par `resoudreEmplacement`
  * elle-même. Un visiteur anglophone qui tombe sur ce repli lit donc un texte
  * français plutôt qu'un texte anglais deviné — acceptable, l'alternative
- * (traduire ces neuf textes de secours) n'a de valeur que dans une panne
+ * (traduire ces textes de secours) n'a de valeur que dans une panne
  * Supabase, pas dans l'usage normal du site.
  */
 const REPLI_EMPLACEMENTS: Record<string, { url: string; alt: string }> = {
@@ -45,14 +50,6 @@ const REPLI_EMPLACEMENTS: Record<string, { url: string; alt: string }> = {
   capacite_installations: {
     url: IMAGES.terrasseAmenagee2021,
     alt: 'Terrasse aménagée avec pergola et mobilier sur mesure',
-  },
-  lab_1: {
-    url: IMAGES.labImpression3d,
-    alt: "Imprimante 3D en cours d'impression, atelier KO-LAB",
-  },
-  lab_2: {
-    url: IMAGES.precisionCablage2024,
-    alt: 'Câblage de précision pour un déploiement pyrotechnique',
   },
   operations_terrain: {
     url: IMAGES.operationsCrew,
@@ -79,9 +76,9 @@ const REPLI_EMPLACEMENTS: Record<string, { url: string; alt: string }> = {
 /**
  * ⚠️ Le repli `/images/placeholder.svg` ci-dessous N'EXISTE PAS dans
  * `public/` — vérifié avant d'écrire cette fonction. Il ne sert que si
- * `cle` ne correspond à AUCUNE des neuf clés fixes ci-dessus, ce qui signale
+ * `cle` ne correspond à AUCUNE des huit clés fixes ci-dessus, ce qui signale
  * une erreur de programmation (faute de frappe sur la clé), pas un cas
- * normal d'exploitation — les neuf clés sont fixes, pas saisies par
+ * normal d'exploitation — les huit clés sont fixes, pas saisies par
  * Christian. À corriger avant la mise en production de l'écran admin :
  * soit déposer un vrai `public/images/placeholder.svg`, soit faire rendre
  * au composant appelant `<PhotoPlaceholder>` (déjà utilisé ailleurs sur le

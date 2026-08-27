@@ -1,0 +1,67 @@
+-- =============================================================================
+-- 0044 — Retrait de lab_1..lab_7 dans medias_emplacements
+-- =============================================================================
+--
+-- ⚠️ À EXÉCUTER PAR MOUSSA DANS LE SQL EDITOR SUPABASE, projet ko-lab-site.
+-- Idempotente et rejouable — le DELETE ci-dessous cible des `cle` précises,
+-- rejouer ce fichier après une première exécution ne supprime rien de plus
+-- (les lignes sont déjà absentes).
+--
+-- ⚠️ NE JOUER QU'APRÈS QUE L'ÉTAPE 3/3 (branchement public sur
+-- `galeries_photos`) EST EN PRODUCTION ET VÉRIFIÉE. Les 7 photos supprimées
+-- ici par leur ligne `medias_emplacements` restent disponibles sous une
+-- forme équivalente dans `galeries_photos` (page 'le-lab', copiées par la
+-- migration 0043) — mais tant que `/nos-capacites/le-lab` lit encore
+-- `medias_emplacements` (lab_1 pour le hero, lab_1..lab_7 pour la grille),
+-- jouer cette migration AVANT le déploiement du code casserait la page
+-- publique : plus aucune ligne à résoudre, hero et grille retombent à vide.
+--
+-- -----------------------------------------------------------------------------
+-- CE QUE CETTE MIGRATION FAIT — ET NE FAIT PAS
+-- -----------------------------------------------------------------------------
+-- Les 7 lignes `lab_1`..`lab_7` de `medias_emplacements` sont devenues
+-- redondantes : la migration 0043 a copié leurs photos dans
+-- `galeries_photos` (page 'le-lab'), et l'étape 3/3 a rebranché
+-- `/nos-capacites/le-lab` — hero ET grille — sur cette nouvelle table (voir
+-- `lireGaleriePage('le-lab', locale)`, lib/galeries.ts ; le hero reprend
+-- désormais la PREMIÈRE photo de cette galerie plutôt que l'ancien
+-- emplacement `lab_1` séparé).
+--
+-- Cette migration ne fait qu'un DELETE ciblé sur ces 7 `cle` précises.
+-- AUCUNE autre ligne de `medias_emplacements` n'est touchée — en particulier
+-- PAS `capacite_installations`, qui reste en place (son insertion dans la
+-- galerie Installations a été retirée du code, la ligne elle-même ne l'a
+-- pas été : demandé explicitement, voir le rapport de l'étape 3/3).
+--
+-- AUCUNE action sur le bucket `medias` ici : les fichiers `lab/*.webp`
+-- restent en Storage, toujours servis via `galeries_photos.url_stockage`
+-- (même chemin, mêmes fichiers — seule la ligne `medias_emplacements` qui
+-- les référençait EN PLUS disparaît).
+-- =============================================================================
+
+delete from public.medias_emplacements
+where cle in ('lab_1', 'lab_2', 'lab_3', 'lab_4', 'lab_5', 'lab_6', 'lab_7');
+
+
+-- =============================================================================
+-- VÉRIFICATION
+-- =============================================================================
+--
+-- 1. select count(*) from public.medias_emplacements;
+--    -- attendu : 8 (15 - 7). select cle from public.medias_emplacements
+--    order by cle; pour la liste complète — capacite_installations doit y
+--    figurer encore.
+--
+-- 2. select cle from public.medias_emplacements where cle like 'lab_%';
+--    -- attendu : 0 ligne.
+--
+-- 3. /admin/medias-emplacements, onglet « Emplacements fixes » : l'écran
+--    affiche 8 lignes, plus aucune clé lab_*. Le texte d'introduction
+--    (ICU pluriel sur le nombre réel de lignes) suit automatiquement, rien
+--    à modifier dans messages/fr.json ni messages/en.json pour ça.
+--
+-- 4. /fr/nos-capacites/le-lab et /en/nos-capacites/le-lab : hero et grille
+--    de photos toujours affichés normalement (7 photos, plus de
+--    PhotoPlaceholder) — la page ne dépend plus de medias_emplacements pour
+--    son contenu photo, cette migration ne doit donc rien y changer.
+-- =============================================================================

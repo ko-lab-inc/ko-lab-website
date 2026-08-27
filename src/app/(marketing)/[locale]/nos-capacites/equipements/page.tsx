@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { PageCapacite } from '@/components/sections/PageCapacite'
 import { routing } from '@/i18n/routing'
+import { lireGaleriePage } from '@/lib/galeries'
 import { IMAGES } from '@/lib/images'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
@@ -35,6 +36,7 @@ export default async function EquipementsPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Capacites.equipements')
+  const images = await lireGaleriePage('equipements', locale)
 
   return (
     <PageCapacite
@@ -55,13 +57,8 @@ export default async function EquipementsPage({ params }: Props) {
       ]}
       src={IMAGES.besoinLouer}
       cadrage="object-center"
-      // Galerie ajoutée le 20 août 2026 — transport ajouté au duo remorque/
-      // camion déjà utilisé sur l'accueil (Phase 5, section Équipements).
-      images={[
-        { src: IMAGES.transportRemorque2026, alt: 'Remorque chargée de matériel de transport' },
-        { src: IMAGES.deploiementRemorque, alt: 'Remorque de déploiement sur site' },
-        { src: IMAGES.deploiementCamion, alt: 'Camion de déploiement KO-LAB' },
-      ]}
+      // Galerie branchée sur galeries_photos depuis l'étape 3/3 (migration 0043).
+      images={images}
     />
   )
 }

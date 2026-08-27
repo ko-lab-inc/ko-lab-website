@@ -8,7 +8,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { LIEN_RENTMAN } from '@/lib/constantes'
-import { IMAGES } from '@/lib/images'
+import { lireGaleriePage } from '@/lib/galeries'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -40,6 +40,7 @@ export default async function LocationPage({ params }: Props) {
 
   const t = await getTranslations('Location')
   const tCommun = await getTranslations('Commun')
+  const images = await lireGaleriePage('location', locale)
 
   const categories = [
     { cle: 'remorques', titre: t('cat_remorques_titre'), texte: t('cat_remorques_texte') },
@@ -155,28 +156,22 @@ export default async function LocationPage({ params }: Props) {
       </section>
 
       {/* ------------------------------ Galerie ------------------------------ */}
-      {/* Ajoutée le 20 août 2026 — la page restait délibérément sans photo
-          (voir la note d'en-tête), mais Christian a demandé d'y montrer du
-          matériel réel une fois que les lots du 20 août l'ont permis :
-          aménagement de salle + les deux photos DEVFEST déjà utilisées sur
-          l'accueil (Phase 5, section Location). */}
-      <section className="bg-ko-white py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
-          <Reveal>
-            <p className="label-mono">{tCommun('en_photos')}</p>
-            <div className="mt-6">
-              <GaleriePhotos
-                titre={t('title')}
-                images={[
-                  { src: IMAGES.amenagementSalle2023, alt: 'Salle aménagée avec mobilier loué' },
-                  { src: IMAGES.locationStructures, alt: 'Structures louées installées sur site' },
-                  { src: IMAGES.locationAmbiance, alt: "Ambiance d'un site aménagé avec du mobilier loué" },
-                ]}
-              />
-            </div>
-          </Reveal>
-        </div>
-      </section>
+      {/* Branchée sur galeries_photos depuis l'étape 3/3 (migration 0043) —
+          la page restait délibérément sans photo avant le 20 août 2026 (voir
+          la note d'en-tête), Christian a depuis demandé d'y montrer du
+          matériel réel. */}
+      {images.length > 0 && (
+        <section className="bg-ko-white py-16 lg:py-24">
+          <div className="mx-auto max-w-container px-6 lg:px-12">
+            <Reveal>
+              <p className="label-mono">{tCommun('en_photos')}</p>
+              <div className="mt-6">
+                <GaleriePhotos titre={t('title')} images={images} />
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      )}
     </>
   )
 }

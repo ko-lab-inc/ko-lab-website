@@ -4,8 +4,8 @@ import { notFound } from 'next/navigation'
 
 import { PageCapacite } from '@/components/sections/PageCapacite'
 import { routing } from '@/i18n/routing'
+import { lireGaleriePage } from '@/lib/galeries'
 import { CADRAGES, IMAGES } from '@/lib/images'
-import { resoudreEmplacement } from '@/lib/medias-emplacements'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata } from 'next'
@@ -36,13 +36,7 @@ export default async function InstallationsPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Capacites.installations')
-
-  // capacite_installations (migration 0031, route A) — remplace la position 2
-  // de la galerie ci-dessous, en dur jusqu'ici sur IMAGES.terrasseAmenagee2021.
-  // Pas le hero (IMAGES.installationNacelle) : cet emplacement précis n'a été
-  // pensé que pour cette vignette de galerie, voir le rapport de la
-  // conversation du 22 août 2026 sur medias_emplacements.
-  const photoInstallations = await resoudreEmplacement('capacite_installations', locale)
+  const images = await lireGaleriePage('installations', locale)
 
   return (
     <PageCapacite
@@ -66,30 +60,15 @@ export default async function InstallationsPage({ params }: Props) {
       // bureaux ». L'échafaudage précédent ne montrait aucune installation.
       src={IMAGES.installationNacelle}
       cadrage={CADRAGES.installationNacelle}
-      // Galerie ajoutée le 20 août 2026 — c'est la page qui souffrait le plus
-      // du manque de photos réelles (Christian). Enseigne posée, structure
-      // et décor : quatre facettes du même travail d'installation que le
-      // hero, pas des répétitions.
-      // Positions 2 et 3 remplacées le 21 août 2026 : les photos d'origine
-      // montraient l'enseigne Pacini et la numérotation Village Transition,
-      // deux clients réels non sollicités pour figurer ici (voir la note sur
-      // IMAGES.terrasseAmenagee2021/terrasseLivraison2021 dans lib/images.ts).
-      //
-      // ⚠️ `capacite_installations` omise (pas de tuile placeholder) si
-      // `resoudreEmplacement` renvoie `null` (vide assumé, migration 0037) :
-      // GaleriePhotos/BandeauImages/SlideImages sont des composants PARTAGÉS
-      // (aussi utilisés par les réalisations) bâtis pour de vraies photos
-      // cliquables vers une visionneuse plein écran — une tuile qui ouvrirait
-      // un cadre vide en plein écran n'aurait pas de sens dans ce mécanisme,
-      // et retoucher ces composants partagés pour ce seul cas était hors de
-      // portée de ce chantier (« Réalisations... inchangés »). Trois photos
-      // au lieu de quatre reste un rendu correct pour une bande défilante.
-      images={[
-        { src: IMAGES.enseignePosee2026, alt: "Enseigne d'un client installée sur son poteau" },
-        ...(photoInstallations ? [{ src: photoInstallations.url, alt: photoInstallations.alt }] : []),
-        { src: IMAGES.terrasseLivraison2021, alt: 'Livraison de matériaux de construction sur un chantier' },
-        { src: IMAGES.decorStructure2025, alt: 'Décor et structure installés sur un site événementiel' },
-      ]}
+      // Galerie branchée sur galeries_photos depuis l'étape 3/3 (migration
+      // 0043) — reprend les 4 photos d'origine, dont l'ancienne insertion
+      // conditionnelle de capacite_installations (position 2, retirée : la
+      // même photo vit maintenant dans galeries_photos comme les trois
+      // autres, la galerie est homogène). `capacite_installations` reste
+      // dans medias_emplacements (Vérifié : plus aucun appel à
+      // resoudreEmplacement('capacite_installations', ...) dans le
+      // dépôt) — non supprimée, hors du périmètre de cette étape.
+      images={images}
     />
   )
 }

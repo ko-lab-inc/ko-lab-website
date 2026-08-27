@@ -352,8 +352,9 @@ async function deplacerDansGalerie(
  * Signature `(prevState, FormData)` : appelée via `useActionState` +
  * `<form action={...}>`, comme `ajouterPhotoConcours` — GestionGaleriesPhotos
  * enchaîne `router.refresh()` côté client après un succès, cette action ne
- * fait donc pas de `revalidatePath` sur la page ADMIN (seulement
- * `updateTag` pour la lecture PUBLIQUE, qui n'existe pas encore — étape 3).
+ * fait donc pas de `revalidatePath` sur la page ADMIN (seulement `updateTag`,
+ * qui invalide aussi la lecture PUBLIQUE — `lib/galeries.ts`, branchée à
+ * l'étape 3/3).
  */
 export async function ajouterPhotoGalerie(
   _precedent: EtatPhotoGalerie,

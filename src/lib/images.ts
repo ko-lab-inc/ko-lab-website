@@ -112,7 +112,19 @@ export const IMAGES = {
 
   /**
    * Photo réelle — imprimante Bambu Lab X2D en cours d'impression, halo bleu
-   * de l'éclairage d'atelier. Page Le LAB — correspond à l'item « Impression 3D ».
+   * de l'éclairage d'atelier.
+   *
+   * ⚠️ Ne servait plus QUE de repli lab_1/lab_2 (medias-repli.ts) et de photo
+   * du LAB sur /nos-capacites/le-lab avant l'étape 3/3 (27 août 2026) : les
+   * deux ont disparu (la page lit maintenant galeries_photos). SEUL
+   * consommateur restant — accès DYNAMIQUE, `IMAGES[cle]` où `cle` vient de
+   * `ClePhotoRepli` — : `lib/carrieres-photo.ts` (`photoPourDepartement`,
+   * repli photo du département « Lab créatif » sur /carrieres et
+   * /admin/carrieres tant qu'un poste n'a pas sa `photo_url` assignée). Ce
+   * mode d'usage n'apparaît PAS dans un grep sur `IMAGES\.labImpression3d` —
+   * a fait supprimer cette clé par erreur avant que `npm run build` ne le
+   * révèle (type `ClePhotoRepli` non assignable). Ne pas retirer sans
+   * vérifier aussi les accès par variable, pas seulement par littéral.
    */
   labImpression3d: medias('lab/lab-machine-2026.webp'),
 
@@ -187,7 +199,11 @@ export const IMAGES = {
   // première de ces photos).
   enseignePose2026: medias('installations/enseigne-pose-2026.webp'),
   enseignePoseAlt2026: medias('installations/enseigne-pose-alt-2026.webp'),
-  enseignePosee2026: medias('installations/enseigne-posee-2026.webp'),
+  // ⚠️ Servait aussi à la galerie Opérations terrain (en dur) avant l'étape
+  // 3/3 — ce consommateur est passé à galeries_photos, mais `carrieres-photo.ts`
+  // (photoPourDepartement, repli département « Opérations ») y accède encore
+  // par variable (`IMAGES[cle]`), invisible à un grep sur `IMAGES\.` + nom
+  // littéral — voir le même avertissement sur `labImpression3d` plus haut.
   chantierBalisage2026: medias('operations/chantier-balisage-2026.webp'),
   transportRemorque2026: medias('deployment/transport-remorque-2026.webp'),
 
@@ -195,23 +211,20 @@ export const IMAGES = {
   // déjà vérifié sans marque tierce lisible ni personne identifiable au
   // premier plan lors du traitement de la réalisation Terrasse LPG le même
   // jour. terrasseStructure2021 reprend l'ancien emplacement hero
-  // (operations-terrain) de signalisationAlt2026 ; les deux autres reprennent
-  // les deux emplacements de galerie d'installations de enseigneCommerciale2026
-  // et signalisation2026.
+  // (operations-terrain) de signalisationAlt2026 ; l'autre reprend
+  // l'emplacement de galerie d'installations de enseigneCommerciale2026.
   terrasseStructure2021: medias('installations/terrasse-structure-2021.webp'),
   terrasseAmenagee2021: medias('installations/terrasse-amenagee-2021.webp'),
-  terrasseLivraison2021: medias('installations/terrasse-livraison-2021.webp'),
 
   // HAP 2023 — 2 destinations propres sur 6 (décor illuminé et montage en
   // cours écartés : visage d'enfant identifiable + flou pour l'un, texte
-  // « lumivalli » pour l'autre ; logistique écartée pour logos tiers dominants).
+  // « lumivalli » pour l'autre ; logistique écartée pour logos tiers
+  // dominants). La deuxième, amenagementSalle2023, retirée d'ici le 27 août
+  // 2026 (étape 3/3, migration 0043) : son seul consommateur (galerie
+  // Location, en dur) est passé à galeries_photos.
   espaceAmenage2023: medias('installations/espace-amenage-2023.webp'),
-  amenagementSalle2023: medias('rental/amenagement-salle-2023.webp'),
 
-  // Feux sur glace 2024 — precisionCablage2024 illustre un travail de
-  // précision (câblage de mise à feu), pas une découpe laser/CNC : ne pas
-  // l'utiliser comme preuve que `lab` (Unsplash, plus haut) est réglée.
-  precisionCablage2024: medias('lab/precision-cablage-2024.webp'),
+  // Feux sur glace 2024.
   structureEclairee2024: medias('installations/structure-eclairee-2024.webp'),
 
   // Créations 2025 — 4 destinations propres sur 8 (fabrication-alternative,
@@ -219,9 +232,12 @@ export const IMAGES = {
   // logo FMG et/ou Desjardins dominant, une fois combiné à du texte
   // « lumivalli » et des visages dont le statut équipe/public était incertain).
   besoinFabriquerKiosque2025: medias('home/besoin-fabriquer-kiosque-2025.webp'),
-  decorStructure2025: medias('installations/decor-structure-2025.webp'),
+  // ⚠️ Servait aussi à la galerie Opérations terrain (en dur) avant l'étape
+  // 3/3 — même situation que chantierBalisage2026 plus haut : consommateur
+  // de galerie parti vers galeries_photos, mais `carrieres-photo.ts` y
+  // accède encore par variable pour le repli département « Logistique
+  // événementielle ».
   amenagementSite2025: medias('operations/amenagement-site-2025.webp'),
-  chantierPreparation2025: medias('operations/chantier-preparation-2025.webp'),
 
   /**
    * Photo réelle — petite série de pièces imprimées (jaune-vert), tête
@@ -289,14 +305,17 @@ export const IMAGES = {
    * ⚠️ Retirée de la section 7 le 20 août 2026 (revue visuelle, point 3) :
    * caisse de camionnette pleine de bouteilles Gatorade et Eska, logos tiers
    * dominants et lisibles — sous le titre « Les bons moyens permettent de
-   * livrer », ça dessert le propos plutôt que de le servir. Même catégorie de
-   * risque que les rendus produits retirés de la boutique ce jour-là (docs/
-   * audits/2026-08-20-visuels-produits.md), pas traitée à l'époque : cette
-   * section n'avait pas encore été revue. Remplacée par transportRemorque2026
-   * (voir plus haut, EquipementsDeploiement.tsx). AUCUN CONSOMMATEUR ACTUEL —
-   * fichier resté dans Storage ; décision de le retirer du bucket à prendre
-   * par Christian, pas exécutée ici (pas de fiche produit à protéger, mais
-   * pas non plus mon appel de vider un fichier du bucket sans consigne).
+   * livrer », ça dessert le propos plutôt que de le servir. Remplacée par
+   * transportRemorque2026 (voir plus haut, EquipementsDeploiement.tsx).
+   * Fichier resté dans Storage ; décision de le retirer du bucket à prendre
+   * par Christian, pas exécutée ici.
+   *
+   * Servait aussi à la galerie Équipements (en dur) avant l'étape 3/3 —
+   * consommateur de galerie parti vers galeries_photos le 27 août 2026, mais
+   * `carrieres-photo.ts` y accède encore par variable (`IMAGES[cle]`) pour
+   * le repli département « Transport & logistique » — même situation que
+   * `labImpression3d`/`chantierBalisage2026`/`amenagementSite2025` plus
+   * haut, invisible à un grep sur `IMAGES\.deploiementCamion` littéral.
    */
   deploiementCamion: medias('deployment/deploiement-camion-2026.webp'),
 

@@ -3,6 +3,7 @@ import { unstable_cache } from 'next/cache'
 import { ETIQUETTE_CARRIERES } from '@/lib/carrieres'
 import { ETIQUETTE_CONCOURS } from '@/lib/concours'
 import { DOMAINE } from '@/lib/constantes'
+import { ETIQUETTE_GALERIES } from '@/lib/galeries-photos'
 import { ETIQUETTE_EMPLACEMENTS_MEDIAS } from '@/lib/medias-emplacements'
 import { ETIQUETTE_PRODUITS, lireProduitsPublies } from '@/lib/produits'
 import { lireReglages } from '@/lib/reglages'
@@ -58,7 +59,7 @@ function plusRecente(dates: readonly Date[]): Date | null {
 /**
  * Date de modification la plus récente parmi les emplacements donnés —
  * pour toute page dont le contenu vient de `medias_emplacements` (accueil,
- * installations, le-lab, à propos). Repli sur `DATE_CONTENU_STATIQUE` si la
+ * installations, à propos). Repli sur `DATE_CONTENU_STATIQUE` si la
  * requête échoue ou si aucune ligne ne correspond, jamais une erreur qui
  * viderait le sitemap.
  */
@@ -80,6 +81,27 @@ async function lireDateEmplacements(cles: readonly string[]): Promise<Date> {
 const dateEmplacements = unstable_cache(lireDateEmplacements, ['sitemap-date-emplacements'], {
   revalidate: 3600,
   tags: [ETIQUETTE_EMPLACEMENTS_MEDIAS],
+})
+
+/**
+ * Équivalent de `lireDateEmplacements` ci-dessus, pour une galerie de
+ * `galeries_photos` (migration 0043) — ajoutée à l'étape 3/3 pour
+ * `/nos-capacites/le-lab`, dont le contenu ne vient plus de
+ * `medias_emplacements` (lab_1..lab_7, retirées par la migration 0044).
+ */
+async function lireDateGalerie(page: string): Promise<Date> {
+  try {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase.from('galeries_photos').select('updated_at').eq('page', page)
+    if (error || !data) return DATE_CONTENU_STATIQUE
+    return plusRecente(data.map((r) => new Date(r.updated_at))) ?? DATE_CONTENU_STATIQUE
+  } catch {
+    return DATE_CONTENU_STATIQUE
+  }
+}
+const dateGalerie = unstable_cache(lireDateGalerie, ['sitemap-date-galerie'], {
+  revalidate: 3600,
+  tags: [ETIQUETTE_GALERIES],
 })
 
 /**
@@ -194,7 +216,9 @@ const DATES_PAR_ROUTE: Partial<Record<string, () => Promise<Date>>> = {
   [ROUTES.accueil]: () =>
     dateEmplacements(['besoin_1', 'besoin_2', 'besoin_3', 'besoin_4', 'operations_terrain', 'deployment_camion']),
   [ROUTES.installations]: () => dateEmplacements(['capacite_installations']),
-  [ROUTES.lab]: () => dateEmplacements(['lab_1', 'lab_2', 'lab_3', 'lab_4', 'lab_5', 'lab_6', 'lab_7']),
+  // lab_1..lab_7 (medias_emplacements) retirées par la migration 0044 —
+  // remplacées par galeries_photos (page 'le-lab'), voir lireDateGalerie.
+  [ROUTES.lab]: () => dateGalerie('le-lab'),
   [ROUTES.apropos]: () => dateEmplacements(['apropos_1']),
   [ROUTES.carrieres]: dateCarrieres,
   [ROUTES.realisations]: dateRealisations,

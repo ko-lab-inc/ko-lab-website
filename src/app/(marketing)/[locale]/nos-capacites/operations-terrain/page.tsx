@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { PageCapacite } from '@/components/sections/PageCapacite'
 import { routing } from '@/i18n/routing'
+import { lireGaleriePage } from '@/lib/galeries'
 import { IMAGES } from '@/lib/images'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
@@ -37,6 +38,7 @@ export default async function OperationsTerrainPage({ params }: Props) {
   // Traducteur cadré sur cet espace de noms : chaque clé est vérifiée à la
   // compilation, ce qu'un `t(`${cle}.item_1`)` générique ne permet pas.
   const t = await getTranslations('Capacites.operations')
+  const images = await lireGaleriePage('operations-terrain', locale)
 
   return (
     <PageCapacite
@@ -63,15 +65,10 @@ export default async function OperationsTerrainPage({ params }: Props) {
       // bien un recadrage large sans perdre son sujet.
       src={IMAGES.terrasseStructure2021}
       cadrage="object-center"
-      // Galerie ajoutée le 20 août 2026 — quatre photos réelles d'opérations
-      // terrain (balisage, aménagement et préparation de site, déploiement
-      // hivernal), le hero (Canada Day) reste inchangé.
-      images={[
-        { src: IMAGES.chantierBalisage2026, alt: 'Chantier balisé, nacelle en opération' },
-        { src: IMAGES.amenagementSite2025, alt: 'Aménagement de site public en cours' },
-        { src: IMAGES.chantierPreparation2025, alt: 'Préparation de mobilier avant transport' },
-        { src: IMAGES.besoinDeployer, alt: "Équipe KO-LAB en déploiement, conditions hivernales" },
-      ]}
+      // Galerie branchée sur galeries_photos depuis l'étape 3/3 (migration
+      // 0043) — le hero (Canada Day) reste en dur, IMAGES.terrasseStructure2021
+      // ci-dessus, inchangé.
+      images={images}
     />
   )
 }
