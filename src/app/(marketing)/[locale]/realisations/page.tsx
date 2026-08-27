@@ -112,7 +112,7 @@ export default async function RealisationsPage({ params }: Props) {
                 libellesCarrousel={{
                   precedent: t('carrousel_precedent'),
                   suivant: t('carrousel_suivant'),
-                  ouvrir: t('voir_serie'),
+                  groupe: t('bandeau_groupe'),
                 }}
               />
             </Reveal>

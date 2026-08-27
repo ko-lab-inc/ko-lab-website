@@ -309,14 +309,13 @@
     "aucune_realisation": "Nos réalisations documentées arrivent bientôt.",
     "filtres_label": "Filtrer les réalisations",
     "compte": "{n, plural, =0 {Aucune réalisation} one {# réalisation} other {# réalisations}}",
-    "voir_serie": "Voir les images",
-    "carrousel_precedent": "Réalisations précédentes",
-    "carrousel_suivant": "Réalisations suivantes",
+    "carrousel_precedent": "Photo précédente",
+    "carrousel_suivant": "Photo suivante",
     "slide_fermer": "Fermer les images",
     "slide_precedent": "Image précédente",
     "slide_suivant": "Image suivante",
     "slide_position": "{n} sur {total}",
-    "serie_compte": "{n, plural, one {# image} other {# images}}",
+    "serie_compte": "{n, plural, one {# photo} other {# photos}}",
     "bandeau_groupe": "Photos de la réalisation"
   },
   "Boutique": {

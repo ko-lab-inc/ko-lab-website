@@ -13,22 +13,20 @@ import { CATEGORIES_REALISATION, type CategorieRealisation } from '@/types'
  * Galerie filtrable — skill 21.
  *
  * ---------------------------------------------------------------------------
- * REFONTE EN CARROUSELS PAR CATÉGORIE (24 août 2026)
+ * REFONTE À DEUX NIVEAUX — CATÉGORIE PUIS RÉALISATION (27 août 2026)
  *
- * Remplace la grille asymétrique (une grande carte + des petites, hauteurs
- * inégales) — Christian : « ça laisse de grands vides ». Une rangée
- * horizontale par catégorie, cartes toutes de la même taille : plus de vide
- * possible, une rangée d'une seule carte ne casse rien puisque rien ne
- * dépend du nombre de cartes pour se dimensionner.
+ * Remplace le carrousel de cartes par catégorie (24 août 2026) : une
+ * catégorie de deux réalisations y laissait un tiers de largeur vide, et la
+ * carte (couverture + titre) ne disait plus combien de photos contenait
+ * chaque événement — deux défauts relevés par Christian.
  *
- * La carte elle-même est simplifiée : couverture + titre, plus de bandeau de
- * photos ni de description en surimpression. Cliquer OUVRE LA VISIONNEUSE
- * AVEC TOUTE LA SÉRIE, couverture comprise — voir `RealisationCarte.photos`.
- * C'est ce qui rend caduque l'ancienne règle « une seule photo n'ouvre
- * rien » : avant, la couverture était exclue de la visionneuse, donc une
- * réalisation à une photo n'avait rien de plus à montrer ; maintenant la
- * couverture EST dans la visionneuse, donc l'agrandir a toujours un sens,
- * même pour une seule photo.
+ * Structure actuelle : catégorie → une rangée PAR RÉALISATION → le
+ * carrousel des photos de CETTE réalisation, couverture comprise. Le titre
+ * et le compteur de photos vivent dans l'en-tête de rangée
+ * (`RangeePhotos`) ; la carte intermédiaire « couverture + titre » a
+ * disparu, chaque photo est directement cliquable et ouvre la visionneuse
+ * SUR ELLE-MÊME, pas sur la première de la série — voir `onOuvrir` plus bas
+ * et `RealisationCarte.photos`.
  *
  * Le filtrage reste purement client : aucun rechargement, aucune requête. Les
  * réalisations arrivent DÉJÀ TRADUITES depuis le composant serveur — voir
@@ -63,10 +61,9 @@ type Filtre = {
 type LibellesCarrousel = {
   precedent: string
   suivant: string
-  /** Nom accessible du bouton d'ouverture d'une carte — le même texte que
-   *  l'ancien bouton « Voir les images », repris tel quel : chaque carte
-   *  ouvre maintenant sa propre série, exactement ce que ce libellé dit déjà. */
-  ouvrir: string
+  /** Nom accessible du groupe de vignettes d'une rangée — préfixé au titre
+   *  de la réalisation, ex. « Photos de la réalisation — Canada Day 2026 ». */
+  groupe: string
 }
 
 type GalerieProps = {
@@ -93,11 +90,13 @@ export function GalerieRealisations({
 
   const [categorie, setCategorie] = useState<CategorieRealisation | 'all'>('all')
 
-  /** Réalisation dont la série est ouverte, ou `null`. Une seule visionneuse
-   *  pour toute la page, montée à la fin — une par carte en mettrait autant
-   *  dans le document, chacune avec sa propre série, pour n'en montrer
-   *  qu'une à la fois. */
-  const [ouverte, setOuverte] = useState<RealisationCarte | null>(null)
+  /** Réalisation dont la série est ouverte ET l'index de la photo cliquée,
+   *  ou `null`. Une seule visionneuse pour toute la page, montée à la fin —
+   *  une par rangée en mettrait autant dans le document, chacune avec sa
+   *  propre série, pour n'en montrer qu'une à la fois. */
+  const [ouverte, setOuverte] = useState<{ realisation: RealisationCarte; index: number } | null>(
+    null,
+  )
 
   const libellesSlide = useMemo(
     () => ({
@@ -171,38 +170,47 @@ export function GalerieRealisations({
       {visibles.length === 0 ? (
         <p className="mt-14 text-base text-ko-muted">{aucunResultat}</p>
       ) : (
-        <div className="mt-14 space-y-12 lg:space-y-16">
+        <div className="mt-14 space-y-14 lg:space-y-20">
           {groupes.map((g) => (
             <div key={g.categorie}>
-              {/* Titre de rangée UNIQUEMENT en « Tout voir » — une catégorie
-                  choisie au filtre l'a déjà annoncée, le répéter ici dirait
-                  deux fois la même chose (demande explicite). */}
+              {/* Titre de catégorie UNIQUEMENT en « Tout voir » — une
+                  catégorie choisie au filtre l'a déjà annoncée, le répéter
+                  ici dirait deux fois la même chose (demande explicite). */}
               {categorie === 'all' && (
-                <h2 className="ko-h3 mb-5 text-[20px] text-ko-ink lg:text-[24px]">
+                <h2 className="ko-h3 mb-6 text-[20px] text-ko-ink lg:mb-8 lg:text-[24px]">
                   {libellesCategories[g.categorie] ?? g.categorie}
                 </h2>
               )}
-              <RangeeCarrousel
-                items={g.items}
-                onOuvrir={setOuverte}
-                libelles={libellesCarrousel}
-              />
+              <div className="space-y-10 lg:space-y-14">
+                {g.items.map((r) => (
+                  <RangeePhotos
+                    key={r.cle}
+                    titre={r.titre}
+                    compte={t('serie_compte', { n: r.photos.length })}
+                    photos={r.photos}
+                    desature={r.desature}
+                    onOuvrir={(index) => setOuverte({ realisation: r, index })}
+                    libelles={libellesCarrousel}
+                  />
+                ))}
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Visionneuse — `key` : force le remontage d'une réalisation à
-          l'autre, sinon l'index de l'image resterait celui de la série
-          précédente. */}
+      {/* Visionneuse — `key` : force le remontage d'une réalisation, ou
+          d'une photo, à l'autre, sinon l'index affiché resterait celui du
+          clic précédent. */}
       {ouverte && (
         <SlideImages
-          key={ouverte.cle}
+          key={`${ouverte.realisation.cle}:${ouverte.index}`}
           ouvert
+          indexInitial={ouverte.index}
           onFermer={() => setOuverte(null)}
-          images={photosStylees(ouverte)}
-          titre={ouverte.titre}
-          description={ouverte.description}
+          images={photosStylees(ouverte.realisation)}
+          titre={ouverte.realisation.titre}
+          description={ouverte.realisation.description}
           libelles={libellesSlide}
         />
       )}
@@ -226,7 +234,10 @@ function photosStylees(r: RealisationCarte): readonly ImageSlide[] {
 }
 
 /**
- * Rangée horizontale d'une catégorie — défilement natif, pas de librairie.
+ * Rangée horizontale des photos d'UNE réalisation — défilement natif, pas de
+ * librairie. Remplace l'ancienne RangeeCarrousel (qui faisait défiler des
+ * cartes de réalisation, une rangée par catégorie) depuis la refonte à deux
+ * niveaux du 27 août 2026 : catégorie → réalisation → ses photos.
  *
  * ---------------------------------------------------------------------------
  * `overflow-x-auto` SEUL, JAMAIS DE GESTIONNAIRE DE MOLETTE
@@ -240,27 +251,36 @@ function photosStylees(r: RealisationCarte): readonly ImageSlide[] {
  * flèches restent les deux seules façons de faire avancer la rangée.
  *
  * ---------------------------------------------------------------------------
- * LARGEUR DES CARTES EN `calc()`, PAS EN CLASSES RESPONSIVES
+ * LARGEUR EN `max()` DE DEUX FORMULES, PAS UNE SEULE
  *
- * `w-[calc((100%-1.5rem)/3.3)]` donne exactement le même nombre de cartes
- * visibles (3 pleines + un aperçu de la 4ᵉ) que le conteneur fasse 390px ou
- * 1400px — une largeur en pourcentage du conteneur, pas des points de rupture
- * `sm:`/`lg:` qui auraient demandé une valeur différente à chaque taille pour
- * le même résultat visuel.
+ * La classe `.carrousel-photo` (globals.css) choisit la plus GRANDE de deux
+ * largeurs : une largeur FIXE (3 photos pleines + un aperçu de la 4ᵉ en
+ * mobile, 4 + un aperçu de la 5ᵉ à partir de lg), et une largeur en PARTAGE
+ * ÉGAL du conteneur entre `--n` photos. Une réalisation avec peu de photos
+ * (2, 3) obtient le partage égal — plus large, il remplit toute la rangée
+ * sans vide à droite ni défilement. Une réalisation qui déborde du nombre
+ * visible obtient la largeur fixe, qui la fait déborder et active le
+ * défilement. Voir le commentaire de `.carrousel-photo` pour le détail.
  * ---------------------------------------------------------------------------
  */
-function RangeeCarrousel({
-  items,
+function RangeePhotos({
+  titre,
+  compte,
+  photos,
+  desature,
   onOuvrir,
   libelles,
 }: {
-  items: readonly RealisationCarte[]
-  onOuvrir: (r: RealisationCarte) => void
+  titre: string
+  compte: string
+  photos: readonly ImageSlide[]
+  desature: boolean
+  onOuvrir: (index: number) => void
   libelles: LibellesCarrousel
 }) {
   const piste = useRef<HTMLDivElement>(null)
   const [peutReculer, setPeutReculer] = useState(false)
-  const [peutAvancer, setPeutAvancer] = useState(items.length > 1)
+  const [peutAvancer, setPeutAvancer] = useState(photos.length > 1)
 
   const actualiserFleches = useCallback(() => {
     const el = piste.current
@@ -282,7 +302,7 @@ function RangeeCarrousel({
       el.removeEventListener('scroll', actualiserFleches)
       window.removeEventListener('resize', actualiserFleches)
     }
-  }, [actualiserFleches, items.length])
+  }, [actualiserFleches, photos.length])
 
   /** `prefers-reduced-motion` : défilement instantané. Même vérification que
    *  BoutonRetourHaut.tsx — passer `behavior` explicitement dans l'appel JS
@@ -308,73 +328,77 @@ function RangeeCarrousel({
   }
 
   return (
-    <div className="relative">
-      <div
-        ref={piste}
-        className="scrollbar-none flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth lg:gap-4"
-      >
-        {items.map((r) => (
-          <button
-            key={r.cle}
-            type="button"
-            onClick={() => onOuvrir(r)}
-            onFocus={surFocus}
-            title={r.titre}
-            aria-label={`${libelles.ouvrir} — ${r.titre}`}
-            className="group relative aspect-[3/4] w-[calc((100%-1.5rem)/3.3)] shrink-0 snap-start overflow-hidden rounded-xl bg-ko-cream2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ko-blue"
-          >
-            <Image
-              src={r.src}
-              alt={r.titre}
-              fill
-              sizes="(max-width: 1024px) 33vw, 420px"
-              quality={80}
-              style={r.desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
-              className="object-cover object-center transition-transform duration-[400ms] group-hover:scale-[1.02]"
-            />
-
-            {/* Voile de lisibilité — assez fort en permanence pour que le
-                titre reste lisible SANS survol : sur tactile, il n'y a pas
-                de survol. */}
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-gradient-to-t from-ko-scrim/80 via-ko-scrim/10 to-transparent"
-            />
-
-            {/* Titre en surimpression, sur deux lignes maximum. Une carte de
-                ~110px de large (mobile, trois par écran) ne loge pas un long
-                titre d'événement en entier — `line-clamp-2` coupe proprement
-                avec des points de suspension plutôt que de déborder ou
-                d'écraser la carte suivante. Le titre COMPLET reste
-                disponible : attribut `title` ci-dessus (infobulle), et
-                surtout l'en-tête de la visionneuse qui s'ouvre au clic. */}
-            <span className="absolute inset-x-2 bottom-2 line-clamp-2 text-left font-serif text-[11px] leading-tight text-ko-white sm:text-[13px] lg:inset-x-4 lg:bottom-4 lg:text-[18px]">
-              {r.titre}
-            </span>
-          </button>
-        ))}
+    <div>
+      {/* En-tête de rangée — même ligne à partir de lg (titre à gauche,
+          compteur à droite) ; empilés en mobile, titre tronqué sur une
+          seule ligne, compteur en dessous (demande explicite). */}
+      <div className="mb-3 flex flex-col gap-0.5 lg:mb-4 lg:flex-row lg:items-baseline lg:justify-between lg:gap-4">
+        <h3 className="min-w-0 truncate font-serif text-[16px] font-normal text-ko-ink lg:text-[19px]">
+          {titre}
+        </h3>
+        <p className="label-mono shrink-0 text-ko-muted">{compte}</p>
       </div>
 
-      {/* Flèches — desktop seulement (`lg:flex`) : sur mobile, le glissement
-          tactile est le geste attendu, une paire de flèches y ajouterait du
-          bruit sans rien permettre de plus. Une rangée d'une seule carte n'a
-          rien à défiler : pas de flèches non plus dans ce cas. */}
-      {items.length > 1 && (
-        <>
-          <BoutonCarrousel
-            direction="precedent"
-            libelle={libelles.precedent}
-            onClick={() => defiler(-1)}
-            desactive={!peutReculer}
-          />
-          <BoutonCarrousel
-            direction="suivant"
-            libelle={libelles.suivant}
-            onClick={() => defiler(1)}
-            desactive={!peutAvancer}
-          />
-        </>
-      )}
+      <div className="relative">
+        <div
+          ref={piste}
+          role="group"
+          aria-label={`${libelles.groupe} — ${titre}`}
+          // `--n` : nombre de photos de CETTE rangée, lu par `.carrousel-photo`
+          // (globals.css). Posé ici plutôt que sur chaque vignette : la
+          // variable CSS hérite jusqu'aux boutons enfants.
+          style={{ '--n': String(photos.length) } as React.CSSProperties}
+          className="scrollbar-none flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth lg:gap-4"
+        >
+          {photos.map((photo, i) => (
+            <button
+              key={photo.src}
+              type="button"
+              onClick={() => onOuvrir(i)}
+              onFocus={surFocus}
+              title={photo.alt || titre}
+              // Nom accessible propre à CHAQUE photo — jamais un libellé
+              // générique répété identique sur les huit boutons de la
+              // rangée, qui empêcherait de les distinguer au clavier.
+              aria-label={photo.alt || `${titre} — ${i + 1}/${photos.length}`}
+              className="carrousel-photo group relative aspect-[4/3] shrink-0 snap-start overflow-hidden rounded-xl bg-ko-cream2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ko-blue"
+            >
+              <Image
+                src={photo.src}
+                alt={photo.alt}
+                fill
+                sizes="(max-width: 1024px) 30vw, 300px"
+                quality={80}
+                style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
+                className="object-cover object-center transition-transform duration-[400ms] group-hover:scale-[1.02]"
+              />
+            </button>
+          ))}
+        </div>
+
+        {/* Flèches — desktop seulement (`lg:flex`) : sur mobile, le glissement
+            tactile est le geste attendu. Une rangée d'une seule photo n'a
+            rien à défiler : pas de flèches non plus dans ce cas — et une
+            rangée qui tient déjà en entier dans le conteneur (voir
+            `.carrousel-photo`) les désactive d'elle-même, `peutAvancer`
+            restant à `false` faute de tout débordement à atteindre. */}
+        {photos.length > 1 && (
+          <>
+            <BoutonCarrousel
+              direction="precedent"
+              libelle={`${libelles.precedent} — ${titre}`}
+              onClick={() => defiler(-1)}
+              desactive={!peutReculer}
+            />
+            <BoutonCarrousel
+              direction="suivant"
+              libelle={`${libelles.suivant} — ${titre}`}
+              onClick={() => defiler(1)}
+              desactive={!peutAvancer}
+            />
+          </>
+        )}
+      </div>
     </div>
   )
 }

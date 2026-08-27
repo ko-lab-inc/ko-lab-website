@@ -309,14 +309,13 @@
     "aucune_realisation": "Our documented projects are coming soon.",
     "filtres_label": "Filter projects",
     "compte": "{n, plural, =0 {No projects} one {# project} other {# projects}}",
-    "voir_serie": "View images",
-    "carrousel_precedent": "Previous projects",
-    "carrousel_suivant": "Next projects",
+    "carrousel_precedent": "Previous photo",
+    "carrousel_suivant": "Next photo",
     "slide_fermer": "Close images",
     "slide_precedent": "Previous image",
     "slide_suivant": "Next image",
     "slide_position": "{n} of {total}",
-    "serie_compte": "{n, plural, one {# image} other {# images}}",
+    "serie_compte": "{n, plural, one {# photo} other {# photos}}",
     "bandeau_groupe": "Project photos"
   },
   "Boutique": {
