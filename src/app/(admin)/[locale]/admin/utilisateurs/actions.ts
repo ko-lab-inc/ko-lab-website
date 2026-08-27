@@ -1,15 +1,12 @@
 'use server'
 
-import { hasLocale } from 'next-intl'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
-import { getTranslations } from 'next-intl/server'
 import { z } from 'zod'
 
 import { exigerRole } from '@/lib/auth/garde'
 import { EMAILS } from '@/lib/constantes'
 import { gabaritInvitation } from '@/lib/email/gabaritInvitation'
-import { routing } from '@/i18n/routing'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
@@ -17,8 +14,6 @@ import { origine } from '@/lib/utils/origine'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { estUuid } from '@/lib/utils/identifiant'
 import { ROLES } from '@/types'
-
-import type { Role } from '@/types'
 
 /**
  * Changement de rôle d'un compte.
@@ -226,11 +221,11 @@ export async function inviterUtilisateur(
   _precedent: EtatInvitation,
   donnees: FormData,
 ): Promise<EtatInvitation> {
-  const localeBrute = String(donnees.get('locale') ?? 'fr')
-  // Nécessaire pour getTranslations({ locale, ... }) plus bas (libellés de
-  // rôle du courriel) — même garde que changerStatutCommande
-  // (admin/commandes/actions.ts), qui affronte le même typage.
-  const locale = hasLocale(routing.locales, localeBrute) ? localeBrute : 'fr'
+  // `locale` ne sert plus qu'à revalidatePath (chemin de la page ADMIN) —
+  // le courriel d'invitation est désormais bilingue par construction, voir
+  // gabaritInvitation.ts : plus besoin de narrower ce type ici comme le
+  // faisait getTranslations() avant ce changement.
+  const locale = String(donnees.get('locale') ?? 'fr')
   const analyse = schemaInvitation.safeParse({
     email: donnees.get('email'),
     role: donnees.get('role'),
@@ -286,8 +281,11 @@ export async function inviterUtilisateur(
       return { erreur: 'serveur' }
     }
 
-    const suivant = `/${locale}/mot-de-passe/nouveau`
-    const lienInvitation = `${origine()}/api/auth/confirmer?token_hash=${tokenHash}&type=invite&suivant=${encodeURIComponent(suivant)}`
+    // Un jeton, deux liens — seul `suivant` change entre les deux : la
+    // personne invitée choisit sa langue en cliquant, voir gabaritInvitation.ts
+    // pour pourquoi ce gabarit est bilingue alors que les autres ne le sont pas.
+    const lienPour = (langue: 'fr' | 'en') =>
+      `${origine()}/api/auth/confirmer?token_hash=${tokenHash}&type=invite&suivant=${encodeURIComponent(`/${langue}/mot-de-passe/nouveau`)}`
 
     const cleResend = process.env.RESEND_API_KEY
     if (!cleResend) {
@@ -297,19 +295,14 @@ export async function inviterUtilisateur(
       // réellement passé. L'admin devra transmettre le lien autrement.
       console.warn('[admin/utilisateurs] RESEND_API_KEY absente — invitation créée sans courriel envoyé')
     } else {
-      const t = await getTranslations({ locale, namespace: 'Admin' })
-      const libellesRoles: Record<Role, string> = {
-        admin: t('role_admin'),
-        editor: t('role_editor'),
-        vendeur: t('role_vendeur'),
-        livreur: t('role_livreur'),
-        client: t('role_client'),
-      }
-
       const { Resend } = await import('resend')
+      // `role` brut, pas un libellé pré-résolu : gabaritInvitation.ts résout
+      // lui-même les deux langues — voir sa note sur pourquoi
+      // getTranslations(locale:'en') aurait renvoyé le français.
       const { html, text } = gabaritInvitation({
-        roleLabel: libellesRoles[role],
-        lienInvitation,
+        role,
+        lienInvitationFr: lienPour('fr'),
+        lienInvitationEn: lienPour('en'),
         origine: origine(),
       })
 
@@ -317,7 +310,7 @@ export async function inviterUtilisateur(
         from: `KO-LAB <${EMAILS.envoiTransactionnel}>`,
         replyTo: EMAILS.info,
         to: email,
-        subject: 'Invitation — KO-LAB',
+        subject: "Invitation à rejoindre KO-LAB — You've been invited to join KO-LAB",
         html,
         text,
       })
