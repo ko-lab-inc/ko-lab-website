@@ -4,7 +4,9 @@ import { notFound, redirect } from 'next/navigation'
 
 import { CadreAuth, EncartAuth } from '@/components/sections/CadreAuth'
 import { FormulaireNouveauMotDePasse } from '@/components/sections/FormulairesCompte'
+import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
+import { ROUTES } from '@/lib/routes'
 import { createClient } from '@/lib/supabase/server'
 
 import type { Metadata } from 'next'
@@ -43,6 +45,9 @@ export default async function NouveauMotDePassePage({ params }: Props) {
   if (!hasLocale(routing.locales, locale)) notFound()
 
   const t = await getTranslations('MotDePasse')
+  // Réutilise les mêmes clés que l'inscription plutôt que de dupliquer le
+  // texte de consentement et ses liens — voir inscription/page.tsx.
+  const tConsentement = await getTranslations('Inscription')
 
   const supabase = await createClient()
   const {
@@ -53,20 +58,60 @@ export default async function NouveauMotDePassePage({ params }: Props) {
   // demande plutôt que d'afficher un formulaire qui échouerait à l'envoi.
   if (!user) redirect(`/${locale}/connexion?lien=invalide`)
 
+  /**
+   * Loi 25 (étape 2/3, migration 0045) — `consentement_le` porte la seule
+   * décision : NULL signifie « jamais consenti », qu'il s'agisse d'un
+   * compte créé par invitation (inviterUtilisateur) ou d'un compte plus
+   * ancien qui réinitialise sans être jamais passé par la case. Voir
+   * changerMotDePasse (connexion/actions-compte.ts) pour la même logique
+   * appliquée à l'écriture.
+   */
+  const { data: profil } = await supabase
+    .from('profils')
+    .select('consentement_le')
+    .eq('id', user.id)
+    .maybeSingle()
+  const demanderConsentement = !profil?.consentement_le
+
   return (
     <CadreAuth titre={t('nouveau_titre')} intro={t('nouveau_intro')}>
       <EncartAuth titre={t('courriel')} texte={user.email ?? ''} />
       <FormulaireNouveauMotDePasse
         locale={locale}
+        demanderConsentement={demanderConsentement}
         libelles={{
           motDePasse: t('mot_de_passe'),
           aideMotDePasse: t('aide_mot_de_passe'),
             afficher: t('afficher_mot_de_passe'),
             masquer: t('masquer_mot_de_passe'),
           confirmation: t('confirmation'),
+          consentement: (
+            <>
+              {tConsentement('consentement_avant')}
+              <Link
+                href={ROUTES.conditionsUtilisation}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+              >
+                {tConsentement('consentement_lien_conditions')}
+              </Link>
+              {tConsentement('consentement_milieu')}
+              <Link
+                href={ROUTES.politiqueConfidentialite}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+              >
+                {tConsentement('consentement_lien_politique')}
+              </Link>
+              {tConsentement('consentement_apres')}
+            </>
+          ),
           enregistrer: t('enregistrer'),
           enCours: t('enregistrement'),
           erreurDonnees: t('erreur_donnees'),
+          erreurConsentement: tConsentement('erreur_consentement'),
           erreurServeur: t('erreur_serveur'),
         }}
       />

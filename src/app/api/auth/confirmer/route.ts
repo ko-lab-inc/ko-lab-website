@@ -130,10 +130,16 @@ export async function GET(request: NextRequest) {
   /**
    * ⚠️ token_hash EN PREMIER — c'est le mécanisme insensible à l'appareil.
    *
-   * `type` conditionne aussi la redirection : `recovery` va DIRECTEMENT vers
-   * `suivant` (la page /mot-de-passe/nouveau a besoin de la session
-   * temporaire tout de suite — imposer une reconnexion manuelle n'aurait pas
-   * de sens, la personne ne connaît justement pas son mot de passe actuel).
+   * `type` conditionne aussi la redirection : `recovery` ET `invite` vont
+   * DIRECTEMENT vers `suivant` (la page /mot-de-passe/nouveau a besoin de la
+   * session temporaire tout de suite dans les deux cas — imposer une
+   * reconnexion manuelle n'aurait pas de sens, la personne ne connaît
+   * justement pas de mot de passe : soit elle l'a oublié (recovery), soit
+   * elle n'en a jamais eu (invite, étape 2/3 — un compte créé par
+   * inviterUtilisateur n'a pas de mot de passe tant que ce passage n'a pas eu
+   * lieu). Router `invite` vers /connexion, comme avant ce correctif, était
+   * un cul-de-sac : la personne n'a rien à saisir sur ce formulaire.
+   *
    * Tout le reste, `signup` en tête, passe par /connexion — décision de
    * Christian, revue le 1er août 2026 : jamais enchaîner tout seul après une
    * confirmation, même si verifyOtp vient d'établir une session valide.
@@ -150,7 +156,9 @@ export async function GET(request: NextRequest) {
     }
 
     const destination =
-      typeBrut === 'recovery' ? suivant : `/${langue}/connexion?suivant=${encodeURIComponent(suivant)}`
+      typeBrut === 'recovery' || typeBrut === 'invite'
+        ? suivant
+        : `/${langue}/connexion?suivant=${encodeURIComponent(suivant)}`
     return NextResponse.redirect(`${origin}${destination}`)
   }
 

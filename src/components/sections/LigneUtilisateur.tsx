@@ -33,6 +33,7 @@ export function LigneUtilisateur({
   estSoi,
   peutModifier,
   locale,
+  origine,
   libelles,
 }: {
   id: string
@@ -42,6 +43,15 @@ export function LigneUtilisateur({
   estSoi: boolean
   peutModifier: boolean
   locale: string
+  /**
+   * Origine du compte et statut d'activation — /admin/utilisateurs
+   * seulement (étape 2/3, migration 0045). `undefined` sur /admin/vendeurs
+   * et /admin/livreurs, qui n'affichent pas cette colonne : ListeProfils ne
+   * la leur passe pas, voir son en-tête. Vient de `auth.users`
+   * (invited_at, email_confirmed_at) — jamais lu par PostgREST/RLS, d'où le
+   * calcul en amont, dans la page, à la clé de service.
+   */
+  origine?: { viaInvitation: boolean; actif: boolean }
   libelles: {
     roles: Record<Role, string>
     enregistrer: string
@@ -51,6 +61,11 @@ export function LigneUtilisateur({
     erreurServeur: string
     supprimer: string
     confirmerSuppression: string
+    /** Utilisés seulement si `origine` est fourni — voir sa note. */
+    origineInvitation?: string
+    origineInscription?: string
+    statutActif?: string
+    statutEnAttente?: string
   }
 }) {
   const [etat, action, enCours] = useActionState<EtatRole, FormData>(changerRole, {})
@@ -70,6 +85,13 @@ export function LigneUtilisateur({
           {estSoi && <span className="ml-2 label-mono">{libelles.soiMeme}</span>}
         </p>
         <p className="mt-0.5 font-mono text-xs text-ko-muted">{cree}</p>
+        {origine && (
+          <p className="mt-0.5 font-mono text-xs text-ko-muted">
+            {origine.viaInvitation ? libelles.origineInvitation : libelles.origineInscription}
+            {' · '}
+            {origine.actif ? libelles.statutActif : libelles.statutEnAttente}
+          </p>
+        )}
         {erreur && (
           <p role="alert" className="mt-1.5 text-sm text-ko-ink">
             {erreur}

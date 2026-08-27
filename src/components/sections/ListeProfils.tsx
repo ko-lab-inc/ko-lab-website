@@ -39,6 +39,9 @@ export async function ListeProfils({
   intro,
   roles,
   vide,
+  origines,
+  libellesOrigine,
+  actionInvitation,
 }: {
   locale: string
   titre: string
@@ -47,6 +50,19 @@ export async function ListeProfils({
   roles: readonly Role[]
   /** Message quand aucun compte ne porte ces rôles. */
   vide: string
+  /**
+   * Origine (invitation/inscription) et activation par id de profil —
+   * /admin/utilisateurs seulement (étape 2/3, migration 0045). `undefined`
+   * pour vendeurs/livreurs : ni la colonne ni sa légende ne s'affichent,
+   * comportement strictement inchangé pour ces deux écrans. Calculé en
+   * amont (page.tsx) à la clé de service — `auth.users` (invited_at,
+   * email_confirmed_at) n'est jamais accessible par PostgREST/RLS, cette
+   * fonction-ci ne peut donc pas le lire elle-même avec le client de session.
+   */
+  origines?: Record<string, { viaInvitation: boolean; actif: boolean }>
+  libellesOrigine?: { origineInvitation: string; origineInscription: string; statutActif: string; statutEnAttente: string }
+  /** Bouton + modale d'invitation, rendu à côté du titre — /admin/utilisateurs seulement. */
+  actionInvitation?: React.ReactNode
 }) {
   const t = await getTranslations('Admin')
   const supabase = await createClient()
@@ -77,7 +93,7 @@ export async function ListeProfils({
 
   return (
     <>
-      <EnteteAdmin titre={titre} intro={intro} />
+      <EnteteAdmin titre={titre} intro={intro} action={actionInvitation} />
 
       {/* Un editor voit la page mais pas les commandes. Le lui dire vaut mieux
           que de lui laisser croire à un écran incomplet. */}
@@ -109,6 +125,7 @@ export async function ListeProfils({
                   estSoi={p.id === user?.id}
                   peutModifier={estAdmin}
                   locale={locale}
+                  origine={origines?.[p.id]}
                   libelles={{
                     roles: libellesRoles,
                     enregistrer: t('enregistrer'),
@@ -118,6 +135,7 @@ export async function ListeProfils({
                     erreurServeur: t('erreur_lecture'),
                     supprimer: t('action_supprimer_compte'),
                     confirmerSuppression: t('confirmer_suppression_utilisateur'),
+                    ...libellesOrigine,
                   }}
                 />
               ))}

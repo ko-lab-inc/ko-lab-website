@@ -1,10 +1,13 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 import { exigerRole } from '@/lib/auth/garde'
+import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { estUuid } from '@/lib/utils/identifiant'
+import { rateLimit } from '@/lib/utils/rateLimit'
 import { STATUTS_DEMANDE, ROLES_EQUIPE } from '@/types'
 
 /**
@@ -33,6 +36,13 @@ export async function changerStatutCandidature(donnees: FormData): Promise<void>
   const id = String(donnees.get('id') ?? '')
   const statut = String(donnees.get('statut') ?? '')
   if (!estUuid(id) || !STATUTS_DEMANDE.some((s) => s === statut)) return
+
+  // Note honnête (étape 2/3) : compteur en mémoire de processus, remis à
+  // zéro à chaque cold start Vercel — un ralentisseur, pas une défense.
+  // Voir rateLimit.ts.
+  if (rateLimit(`changer-statut-candidature:${adresseDepuis(await headers())}`, { max: 30, windowMs: 300_000 })) {
+    return
+  }
 
   try {
     const acces = await exigerRole(ROLES_EQUIPE)
@@ -79,6 +89,11 @@ export async function telechargerCv(donnees: FormData): Promise<void> {
   const id = String(donnees.get('id') ?? '')
   const locale = String(donnees.get('locale') ?? 'fr')
   if (!estUuid(id)) return
+
+  // Note honnête (étape 2/3) — voir changerStatutCandidature ci-dessus.
+  if (rateLimit(`telecharger-cv:${adresseDepuis(await headers())}`, { max: 30, windowMs: 300_000 })) {
+    redirect(`/${locale}/admin/candidatures`)
+  }
 
   let url: string | null = null
 
@@ -130,6 +145,11 @@ export async function supprimerCandidature(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
   if (!estUuid(id)) return
+
+  // Note honnête (étape 2/3) — voir changerStatutCandidature ci-dessus.
+  if (rateLimit(`supprimer-candidature:${adresseDepuis(await headers())}`, { max: 20, windowMs: 300_000 })) {
+    return
+  }
 
   try {
     const acces = await exigerRole(['admin'])

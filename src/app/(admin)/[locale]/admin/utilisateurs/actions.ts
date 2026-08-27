@@ -1,11 +1,24 @@
 'use server'
 
+import { hasLocale } from 'next-intl'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
+import { z } from 'zod'
 
+import { exigerRole } from '@/lib/auth/garde'
+import { EMAILS } from '@/lib/constantes'
+import { gabaritInvitation } from '@/lib/email/gabaritInvitation'
+import { routing } from '@/i18n/routing'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { adresseDepuis } from '@/lib/utils/adresseClient'
+import { origine } from '@/lib/utils/origine'
+import { rateLimit } from '@/lib/utils/rateLimit'
 import { estUuid } from '@/lib/utils/identifiant'
 import { ROLES } from '@/types'
+
+import type { Role } from '@/types'
 
 /**
  * Changement de rôle d'un compte.
@@ -36,6 +49,16 @@ export async function changerRole(_precedent: EtatRole, donnees: FormData): Prom
   const locale = String(donnees.get('locale') ?? 'fr')
 
   if (!id || !ROLES.some((r) => r === role)) return { erreur: 'donnees' }
+
+  // ⚠️ Note honnête (étape 2/3) : compteur EN MÉMOIRE DE PROCESSUS, remis à
+  // zéro à chaque cold start Vercel — N instances actives = N fois cette
+  // limite, pas une limite globale. Un ralentisseur contre l'abus
+  // opportuniste, pas une défense — rateLimit.ts le documente déjà, voir son
+  // en-tête. La vraie barrière reste RLS (profils_maj_admin) et les triggers
+  // (interdire_auto_promotion, profils_pas_auto_retrogradation).
+  if (rateLimit(`changer-role:${adresseDepuis(await headers())}`, { max: 20, windowMs: 300_000 })) {
+    return { erreur: 'serveur' }
+  }
 
   try {
     const supabase = await createClient()
@@ -108,6 +131,12 @@ export async function supprimerUtilisateur(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   if (!estUuid(id)) return
 
+  // Même note qu'au-dessus (changerRole) : ralentisseur en mémoire de
+  // processus, pas une défense — voir rateLimit.ts.
+  if (rateLimit(`supprimer-utilisateur:${adresseDepuis(await headers())}`, { max: 20, windowMs: 300_000 })) {
+    return
+  }
+
   try {
     const supabase = await createClient()
     const {
@@ -128,4 +157,184 @@ export async function supprimerUtilisateur(donnees: FormData): Promise<void> {
   }
 
   revalidatePath(`/${locale}/admin/utilisateurs`)
+}
+
+/**
+ * Invitation par courriel — création d'un compte avec le rôle choisi par
+ * l'admin, étape 2/3 (migration 0045).
+ *
+ * ---------------------------------------------------------------------------
+ * PAS inviteUserByEmail — createUser + generateLink, envoi par Resend
+ *
+ * `inviteUserByEmail` enverrait par le mailer INTÉGRÉ de Supabase, dont le
+ * quota a déjà été épuisé une fois sur ce projet (voir la note de
+ * `inscrire()`, connexion/actions-compte.ts : « quota de courriels Supabase
+ * épuisé »). Resend est déjà configuré et vérifié sur ko-lab-center.ca pour
+ * tout le reste des courriels transactionnels — deux appels Admin API
+ * séparés (`createUser` puis `generateLink`) donnent le jeton `token_hash`
+ * nécessaire pour construire le MÊME genre de lien que ceux déjà envoyés par
+ * Resend (voir gabaritInvitation.ts), sans jamais passer par le mailer
+ * Supabase.
+ *
+ * ---------------------------------------------------------------------------
+ * RÔLE ÉCRIT APRÈS COUP, PAR LE CLIENT DE SESSION
+ *
+ * `handle_new_user` (trigger, 0001) pose `role = 'client'` par défaut sur
+ * TOUTE nouvelle ligne `profils` — ce n'est jamais le rôle voulu pour un
+ * vendeur, un livreur ou un admin invité. Le rôle choisi est donc écrit
+ * ENSUITE, par une mise à jour distincte.
+ *
+ * Client de SESSION pour cette mise à jour, pas la clé de service :
+ * `exigerRole(['admin'])` a déjà prouvé que l'appelant est admin, donc RLS
+ * (`profils_maj_admin`) laisse passer l'écriture — la ligne ciblée n'est
+ * JAMAIS celle de l'appelant (on ne s'invite pas soi-même), donc ni
+ * `interdire_auto_promotion` ni `profils_pas_auto_retrogradation` (0045) ne
+ * s'y opposent non plus. Même philosophie que `changerRole()` : RLS reste
+ * l'autorité qui décide, la clé de service ne sert qu'à ce que PostgREST/RLS
+ * ne peuvent structurellement pas faire (créer la ligne `auth.users`,
+ * générer le jeton).
+ *
+ * ---------------------------------------------------------------------------
+ * GARDE-FOUS
+ *
+ *   - exigerRole(['admin']) — pas ROLES_EQUIPE : inviter quelqu'un avec un
+ *     rôle de son choix (y compris 'admin') est un geste plus lourd qu'un
+ *     changement de rôle sur un compte déjà borné par l'inscription publique
+ *     ('client' par défaut, jamais 'editor' — voir la note d'en-tête
+ *     d'actions-compte.ts).
+ *   - Préflight sur `profils.email` PUIS le code d'erreur `email_exists` de
+ *     `createUser` en filet — le préflight donne un message immédiat et
+ *     lisible, le filet couvre la fenêtre entre les deux appels (une adresse
+ *     invitée deux fois à quelques millisecondes d'écart, improbable pour un
+ *     geste d'admin mais pas impossible).
+ *   - Rate limit — note honnête en tête de fichier (voir changerRole
+ *     ci-dessus) : ralentisseur en mémoire de processus, pas une défense.
+ * ---------------------------------------------------------------------------
+ */
+
+const schemaInvitation = z.object({
+  email: z.string().trim().email().max(200),
+  role: z.enum(ROLES),
+})
+
+export type EtatInvitation = {
+  erreur?: 'donnees' | 'existe_deja' | 'refuse' | 'trop_de_tentatives' | 'serveur'
+  succes?: boolean
+}
+
+export async function inviterUtilisateur(
+  _precedent: EtatInvitation,
+  donnees: FormData,
+): Promise<EtatInvitation> {
+  const localeBrute = String(donnees.get('locale') ?? 'fr')
+  // Nécessaire pour getTranslations({ locale, ... }) plus bas (libellés de
+  // rôle du courriel) — même garde que changerStatutCommande
+  // (admin/commandes/actions.ts), qui affronte le même typage.
+  const locale = hasLocale(routing.locales, localeBrute) ? localeBrute : 'fr'
+  const analyse = schemaInvitation.safeParse({
+    email: donnees.get('email'),
+    role: donnees.get('role'),
+  })
+  if (!analyse.success) return { erreur: 'donnees' }
+
+  if (rateLimit(`invitation:${adresseDepuis(await headers())}`, { max: 10, windowMs: 3_600_000 })) {
+    return { erreur: 'trop_de_tentatives' }
+  }
+
+  const { email, role } = analyse.data
+  let idCree: string | null = null
+
+  try {
+    const acces = await exigerRole(['admin'])
+    if (!acces) return { erreur: 'refuse' }
+
+    const admin = getSupabaseAdmin()
+
+    // Préflight lisible — voir la note d'en-tête sur le filet qui suit.
+    const { data: profilExistant } = await admin
+      .from('profils')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle()
+    if (profilExistant) return { erreur: 'existe_deja' }
+
+    const { data: cree, error: erreurCreation } = await admin.auth.admin.createUser({
+      email,
+      // Pas encore confirmé : c'est le clic sur le lien reçu par courriel
+      // (verifyOtp, type=invite) qui confirmera l'adresse — pas cet appel.
+      email_confirm: false,
+    })
+    if (erreurCreation || !cree?.user) {
+      if (erreurCreation?.code === 'email_exists') return { erreur: 'existe_deja' }
+      console.error('[admin/utilisateurs] création du compte invité refusée', erreurCreation?.message)
+      return { erreur: 'serveur' }
+    }
+    idCree = cree.user.id
+
+    if (role !== 'client') {
+      const { error: erreurRole } = await acces.supabase.from('profils').update({ role }).eq('id', idCree)
+      if (erreurRole) {
+        console.error('[admin/utilisateurs] rôle choisi non enregistré', erreurRole.message)
+        return { erreur: 'serveur' }
+      }
+    }
+
+    const { data: lien, error: erreurLien } = await admin.auth.admin.generateLink({ type: 'invite', email })
+    const tokenHash = lien?.properties?.hashed_token
+    if (erreurLien || !tokenHash) {
+      console.error('[admin/utilisateurs] lien d’invitation refusé', erreurLien?.message)
+      return { erreur: 'serveur' }
+    }
+
+    const suivant = `/${locale}/mot-de-passe/nouveau`
+    const lienInvitation = `${origine()}/api/auth/confirmer?token_hash=${tokenHash}&type=invite&suivant=${encodeURIComponent(suivant)}`
+
+    const cleResend = process.env.RESEND_API_KEY
+    if (!cleResend) {
+      // Le compte existe déjà à ce stade, avec le bon rôle — un courriel non
+      // envoyé n'annule pas la création (même choix que changerStatutCommande) :
+      // le signaler comme un échec d'invitation mentirait sur ce qui s'est
+      // réellement passé. L'admin devra transmettre le lien autrement.
+      console.warn('[admin/utilisateurs] RESEND_API_KEY absente — invitation créée sans courriel envoyé')
+    } else {
+      const t = await getTranslations({ locale, namespace: 'Admin' })
+      const libellesRoles: Record<Role, string> = {
+        admin: t('role_admin'),
+        editor: t('role_editor'),
+        vendeur: t('role_vendeur'),
+        livreur: t('role_livreur'),
+        client: t('role_client'),
+      }
+
+      const { Resend } = await import('resend')
+      const { html, text } = gabaritInvitation({
+        roleLabel: libellesRoles[role],
+        lienInvitation,
+        origine: origine(),
+      })
+
+      const envoi = await new Resend(cleResend).emails.send({
+        from: `KO-LAB <${EMAILS.envoiTransactionnel}>`,
+        replyTo: EMAILS.info,
+        to: email,
+        subject: 'Invitation — KO-LAB',
+        html,
+        text,
+      })
+      if (envoi.error) {
+        console.error('[admin/utilisateurs] envoi Resend refusé', envoi.error.message)
+      }
+    }
+  } catch (err) {
+    // `idCree` tracé ici, pas utilisé pour un retrait automatique : le
+    // compte a pu être créé avant l'exception (ex. échec du courriel) et
+    // laissé en place plutôt que retiré à l'aveugle — un admin peut le
+    // retrouver dans la liste et réessayer, un retrait silencieux pourrait
+    // aussi bien effacer un compte déjà correctement configuré.
+    console.error('[admin/utilisateurs] échec invitation', err, idCree ? `compte créé : ${idCree}` : '')
+    return { erreur: 'serveur' }
+  }
+
+  revalidatePath(`/${locale}/admin/utilisateurs`)
+  return { succes: true }
 }

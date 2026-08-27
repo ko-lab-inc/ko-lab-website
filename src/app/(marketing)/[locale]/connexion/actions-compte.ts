@@ -44,7 +44,10 @@ export type EtatInscription = {
     | 'serveur'
   succes?: boolean
 }
-export type EtatMotDePasse = { erreur?: 'donnees' | 'trop_de_tentatives' | 'serveur'; succes?: boolean }
+export type EtatMotDePasse = {
+  erreur?: 'donnees' | 'consentement' | 'trop_de_tentatives' | 'serveur'
+  succes?: boolean
+}
 
 async function adresse(): Promise<string> {
   return adresseDepuis(await headers())
@@ -266,6 +269,39 @@ export async function changerMotDePasse(
 
   try {
     const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return { erreur: 'serveur' }
+
+    /**
+     * ⚠️ CONSENTEMENT LOI 25 (étape 2/3, migration 0045) — même case que
+     * l'inscription publique, posée ici pour deux publics qui ne sont
+     * jamais passés par ce formulaire-là :
+     *
+     *   - un compte créé par invitation (inviterUtilisateur,
+     *     admin/utilisateurs/actions.ts) — le trigger handle_new_user pose
+     *     sa ligne profils avec consentement_le à NULL, il n'a jamais vu de
+     *     case à cocher ;
+     *   - un compte plus ancien qui réinitialise son mot de passe sans
+     *     avoir jamais consenti (créé avant la migration 0041).
+     *
+     * `consentement_le IS NULL` est le SEUL signal utilisé pour décider —
+     * pas « est-ce que ce lien était de type invite ». Une vraie
+     * réinitialisation d'un compte qui a DÉJÀ consenti ne doit jamais
+     * revoir la case (demande explicite) : ce test la couvre aussi bien
+     * que le cas invitation, avec une seule condition à tenir à jour.
+     */
+    const { data: profil } = await supabase
+      .from('profils')
+      .select('consentement_le')
+      .eq('id', user.id)
+      .maybeSingle()
+    const consentementRequis = !profil?.consentement_le
+
+    if (consentementRequis && donnees.get('consentement') !== 'true') {
+      return { erreur: 'consentement' }
+    }
 
     // ⚠️ updateUser n'agit que sur la session EN COURS. Cette page n'est
     // atteignable qu'après le lien reçu par courriel, qui a ouvert une session
@@ -274,6 +310,26 @@ export async function changerMotDePasse(
     // relève la boîte.
     const { error } = await supabase.auth.updateUser({ password: analyse.data })
     if (error) return { erreur: 'serveur' }
+
+    if (consentementRequis) {
+      /**
+       * Même mécanisme que inscrire() ci-dessus (lignes 190-202) : clé de
+       * service, pas la session — `profils_maj_admin` (RLS) interdit à
+       * quiconque n'est pas admin de modifier sa PROPRE ligne, y compris
+       * juste après avoir prouvé qui il est via updateUser. Un échec ici
+       * n'annule pas le changement de mot de passe déjà réussi juste
+       * au-dessus — le signaler comme un échec de ce formulaire mentirait
+       * sur ce qui s'est réellement passé.
+       */
+      try {
+        await getSupabaseAdmin()
+          .from('profils')
+          .update({ consentement_le: new Date().toISOString(), consentement_version: VERSION_POLITIQUES })
+          .eq('id', user.id)
+      } catch (err) {
+        console.error('[nouveau mot de passe] échec enregistrement consentement', err)
+      }
+    }
   } catch (err) {
     console.error('[changement mot de passe] échec', err)
     return { erreur: 'serveur' }

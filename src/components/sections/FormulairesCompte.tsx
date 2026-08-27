@@ -246,22 +246,41 @@ export function FormulaireOubli({
 
 export function FormulaireNouveauMotDePasse({
   locale,
+  demanderConsentement,
   libelles,
 }: {
   locale: string
+  /**
+   * Loi 25 (étape 2/3, migration 0045) — vrai quand `profils.consentement_le`
+   * est NULL pour la session en cours : un compte créé par invitation, ou un
+   * compte plus ancien qui réinitialise sans avoir jamais consenti. Décidé
+   * côté serveur (page.tsx), jamais ici : ce composant n'a aucun accès à la
+   * base pour le vérifier lui-même.
+   */
+  demanderConsentement: boolean
   libelles: {
     motDePasse: string
     aideMotDePasse: string
     confirmation: string
     afficher: string
     masquer: string
+    /** Voir FormulaireInscription — même prop, JSX déjà résolu avec les liens. */
+    consentement: React.ReactNode
     enregistrer: string
     enCours: string
     erreurDonnees: string
+    erreurConsentement: string
     erreurServeur: string
   }
 }) {
   const [etat, action, enCours] = useActionState<EtatMotDePasse, FormData>(changerMotDePasse, {})
+
+  const messages: Record<string, string> = {
+    donnees: libelles.erreurDonnees,
+    consentement: libelles.erreurConsentement,
+    serveur: libelles.erreurServeur,
+  }
+  const message = etat.erreur ? (messages[etat.erreur] ?? libelles.erreurServeur) : null
 
   return (
     <form action={action} className="mt-8 space-y-4">
@@ -288,15 +307,25 @@ export function FormulaireNouveauMotDePasse({
         libelleAfficher={libelles.afficher}
         libelleMasquer={libelles.masquer}
       />
-      <Erreur
-        message={
-          etat.erreur === 'donnees'
-            ? libelles.erreurDonnees
-            : etat.erreur
-              ? libelles.erreurServeur
-              : null
-        }
-      />
+
+      {/* Loi 25 — case NON pré-cochée, obligatoire, validée aussi côté
+          serveur (changerMotDePasse : `consentement_le IS NULL` ET la case
+          non cochée refusent la soumission). N'apparaît que pour qui n'a
+          jamais consenti — voir la prop demanderConsentement. */}
+      {demanderConsentement && (
+        <label className="flex cursor-pointer items-start gap-3 border-t border-ko-line pt-4 text-sm leading-relaxed text-ko-ink">
+          <input
+            type="checkbox"
+            name="consentement"
+            value="true"
+            required
+            className="mt-0.5 h-4 w-4 shrink-0 accent-ko-blue"
+          />
+          <span>{libelles.consentement}</span>
+        </label>
+      )}
+
+      <Erreur message={message} />
       <button
         type="submit"
         disabled={enCours}
