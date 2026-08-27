@@ -2,27 +2,39 @@
 
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
-import { BandeauImages } from '@/components/ui/BandeauImages'
 import { SlideImages, type ImageSlide } from '@/components/ui/SlideImages'
 import { FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD } from '@/lib/images'
 import { cn } from '@/lib/utils/cn'
-
-import type { CategorieRealisation } from '@/types'
+import { CATEGORIES_REALISATION, type CategorieRealisation } from '@/types'
 
 /**
  * Galerie filtrable — skill 21.
  *
- * Le filtrage est purement client : aucun rechargement, aucune requête. Les
- * réalisations arrivent DÉJÀ TRADUITES depuis le composant serveur. C'est ce
- * qui permet de garder next-intl côté serveur : passer les clés brutes aurait
- * obligé à embarquer le catalogue de traductions dans le bundle client.
+ * ---------------------------------------------------------------------------
+ * REFONTE EN CARROUSELS PAR CATÉGORIE (24 août 2026)
  *
- * Le branchement Supabase est fait — voir `lireRealisationsPubliees()` dans
- * lib/realisations.ts, appelée par page.tsx. Ce composant ne connaît QUE la
- * forme `RealisationCarte` ci-dessous ; il reçoit soit du contenu réel, soit
- * le repli provisoire de page.tsx tant qu'aucune réalisation n'est publiée.
+ * Remplace la grille asymétrique (une grande carte + des petites, hauteurs
+ * inégales) — Christian : « ça laisse de grands vides ». Une rangée
+ * horizontale par catégorie, cartes toutes de la même taille : plus de vide
+ * possible, une rangée d'une seule carte ne casse rien puisque rien ne
+ * dépend du nombre de cartes pour se dimensionner.
+ *
+ * La carte elle-même est simplifiée : couverture + titre, plus de bandeau de
+ * photos ni de description en surimpression. Cliquer OUVRE LA VISIONNEUSE
+ * AVEC TOUTE LA SÉRIE, couverture comprise — voir `RealisationCarte.photos`.
+ * C'est ce qui rend caduque l'ancienne règle « une seule photo n'ouvre
+ * rien » : avant, la couverture était exclue de la visionneuse, donc une
+ * réalisation à une photo n'avait rien de plus à montrer ; maintenant la
+ * couverture EST dans la visionneuse, donc l'agrandir a toujours un sens,
+ * même pour une seule photo.
+ *
+ * Le filtrage reste purement client : aucun rechargement, aucune requête. Les
+ * réalisations arrivent DÉJÀ TRADUITES depuis le composant serveur — voir
+ * `lireRealisationsPubliees()` dans lib/realisations.ts, appelée par
+ * page.tsx.
+ * ---------------------------------------------------------------------------
  */
 
 export type RealisationCarte = {
@@ -30,21 +42,17 @@ export type RealisationCarte = {
   categorie: CategorieRealisation
   titre: string
   description: string
-  tag: string
   src: string
-  cadrage: string
   desature: boolean
   /**
-   * Images supplémentaires, montrées dans la visionneuse.
+   * Toutes les photos de la réalisation, couverture comprise, dans l'ordre
+   * d'affichage — c'est la série complète montrée par la visionneuse au clic
+   * sur la carte.
    *
-   * La première image de la série est TOUJOURS `src` — celle de la carte —
-   * pour que le clic ouvre sur ce qu'on vient de regarder. Ce champ ne
-   * contient donc que la suite.
-   *
-   * Vide ou absent : la carte n'ouvre rien. Une visionneuse à une seule image
-   * ferait cliquer pour ne rien montrer de plus.
+   * Toujours au moins une entrée : `lireRealisationsPubliees()` écarte déjà
+   * toute réalisation sans la moindre image.
    */
-  serie?: readonly ImageSlide[]
+  photos: readonly ImageSlide[]
 }
 
 type Filtre = {
@@ -52,11 +60,22 @@ type Filtre = {
   label: string
 }
 
+type LibellesCarrousel = {
+  precedent: string
+  suivant: string
+  /** Nom accessible du bouton d'ouverture d'une carte — le même texte que
+   *  l'ancien bouton « Voir les images », repris tel quel : chaque carte
+   *  ouvre maintenant sa propre série, exactement ce que ce libellé dit déjà. */
+  ouvrir: string
+}
+
 type GalerieProps = {
   realisations: readonly RealisationCarte[]
   filtres: readonly Filtre[]
   labelFiltres: string
   aucunResultat: string
+  libellesCategories: Record<string, string>
+  libellesCarrousel: LibellesCarrousel
 }
 
 export function GalerieRealisations({
@@ -64,6 +83,8 @@ export function GalerieRealisations({
   filtres,
   labelFiltres,
   aucunResultat,
+  libellesCategories,
+  libellesCarrousel,
 }: GalerieProps) {
   // Seule chaîne résolue côté client : le compteur est un pluriel ICU dont la
   // valeur change à chaque filtre, il ne peut pas être pré-calculé au serveur.
@@ -72,19 +93,11 @@ export function GalerieRealisations({
 
   const [categorie, setCategorie] = useState<CategorieRealisation | 'all'>('all')
 
-  /**
-   * Réalisation dont la série est ouverte, ou `null`.
-   *
-   * Une seule visionneuse pour toute la grille, montée à la fin. Une par carte
-   * mettrait autant de `<dialog>` dans le document, chacun avec ses images —
-   * pour n'en montrer qu'un à la fois.
-   */
+  /** Réalisation dont la série est ouverte, ou `null`. Une seule visionneuse
+   *  pour toute la page, montée à la fin — une par carte en mettrait autant
+   *  dans le document, chacune avec sa propre série, pour n'en montrer
+   *  qu'une à la fois. */
   const [ouverte, setOuverte] = useState<RealisationCarte | null>(null)
-  // Index de départ dans la visionneuse — 0 par défaut (le clic sur la carte
-  // ou le badge « N images »), mais une vignette précise de la bande continue
-  // (BandeauImages) doit ouvrir directement SUR ELLE, pas revenir à la
-  // première image de la série.
-  const [indexOuverture, setIndexOuverture] = useState(0)
 
   const libellesSlide = useMemo(
     () => ({
@@ -99,6 +112,22 @@ export function GalerieRealisations({
   const visibles = useMemo(
     () => realisations.filter((r) => categorie === 'all' || r.categorie === categorie),
     [realisations, categorie],
+  )
+
+  /**
+   * Une rangée par catégorie, dans l'ordre imposé par CATEGORIES_REALISATION
+   * (Opérations, Installations, Le LAB, Équipements) — jamais l'ordre
+   * d'arrivée en base. Une catégorie sans réalisation VISIBLE (filtrée ou
+   * simplement vide) n'a pas de rangée du tout : `.filter()` l'écarte avant
+   * le rendu, pas un rendu vide caché en CSS.
+   */
+  const groupes = useMemo(
+    () =>
+      CATEGORIES_REALISATION.map((cat) => ({
+        categorie: cat,
+        items: visibles.filter((r) => r.categorie === cat),
+      })).filter((g) => g.items.length > 0),
+    [visibles],
   )
 
   return (
@@ -138,172 +167,40 @@ export function GalerieRealisations({
         </p>
       </div>
 
-      {/* ------------------------------ Grille ------------------------------ */}
+      {/* --------------------------- Rangées ---------------------------- */}
       {visibles.length === 0 ? (
         <p className="mt-14 text-base text-ko-muted">{aucunResultat}</p>
       ) : (
-        /* Grille asymétrique : la première carte occupe deux colonnes et deux
-           rangées. Quand un filtre ne laisse qu'un seul résultat, elle s'étend
-           simplement — la mise en page ne se casse pas.
-
-           PAS de `lg:grid-rows-2` : deux rangées explicites combinées à un
-           enfant en `h-full` créaient une dépendance circulaire — la rangée
-           se dimensionnait sur son contenu, qui se dimensionnait sur la
-           rangée. Avec plusieurs cartes les petites rompaient le cycle ; avec
-           une seule, la hauteur s'effondrait à zéro.
-           Les rangées sont désormais implicites et chaque carte porte son
-           propre ratio, donc une hauteur intrinsèque. */
-        <div className="mt-14 grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
-          {visibles.map((r, i) => {
-            const serie = serieDe(r)
-
-            return (
-            <article
-              key={r.cle}
-              className={cn(
-                'group relative overflow-hidden rounded-xl bg-ko-cream2',
-                i === 0 ? 'lg:col-span-2 lg:row-span-2' : 'lg:col-span-1',
+        <div className="mt-14 space-y-12 lg:space-y-16">
+          {groupes.map((g) => (
+            <div key={g.categorie}>
+              {/* Titre de rangée UNIQUEMENT en « Tout voir » — une catégorie
+                  choisie au filtre l'a déjà annoncée, le répéter ici dirait
+                  deux fois la même chose (demande explicite). */}
+              {categorie === 'all' && (
+                <h2 className="ko-h3 mb-5 text-[20px] text-ko-ink lg:text-[24px]">
+                  {libellesCategories[g.categorie] ?? g.categorie}
+                </h2>
               )}
-            >
-              {/* La grande carte occupe deux rangées : sur desktop elle doit
-                  remplir la hauteur imposée par la colonne de droite, sinon un
-                  ratio fixe laisse une bande de fond apparente sous l'image.
-                  Le ratio reste en vigueur sous lg, où la grille est linéaire. */}
-              <div
-                className={cn(
-                  'relative',
-                  // Ratio TOUJOURS actif, quel que soit le nombre de cartes.
-                  // C'est lui qui donne sa hauteur à la carte : sans lui, un
-                  // parent sans hauteur explicite plus un `fill` s'effondrent.
-                  i === 0 ? 'aspect-[3/2]' : 'aspect-[4/3]',
-                )}
-              >
-                {/*
-                  ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
-                  Voir skill 22 pour les critères de remplacement.
-                */}
-                <Image
-                  src={r.src}
-                  alt={r.titre}
-                  fill
-                  // La grande carte est au-dessus de la ligne de flottaison et
-                  // Next la détecte comme élément LCP. Sans `priority`, elle est
-                  // chargée en différé et retarde directement la mesure.
-                  priority={i === 0}
-                  quality={80}
-                  sizes={i === 0 ? '(max-width: 1024px) 100vw, 66vw' : '(max-width: 1024px) 100vw, 33vw'}
-                  style={r.desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
-                  className={cn(
-                    'object-cover transition-transform duration-[400ms] group-hover:scale-[1.02]',
-                    r.cadrage,
-                  )}
-                />
-
-                {/* Voile de lisibilité, renforcé au survol pour laisser
-                    apparaître la description. */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-gradient-to-t from-ko-scrim/85 via-ko-scrim/25 to-transparent transition-opacity duration-[400ms] group-hover:from-ko-scrim/95 group-hover:via-ko-scrim/60"
-                />
-
-                <span className="label-mono absolute left-4 top-4 rounded bg-ko-scrim/60 px-3 py-1.5 text-ko-frost/90 backdrop-blur-sm">
-                  {r.tag}
-                </span>
-
-                {/* Ouverture de la série.
-
-                    Un BOUTON, pas un lien : la visionneuse n'a pas d'URL
-                    propre et rien n'est navigable derrière. Un lien vers
-                    « # » annoncerait une destination qui n'existe pas.
-
-                    Étendu à toute la carte par `absolute inset-0` : la cible
-                    est l'image entière, pas une petite zone à viser. Le
-                    libellé, lui, reste explicite pour le lecteur d'écran —
-                    « Voir les images » seul ne dirait pas de quoi.
-
-                    ⚠️ Placé AVANT le bloc de texte dans l'ordre du document,
-                    mais sans z-index : le texte qui suit passe donc au-dessus
-                    et reste sélectionnable. */}
-                {serie.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIndexOuverture(0)
-                      setOuverte(r)
-                    }}
-                    aria-label={`${t('voir_serie')} — ${r.titre}`}
-                    className="absolute inset-0 cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-ko-blue"
-                  >
-                    {/* Compteur d'images, en haut à droite, en face du tag.
-                        C'est le seul indice qu'il y a plus à voir — sans lui,
-                        rien ne distingue une carte cliquable d'une autre. */}
-                    <span className="label-mono absolute right-4 top-4 rounded bg-ko-scrim/60 px-3 py-1.5 text-ko-frost/90 backdrop-blur-sm transition-colors duration-[400ms] group-hover:bg-ko-blue group-hover:text-ko-black">
-                      {t('serie_compte', { n: serie.length })}
-                    </span>
-                  </button>
-                )}
-
-                <div className="pointer-events-none absolute inset-x-4 bottom-4">
-                  {/* h2, pas h3 (Phase 10, étape 2) : /realisations/page.tsx ne
-                      pose aucun h2 avant la galerie — le h1 de l'en-tête sautait
-                      directement à un h3 par carte, un niveau manquant. Chaque
-                      titre de réalisation est le premier vrai contenu de la
-                      page après le h1, pas une sous-section d'un h2 absent. */}
-                  <h2
-                    className={cn(
-                      'font-serif leading-tight text-ko-white',
-                      i === 0 ? 'text-[26px]' : 'text-[20px]',
-                    )}
-                  >
-                    {r.titre}
-                  </h2>
-
-                  {/* Description révélée au survol. `max-h` plutôt que `hidden` :
-                      le texte reste dans le DOM, donc accessible aux lecteurs
-                      d'écran et aux moteurs de recherche. */}
-                  <p className="max-h-0 overflow-hidden text-sm leading-relaxed text-ko-frost/75 opacity-0 transition-[max-height,opacity,margin] duration-[400ms] group-hover:mt-2 group-hover:max-h-32 group-hover:opacity-100">
-                    {r.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Bande continue — « autre forme d'exposition » demandée en plus
-                  de la visionneuse plein écran : parcourir la série sans avoir
-                  à ouvrir de fenêtre. N'apparaît que s'il y a plus d'une photo,
-                  même condition que le badge « N images » ci-dessus. */}
-              {serie.length > 1 && (
-                <div className="p-3">
-                  <BandeauImages
-                    images={serie}
-                    onSelectionner={(index) => {
-                      setIndexOuverture(index)
-                      setOuverte(r)
-                    }}
-                    libelles={{
-                      groupe: `${t('bandeau_groupe')} — ${r.titre}`,
-                      position: (n, total) => t('slide_position', { n, total }),
-                      precedent: t('slide_precedent'),
-                      suivant: t('slide_suivant'),
-                    }}
-                  />
-                </div>
-              )}
-            </article>
-            )
-          })}
+              <RangeeCarrousel
+                items={g.items}
+                onOuvrir={setOuverte}
+                libelles={libellesCarrousel}
+              />
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Une seule visionneuse pour toute la grille. `key` : force le
-          remontage d'une réalisation à l'autre, sinon l'index de l'image
-          resterait celui de la série précédente. */}
+      {/* Visionneuse — `key` : force le remontage d'une réalisation à
+          l'autre, sinon l'index de l'image resterait celui de la série
+          précédente. */}
       {ouverte && (
         <SlideImages
           key={ouverte.cle}
           ouvert
-          indexInitial={indexOuverture}
           onFermer={() => setOuverte(null)}
-          images={serieDe(ouverte)}
+          images={photosStylees(ouverte)}
           titre={ouverte.titre}
           description={ouverte.description}
           libelles={libellesSlide}
@@ -314,27 +211,214 @@ export function GalerieRealisations({
 }
 
 /**
- * Série complète d'une réalisation : sa photo de carte, puis les suivantes.
- *
- * Reconstruite ici plutôt que stockée en double dans les données — sinon la
- * première image devrait être écrite deux fois, et les deux finiraient par
- * diverger le jour où l'on change la photo de couverture.
+ * Applique le même filtre que la carte à la SEULE photo de couverture —
+ * jamais au reste de la série. Comportement hérité tel quel de l'ancienne
+ * grille (`serieDe()`, avant la refonte du 24 août 2026) : seule la
+ * couverture y portait `FILTRE_TERRAIN`/`FILTRE_TERRAIN_CHAUD`, les photos
+ * suivantes de la série n'ont jamais eu de filtre. Reconduit sans y toucher —
+ * changer ce détail ne fait pas partie de cette refonte, et `desature` reste
+ * de toute façon toujours à `false` pour du contenu réel (voir page.tsx).
  */
-function serieDe(r: RealisationCarte): readonly ImageSlide[] {
-  return [
-    {
-      src: r.src,
-      // Vide : le titre et la description de la réalisation sont déjà lus
-      // dans l'entête de la visionneuse. Répéter ferait dire deux fois la
-      // même chose.
-      //
-      // ⚠️ PAS de `cadrage` ici. `r.cadrage` est un `object-position` pensé
-      // pour le recadrage `object-cover` DE LA CARTE — appliqué tel quel à la
-      // visionneuse, en `object-contain`, il décentrait l'image au lieu de la
-      // recentrer (voir SlideImages.tsx pour le détail).
-      alt: '',
-      style: r.desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN,
-    },
-    ...(r.serie ?? []),
-  ]
+function photosStylees(r: RealisationCarte): readonly ImageSlide[] {
+  const [couverture, ...suite] = r.photos
+  if (!couverture) return r.photos
+  return [{ ...couverture, style: r.desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN }, ...suite]
+}
+
+/**
+ * Rangée horizontale d'une catégorie — défilement natif, pas de librairie.
+ *
+ * ---------------------------------------------------------------------------
+ * `overflow-x-auto` SEUL, JAMAIS DE GESTIONNAIRE DE MOLETTE
+ *
+ * Le défaut le plus courant de ce patron : convertir un `deltaY` de molette
+ * en défilement horizontal (`el.scrollLeft += e.deltaY`) pour que le
+ * trackpad fasse défiler la rangée sans glisser latéralement. Ce composant ne
+ * le fait PAS — la molette verticale continue de faire défiler la PAGE quand
+ * elle survole une rangée, exactement le comportement natif du navigateur
+ * sur un conteneur qui ne déborde que sur X. Le tactile (glissement) et les
+ * flèches restent les deux seules façons de faire avancer la rangée.
+ *
+ * ---------------------------------------------------------------------------
+ * LARGEUR DES CARTES EN `calc()`, PAS EN CLASSES RESPONSIVES
+ *
+ * `w-[calc((100%-1.5rem)/3.3)]` donne exactement le même nombre de cartes
+ * visibles (3 pleines + un aperçu de la 4ᵉ) que le conteneur fasse 390px ou
+ * 1400px — une largeur en pourcentage du conteneur, pas des points de rupture
+ * `sm:`/`lg:` qui auraient demandé une valeur différente à chaque taille pour
+ * le même résultat visuel.
+ * ---------------------------------------------------------------------------
+ */
+function RangeeCarrousel({
+  items,
+  onOuvrir,
+  libelles,
+}: {
+  items: readonly RealisationCarte[]
+  onOuvrir: (r: RealisationCarte) => void
+  libelles: LibellesCarrousel
+}) {
+  const piste = useRef<HTMLDivElement>(null)
+  const [peutReculer, setPeutReculer] = useState(false)
+  const [peutAvancer, setPeutAvancer] = useState(items.length > 1)
+
+  const actualiserFleches = useCallback(() => {
+    const el = piste.current
+    if (!el) return
+    // Marge de 2px : `scrollLeft`/`scrollWidth` peuvent porter un résidu
+    // sous-pixel selon le zoom du navigateur, qui laisserait sinon une
+    // flèche active alors qu'il n'y a plus rien à atteindre dans ce sens.
+    setPeutReculer(el.scrollLeft > 2)
+    setPeutAvancer(el.scrollLeft < el.scrollWidth - el.clientWidth - 2)
+  }, [])
+
+  useEffect(() => {
+    actualiserFleches()
+    const el = piste.current
+    if (!el) return
+    el.addEventListener('scroll', actualiserFleches, { passive: true })
+    window.addEventListener('resize', actualiserFleches)
+    return () => {
+      el.removeEventListener('scroll', actualiserFleches)
+      window.removeEventListener('resize', actualiserFleches)
+    }
+  }, [actualiserFleches, items.length])
+
+  /** `prefers-reduced-motion` : défilement instantané. Même vérification que
+   *  BoutonRetourHaut.tsx — passer `behavior` explicitement dans l'appel JS
+   *  l'emporte sur la règle CSS globale (globals.css), qui ne s'applique
+   *  qu'aux défilements SANS `behavior` explicite ; il faut donc vérifier
+   *  ici, pas compter sur cette règle pour le faire à notre place. */
+  function mouvementReduit() {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }
+
+  function defiler(sens: 1 | -1) {
+    const el = piste.current
+    if (!el) return
+    el.scrollBy({ left: sens * el.clientWidth * 0.9, behavior: mouvementReduit() ? 'auto' : 'smooth' })
+  }
+
+  function surFocus(e: React.FocusEvent<HTMLButtonElement>) {
+    e.currentTarget.scrollIntoView({
+      behavior: mouvementReduit() ? 'auto' : 'smooth',
+      block: 'nearest',
+      inline: 'nearest',
+    })
+  }
+
+  return (
+    <div className="relative">
+      <div
+        ref={piste}
+        className="scrollbar-none flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth lg:gap-4"
+      >
+        {items.map((r) => (
+          <button
+            key={r.cle}
+            type="button"
+            onClick={() => onOuvrir(r)}
+            onFocus={surFocus}
+            title={r.titre}
+            aria-label={`${libelles.ouvrir} — ${r.titre}`}
+            className="group relative aspect-[3/4] w-[calc((100%-1.5rem)/3.3)] shrink-0 snap-start overflow-hidden rounded-xl bg-ko-cream2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ko-blue"
+          >
+            <Image
+              src={r.src}
+              alt={r.titre}
+              fill
+              sizes="(max-width: 1024px) 33vw, 420px"
+              quality={80}
+              style={r.desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
+              className="object-cover object-center transition-transform duration-[400ms] group-hover:scale-[1.02]"
+            />
+
+            {/* Voile de lisibilité — assez fort en permanence pour que le
+                titre reste lisible SANS survol : sur tactile, il n'y a pas
+                de survol. */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-t from-ko-scrim/80 via-ko-scrim/10 to-transparent"
+            />
+
+            {/* Titre en surimpression, sur deux lignes maximum. Une carte de
+                ~110px de large (mobile, trois par écran) ne loge pas un long
+                titre d'événement en entier — `line-clamp-2` coupe proprement
+                avec des points de suspension plutôt que de déborder ou
+                d'écraser la carte suivante. Le titre COMPLET reste
+                disponible : attribut `title` ci-dessus (infobulle), et
+                surtout l'en-tête de la visionneuse qui s'ouvre au clic. */}
+            <span className="absolute inset-x-2 bottom-2 line-clamp-2 text-left font-serif text-[11px] leading-tight text-ko-white sm:text-[13px] lg:inset-x-4 lg:bottom-4 lg:text-[18px]">
+              {r.titre}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Flèches — desktop seulement (`lg:flex`) : sur mobile, le glissement
+          tactile est le geste attendu, une paire de flèches y ajouterait du
+          bruit sans rien permettre de plus. Une rangée d'une seule carte n'a
+          rien à défiler : pas de flèches non plus dans ce cas. */}
+      {items.length > 1 && (
+        <>
+          <BoutonCarrousel
+            direction="precedent"
+            libelle={libelles.precedent}
+            onClick={() => defiler(-1)}
+            desactive={!peutReculer}
+          />
+          <BoutonCarrousel
+            direction="suivant"
+            libelle={libelles.suivant}
+            onClick={() => defiler(1)}
+            desactive={!peutAvancer}
+          />
+        </>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Flèche de la rangée — chevron dessiné en CSS, même technique que
+ * BandeauImages.tsx et SlideImages.tsx : trois gestes ne justifient pas une
+ * icône de plus dans le fichier partagé. Noir (#111210 = `ko-black`),
+ * jamais bleu — la règle de contraste de CLAUDE.md réserve le bleu, sur fond
+ * clair, aux gros éléments graphiques ; un petit chevron n'en est pas un.
+ */
+function BoutonCarrousel({
+  direction,
+  libelle,
+  onClick,
+  desactive,
+}: {
+  direction: 'precedent' | 'suivant'
+  libelle: string
+  onClick: () => void
+  desactive: boolean
+}) {
+  const precedent = direction === 'precedent'
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={desactive}
+      aria-label={libelle}
+      title={libelle}
+      className={cn(
+        'absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-ko-white shadow-card transition-opacity duration-200 lg:flex',
+        precedent ? 'left-2' : 'right-2',
+        desactive ? 'pointer-events-none opacity-0' : 'opacity-100 hover:bg-ko-cream',
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className={cn(
+          'h-2.5 w-2.5 rotate-45 border-ko-black',
+          precedent ? 'ml-0.5 border-b-2 border-l-2' : '-ml-0.5 border-r-2 border-t-2',
+        )}
+      />
+    </button>
+  )
 }

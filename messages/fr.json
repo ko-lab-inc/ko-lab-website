@@ -310,6 +310,8 @@
     "filtres_label": "Filtrer les réalisations",
     "compte": "{n, plural, =0 {Aucune réalisation} one {# réalisation} other {# réalisations}}",
     "voir_serie": "Voir les images",
+    "carrousel_precedent": "Réalisations précédentes",
+    "carrousel_suivant": "Réalisations suivantes",
     "slide_fermer": "Fermer les images",
     "slide_precedent": "Image précédente",
     "slide_suivant": "Image suivante",

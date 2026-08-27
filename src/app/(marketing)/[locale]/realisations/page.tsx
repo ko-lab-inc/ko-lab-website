@@ -104,10 +104,16 @@ export default async function RealisationsPage({ params }: Props) {
           {publiees ? (
             <Reveal>
               <GalerieRealisations
-                realisations={publiees.map((r) => versCarte(r, libellesCategories))}
+                realisations={publiees.map((r) => versCarte(r))}
                 filtres={filtres}
                 labelFiltres={t('filtres_label')}
                 aucunResultat={t('aucun_resultat')}
+                libellesCategories={libellesCategories}
+                libellesCarrousel={{
+                  precedent: t('carrousel_precedent'),
+                  suivant: t('carrousel_suivant'),
+                  ouvrir: t('voir_serie'),
+                }}
               />
             </Reveal>
           ) : (
@@ -123,37 +129,36 @@ export default async function RealisationsPage({ params }: Props) {
  * Ligne de base → carte affichable.
  *
  * ---------------------------------------------------------------------------
- * PAS DE CADRAGE NI DE DÉSATURATION POUR LE CONTENU RÉEL
+ * PAS DE DÉSATURATION POUR LE CONTENU RÉEL
  *
- * `cadrage` (recentrage `object-position`) et `desature` (le filtre chaud
- * appliqué aux photos de nuit sous-exposées) sont des correctifs pensés pour
- * DES PHOTOS DE BANQUE dépareillées — elles n'appartiennent pas au même
- * reportage et n'ont donc jamais le même ton ni le même cadrage naturel. Une
+ * `desature` (le filtre chaud appliqué aux photos de nuit sous-exposées) est
+ * un correctif pensé pour DES PHOTOS DE BANQUE dépareillées — elles
+ * n'appartiennent pas au même reportage et n'ont donc jamais le même ton. Une
  * vraie série de photos KO-LAB, prise par la même personne le même jour, n'a
- * pas ce problème : `object-center` et aucun filtre suffisent.
+ * pas ce problème : aucun filtre suffit.
  *
- * ⚠️ Si un jour une photo réelle a besoin d'un recadrage précis, ce sera un
- * réglage PAR IMAGE dans /admin/realisations, pas une constante de ce fichier
- * — la table n'a volontairement pas cette colonne tant que le besoin ne
- * s'est pas présenté.
+ * `cadrage` (recentrage `object-position`) a disparu avec la refonte en
+ * carrousels (24 août 2026) : l'ancienne grille asymétrique donnait à la
+ * première carte un ratio différent des autres, qui pouvait justifier un
+ * recentrage par carte. Toutes les cartes du carrousel partagent maintenant
+ * le même ratio — `object-center` partout, sans variable à porter.
  */
-function versCarte(
-  r: RealisationPubliee,
-  libellesCategories: Record<string, string>,
-): RealisationCarte {
-  const [premiere, ...suite] = r.images
+function versCarte(r: RealisationPubliee): RealisationCarte {
+  const [premiere] = r.images
 
   return {
     cle: r.slug,
     categorie: r.categorie,
     titre: r.titre,
     description: r.description ?? '',
-    tag: libellesCategories[r.categorie] ?? r.categorie,
     // `premiere` est garantie par `lireRealisationsPubliees()`, qui écarte
     // déjà toute réalisation sans la moindre image.
     src: premiere?.url ?? '',
-    cadrage: 'object-center',
     desature: false,
-    serie: suite.map((im) => ({ src: im.url, alt: im.alt })),
+    // Couverture COMPRISE — c'est tout le sens de la refonte du 24 août 2026 :
+    // la visionneuse ne montre plus seulement « les photos en plus », elle
+    // montre TOUTE la série, y compris celle qui sert de couverture à la
+    // carte.
+    photos: r.images.map((im) => ({ src: im.url, alt: im.alt })),
   }
 }

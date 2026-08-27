@@ -310,6 +310,8 @@
     "filtres_label": "Filter projects",
     "compte": "{n, plural, =0 {No projects} one {# project} other {# projects}}",
     "voir_serie": "View images",
+    "carrousel_precedent": "Previous projects",
+    "carrousel_suivant": "Next projects",
     "slide_fermer": "Close images",
     "slide_precedent": "Previous image",
     "slide_suivant": "Next image",
