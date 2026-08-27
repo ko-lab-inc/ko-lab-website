@@ -119,8 +119,23 @@ export function TableauRealisations({
   }
 }) {
   const boite = useRef<HTMLDialogElement>(null)
-  // `null` = création, une réalisation = édition, `undefined` = fermé.
-  const [edite, setEdite] = useState<RealisationListe | null | undefined>(undefined)
+  // `null` = création, un ID = édition, `undefined` = fermé.
+  //
+  // ⚠️ ID, PAS L'OBJET — corrigé le 27 août 2026 (bug 1 : une photo ajoutée
+  // n'apparaissait qu'après avoir fermé la modale et rouvert la fiche).
+  // Stocker l'OBJET realisation figeait une référence prise au clic sur le
+  // crayon, jamais mise à jour après un Enregistrer réussi — même si
+  // `realisations` (la prop) recevait entre-temps des données fraîches
+  // (revalidatePath + le rafraîchissement automatique après Server Action),
+  // `edite` continuait de pointer sur l'ANCIEN objet. `FormulaireRealisation`
+  // ne remonte pas non plus entre deux sauvegardes (`key={edite?.id}` ne
+  // change pas), donc rien ne le forçait à relire des props pourtant à jour.
+  // En ne gardant que l'ID, `edite` ci-dessous est recalculé À CHAQUE RENDU
+  // depuis `realisations` — dès que la prop se rafraîchit, la ligne éditée
+  // reflète la base réelle, pas un instantané du clic initial.
+  const [editeId, setEditeId] = useState<string | null | undefined>(undefined)
+  const edite: RealisationListe | null | undefined =
+    editeId === undefined ? undefined : editeId === null ? null : realisations.find((r) => r.id === editeId)
 
   useEffect(() => {
     const el = boite.current
@@ -132,7 +147,7 @@ export function TableauRealisations({
   useEffect(() => {
     const el = boite.current
     if (!el) return
-    const fermer = () => setEdite(undefined)
+    const fermer = () => setEditeId(undefined)
     el.addEventListener('close', fermer)
     return () => el.removeEventListener('close', fermer)
   }, [])
@@ -160,7 +175,7 @@ export function TableauRealisations({
       <div className="mb-5 flex justify-end">
         <button
           type="button"
-          onClick={() => setEdite(null)}
+          onClick={() => setEditeId(null)}
           className={buttonVariants({ variant: 'primary', size: 'sm' })}
         >
           <IconeAjouter taille={16} />
@@ -241,7 +256,7 @@ export function TableauRealisations({
 
                     <button
                       type="button"
-                      onClick={() => setEdite(r)}
+                      onClick={() => setEditeId(r.id)}
                       aria-label={`${textes.modifier} — ${r.titre_fr}`}
                       title={textes.modifier}
                       className="flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"

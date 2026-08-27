@@ -1,7 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { useActionState, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useActionState, useEffect, useState } from 'react'
 
 import {
   creerRealisation,
@@ -92,6 +93,32 @@ const CHAMP =
 const CHAMP_PETIT =
   'min-h-[36px] w-full border border-ko-line bg-ko-white px-2.5 py-1.5 text-xs text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none'
 
+/**
+ * Plafond CUMULÉ des nouvelles photos d'un même envoi — bug 2 corrigé le
+ * 27 août 2026.
+ *
+ * `experimental.serverActions.bodySizeLimit` (next.config.ts) plafonne le
+ * corps ENTIER de la requête à 7 Mo, pas chaque fichier séparément — trois
+ * photos de 3 Mo (chacune sous les 5 Mo annoncés par `TAILLE_MAX`,
+ * realisations/actions.ts) totalisent 9 Mo et dépassent quand même ce
+ * plafond global. Next rejette alors la requête AVANT que la Server Action
+ * ne s'exécute (« Body exceeded 7mb limit », reproduit et confirmé dans le
+ * journal serveur) — aucun code applicatif n'a la main à ce stade, donc rien
+ * à intercepter côté serveur pour CE cas précis : la seule protection fiable
+ * est d'empêcher l'envoi de partir. `error.tsx` (même dossier que page.tsx)
+ * reste le filet pour tout ce qui contournerait cette validation.
+ *
+ * 6 Mo, pas 7 : marge d'1 Mo pour l'encodage multipart et le reste du
+ * formulaire (titre, descriptions, alt de chaque photo déjà en base) — même
+ * logique que le Mo de marge déjà laissé entre `TAILLE_MAX` (5 Mo, un seul
+ * fichier) et `bodySizeLimit` (7 Mo), voir la note de next.config.ts.
+ */
+const TAILLE_MAX_CUMULEE_PHOTOS = 6 * 1024 * 1024
+
+function formaterMo(octets: number): string {
+  return (octets / (1024 * 1024)).toFixed(1)
+}
+
 function Champ({
   id,
   libelle,
@@ -124,8 +151,25 @@ export function FormulaireRealisation({
   realisation?: RealisationAdmin
   libelles: LibellesRealisation
 }) {
+  const router = useRouter()
+
+  /**
+   * ⚠️ router.refresh() EXPLICITE — bug 1 corrigé le 27 août 2026.
+   *
+   * `modifierRealisation`/`creerRealisation` appellent déjà `revalidatePath`
+   * (voir realisations/actions.ts) : le rafraîchissement automatique après
+   * Server Action AURAIT dû suffire. Mais rien ici ne garantissait qu'il
+   * survienne AVANT que `TableauRealisations` ne recalcule `edite` (voir sa
+   * note) — un appel explicite, au même endroit que GestionGaleriesPhotos.tsx
+   * (l'écran des galeries, qui n'a jamais eu ce bug), retire tout doute sur
+   * le minutage plutôt que de compter sur un mécanisme implicite.
+   */
   const [etat, action, enCours] = useActionState<EtatRealisation, FormData>(
-    realisation ? modifierRealisation : creerRealisation,
+    async (precedent, donnees) => {
+      const resultat = await (realisation ? modifierRealisation : creerRealisation)(precedent, donnees)
+      if (resultat.succes) router.refresh()
+      return resultat
+    },
     {},
   )
   const [prefixe] = useState(() => (realisation ? `r-${realisation.id}-` : 'nouveau-'))
@@ -135,6 +179,50 @@ export function FormulaireRealisation({
   // champs non contrôlés.
   const [images, setImages] = useState<ImageRealisationBrute[]>(realisation?.images ?? [])
   const [supprimees, setSupprimees] = useState<string[]>([])
+
+  /**
+   * ⚠️ RESYNCHRONISATION SUR LA PROP — bug 1 corrigé le 27 août 2026.
+   *
+   * `useState(realisation?.images ?? [])` ne lit sa valeur initiale qu'AU
+   * MONTAGE — un `realisation` qui change de contenu (photo ajoutée,
+   * enregistrée, puis la page rafraîchie avec des données fraîches) ne
+   * redéclenche jamais cette lecture tant que le composant reste monté avec
+   * la MÊME clé. Résultat observé : la nouvelle photo n'apparaissait
+   * qu'après avoir fermé la modale (démontage) et rouvert la fiche (nouveau
+   * montage, nouvelle lecture de `useState`). Ce `useEffect` referme la
+   * boucle sans dépendre d'un démontage : dès que `realisation` (donc son
+   * `.images`) change de référence — ce qui arrive une fois `edite` recalculé
+   * dans TableauRealisations.tsx après le rafraîchissement — l'état local se
+   * resynchronise sur la vérité serveur. `supprimees` est vidé en même temps :
+   * les retraits qu'il portait viennent d'être appliqués côté serveur, les y
+   * garder les aurait fait renvoyer (donc retenter une suppression déjà
+   * faite) au prochain enregistrement.
+   */
+  useEffect(() => {
+    setImages(realisation?.images ?? [])
+    setSupprimees([])
+  }, [realisation])
+
+  // Bug 2 — voir la note de TAILLE_MAX_CUMULEE_PHOTOS. `null` = sélection
+  // dans les limites (ou aucune sélection), une chaîne = message à afficher
+  // ET signal qui désactive l'envoi.
+  const [erreurTaillePhotos, setErreurTaillePhotos] = useState<string | null>(null)
+
+  function verifierTaillePhotos(fichiers: FileList | null): boolean {
+    if (!fichiers || fichiers.length === 0) {
+      setErreurTaillePhotos(null)
+      return true
+    }
+    const total = Array.from(fichiers).reduce((somme, f) => somme + f.size, 0)
+    if (total > TAILLE_MAX_CUMULEE_PHOTOS) {
+      setErreurTaillePhotos(
+        `${fichiers.length} fichiers sélectionnés totalisent ${formaterMo(total)} Mo — la limite est de ${formaterMo(TAILLE_MAX_CUMULEE_PHOTOS)} Mo par envoi. Retirez-en quelques-uns, ou téléversez-les en plusieurs fois.`,
+      )
+      return false
+    }
+    setErreurTaillePhotos(null)
+    return true
+  }
 
   function actualiserImage(index: number, champ: keyof ImageRealisationBrute, valeur: string | number) {
     setImages((imgs) => imgs.map((img, i) => (i === index ? { ...img, [champ]: valeur } : img)))
@@ -176,7 +264,18 @@ export function FormulaireRealisation({
   const erreur = etat.erreur ? (messages[etat.erreur] ?? libelles.erreurServeur) : null
 
   return (
-    <form action={action} className="space-y-6">
+    <form
+      action={action}
+      // Filet, en plus de l'`onChange` du champ fichier plus bas : si la
+      // sélection a changé sans déclencher cet événement (rare, mais un
+      // champ fichier réinitialisé par script ne le garantit pas toujours),
+      // le formulaire ne part quand même pas avec un envoi trop lourd.
+      onSubmit={(e) => {
+        const champFichier = e.currentTarget.querySelector<HTMLInputElement>('input[type="file"]')
+        if (!verifierTaillePhotos(champFichier?.files ?? null)) e.preventDefault()
+      }}
+      className="space-y-6"
+    >
       <input type="hidden" name="locale" value={locale} />
       {realisation && <input type="hidden" name="id" value={realisation.id} />}
 
@@ -364,7 +463,10 @@ export function FormulaireRealisation({
       </div>
 
       {/* Nouvelles photos. `multiple` : une réalisation se documente
-          normalement avec plusieurs prises, pas une seule à la fois. */}
+          normalement avec plusieurs prises, pas une seule à la fois.
+          `onChange` valide la taille CUMULÉE dès la sélection — bug 2, voir
+          TAILLE_MAX_CUMULEE_PHOTOS : message immédiat plutôt qu'un envoi qui
+          échoue en silence contre le plafond de next.config.ts. */}
       <Champ id={`${prefixe}photos`} libelle={libelles.photos} aide={libelles.photosAide}>
         <input
           id={`${prefixe}photos`}
@@ -372,9 +474,16 @@ export function FormulaireRealisation({
           type="file"
           multiple
           accept="image/webp,image/jpeg,image/png,image/avif"
+          onChange={(e) => verifierTaillePhotos(e.target.files)}
           className="w-full text-sm text-ko-ink file:mr-4 file:min-h-[36px] file:cursor-pointer file:border file:border-ko-line file:bg-ko-cream file:px-4 file:text-sm file:text-ko-ink hover:file:border-ko-ink"
         />
       </Champ>
+
+      {erreurTaillePhotos && (
+        <p role="alert" className="text-sm text-ko-ink">
+          {erreurTaillePhotos}
+        </p>
+      )}
 
       {erreur && (
         <p role="alert" className="text-sm text-ko-ink">
@@ -389,7 +498,7 @@ export function FormulaireRealisation({
 
       <button
         type="submit"
-        disabled={enCours}
+        disabled={enCours || erreurTaillePhotos !== null}
         className={buttonVariants({ variant: 'primary', size: 'sm' })}
       >
         {enCours ? libelles.enCours : realisation ? libelles.enregistrer : libelles.creer}
