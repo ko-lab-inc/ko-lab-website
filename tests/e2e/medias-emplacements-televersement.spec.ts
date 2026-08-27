@@ -129,15 +129,20 @@ test('téléverser une photo depuis la modale — sélection, persistance, refle
 
   // ---------------------------- 1. Téléversement valide ----------------------------
   await modal
-    .getByLabel(/Ou téléverser une nouvelle photo/i)
+    .getByLabel(/Remplacer par une nouvelle photo/i)
     .setInputFiles({ name: 'audit-televersement.jpg', mimeType: 'image/jpeg', buffer: JPEG_MINIMAL })
 
   await expect(async () => {
     expect(await modal.locator('[aria-pressed]').count()).toBe(compteAvant + 1)
   }).toPass({ timeout: 20_000 })
 
+  // `toBeAttached`, pas `toBeVisible` : depuis la modale simplifiée du
+  // 27 août 2026, la grille vit derrière un `<details>` fermé par défaut —
+  // le téléversement marque bien la vignette sélectionnée, mais elle reste
+  // invisible tant que la grille n'est pas dépliée, exactement le
+  // comportement voulu.
   const nouvelleVignette = modal.locator('[aria-pressed="true"]').first()
-  await expect(nouvelleVignette).toBeVisible()
+  await expect(nouvelleVignette).toBeAttached()
 
   await modal.getByRole('button', { name: /^Enregistrer$/ }).click()
   await expect(modal).toBeHidden({ timeout: 10_000 })
@@ -168,7 +173,7 @@ test('téléverser une photo depuis la modale — sélection, persistance, refle
 
   const troisPlusGros = Buffer.alloc(6 * 1024 * 1024, 0)
   await modal2
-    .getByLabel(/Ou téléverser une nouvelle photo/i)
+    .getByLabel(/Remplacer par une nouvelle photo/i)
     .setInputFiles({ name: 'trop-gros.jpg', mimeType: 'image/jpeg', buffer: troisPlusGros })
 
   await expect(modal2.getByRole('alert')).toBeVisible({ timeout: 20_000 })
@@ -179,7 +184,7 @@ test('téléverser une photo depuis la modale — sélection, persistance, refle
   // ---------------------------- 3. Rejet — mauvais type (PDF) ----------------------------
   const pdfMinimal = Buffer.from('%PDF-1.4\n%%EOF')
   await modal2
-    .getByLabel(/Ou téléverser une nouvelle photo/i)
+    .getByLabel(/Remplacer par une nouvelle photo/i)
     .setInputFiles({ name: 'document.pdf', mimeType: 'application/pdf', buffer: pdfMinimal })
 
   await expect(modal2.getByRole('alert')).toBeVisible({ timeout: 20_000 })
@@ -202,6 +207,10 @@ test('téléverser une photo depuis la modale — sélection, persistance, refle
   await ligne.getByRole('button', { name: /Modifier/i }).click()
   const modalFinale = page.locator('dialog[open]')
   const cheminOriginal = besoin1Original!.url_stockage.split('/storage/v1/object/public/medias/')[1]
+  // La grille (donc la vignette à choisir) vit derrière un <details> fermé
+  // par défaut depuis la modale simplifiée du 27 août 2026 — la déplier
+  // avant de pouvoir cliquer une vignette.
+  await modalFinale.locator('summary').click()
   await modalFinale.locator(`button[title="${cheminOriginal}"]`).click()
   await modalFinale.getByRole('button', { name: /^Enregistrer$/ }).click()
   await expect(modalFinale).toBeHidden({ timeout: 10_000 })

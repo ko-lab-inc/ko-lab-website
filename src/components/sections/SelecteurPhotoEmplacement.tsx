@@ -9,6 +9,7 @@ import {
 } from '@/app/(admin)/[locale]/admin/medias-emplacements/actions'
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeCoche, IconeFermer } from '@/components/ui/Icones'
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -65,19 +66,38 @@ import { cn } from '@/lib/utils/cn'
  * déposées EN TÊTE de la grille, avant `fichiersDisponibles` (calculée côté
  * serveur, donc jamais au courant d'un dépôt qui vient de se produire côté
  * client) — c'est le rafraîchissement demandé, sans recharger la page.
+ *
+ * ---------------------------------------------------------------------------
+ * SIMPLIFIÉE 27 août 2026 — LA GRILLE PASSE DERRIÈRE UN <details>
+ *
+ * Constat de Christian : le geste courant est « voir la photo en place, la
+ * remplacer » — la grille de ~15 vignettes forçait à chercher laquelle était
+ * l'actuelle avant de pouvoir agir. Nouvel ordre : la photo courante
+ * (`selection`, pas `photoActuelle` — voir plus haut, c'est ce qui permet à
+ * l'aperçu de refléter tout de suite un téléversement ou un choix dans la
+ * grille, avant même l'Enregistrer) s'affiche en grand ; le téléversement,
+ * geste principal, vient juste en dessous ; la grille, geste secondaire,
+ * passe derrière un `<details>` fermé par défaut — natif plutôt qu'un état
+ * React + ARIA maison, pour l'accessibilité clavier et l'annonce
+ * ouvert/fermé gratuites. Le comportement INTERNE de la grille (sélection,
+ * badge « photo actuelle », dédoublonnage) n'a pas changé — seul son
+ * emplacement dans le document a bougé.
  * ---------------------------------------------------------------------------
  */
 
 export type FichierDisponible = { chemin: string; url: string }
 
 export type TextesSelecteurEmplacement = {
+  /** Libellé du `<summary>` de la grille repliée (« Choisir une photo déjà
+   *  dans la bibliothèque »), plus le texte d'aide qui l'accompagne une fois
+   *  dépliée — geste secondaire depuis la simplification du 27 août 2026. */
   titreModal: string
   champChoix: string
   aideChoix: string
-  /** Libellé du champ de fichier — distingue le geste de la grille juste
-   *  au-dessus (« Ou téléverser une nouvelle photo »). */
+  /** Libellé du champ de fichier — geste PRINCIPAL depuis le 27 août 2026
+   *  (« Remplacer par une nouvelle photo »), plus haut dans la modale que la
+   *  grille repliée. */
   champTeleverser: string
-  aideTeleverser: string
   champDossier: string
   /** Formats acceptés + taille max, affiché sous le champ de fichier. */
   contraintesPhoto: string
@@ -286,71 +306,22 @@ export function SelecteurPhotoEmplacement({
           </button>
         </div>
 
-        <label className="label-mono mb-2 block text-ko-muted">{textes.champChoix}</label>
-        {/* Texte d'aide court — sans lui, une grille de vignettes sans
-            contexte ne dit ni ce qu'elle montre, ni qu'un emplacement ne
-            porte qu'une photo à la fois. */}
-        <p className="mb-3 text-sm leading-relaxed text-ko-muted">{textes.aideChoix}</p>
-
-        {/* Grille de vignettes du bucket — jamais une URL saisie à la main.
-            `max-h` + défilement interne : jusqu'à ~40 fichiers disponibles
-            au 22 août 2026, une grille non bornée aurait poussé le reste
-            du modal (textes alternatifs, Enregistrer) hors de l'écran. */}
-        <div className="grid max-h-[280px] grid-cols-4 gap-2 overflow-y-auto border border-ko-line p-2 sm:grid-cols-5">
-          {options.map((f) => {
-            const estSelectionnee = f.url === selection
-            const estActuelle = f.url === photoActuelle
-            return (
-              <button
-                key={f.url}
-                type="button"
-                onClick={() => setSelection(f.url)}
-                aria-pressed={estSelectionnee}
-                title={f.chemin}
-                className={cn(
-                  'relative aspect-square overflow-hidden border-2 bg-ko-cream2 transition-colors duration-200',
-                  // Marquage renforcé : anneau + décalage (ring-offset) en
-                  // plus de la bordure, pour que la sélection se voie même
-                  // à côté de l'étiquette « Photo actuelle » sur une autre
-                  // vignette — une simple bordure de 2px passait inaperçue
-                  // (retour : « on ne sait pas laquelle est en place »).
-                  estSelectionnee
-                    ? 'border-ko-ink ring-2 ring-ko-ink ring-offset-2'
-                    : 'border-transparent hover:border-ko-line',
-                )}
-              >
-                <Image src={f.url} alt="" fill sizes="100px" className="object-cover" />
-
-                {estActuelle && (
-                  <span className="absolute left-1 top-1 rounded bg-ko-ink px-1.5 py-0.5 font-mono text-[9px] uppercase leading-none tracking-wide text-ko-white">
-                    {textes.photoActuelle}
-                  </span>
-                )}
-
-                {estSelectionnee && (
-                  <span
-                    aria-hidden="true"
-                    className="absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-ko-ink text-ko-white"
-                  >
-                    <IconeCoche taille={12} />
-                  </span>
-                )}
-              </button>
-            )
-          })}
+        {/* 1. Photo actuelle (= `selection`, pas `photoActuelle`) en grand —
+            voir la docstring du fichier, section « SIMPLIFIÉE 27 août 2026 ».
+            Pas de badge : seule photo affichée ici, rien à distinguer. */}
+        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-sm border border-ko-line bg-ko-cream2">
+          {selection ? (
+            <Image src={selection} alt="" fill sizes="(max-width: 640px) 100vw, 552px" className="object-cover" />
+          ) : (
+            <PhotoPlaceholder ratio="" label={textes.sansPhoto} className="absolute inset-0 h-full w-full" />
+          )}
         </div>
 
-        {photoActuelle === null && (
-          <p className="mt-2 text-xs italic text-ko-muted">{textes.sansPhoto}</p>
-        )}
-
-        {/* Téléversement — geste distinct de la grille au-dessus, libellé
-            séparé pour ne pas laisser croire que c'est la même action. */}
-        <div className="mt-6 border-t border-ko-line pt-5">
+        {/* 2. Téléversement — geste principal, juste sous l'aperçu. */}
+        <div className="mt-6">
           <label htmlFor={`televerser-${cle}`} className="label-mono mb-2 block text-ko-muted">
             {textes.champTeleverser}
           </label>
-          <p className="mb-3 text-sm leading-relaxed text-ko-muted">{textes.aideTeleverser}</p>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="sm:w-44 sm:shrink-0">
@@ -399,6 +370,75 @@ export function SelecteurPhotoEmplacement({
             </p>
           )}
         </div>
+
+        {/* 3. Bibliothèque — geste secondaire, repliée par défaut. `<details>`
+            natif : dépliage au clavier (Entrée/Espace sur le `<summary>`,
+            focusable nativement) et état ouvert/fermé annoncé par le
+            lecteur d'écran sans ARIA à écrire à la main. */}
+        <details className="group mt-6 border-t border-ko-line pt-5">
+          <summary className="label-mono flex cursor-pointer list-none items-center gap-2 text-ko-muted marker:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ko-blue [&::-webkit-details-marker]:hidden">
+            <span
+              aria-hidden="true"
+              className="h-1.5 w-1.5 shrink-0 rotate-45 border-b border-r border-ko-muted transition-transform duration-200 group-open:rotate-[135deg]"
+            />
+            {textes.champChoix}
+          </summary>
+
+          {/* Texte d'aide court — sans lui, une grille de vignettes sans
+              contexte ne dit ni ce qu'elle montre, ni qu'un emplacement ne
+              porte qu'une photo à la fois. */}
+          <p className="mb-3 mt-3 text-sm leading-relaxed text-ko-muted">{textes.aideChoix}</p>
+
+          {/* Grille de vignettes du bucket — jamais une URL saisie à la main.
+              `max-h` + défilement interne : jusqu'à ~40 fichiers disponibles
+              au 22 août 2026, une grille non bornée aurait poussé le reste
+              du modal (textes alternatifs, Enregistrer) hors de l'écran.
+              Comportement interne inchangé par la simplification du 27 août
+              2026 : sélection, badge « photo actuelle », dédoublonnage. */}
+          <div className="grid max-h-[280px] grid-cols-4 gap-2 overflow-y-auto border border-ko-line p-2 sm:grid-cols-5">
+            {options.map((f) => {
+              const estSelectionnee = f.url === selection
+              const estActuelle = f.url === photoActuelle
+              return (
+                <button
+                  key={f.url}
+                  type="button"
+                  onClick={() => setSelection(f.url)}
+                  aria-pressed={estSelectionnee}
+                  title={f.chemin}
+                  className={cn(
+                    'relative aspect-square overflow-hidden border-2 bg-ko-cream2 transition-colors duration-200',
+                    // Marquage renforcé : anneau + décalage (ring-offset) en
+                    // plus de la bordure, pour que la sélection se voie même
+                    // à côté de l'étiquette « Photo actuelle » sur une autre
+                    // vignette — une simple bordure de 2px passait inaperçue
+                    // (retour : « on ne sait pas laquelle est en place »).
+                    estSelectionnee
+                      ? 'border-ko-ink ring-2 ring-ko-ink ring-offset-2'
+                      : 'border-transparent hover:border-ko-line',
+                  )}
+                >
+                  <Image src={f.url} alt="" fill sizes="100px" className="object-cover" />
+
+                  {estActuelle && (
+                    <span className="absolute left-1 top-1 rounded bg-ko-ink px-1.5 py-0.5 font-mono text-[9px] uppercase leading-none tracking-wide text-ko-white">
+                      {textes.photoActuelle}
+                    </span>
+                  )}
+
+                  {estSelectionnee && (
+                    <span
+                      aria-hidden="true"
+                      className="absolute bottom-1 right-1 flex h-5 w-5 items-center justify-center rounded-full bg-ko-ink text-ko-white"
+                    >
+                      <IconeCoche taille={12} />
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </details>
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>

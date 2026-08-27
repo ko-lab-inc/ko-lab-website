@@ -95,7 +95,6 @@ export default async function MediasEmplacementsAdminPage({ params }: Props) {
           champChoix: t('champ_choix_photo_emplacement'),
           aideChoix: t('aide_choix_photo_emplacement'),
           champTeleverser: t('champ_televerser_emplacement'),
-          aideTeleverser: t('aide_televerser_emplacement'),
           champDossier: t('champ_dossier_emplacement'),
           contraintesPhoto: t('contraintes_photo_emplacement'),
           televersementEnCours: t('televersement_en_cours_emplacement'),
