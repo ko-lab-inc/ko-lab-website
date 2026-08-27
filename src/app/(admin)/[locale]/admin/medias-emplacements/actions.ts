@@ -3,13 +3,19 @@
 import { revalidatePath, updateTag } from 'next/cache'
 import { headers } from 'next/headers'
 import { getTranslations } from 'next-intl/server'
+import { z } from 'zod'
 
 import { routing } from '@/i18n/routing'
 import { exigerRole } from '@/lib/auth/garde'
+import { ETIQUETTE_GALERIES, PAGES_GALERIE, type PageGalerie } from '@/lib/galeries-photos'
 import { DOSSIERS_MEDIAS } from '@/lib/medias-disponibles'
 import { ETIQUETTE_EMPLACEMENTS_MEDIAS } from '@/lib/medias-emplacements'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
+import { estUuid } from '@/lib/utils/identifiant'
 import { rateLimit } from '@/lib/utils/rateLimit'
+import { ROLES_EQUIPE } from '@/types'
+
+import type { createClient } from '@/lib/supabase/server'
 
 /**
  * Mise à jour d'un emplacement média — table medias_emplacements
@@ -219,4 +225,288 @@ export async function televerserPhotoEmplacement(
     console.error('[medias-emplacements] échec téléversement', err)
     return { success: false, error: t('erreur_serveur_emplacement') }
   }
+}
+
+/* ============================================================================
+ * GALERIES DE PAGES — table galeries_photos (migration 0043, étape 2/3)
+ * ----------------------------------------------------------------------------
+ * Patron suivi : GestionPhotosConcours.tsx / concours/actions.ts
+ * (ajouterPhotoConcours, supprimerPhotoConcours, deplacerPhotoConcours) —
+ * mêmes mécaniques (prochain ordre, échange avec la voisine), adaptées à
+ * `page` comme clé de regroupement plutôt que `concours_id`.
+ *
+ * ⚠️ DEUX ÉCARTS ASSUMÉS PAR RAPPORT AU PATRON CONCOURS
+ *
+ * 1. `exigerRole(ROLES_EQUIPE)` sur les quatre actions, jamais
+ *    `exigerRole(['admin'])` — à la différence de mettreAJourEmplacement/
+ *    televerserPhotoEmplacement plus haut dans ce fichier. Les emplacements
+ *    fixes sont admin seul parce qu'un emplacement gouverne une section
+ *    entière du site public ; une galerie « En photos » est un geste
+ *    d'édition courant (ajouter/retirer une photo), demandé explicitement
+ *    ouvert à l'équipe — RLS (0043, `galeries_photos_*_equipe`) fait
+ *    d'ailleurs déjà foi dans ce sens, ces `exigerRole` ne font que refuser
+ *    tôt plutôt que de laisser Postgres le faire.
+ *
+ * 2. `supprimerPhotoGalerie` NE SUPPRIME PAS le fichier du bucket —
+ *    `supprimerPhotoConcours`, lui, le fait (une photo de concours n'a pas
+ *    d'autre usage). Une photo de galerie peut être PARTAGÉE avec le site
+ *    public par ailleurs (ex. la même image reprise sur une autre page) :
+ *    supprimer la ligne retire la photo de CETTE galerie, jamais le fichier
+ *    lui-même — voir GestionGaleriesPhotos.tsx pour le message affiché.
+ * ============================================================================ */
+
+type ClientSession = Awaited<ReturnType<typeof createClient>>
+
+export type EtatPhotoGalerie = {
+  erreur?: 'donnees' | 'refuse' | 'fichier' | 'serveur'
+  succes?: boolean
+}
+
+export type ResultatGalerie = { success: boolean; error?: string }
+
+const TAILLE_MAX_PHOTO_GALERIE = 5 * 1024 * 1024
+const TYPES_PHOTO_GALERIE = ['image/webp', 'image/jpeg', 'image/png', 'image/avif']
+
+/**
+ * Dossier de destination — STABLE, jamais demandé à l'utilisateur (à la
+ * différence du sélecteur de dossier de SelecteurPhotoEmplacement, où la clé
+ * ne prédit pas fiablement le dossier). Une page de galerie, elle, a
+ * toujours déposé ses photos existantes dans un seul dossier — voir la
+ * migration 0043 pour la vérification faite avant de fixer cette
+ * correspondance.
+ */
+const DOSSIER_PAR_PAGE: Record<PageGalerie, string> = {
+  'operations-terrain': 'operations',
+  installations: 'installations',
+  'le-lab': 'lab',
+  equipements: 'deployment',
+  location: 'rental',
+}
+
+/** Même conversion « chaîne vide → null » que partout ailleurs dans l'admin (concours/actions.ts). */
+const champTexteOptionnel = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .optional()
+    .transform((v) => v || null)
+
+const schemaPhotoGalerie = z.object({
+  page: z.enum(PAGES_GALERIE),
+  alt_fr: z.string().trim().min(1).max(200),
+  alt_en: champTexteOptionnel(200),
+})
+
+/** Le plus GRAND `ordre` existant pour cette page + 10 : un ajout apparaît en fin de liste. */
+async function prochainOrdreGalerie(supabase: ClientSession, page: PageGalerie): Promise<number> {
+  const { data } = await supabase
+    .from('galeries_photos')
+    .select('ordre')
+    .eq('page', page)
+    .order('ordre', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  return (data?.ordre ?? -10) + 10
+}
+
+/**
+ * Échange la position d'une ligne avec sa voisine immédiate DANS LA MÊME
+ * PAGE — même mécanique que `deplacerDansSerie` (concours/actions.ts) et
+ * `deplacerVideo` (admin/videos/actions.ts), bornée par `page` pour ne
+ * jamais mélanger l'ordre de deux galeries différentes.
+ */
+async function deplacerDansGalerie(
+  supabase: ClientSession,
+  id: string,
+  sens: 'haut' | 'bas',
+): Promise<void> {
+  const { data: courante } = await supabase
+    .from('galeries_photos')
+    .select('id, ordre, page')
+    .eq('id', id)
+    .maybeSingle()
+  if (!courante) return
+
+  const { data: voisine } = await supabase
+    .from('galeries_photos')
+    .select('id, ordre')
+    .eq('page', courante.page)
+    .order('ordre', { ascending: sens === 'bas' })
+    [sens === 'bas' ? 'gt' : 'lt']('ordre', courante.ordre)
+    .limit(1)
+    .maybeSingle()
+  if (!voisine) return
+
+  await supabase.from('galeries_photos').update({ ordre: voisine.ordre }).eq('id', courante.id)
+  await supabase.from('galeries_photos').update({ ordre: courante.ordre }).eq('id', voisine.id)
+}
+
+/**
+ * Ajoute une photo à la galerie d'une page — dépôt dans le bucket `medias`
+ * (dossier déterminé par `page`, jamais par le client) puis insertion dans
+ * `galeries_photos`. `alt_fr` est exigé ICI, au moment du téléversement,
+ * jamais laissé à remplir plus tard (demande explicite — un alt qu'on
+ * remplit plus tard ne se remplit jamais).
+ *
+ * Signature `(prevState, FormData)` : appelée via `useActionState` +
+ * `<form action={...}>`, comme `ajouterPhotoConcours` — GestionGaleriesPhotos
+ * enchaîne `router.refresh()` côté client après un succès, cette action ne
+ * fait donc pas de `revalidatePath` sur la page ADMIN (seulement
+ * `updateTag` pour la lecture PUBLIQUE, qui n'existe pas encore — étape 3).
+ */
+export async function ajouterPhotoGalerie(
+  _precedent: EtatPhotoGalerie,
+  donnees: FormData,
+): Promise<EtatPhotoGalerie> {
+  const analyse = schemaPhotoGalerie.safeParse({
+    page: donnees.get('page'),
+    alt_fr: donnees.get('alt_fr'),
+    alt_en: donnees.get('alt_en'),
+  })
+  if (!analyse.success) return { erreur: 'donnees' }
+
+  const fichier = donnees.get('fichier')
+  if (!(fichier instanceof File) || fichier.size === 0) return { erreur: 'fichier' }
+  if (fichier.size > TAILLE_MAX_PHOTO_GALERIE || !TYPES_PHOTO_GALERIE.includes(fichier.type)) {
+    return { erreur: 'fichier' }
+  }
+
+  // Même plafond que les emplacements et les réalisations, sous une clé
+  // séparée : les trois écrans ne doivent pas partager le même budget.
+  if (rateLimit(`photo-galerie:${adresseDepuis(await headers())}`, { max: 30, windowMs: 600_000 })) {
+    return { erreur: 'serveur' }
+  }
+
+  try {
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
+
+    const dossier = DOSSIER_PAR_PAGE[analyse.data.page]
+    const extension = fichier.type.split('/')[1]?.replace('jpeg', 'jpg') ?? 'webp'
+    // `<page>-<Date.now()>.<ext>` : même technique que
+    // televerserPhotoEmplacement — la page joue le même rôle descriptif
+    // que la clé d'emplacement, Date.now() évite toute collision.
+    const chemin = `${dossier}/${analyse.data.page}-${Date.now()}.${extension}`
+
+    const { error: erreurUpload } = await supabase.storage
+      .from('medias')
+      .upload(chemin, fichier, { contentType: fichier.type, upsert: false })
+
+    if (erreurUpload) {
+      console.error('[galeries-photos] téléversement refusé', erreurUpload.message)
+      return { erreur: 'fichier' }
+    }
+
+    const { data: urlPublique } = supabase.storage.from('medias').getPublicUrl(chemin)
+    const ordre = await prochainOrdreGalerie(supabase, analyse.data.page)
+
+    const { error } = await supabase.from('galeries_photos').insert({
+      page: analyse.data.page,
+      url_stockage: urlPublique.publicUrl,
+      alt_fr: analyse.data.alt_fr,
+      alt_en: analyse.data.alt_en,
+      ordre,
+    })
+
+    if (error) {
+      console.error('[galeries-photos] enregistrement de la photo refusé', error.message)
+      // Le fichier est déjà déposé : on le retire pour ne pas laisser un
+      // orphelin dans le stockage.
+      await supabase.storage.from('medias').remove([chemin])
+      return { erreur: 'refuse' }
+    }
+  } catch (err) {
+    console.error('[galeries-photos] échec ajout photo', err)
+    return { erreur: 'serveur' }
+  }
+
+  updateTag(ETIQUETTE_GALERIES)
+  return { succes: true }
+}
+
+/**
+ * Modifie les textes alternatifs d'une photo déjà en galerie — geste
+ * distinct de l'ajout, l'unique façon d'éditer alt_fr/alt_en après coup
+ * (l'ajout ne les fixe qu'une fois). Signature en arguments positionnels,
+ * comme `mettreAJourEmplacement` : appelée directement depuis le composant
+ * client (édition inline au blur d'un champ), pas via `useActionState`.
+ */
+export async function modifierAltGalerie(
+  id: string,
+  altFr: string,
+  altEn?: string | null,
+): Promise<ResultatGalerie> {
+  const t = await getTranslations('Admin')
+
+  if (!estUuid(id)) return { success: false, error: t('erreur_donnees_galerie') }
+  const fr = altFr.trim()
+  if (!fr) return { success: false, error: t('erreur_alt_requis_galerie') }
+
+  try {
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { success: false, error: t('erreur_refuse_galerie') }
+    const { supabase } = acces
+
+    const { error } = await supabase
+      .from('galeries_photos')
+      .update({ alt_fr: fr, alt_en: altEn?.trim() || null })
+      .eq('id', id)
+
+    if (error) {
+      console.error('[galeries-photos] mise à jour de l’alt refusée', error.message)
+      return { success: false, error: t('erreur_serveur_galerie') }
+    }
+  } catch (err) {
+    console.error('[galeries-photos] échec mise à jour de l’alt', err)
+    return { success: false, error: t('erreur_serveur_galerie') }
+  }
+
+  updateTag(ETIQUETTE_GALERIES)
+  return { success: true }
+}
+
+/**
+ * Déplace une photo d'un cran dans sa galerie — geste direct (pas de
+ * confirmation), même patron que `deplacerPhotoConcours`/`deplacerVideo`.
+ * Silencieux en cas de refus (id invalide, rôle insuffisant, extrémité de
+ * la liste) : aucun de ces cas n'a besoin d'un message, l'interface ne
+ * propose le geste que quand il a un sens.
+ */
+export async function deplacerPhotoGalerie(donnees: FormData): Promise<void> {
+  const id = String(donnees.get('photo_id') ?? '')
+  const sens = String(donnees.get('sens') ?? '')
+  if (!estUuid(id) || (sens !== 'haut' && sens !== 'bas')) return
+
+  try {
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    await deplacerDansGalerie(acces.supabase, id, sens)
+  } catch (err) {
+    console.error('[galeries-photos] échec déplacement de photo', err)
+  }
+
+  updateTag(ETIQUETTE_GALERIES)
+}
+
+/**
+ * Retire une photo d'une galerie — supprime la LIGNE, jamais le fichier du
+ * bucket. Voir la note d'en-tête de cette section : une photo de galerie
+ * peut servir ailleurs, contrairement à une photo de concours.
+ */
+export async function supprimerPhotoGalerie(donnees: FormData): Promise<void> {
+  const id = String(donnees.get('photo_id') ?? '')
+  if (!estUuid(id)) return
+
+  try {
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    const { error } = await acces.supabase.from('galeries_photos').delete().eq('id', id)
+    if (error) console.error('[galeries-photos] suppression de photo refusée', error.message)
+  } catch (err) {
+    console.error('[galeries-photos] échec suppression de photo', err)
+  }
+
+  updateTag(ETIQUETTE_GALERIES)
 }

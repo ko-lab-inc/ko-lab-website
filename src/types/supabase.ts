@@ -689,6 +689,39 @@ export type Database = {
           },
         ]
       }
+      galeries_photos: {
+        Row: {
+          id: string
+          page: string
+          url_stockage: string
+          alt_fr: string
+          alt_en: string | null
+          ordre: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          page: string
+          url_stockage: string
+          alt_fr: string
+          alt_en?: string | null
+          ordre?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          page?: string
+          url_stockage?: string
+          alt_fr?: string
+          alt_en?: string | null
+          ordre?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
 
     Views: {
