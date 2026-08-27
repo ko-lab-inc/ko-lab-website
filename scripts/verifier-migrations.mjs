@@ -97,6 +97,7 @@ const fichiers = readdirSync(MIGRATIONS_DIR)
   .filter((f) => f.endsWith('.sql'))
   .sort()
 
+const tablesDeclarees = [] // { table, migration } — première migration qui crée la table
 const colonnesDeclarees = [] // { table, colonne, migration }
 const grantsTable = new Map() // "table|role|privilege" -> { accorde: bool, migration }
 const policiesDeclarees = [] // { table, nom, cmd, migration }
@@ -117,8 +118,37 @@ function enregistrerGrant(sens, table, privsBrut, rolesBrut, migration) {
   }
 }
 
+/**
+ * Retire les commentaires de ligne (`-- ...`) avant tout parsing.
+ *
+ * ⚠️ Trouvé en corrigeant le défaut ci-dessous : 0020_rls_auto_enable.sql
+ * SUGGÈRE, en commentaire, `create table public.zzverif_rls (id int)` comme
+ * exemple de vérification manuelle — jamais exécuté par la migration
+ * elle-même. Sans ce nettoyage, `tablesDeclarees` prenait ce commentaire
+ * pour une vraie déclaration et signalait `zzverif_rls` ABSENTE EN BASE, un
+ * faux écart. Aucune chaîne de ce dépôt ne contient `--` en dur (vérifié),
+ * un retrait ligne par ligne est donc sûr sans analyseur SQL complet.
+ */
+function retirerCommentaires(sql) {
+  return sql
+    .split('\n')
+    .map((ligne) => ligne.replace(/--.*$/, ''))
+    .join('\n')
+}
+
 for (const fichier of fichiers) {
-  const texte = readFileSync(new URL(fichier, MIGRATIONS_DIR), 'utf8')
+  const texte = retirerCommentaires(readFileSync(new URL(fichier, MIGRATIONS_DIR), 'utf8'))
+
+  // --- tables créées (`create table`, avec ou sans `if not exists`) ---
+  // Une seule entrée par table : la PREMIÈRE migration qui la crée, l'ordre
+  // des fichiers étant chronologique (tri alphabétique = tri numérique, voir
+  // le sort() plus haut).
+  for (const m of texte.matchAll(/create\s+table\s+(?:if\s+not\s+exists\s+)?public\.(\w+)/gi)) {
+    const table = m[1]
+    if (!tablesDeclarees.some((t) => t.table === table)) {
+      tablesDeclarees.push({ table, migration: fichier })
+    }
+  }
 
   // --- add column (un bloc `alter table` peut ajouter plusieurs colonnes) ---
   for (const bloc of texte.matchAll(/alter\s+table\s+(?:if\s+exists\s+)?public\.(\w+)\s*\n((?:\s*add\s+column[^;]*?,\s*\n)*\s*add\s+column[^;]*?)(?=;)/gis)) {
@@ -163,10 +193,62 @@ for (const fichier of fichiers) {
 
 console.log(`Migrations analysées : ${fichiers.length} fichier(s) dans supabase/migrations/`)
 
-/* -- 2. colonnes : chaque `add column` déclaré existe-t-il vraiment ? ------- */
+/* -- 2. tables : chaque `create table` déclarée existe-t-elle vraiment ? --- */
 
-async function verifierColonnes() {
-  console.log('\n1 · Colonnes ajoutées par une migration (`alter table ... add column`)')
+/**
+ * ⚠️ CORRIGÉ 27 août 2026 — le défaut qui vidait ce script de son utilité.
+ *
+ * Ni cette fonction ni les sondes de GRANT plus bas ne distinguaient
+ * « la table n'existe pas » de « le GRANT est présent » : les deux sondes de
+ * GRANT ne testent que 401/403 (select) ou le message exact `42501 /
+ * permission denied` (insert/update/delete) — une table absente répond
+ * `404 PGRST205 « Could not find the table … in the schema cache »`, qui ne
+ * matche AUCUN des deux, et retombait donc du côté « accordé ». Le script
+ * rapportait « confirmé » pour les quatre GRANT de `galeries_photos` (0043)
+ * alors que la table n'avait pas encore été créée en base — un faux positif
+ * total, découvert en écrivant cette migration.
+ *
+ * Cette fonction sonde maintenant l'EXISTENCE de chaque table déclarée par
+ * un `create table`, AVANT toute question de GRANT — avec la clé de
+ * service, qui traverse RLS : seule l'absence de la table elle-même peut
+ * produire ce 404 précis, jamais une question de policy ou de privilège.
+ * Les tables qu'elle trouve absentes sont ensuite EXCLUES des sondes de
+ * colonnes et de GRANT (`tablesManquantes`, passé en paramètre) : sonder un
+ * GRANT sur une table qui n'existe pas n'a pas de sens, et aurait continué à
+ * imprimer des « confirmé » trompeurs juste en dessous de l'écart déjà
+ * signalé ici.
+ */
+async function verifierTablesExistent() {
+  console.log('\n1 · Tables créées par une migration (`create table`)')
+
+  const tablesManquantes = new Set()
+
+  if (tablesDeclarees.length === 0) {
+    note('aucune table créée détectée dans le dépôt')
+    return tablesManquantes
+  }
+
+  for (const { table, migration } of tablesDeclarees) {
+    const r = await fetch(`${URL_BASE}/rest/v1/${table}?select=*&limit=0`, {
+      headers: { apikey: CLE_SERVICE, Authorization: `Bearer ${CLE_SERVICE}` },
+    })
+    const j = await r.json().catch(() => null)
+    const absente = r.status === 404 && j?.code === 'PGRST205'
+    if (absente) tablesManquantes.add(table)
+    verdict(
+      !absente,
+      table.padEnd(24),
+      absente ? `ABSENTE EN BASE — déclarée par ${migration}` : `déclarée par ${migration}, confirmée`,
+    )
+  }
+
+  return tablesManquantes
+}
+
+/* -- 3. colonnes : chaque `add column` déclaré existe-t-il vraiment ? ------- */
+
+async function verifierColonnes(tablesManquantes) {
+  console.log('\n2 · Colonnes ajoutées par une migration (`alter table ... add column`)')
 
   if (colonnesDeclarees.length === 0) {
     note('aucune colonne ajoutée détectée dans le dépôt')
@@ -174,6 +256,10 @@ async function verifierColonnes() {
   }
 
   for (const { table, colonne, migration } of colonnesDeclarees) {
+    if (tablesManquantes.has(table)) {
+      note(`${table}.${colonne.padEnd(20)}`, `table absente — voir section 1, colonne non vérifiable`)
+      continue
+    }
     const r = await fetch(`${URL_BASE}/rest/v1/${table}?select=${colonne}&limit=1`, {
       headers: { apikey: CLE_SERVICE, Authorization: `Bearer ${CLE_SERVICE}` },
     })
@@ -187,7 +273,7 @@ async function verifierColonnes() {
   }
 }
 
-/* -- 3. GRANTs `anon` : sonde comportementale, sans écrire de vraie ligne --- */
+/* -- 4. GRANTs `anon` : sonde comportementale, sans écrire de vraie ligne --- */
 
 /**
  * Reprend la technique de `audit-supabase.mjs` (`ecritures()`) : un corps
@@ -239,8 +325,8 @@ async function sondeGrantAnon(table, priv) {
   return null
 }
 
-async function verifierGrantsAnon() {
-  console.log('\n2 · GRANTs déclarés pour `anon` (sonde comportementale, corps vide, rien n’est créé)')
+async function verifierGrantsAnon(tablesManquantes) {
+  console.log('\n3 · GRANTs déclarés pour `anon` (sonde comportementale, corps vide, rien n’est créé)')
 
   const entrees = [...grantsTable.entries()].filter(([cle]) => cle.split('|')[1] === 'anon')
   if (entrees.length === 0) {
@@ -250,6 +336,13 @@ async function verifierGrantsAnon() {
 
   for (const [cle, { accorde, migration }] of entrees) {
     const [table, , priv] = cle.split('|')
+    // Table déjà signalée absente (section 1) : sonder son GRANT n'a pas de
+    // sens et redonnerait un « confirmé » trompeur — voir la note de
+    // verifierTablesExistent.
+    if (tablesManquantes.has(table)) {
+      note(`anon ${priv.toUpperCase().padEnd(7)} ${table.padEnd(22)}`, 'table absente — voir section 1, GRANT non vérifiable')
+      continue
+    }
     const present = await sondeGrantAnon(table, priv)
     verdict(
       present === accorde,
@@ -265,7 +358,7 @@ async function verifierGrantsAnon() {
   }
 }
 
-/* -- 4. GRANTs `authenticated` : nécessite un compte jetable ---------------- */
+/* -- 5. GRANTs `authenticated` : nécessite un compte jetable ---------------- */
 
 async function creerCompteJetable() {
   const email = `audit-migrations+${Date.now()}@ko-lab.test`
@@ -322,8 +415,8 @@ async function sondeGrantAuthentifie(table, priv, jeton) {
   return null
 }
 
-async function verifierGrantsAuthentifies() {
-  console.log('\n3 · GRANTs déclarés pour `authenticated` (compte jetable, supprimé en fin de script)')
+async function verifierGrantsAuthentifies(tablesManquantes) {
+  console.log('\n4 · GRANTs déclarés pour `authenticated` (compte jetable, supprimé en fin de script)')
 
   const entrees = [...grantsTable.entries()].filter(([cle]) => cle.split('|')[1] === 'authenticated')
   if (entrees.length === 0) {
@@ -335,6 +428,13 @@ async function verifierGrantsAuthentifies() {
   try {
     for (const [cle, { accorde, migration }] of entrees) {
       const [table, , priv] = cle.split('|')
+      if (tablesManquantes.has(table)) {
+        note(
+          `authenticated ${priv.toUpperCase().padEnd(7)} ${table.padEnd(22)}`,
+          'table absente — voir section 1, GRANT non vérifiable',
+        )
+        continue
+      }
       const present = await sondeGrantAuthentifie(table, priv, jeton)
       verdict(
         present === accorde,
@@ -353,10 +453,10 @@ async function verifierGrantsAuthentifies() {
   }
 }
 
-/* -- 5. fonctions SECURITY DEFINER : exécutables par anon ? ----------------- */
+/* -- 6. fonctions SECURITY DEFINER : exécutables par anon ? ----------------- */
 
 async function verifierFonctions() {
-  console.log('\n4 · Fonctions `SECURITY DEFINER` déclarées — exécutables par anon ?')
+  console.log('\n5 · Fonctions `SECURITY DEFINER` déclarées — exécutables par anon ?')
 
   const definer = fonctionsDeclarees.filter((f) => f.securityDefiner)
   if (definer.length === 0) {
@@ -381,10 +481,10 @@ async function verifierFonctions() {
   }
 }
 
-/* -- 6. inventaire non vérifiable ici : policies + triggers ----------------- */
+/* -- 7. inventaire non vérifiable ici : policies + triggers ----------------- */
 
 function inventaireSqlEditor() {
-  console.log('\n5 · Policies et triggers déclarés — inventaire (contenu réel non vérifiable via PostgREST)')
+  console.log('\n6 · Policies et triggers déclarés — inventaire (contenu réel non vérifiable via PostgREST)')
 
   console.log(`  ${GRIS}${policiesDeclarees.length} policy(ies) déclarée(s), ${triggersDeclares.length} trigger(s) déclaré(s)${RAZ}`)
   console.log(`  ${JAUNE}information_schema et pg_catalog ne sont pas exposés par PostgREST (406 PGRST106,`)
@@ -406,9 +506,10 @@ function inventaireSqlEditor() {
 /* -- exécution --------------------------------------------------------------- */
 
 console.log(`\nBase : ${URL_BASE}\n`)
-await verifierColonnes()
-await verifierGrantsAnon()
-await verifierGrantsAuthentifies()
+const tablesManquantes = await verifierTablesExistent()
+await verifierColonnes(tablesManquantes)
+await verifierGrantsAnon(tablesManquantes)
+await verifierGrantsAuthentifies(tablesManquantes)
 await verifierFonctions()
 inventaireSqlEditor()
 
