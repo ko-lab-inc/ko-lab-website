@@ -4,7 +4,7 @@ import { revalidatePath, updateTag } from 'next/cache'
 import { headers } from 'next/headers'
 import { z } from 'zod'
 
-import { ETIQUETTE_REALISATIONS, type ImageRealisation } from '@/lib/realisations'
+import { ETIQUETTE_REALISATIONS, type ImageRealisationBrute } from '@/lib/realisations'
 import { exigerRole } from '@/lib/auth/garde'
 import { createClient } from '@/lib/supabase/server'
 import { estUuid } from '@/lib/utils/identifiant'
@@ -29,13 +29,13 @@ import { CATEGORIES_REALISATION, ROLES_EQUIPE } from '@/types'
  * de SESSION, et le RLS refuse ce qui doit l'être.
  *
  * ---------------------------------------------------------------------------
- * UN SEUL TITRE, UNE SEULE DESCRIPTION — décision de Christian
+ * TITRE ET DESCRIPTION ANGLAIS — décision renversée le 24 août 2026
  *
- * `titre_en` était NOT NULL, ce qui forçait deux champs de titre. La
- * contrainte a été assouplie par la migration 0014 : le site est désormais
- * francophone uniquement, « on garde en français pour facilité ». Les
- * colonnes `_en` restent en base, nullables, mais cette action ne les écrit
- * plus jamais.
+ * La décision précédente (« on garde en français pour facilité », migration
+ * 0014) retirait `titre_en`/`description_en` du formulaire : le site est
+ * bilingue, ce n'était plus tenable. Cette action les écrit de nouveau,
+ * optionnels — une réalisation sans traduction anglaise reste valide, le
+ * repli FR de lib/realisations.ts s'applique déjà à `null`.
  * ---------------------------------------------------------------------------
  */
 
@@ -47,6 +47,12 @@ export type EtatRealisation = {
 const schemaRealisation = z.object({
   titre_fr: z.string().trim().min(2).max(120),
   description_fr: z.string().trim().max(600).nullable(),
+  // Mêmes contraintes que leurs équivalents FR, en moins strict : `nullable`
+  // plutôt que requis — une chaîne vide devient `null` avant même d'atteindre
+  // ce schéma (voir lireChamps), jamais '' en base. `min(2)` sur titre_en ne
+  // s'applique donc qu'à une vraie traduction saisie, jamais à son absence.
+  titre_en: z.string().trim().min(2).max(120).nullable(),
+  description_en: z.string().trim().max(600).nullable(),
   categorie: z.enum(CATEGORIES_REALISATION),
   ordre: z.coerce.number().int().min(0).max(9999),
 })
@@ -55,6 +61,8 @@ function lireChamps(donnees: FormData) {
   return schemaRealisation.safeParse({
     titre_fr: donnees.get('titre_fr'),
     description_fr: String(donnees.get('description_fr') ?? '').trim() || null,
+    titre_en: String(donnees.get('titre_en') ?? '').trim() || null,
+    description_en: String(donnees.get('description_en') ?? '').trim() || null,
     categorie: donnees.get('categorie'),
     ordre: donnees.get('ordre') ?? 0,
   })
@@ -113,9 +121,11 @@ function cheminDepuisUrl(url: string): string | null {
  * `image_count` donne le nombre de photos CONSERVÉES — celles que le client a
  * déjà retirées de sa liste avant l'envoi ne comptent plus dedans. Pour
  * chaque indice i < image_count :
- *   image_url_i    (hidden)  URL publique actuelle
- *   image_alt_i    (text)    texte alternatif
- *   image_ordre_i  (number)  position dans la série
+ *   image_url_i       (hidden)  URL publique actuelle
+ *   image_alt_fr_i    (text)    texte alternatif français
+ *   image_alt_en_i    (text)    texte alternatif anglais — optionnel, chaîne
+ *                                vide convertie en `null`, jamais ''
+ *   image_ordre_i     (number)  position dans la série
  *
  * `image_supprimee` (répété, un par photo retirée) porte l'URL de chaque
  * photo à effacer du STOCKAGE — une info que son absence de la liste
@@ -132,7 +142,7 @@ async function construireImages(
   supabase: Awaited<ReturnType<typeof createClient>>,
   donnees: FormData,
   slug: string,
-): Promise<{ images: ImageRealisation[] } | { erreur: true }> {
+): Promise<{ images: ImageRealisationBrute[] } | { erreur: true }> {
   /**
    * ⚠️ COMPTEUR BORNÉ — `Number()` accepte `Infinity`.
    *
@@ -152,7 +162,7 @@ async function construireImages(
   const brut = Number(donnees.get('image_count') ?? 0)
   const compte = Number.isFinite(brut) ? Math.min(Math.max(Math.trunc(brut), 0), MAX_IMAGES) : 0
 
-  const conservees: ImageRealisation[] = []
+  const conservees: ImageRealisationBrute[] = []
 
   for (let i = 0; i < compte; i += 1) {
     const url = String(donnees.get(`image_url_${i}`) ?? '')
@@ -166,7 +176,10 @@ async function construireImages(
 
     conservees.push({
       url,
-      alt: String(donnees.get(`image_alt_${i}`) ?? '').trim(),
+      alt_fr: String(donnees.get(`image_alt_fr_${i}`) ?? '').trim(),
+      // Chaîne vide → `null`, jamais '' — même discipline que titre_en et
+      // description_en juste au-dessus.
+      alt_en: String(donnees.get(`image_alt_en_${i}`) ?? '').trim() || null,
       // `Number('abc')` vaut NaN, qui se sérialise en `null` dans le JSON et
       // casse le tri à la relecture.
       ordre: Number.isFinite(ordreBrut) ? ordreBrut : i * 10,
@@ -189,7 +202,7 @@ async function construireImages(
   }
 
   let ordreSuivant = conservees.length > 0 ? Math.max(...conservees.map((im) => im.ordre)) + 10 : 0
-  const nouvelles: ImageRealisation[] = []
+  const nouvelles: ImageRealisationBrute[] = []
 
   for (const fichier of fichiers) {
     if (fichier.size > TAILLE_MAX || !TYPES_IMAGE.includes(fichier.type)) {
@@ -212,7 +225,7 @@ async function construireImages(
     }
 
     const { data } = supabase.storage.from('realisations').getPublicUrl(chemin)
-    nouvelles.push({ url: data.publicUrl, alt: '', ordre: ordreSuivant })
+    nouvelles.push({ url: data.publicUrl, alt_fr: '', alt_en: null, ordre: ordreSuivant })
     ordreSuivant += 10
   }
 

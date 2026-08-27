@@ -12,7 +12,7 @@ import { buttonVariants } from '@/components/ui/Button'
 import { IconePoubelle } from '@/components/ui/Icones'
 import { cn } from '@/lib/utils/cn'
 
-import type { ImageRealisation } from '@/lib/realisations'
+import type { ImageRealisationBrute } from '@/lib/realisations'
 
 /**
  * Création et édition d'une réalisation — un seul formulaire pour les deux.
@@ -21,13 +21,13 @@ import type { ImageRealisation } from '@/lib/realisations'
  * les deux modes, seule l'action diffère.
  *
  * ---------------------------------------------------------------------------
- * UN SEUL TITRE, UNE SEULE DESCRIPTION — décision de Christian
+ * TITRE ET DESCRIPTION ANGLAIS — décision renversée le 24 août 2026
  *
- * `titre_en`/`description_en` existaient parce que `titre_en` était NOT NULL
- * sur cette table (contrainte assouplie par la migration 0014). Le site est
- * désormais francophone uniquement : « on retire tout ce qui est traduit
- * [...] on garde en français pour facilité ». Les colonnes `_en` restent en
- * base, nullables, mais ce formulaire ne les écrit plus jamais.
+ * `titre_en`/`description_en` avaient été retirés de ce formulaire (migration
+ * 0014, « on garde en français pour facilité ») : le site est bilingue, cette
+ * table ne pouvait pas rester la seule exception. Les deux champs sont de
+ * retour, optionnels — présentation FR/EN groupée, même disposition que
+ * FormulaireConcours.tsx.
  *
  * ---------------------------------------------------------------------------
  * LA SÉRIE D'IMAGES EST GÉRÉE CÔTÉ CLIENT, PUIS ENVOYÉE À PLAT
@@ -37,6 +37,10 @@ import type { ImageRealisation } from '@/lib/realisations'
  * dans les autres. À l'envoi, chaque image conservée redevient une poignée de
  * champs `image_..._i`, et chaque photo retirée laisse une trace dans
  * `image_supprimee` — sans quoi le fichier resterait dans le bucket, orphelin.
+ *
+ * Migration 0042 (24 août 2026) : chaque image porte désormais `alt_fr` ET
+ * `alt_en`, plus un simple `alt` — même raison que le titre et la
+ * description, même modèle que `concours_photos`.
  * ---------------------------------------------------------------------------
  */
 
@@ -44,9 +48,11 @@ export type RealisationAdmin = {
   id: string
   slug: string
   titre_fr: string
+  titre_en: string | null
   description_fr: string | null
+  description_en: string | null
   categorie: string
-  images: ImageRealisation[]
+  images: ImageRealisationBrute[]
   ordre: number
   publie: boolean
 }
@@ -54,7 +60,11 @@ export type RealisationAdmin = {
 export type LibellesRealisation = {
   slug: string
   titreFr: string
+  titreEn: string
   descriptionFr: string
+  descriptionEn: string
+  sectionFr: string
+  sectionEn: string
   categorie: string
   categories: Record<string, string>
   ordre: string
@@ -62,7 +72,8 @@ export type LibellesRealisation = {
   photosAide: string
   imagesTitre: string
   imagesVide: string
-  imageAlt: string
+  imageAltFr: string
+  imageAltEn: string
   imageMonter: string
   imageDescendre: string
   imageRetirer: string
@@ -122,10 +133,10 @@ export function FormulaireRealisation({
   // Photos déjà en base (ou déjà téléversées dans cette session d'édition) —
   // voir la docstring du fichier pour pourquoi c'est un state et non des
   // champs non contrôlés.
-  const [images, setImages] = useState<ImageRealisation[]>(realisation?.images ?? [])
+  const [images, setImages] = useState<ImageRealisationBrute[]>(realisation?.images ?? [])
   const [supprimees, setSupprimees] = useState<string[]>([])
 
-  function actualiserImage(index: number, champ: keyof ImageRealisation, valeur: string | number) {
+  function actualiserImage(index: number, champ: keyof ImageRealisationBrute, valeur: string | number) {
     setImages((imgs) => imgs.map((img, i) => (i === index ? { ...img, [champ]: valeur } : img)))
   }
 
@@ -185,18 +196,6 @@ export function FormulaireRealisation({
           </select>
         </Champ>
 
-        <Champ id={`${prefixe}titre_fr`} libelle={libelles.titreFr}>
-          <input
-            id={`${prefixe}titre_fr`}
-            name="titre_fr"
-            required
-            minLength={2}
-            maxLength={120}
-            defaultValue={realisation?.titre_fr}
-            className={CHAMP}
-          />
-        </Champ>
-
         <Champ id={`${prefixe}ordre`} libelle={libelles.ordre}>
           <input
             id={`${prefixe}ordre`}
@@ -210,16 +209,58 @@ export function FormulaireRealisation({
         </Champ>
       </div>
 
-      <Champ id={`${prefixe}description_fr`} libelle={libelles.descriptionFr}>
-        <textarea
-          id={`${prefixe}description_fr`}
-          name="description_fr"
-          rows={3}
-          defaultValue={realisation?.description_fr ?? ''}
-          maxLength={600}
-          className={cn(CHAMP, 'resize-y')}
-        />
-      </Champ>
+      {/* Deux colonnes FR/EN, champ par champ sur la même ligne — même
+          disposition que FormulaireConcours.tsx : un champ EN vide se repère
+          d'un coup d'œil, en face de son équivalent FR rempli. */}
+      <div className="grid grid-cols-1 gap-x-6 gap-y-4 border-t border-ko-line pt-4 lg:grid-cols-2">
+        <p className="label-mono -mb-1 text-ko-muted lg:col-span-1">{libelles.sectionFr}</p>
+        <p className="label-mono -mb-1 hidden text-ko-muted lg:col-span-1 lg:block">
+          {libelles.sectionEn}
+        </p>
+
+        <Champ id={`${prefixe}titre_fr`} libelle={libelles.titreFr}>
+          <input
+            id={`${prefixe}titre_fr`}
+            name="titre_fr"
+            required
+            minLength={2}
+            maxLength={120}
+            defaultValue={realisation?.titre_fr}
+            className={CHAMP}
+          />
+        </Champ>
+        <Champ id={`${prefixe}titre_en`} libelle={libelles.titreEn}>
+          <input
+            id={`${prefixe}titre_en`}
+            name="titre_en"
+            minLength={2}
+            maxLength={120}
+            defaultValue={realisation?.titre_en ?? ''}
+            className={CHAMP}
+          />
+        </Champ>
+
+        <Champ id={`${prefixe}description_fr`} libelle={libelles.descriptionFr}>
+          <textarea
+            id={`${prefixe}description_fr`}
+            name="description_fr"
+            rows={3}
+            defaultValue={realisation?.description_fr ?? ''}
+            maxLength={600}
+            className={cn(CHAMP, 'resize-y')}
+          />
+        </Champ>
+        <Champ id={`${prefixe}description_en`} libelle={libelles.descriptionEn}>
+          <textarea
+            id={`${prefixe}description_en`}
+            name="description_en"
+            rows={3}
+            defaultValue={realisation?.description_en ?? ''}
+            maxLength={600}
+            className={cn(CHAMP, 'resize-y')}
+          />
+        </Champ>
+      </div>
 
       {/* ------------------------------ Images ------------------------------ */}
       <div>
@@ -241,18 +282,37 @@ export function FormulaireRealisation({
                   <Image src={img.url} alt="" fill sizes="56px" className="object-cover" />
                 </div>
 
-                <label className="block min-w-0 flex-1">
-                  <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-ko-muted">
-                    {libelles.imageAlt}
-                  </span>
-                  <input
-                    name={`image_alt_${i}`}
-                    value={img.alt}
-                    onChange={(e) => actualiserImage(i, 'alt', e.target.value)}
-                    maxLength={200}
-                    className={CHAMP_PETIT}
-                  />
-                </label>
+                {/* Deux champs empilés, pas côte à côte — la ligne porte déjà
+                    la vignette et les boutons d'ordre/retrait, une troisième
+                    colonne de texte y serait trop à l'étroit. Même paire de
+                    langues que le titre et la description plus haut, juste
+                    un champ EN optionnel de plus. */}
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  <label className="block">
+                    <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-ko-muted">
+                      {libelles.imageAltFr}
+                    </span>
+                    <input
+                      name={`image_alt_fr_${i}`}
+                      value={img.alt_fr}
+                      onChange={(e) => actualiserImage(i, 'alt_fr', e.target.value)}
+                      maxLength={200}
+                      className={CHAMP_PETIT}
+                    />
+                  </label>
+                  <label className="block">
+                    <span className="mb-1 block font-mono text-[10px] uppercase tracking-widest text-ko-muted">
+                      {libelles.imageAltEn}
+                    </span>
+                    <input
+                      name={`image_alt_en_${i}`}
+                      value={img.alt_en ?? ''}
+                      onChange={(e) => actualiserImage(i, 'alt_en', e.target.value)}
+                      maxLength={200}
+                      className={CHAMP_PETIT}
+                    />
+                  </label>
+                </div>
 
                 {/* Ordre — deux flèches, comme TableauVideos : un champ
                     numérique s'était déjà révélé obscur pour Christian sur le
@@ -268,7 +328,7 @@ export function FormulaireRealisation({
                       type="button"
                       onClick={() => deplacerImage(i, sens)}
                       disabled={desactive}
-                      aria-label={`${label} — ${img.alt || img.url}`}
+                      aria-label={`${label} — ${img.alt_fr || img.url}`}
                       title={label}
                       className="group flex h-9 w-9 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink disabled:cursor-not-allowed disabled:text-ko-line"
                     >
@@ -286,7 +346,7 @@ export function FormulaireRealisation({
                 <button
                   type="button"
                   onClick={() => retirerImage(i)}
-                  aria-label={`${libelles.imageRetirer} — ${img.alt || img.url}`}
+                  aria-label={`${libelles.imageRetirer} — ${img.alt_fr || img.url}`}
                   title={libelles.imageRetirer}
                   className="flex h-9 w-9 shrink-0 items-center justify-center text-ko-muted transition-colors duration-200 hover:text-ko-ink"
                 >

@@ -38,7 +38,24 @@ import type { AppLocale } from '@/i18n/routing'
  * ---------------------------------------------------------------------------
  */
 
+/**
+ * Forme RÉSOLUE — un seul `alt`, déjà choisi pour la langue demandée. C'est
+ * ce que consomment les composants publics (GalerieRealisations.tsx,
+ * /realisations/page.tsx) : ils n'ont jamais à savoir qu'une photo porte
+ * deux textes alternatifs, seulement lequel s'affiche.
+ */
 export type ImageRealisation = { url: string; alt: string; ordre: number }
+
+/**
+ * Forme BRUTE — telle que stockée dans la colonne jsonb `images`, les deux
+ * langues côte à côte. C'est ce que consomme l'espace admin
+ * (FormulaireRealisation.tsx), qui doit pouvoir éditer les deux textes.
+ *
+ * Migration 0042 (24 août 2026) : avant elle, chaque entrée ne portait qu'un
+ * seul `alt`, affiché tel quel dans les deux langues — voir la décision
+ * datée dans FormulaireRealisation.tsx pour le contexte.
+ */
+export type ImageRealisationBrute = { url: string; alt_fr: string; alt_en: string | null; ordre: number }
 
 export type RealisationPubliee = Omit<
   Realisation,
@@ -59,7 +76,8 @@ export type RealisationPubliee = Omit<
 export const ETIQUETTE_REALISATIONS = 'realisations'
 
 /**
- * Valide ce qui sort de la colonne jsonb.
+ * Valide ce qui sort de la colonne jsonb, sans rien résoudre — la forme
+ * BRUTE, bilingue, pour l'espace admin.
  *
  * Postgres garantit que c'est du JSON valide, pas que c'est un TABLEAU
  * d'OBJETS avec les bonnes clés — un `update` malencontreux depuis le SQL
@@ -68,23 +86,38 @@ export const ETIQUETTE_REALISATIONS = 'realisations'
  * confiance à une source qu'on ne contrôle pas entièrement au moment de la
  * lecture.
  */
-export function validerImages(brut: unknown): ImageRealisation[] {
+export function validerImagesBrutes(brut: unknown): ImageRealisationBrute[] {
   if (!Array.isArray(brut)) return []
 
   return brut
     .filter((x): x is Record<string, unknown> => typeof x === 'object' && x !== null)
     .map((x) => ({
       url: typeof x.url === 'string' ? x.url : '',
-      // `alt_fr` en repli : d'éventuelles lignes écrites avant le retrait de
-      // l'anglais (0014) portent encore cette clé dans leur jsonb — Postgres
-      // ne migre pas le contenu d'une colonne jsonb, seule sa contrainte.
-      alt: typeof x.alt === 'string' ? x.alt : typeof x.alt_fr === 'string' ? x.alt_fr : '',
+      // `alt` en second repli : anciennes entrées d'avant la migration 0042,
+      // pas encore reconverties en `alt_fr`/`alt_en` (0042 est idempotente et
+      // rejouable, mais rien ne garantit qu'elle a déjà tourné au moment où
+      // ce code s'exécute).
+      alt_fr: typeof x.alt_fr === 'string' ? x.alt_fr : typeof x.alt === 'string' ? x.alt : '',
+      alt_en: typeof x.alt_en === 'string' ? x.alt_en : null,
       ordre: typeof x.ordre === 'number' ? x.ordre : 0,
     }))
     // Une entrée sans URL ne montre rien : autant l'écarter ici qu'obliger
     // chaque appelant à revérifier.
     .filter((image) => image.url !== '')
     .sort((a, b) => a.ordre - b.ordre)
+}
+
+/**
+ * Résout chaque photo dans la langue demandée — repli sur le français si
+ * `alt_en` est vide pour CETTE photo précise, même discipline champ par champ
+ * que le titre et la description de la réalisation elle-même.
+ */
+function resoudreImages(brut: unknown, locale: AppLocale): ImageRealisation[] {
+  return validerImagesBrutes(brut).map((image) => ({
+    url: image.url,
+    alt: (locale === 'en' ? image.alt_en : null) ?? image.alt_fr,
+    ordre: image.ordre,
+  }))
 }
 
 async function lireDepuisBase(locale: AppLocale): Promise<RealisationPubliee[] | null> {
@@ -103,11 +136,11 @@ async function lireDepuisBase(locale: AppLocale): Promise<RealisationPubliee[] |
     const valides = data
       .filter((r) => CATEGORIES_REALISATION.some((c) => c === r.categorie))
       .map((r) => {
-        const { titre_fr, titre_en, description_fr, description_en, ...reste } = r
+        const { titre_fr, titre_en, description_fr, description_en, images, ...reste } = r
         return {
           ...reste,
           categorie: r.categorie as CategorieRealisation,
-          images: validerImages(r.images),
+          images: resoudreImages(images, locale),
           titre: (locale === 'en' ? titre_en : null) ?? titre_fr,
           description: (locale === 'en' ? description_en : null) ?? description_fr,
         }

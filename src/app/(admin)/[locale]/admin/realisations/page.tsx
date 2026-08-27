@@ -6,7 +6,7 @@ import { EnteteAdmin, PanneauAdmin } from '@/components/layout/CadreAdmin'
 import type { LibellesRealisation } from '@/components/sections/FormulaireRealisation'
 import { TableauRealisations } from '@/components/sections/TableauRealisations'
 import { routing } from '@/i18n/routing'
-import { validerImages } from '@/lib/realisations'
+import { validerImagesBrutes } from '@/lib/realisations'
 import { createClient } from '@/lib/supabase/server'
 
 type Props = { params: Promise<{ locale: string }> }
@@ -33,7 +33,7 @@ export default async function RealisationsAdminPage({ params }: Props) {
   const [{ data: realisations, error }, { data: moi }] = await Promise.all([
     supabase
       .from('realisations')
-      .select('id, slug, titre_fr, description_fr, categorie, images, ordre, publie')
+      .select('id, slug, titre_fr, titre_en, description_fr, description_en, categorie, images, ordre, publie')
       .order('ordre'),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
   ])
@@ -43,7 +43,11 @@ export default async function RealisationsAdminPage({ params }: Props) {
   const libelles: LibellesRealisation = {
     slug: t('champ_slug'),
     titreFr: t('champ_titre_fr'),
+    titreEn: t('champ_titre_realisation_en'),
     descriptionFr: t('champ_description_fr'),
+    descriptionEn: t('champ_description_realisation_en'),
+    sectionFr: t('section_langue_fr'),
+    sectionEn: t('section_langue_en'),
     categorie: t('colonne_categorie'),
     categories: {
       terrain: t('rcat_terrain'),
@@ -56,7 +60,8 @@ export default async function RealisationsAdminPage({ params }: Props) {
     photosAide: t('champ_photos_realisation_aide'),
     imagesTitre: t('champ_images_titre'),
     imagesVide: t('champ_images_vide'),
-    imageAlt: t('champ_image_alt'),
+    imageAltFr: t('champ_image_alt_fr'),
+    imageAltEn: t('champ_image_alt_en'),
     imageMonter: t('action_monter_image'),
     imageDescendre: t('action_descendre_image'),
     imageRetirer: t('action_retirer_image'),
@@ -90,7 +95,7 @@ export default async function RealisationsAdminPage({ params }: Props) {
   // traverse pas la frontière RSC. Voir TableauRealisations.tsx pour le détail
   // du plantage que ça causait.
   const donnees = (realisations ?? []).map((r) => {
-    const images = validerImages(r.images)
+    const images = validerImagesBrutes(r.images)
     return { ...r, images, imagesCompteTexte: t('images_compte', { n: images.length }) }
   })
 
@@ -119,6 +124,10 @@ export default async function RealisationsAdminPage({ params }: Props) {
           titreCreation: t('nouvelle_realisation'),
           titreDetail: t('titre_detail_realisation'),
           sansImage: t('sans_image'),
+          // t.raw(), pas t() : la chaîne contient un `{n}` littéral destiné à
+          // un .replace() côté client (TableauRealisations), pas une
+          // interpolation ICU immédiate — même piège que sur /admin/carrieres.
+          badgeTraductionAide: t.raw('badge_traduction_realisation_en_aide'),
         }}
       />
     </>

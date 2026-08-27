@@ -39,6 +39,41 @@ import { cn } from '@/lib/utils/cn'
  */
 
 /**
+ * Nombre de champs anglais remplis (0 à 2) — sert le badge de complétude
+ * bilingue de chaque ligne, voir <BadgeTraductionEn> plus bas. Même mécanique
+ * que TableauPostes.tsx, sur deux champs au lieu de trois (pas d'exigences
+ * ici).
+ */
+function compterChampsEnRemplis(r: RealisationAdmin): number {
+  return [r.titre_en, r.description_en].filter((v) => v && v.trim() !== '').length
+}
+
+/**
+ * Pastille discrète (pas une colonne) signalant la complétude de la
+ * traduction anglaise d'une réalisation. Trois états rendus par TRAIT et
+ * REMPLISSAGE, jamais par une teinte hors palette (skill 02) — pas de
+ * vert/orange/rouge sémantique ici. Copié de TableauPostes.tsx plutôt que
+ * partagé : même discipline que <Champ>, dupliqué par fichier dans tout ce
+ * dossier.
+ */
+function BadgeTraductionEn({ realisation, aide }: { realisation: RealisationAdmin; aide: string }) {
+  const n = compterChampsEnRemplis(realisation)
+  return (
+    <span
+      title={aide.replace('{n}', String(n))}
+      className={cn(
+        'label-mono shrink-0 rounded-full border px-2 py-0.5 text-[10px]',
+        n === 2 && 'border-ko-ink text-ko-ink',
+        n === 1 && 'border-ko-muted text-ko-muted',
+        n === 0 && 'border-ko-line text-ko-muted opacity-60',
+      )}
+    >
+      EN {n}/2
+    </span>
+  )
+}
+
+/**
  * Une réalisation, augmentée du texte « N photos » déjà mis en forme.
  *
  * ⚠️ PAS UNE FONCTION EN PROP. `textes.imagesCompte` était une fermeture
@@ -79,6 +114,8 @@ export function TableauRealisations({
     titreCreation: string
     titreDetail: string
     sansImage: string
+    /** Gabarit avec `{n}`, ex. « Traduction anglaise : {n} champ(s) sur 2 rempli(s) ». */
+    badgeTraductionAide: string
   }
 }) {
   const boite = useRef<HTMLDialogElement>(null)
@@ -158,7 +195,10 @@ export function TableauRealisations({
                   <span className="w-8 shrink-0 font-mono text-xs text-ko-muted">{r.ordre}</span>
 
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-base text-ko-ink">{r.titre_fr}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="truncate text-base text-ko-ink">{r.titre_fr}</span>
+                      <BadgeTraductionEn realisation={r} aide={textes.badgeTraductionAide} />
+                    </span>
                     <span className="block truncate font-mono text-xs text-ko-muted">{r.slug}</span>
                   </span>
 
@@ -306,11 +346,21 @@ export function TableauRealisations({
                 </span>
               </div>
 
-              <h3 className="ko-h3 text-[20px] text-ko-ink">{voir.titre_fr}</h3>
+              <div>
+                <h3 className="ko-h3 text-[20px] text-ko-ink">{voir.titre_fr}</h3>
+                {voir.titre_en && (
+                  <p className="mt-0.5 text-sm italic text-ko-muted">{voir.titre_en}</p>
+                )}
+              </div>
 
               {voir.description_fr && (
                 <p className="whitespace-pre-line text-sm leading-relaxed text-ko-ink">
                   {voir.description_fr}
+                </p>
+              )}
+              {voir.description_en && (
+                <p className="whitespace-pre-line text-sm italic leading-relaxed text-ko-muted">
+                  {voir.description_en}
                 </p>
               )}
 
@@ -331,9 +381,14 @@ export function TableauRealisations({
                         <div className="relative aspect-square overflow-hidden border border-ko-line bg-ko-photo">
                           <Image src={img.url} alt="" fill sizes="200px" className="object-cover" />
                         </div>
-                        {img.alt && (
-                          <p className="mt-1 truncate text-xs text-ko-muted" title={img.alt}>
-                            {img.alt}
+                        {img.alt_fr && (
+                          <p className="mt-1 truncate text-xs text-ko-muted" title={img.alt_fr}>
+                            {img.alt_fr}
+                          </p>
+                        )}
+                        {img.alt_en && (
+                          <p className="truncate text-xs italic text-ko-muted" title={img.alt_en}>
+                            {img.alt_en}
                           </p>
                         )}
                       </li>
