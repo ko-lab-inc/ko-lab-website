@@ -287,8 +287,15 @@ export default async function AdminLayout({ children, params }: Props) {
                   trois onglets après trois clics). Ça n'a pas tenu sa
                   promesse en pratique — retiré, exactement comme un lien
                   interne classique. */}
+              {/* `prefetch={false}` — audit perf du 27 août 2026 : cette
+                  page d'accueil publique est statique, donc prefetchée en
+                  ENTIER par défaut (contrairement aux routes admin, toutes
+                  dynamiques). 69 Ko sur les 73,7 Ko mesurés côté admin
+                  venaient de ce seul lien, en 6 requêtes vers /fr, pour un
+                  clic occasionnel — pas un aller-retour du flux de travail. */}
               <Link
                 href={`/${locale}`}
+                prefetch={false}
                 className="text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
               >
                 {t('voir_site')}
