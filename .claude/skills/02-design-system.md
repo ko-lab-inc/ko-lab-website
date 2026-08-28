@@ -80,8 +80,22 @@ fontFamily: {
 
 ## Boutons
 ```tsx
-/* Primaire — fond bleu KO-LAB, texte NOIR (pas blanc : blanc sur bleu ne
-   fait que 2,32:1, voir règle d'usage du bleu, CLAUDE.md) */
+/* Primaire — fond NOIR, texte blanc (règle d'usage du bleu, CLAUDE.md :
+   « Boutons sur fond clair : fond noir, texte blanc » — le bleu est réservé
+   aux gros éléments graphiques, jamais aux boutons de fond clair).
+   Corrigé le 27 août 2026 : cet exemple montrait auparavant bg-ko-blue +
+   texte noir — lisible (9,06:1) mais ce n'était pas la bonne couleur de
+   fond pour un bouton sur fond clair, seulement un rattrapage de contraste
+   sur la mauvaise base. Voir Button.tsx, variante `primary`. */
+<button className="bg-ko-black text-ko-white font-medium text-sm px-7 py-4 rounded-sm
+  hover:bg-ko-black2 transition-colors duration-200 inline-flex items-center gap-2.5">
+  Discuter d'un mandat →
+</button>
+
+/* Bleu — SEULEMENT sur fond sombre (le bleu y reste libre), ou pour un CTA
+   existant maintenu bleu le temps d'une décision explicite (voir Button.tsx,
+   variante `bleu`, pour les deux cas réels du projet). Jamais sur fond
+   clair par défaut — ce n'est plus la variante « primaire ». */
 <button className="bg-ko-blue text-ko-black font-medium text-sm px-7 py-4 rounded-sm
   hover:bg-ko-blue2 transition-colors duration-200 inline-flex items-center gap-2.5">
   Discuter d'un mandat →

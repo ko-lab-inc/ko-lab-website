@@ -248,7 +248,11 @@ export function Nav({
             {autreLocale === 'en' ? 'English' : 'Français'}
           </Link>
 
-          <Link href={ROUTES.contact} className={buttonVariants({ variant: 'primary', size: 'sm' })}>
+          {/* `bleu`, pas `primary` — audit contraste du 27 août 2026 :
+              CTA principal du site, laissé bleu jusqu'à décision de
+              Christian/Moussa (le repasser en noir changerait l'identité
+              visuelle de l'en-tête) — voir Button.tsx. */}
+          <Link href={ROUTES.contact} className={buttonVariants({ variant: 'bleu', size: 'sm' })}>
             {t('cta')}
           </Link>
         </nav>
@@ -365,9 +369,11 @@ export function Nav({
               </Link>
             </div>
 
+            {/* `bleu`, pas `primary` — même CTA que la nav desktop, même
+                raison (voir plus haut dans ce fichier). */}
             <Link
               href={ROUTES.contact}
-              className={cn('w-full', buttonVariants({ variant: 'primary', size: 'sm' }))}
+              className={cn('w-full', buttonVariants({ variant: 'bleu', size: 'sm' }))}
             >
               {t('cta')}
             </Link>

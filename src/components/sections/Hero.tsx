@@ -107,7 +107,11 @@ export async function Hero() {
           </p>
 
           <div className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            <Link href={ROUTES.contact} className={buttonVariants({ variant: 'primary' })}>
+            {/* `bleu`, pas `primary` — audit contraste du 27 août 2026 :
+                `primary` est désormais noir (fond clair), mais ce bouton
+                vit à l'intérieur de la carte NOIRE du hero, où le bleu
+                reste libre par la règle elle-même. Voir Button.tsx. */}
+            <Link href={ROUTES.contact} className={buttonVariants({ variant: 'bleu' })}>
               {t('cta_primary')}
               <span aria-hidden="true">→</span>
             </Link>
