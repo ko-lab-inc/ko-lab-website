@@ -92,6 +92,25 @@ export const EMAILS = {
 export const LIEN_CANDIDATURE_EXTERNE = 'https://forms.gle/s3wDqWFj3UQU13Q57'
 
 /**
+ * Le seul poste réel dont le titre désigne un chauffeur-livreur (0017).
+ *
+ * Déplacé ici le 27 août 2026 (étape 3/3, migration 0045) — vivait avant
+ * uniquement dans livreurs/page.tsx, mais candidatures/actions.ts en a
+ * désormais besoin lui aussi, pour retrouver le `postes_carrieres.id` du
+ * poste livreur : c'est `poste_id`, pas ce titre, qui décide si une
+ * candidature retenue est éligible à l'invitation (voir la migration 0045,
+ * section « poste_id » — l'identification par titre reste une comparaison de
+ * chaîne fragile, uniquement tolérée ICI pour retrouver l'identifiant une
+ * bonne fois, jamais pour rattacher une candidature à ce poste).
+ *
+ * ⚠️ `postes_carrieres` n'a pas de colonne qui distingue « ce poste
+ * correspond au rôle livreur » — `type` y décrit le régime d'emploi (temps
+ * plein, contrat…), pas le métier. Si ce poste est un jour renommé depuis
+ * /admin/carrieres, cette constante doit suivre.
+ */
+export const POSTE_LIVREUR = 'Chauffeur-livreur'
+
+/**
  * Version des politiques en vigueur au moment du consentement — Loi 25
  * (audit du 23 août 2026, migration 0041).
  *

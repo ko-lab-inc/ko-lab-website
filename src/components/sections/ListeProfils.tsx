@@ -60,7 +60,28 @@ export async function ListeProfils({
    * fonction-ci ne peut donc pas le lire elle-même avec le client de session.
    */
   origines?: Record<string, { viaInvitation: boolean; actif: boolean }>
-  libellesOrigine?: { origineInvitation: string; origineInscription: string; statutActif: string; statutEnAttente: string }
+  libellesOrigine?: {
+    origineInvitation: string
+    origineInscription: string
+    statutActif: string
+    statutEnAttente: string
+    /** Renvoi d'invitation — point 3 de la correction du 27 août 2026. */
+    renvoyer: string
+    renvoiEnCours: string
+    renvoiTitre: string
+    renvoiTexte: string
+    renvoiCourrielEchecTitre: string
+    renvoiCourrielEchecTexte: string
+    lienLabel: string
+    lienAide: string
+    lienCopier: string
+    lienCopie: string
+    erreurRenvoiIntrouvable: string
+    erreurRenvoiPasInvite: string
+    erreurRenvoiDejaActif: string
+    erreurRenvoiTentatives: string
+    erreurRenvoiServeur: string
+  }
   /** Bouton + modale d'invitation, rendu à côté du titre — /admin/utilisateurs seulement. */
   actionInvitation?: React.ReactNode
 }) {

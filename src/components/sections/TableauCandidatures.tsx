@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
@@ -7,7 +8,9 @@ import {
   supprimerCandidature,
   telechargerCv,
 } from '@/app/(admin)/[locale]/admin/candidatures/actions'
+import { InvitationLivreur, type TextesInvitationLivreur } from '@/components/sections/InvitationLivreur'
 import { IconeFermer, IconeOeil, IconePoubelle } from '@/components/ui/Icones'
+import { POSTE_LIVREUR } from '@/lib/constantes'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -75,18 +78,27 @@ export type Candidature = {
   statut: string
   /** Déjà formatée côté serveur — jamais une fonction en prop (RSC). */
   dateFormatee: string
+  /** Migration 0045 (étape 3/3) — voir InvitationLivreur.tsx. */
+  poste_id: string | null
+  compte_id: string | null
+  invitation_envoyee_le: string | null
+  /** Déjà formatée ET déjà interpolée côté serveur (t('candidature_invitee_le', {date})) — `null` si jamais invitée. */
+  invitationEnvoyeeLeFormatee: string | null
 }
 
 export function TableauCandidatures({
   locale,
   candidatures,
   estAdmin,
+  posteLivreurId,
   libelles,
   textes,
 }: {
   locale: string
   candidatures: Candidature[]
   estAdmin: boolean
+  /** `postes_carrieres.id` du poste Chauffeur-livreur — `null` si introuvable. Migration 0045 (étape 3/3). */
+  posteLivreurId: string | null
   libelles: { statuts: Record<string, string> }
   textes: {
     vide: string
@@ -117,6 +129,10 @@ export function TableauCandidatures({
     pageGabarit: string
     pagePrecedente: string
     pageSuivante: string
+    /** Migration 0045 (étape 3/3) — section « Invitation » du détail. */
+    invitationTitre: string
+    voirCompte: string
+    invitation: TextesInvitationLivreur
   }
 }) {
   const [statut, setStatut] = useState('all')
@@ -423,6 +439,47 @@ export function TableauCandidatures({
                 <p className="text-sm text-ko-muted">{textes.cvAucun}</p>
               )}
             </div>
+
+            {/* Invitation — migration 0045 (étape 3/3). N'apparaît QUE pour
+                une candidature retenue visant le poste livreur : match
+                CERTAIN par poste_id, ou incertain (poste_id NULL, mais
+                « Chauffeur-livreur » coché) — jamais pour un autre poste.
+                `posteLivreurId` peut être `null` (poste introuvable en
+                base) : dans ce cas `voir.poste_id === posteLivreurId`
+                vaudrait `null === null` pour N'IMPORTE QUELLE candidature
+                sans poste rattaché, d'où le `posteLivreurId !== null`
+                explicite avant la comparaison. */}
+            {voir.statut === 'retenue' &&
+              (() => {
+                const certain = posteLivreurId !== null && voir.poste_id === posteLivreurId
+                const incertain = voir.poste_id === null && voir.postes.includes(POSTE_LIVREUR)
+                if (!certain && !incertain) return null
+
+                return (
+                  <div className="mt-5 border-t border-ko-line pt-5">
+                    <p className="label-mono mb-2 text-ko-muted">{textes.invitationTitre}</p>
+                    {voir.invitation_envoyee_le ? (
+                      <div className="space-y-2">
+                        <p className="text-sm text-ko-ink">{voir.invitationEnvoyeeLeFormatee}</p>
+                        <Link
+                          href={`/${locale}/admin/livreurs`}
+                          className="text-sm text-ko-ink underline underline-offset-2 transition-colors duration-200 hover:text-ko-muted"
+                        >
+                          {textes.voirCompte}
+                        </Link>
+                      </div>
+                    ) : (
+                      <InvitationLivreur
+                        id={voir.id}
+                        email={voir.email}
+                        locale={locale}
+                        incertain={incertain}
+                        textes={textes.invitation}
+                      />
+                    )}
+                  </div>
+                )
+              })()}
           </div>
         )}
       </dialog>

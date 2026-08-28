@@ -45,6 +45,19 @@ export type TypeDemande = (typeof TYPES_DEMANDE)[number]
 export const STATUTS_DEMANDE = ['nouveau', 'lu', 'traite'] as const
 export type StatutDemande = (typeof STATUTS_DEMANDE)[number]
 
+/**
+ * candidatures.statut — migration 0045 (étape 3/3, 27 août 2026).
+ *
+ * Reprenait STATUTS_DEMANDE jusqu'ici (même trois valeurs, contrainte CHECK
+ * identique à demandes_contact) — plus vrai depuis 0045, qui ajoute
+ * `retenue`/`refusee` à `candidatures_statut_check` SEULEMENT, pas à
+ * `demandes_contact`. Les deux tables partageaient un jeu de statuts par
+ * coïncidence, pas par contrat ; un second jeu de constantes est désormais
+ * correct, pas une duplication à éviter.
+ */
+export const STATUTS_CANDIDATURE = ['nouveau', 'lu', 'traite', 'retenue', 'refusee'] as const
+export type StatutCandidature = (typeof STATUTS_CANDIDATURE)[number]
+
 /** postes_carrieres.type — skill 03. `saisonnier`/`etudiant` ajoutés par 0015. */
 export const TYPES_POSTE = ['temps-plein', 'temps-partiel', 'contrat', 'saisonnier', 'etudiant'] as const
 export type TypePoste = (typeof TYPES_POSTE)[number]

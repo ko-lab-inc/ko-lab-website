@@ -389,15 +389,18 @@ export function TableauRealisations({
 
               {/* La série complète, pas une seule photo mise en avant : c'est
                   précisément ce qu'il y a de plus utile à relire ici — les
-                  images et leur texte alternatif, avant de publier. */}
-              <div>
-                <p className="label-mono mb-2 text-ko-muted">
-                  {voir.imagesCompteTexte}
-                </p>
+                  images et leur texte alternatif, avant de publier.
+                  Point 4 (27 août 2026) : bloc entier absent à zéro photo —
+                  le label affichait « Aucune photo » juste au-dessus d'un
+                  second message « Aucune image », deux phrases pour dire la
+                  même chose. Même convention que ses voisins dans cette
+                  modale (TableauConcours.tsx, TableauPostes.tsx). */}
+              {voir.images.length > 0 && (
+                <div>
+                  <p className="label-mono mb-2 text-ko-muted">
+                    {voir.imagesCompteTexte}
+                  </p>
 
-                {voir.images.length === 0 ? (
-                  <p className="text-sm text-ko-muted">{textes.sansImage}</p>
-                ) : (
                   <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                     {voir.images.map((img) => (
                       <li key={img.url}>
@@ -417,8 +420,8 @@ export function TableauRealisations({
                       </li>
                     ))}
                   </ul>
-                )}
-              </div>
+                </div>
+              )}
 
               <dl className="grid grid-cols-2 gap-x-6 gap-y-4 border-t border-ko-line pt-5">
                 <div className="min-w-0">

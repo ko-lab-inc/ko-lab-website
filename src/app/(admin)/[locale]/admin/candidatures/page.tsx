@@ -5,8 +5,9 @@ import { notFound } from 'next/navigation'
 import { EnteteAdmin, PanneauAdmin } from '@/components/layout/CadreAdmin'
 import { TableauCandidatures } from '@/components/sections/TableauCandidatures'
 import { routing } from '@/i18n/routing'
+import { POSTE_LIVREUR } from '@/lib/constantes'
 import { createClient } from '@/lib/supabase/server'
-import { STATUTS_DEMANDE } from '@/types'
+import { STATUTS_CANDIDATURE } from '@/types'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -30,20 +31,24 @@ export default async function CandidaturesPage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const [{ data: candidatures, error }, { data: moi }] = await Promise.all([
+  const [{ data: candidatures, error }, { data: moi }, { data: posteLivreur }] = await Promise.all([
     supabase
       .from('candidatures')
       .select(
-        'id, nom, telephone, email, ville, postes, disponibilites, travail_exterieur, a_experience, experience_texte, cv_chemin, source, statut, created_at',
+        'id, nom, telephone, email, ville, postes, disponibilites, travail_exterieur, a_experience, experience_texte, cv_chemin, source, statut, created_at, poste_id, compte_id, invitation_envoyee_le',
       )
       .order('created_at', { ascending: false }),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
+    // Sert à l'invitation depuis une candidature retenue (voir TableauCandidatures) :
+    // poste_id, jamais le titre, décide de l'éligibilité — ce titre ne sert
+    // qu'à retrouver l'id UNE fois ici, voir POSTE_LIVREUR (lib/constantes.ts).
+    supabase.from('postes_carrieres').select('id').eq('titre_fr', POSTE_LIVREUR).maybeSingle(),
   ])
 
   const estAdmin = moi?.role === 'admin'
 
   const libellesStatuts: Record<string, string> = Object.fromEntries(
-    STATUTS_DEMANDE.map((v) => [v, t(`statut_${v}`)]),
+    STATUTS_CANDIDATURE.map((v) => [v, t(`statut_${v}`)]),
   )
 
   if (error) {
@@ -70,6 +75,14 @@ export default async function CandidaturesPage({ params }: Props) {
       dateStyle: 'medium',
       timeStyle: 'short',
     }),
+    // Résolu ici, pas dans le composant client : `t()` avec interpolation
+    // n'est disponible que côté serveur sur cet écran (pas de
+    // NextIntlClientProvider dans l'admin — voir NavAdmin.tsx).
+    invitationEnvoyeeLeFormatee: c.invitation_envoyee_le
+      ? t('candidature_invitee_le', {
+          date: format.dateTime(new Date(c.invitation_envoyee_le), { dateStyle: 'medium', timeStyle: 'short' }),
+        })
+      : null,
   }))
 
   return (
@@ -80,6 +93,7 @@ export default async function CandidaturesPage({ params }: Props) {
         locale={locale}
         candidatures={donnees}
         estAdmin={estAdmin}
+        posteLivreurId={posteLivreur?.id ?? null}
         libelles={{ statuts: libellesStatuts }}
         textes={{
           vide: t('candidatures_vide'),
@@ -110,6 +124,29 @@ export default async function CandidaturesPage({ params }: Props) {
           pageGabarit: t('page_gabarit'),
           pagePrecedente: t('page_precedente'),
           pageSuivante: t('page_suivante'),
+          invitationTitre: t('candidature_invitation_titre'),
+          voirCompte: t('candidature_voir_compte'),
+          invitation: {
+            inviter: t('candidature_inviter_livreur'),
+            confirmer: t('candidature_confirmer_invitation_livreur'),
+            incertain: t('candidature_rattachement_incertain'),
+            enCours: t('en_cours'),
+            fermer: t('fermer'),
+            succesTitre: t('invitation_envoyee_titre'),
+            succesTexte: t('invitation_envoyee_texte'),
+            courrielEchecTitre: t('invitation_courriel_echec_titre'),
+            courrielEchecTexte: t('invitation_courriel_echec_texte'),
+            lienLabel: t('invitation_lien_label'),
+            lienAide: t('invitation_lien_aide'),
+            lienCopier: t('invitation_lien_copier'),
+            lienCopie: t('invitation_lien_copie'),
+            erreurRefuse: t('reserve_admin_texte'),
+            erreurExisteDeja: t('erreur_invitation_existe_deja'),
+            erreurIntrouvable: t('erreur_invitation_introuvable'),
+            erreurPasEligible: t('erreur_invitation_pas_eligible'),
+            erreurTropDeTentatives: t('erreur_invitation_tentatives'),
+            erreurServeur: t('erreur_invitation_serveur'),
+          },
         }}
       />
     </>

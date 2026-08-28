@@ -338,19 +338,28 @@ export default async function TableauDeBordPage({ params }: Props) {
         </div>
 
         <div className="space-y-10">
-          <div>
-            <h2 className="ko-h3 mb-4 text-[20px] text-ko-ink">{t('par_categorie')}</h2>
-            <PanneauAdmin>
-              <ListeClassee entrees={parCategorie} />
-            </PanneauAdmin>
-          </div>
+          {/* Point 4 (correction candidatures/livreurs, 27 août 2026) : un
+              bloc vide n'affiche ni titre ni message — ici, aucun produit
+              catalogué ne laisserait sinon un titre « Catalogue par
+              catégorie » planer au-dessus d'un panneau blanc, sans la
+              moindre ligne dedans. */}
+          {parCategorie.length > 0 && (
+            <div>
+              <h2 className="ko-h3 mb-4 text-[20px] text-ko-ink">{t('par_categorie')}</h2>
+              <PanneauAdmin>
+                <ListeClassee entrees={parCategorie} />
+              </PanneauAdmin>
+            </div>
+          )}
 
-          <div>
-            <h2 className="ko-h3 mb-4 text-[20px] text-ko-ink">{t('attention')}</h2>
-            <PanneauAdmin>
-              {alertes.length === 0 ? (
-                <p className="text-sm text-ko-muted">{t('attention_aucune')}</p>
-              ) : (
+          {/* Même règle : « Rien à signaler » disparaissait déjà en
+              pratique dans le texte, mais le titre « Points d'attention »
+              restait affiché au-dessus d'un panneau qui ne disait jamais
+              rien d'utile — retiré en même temps. */}
+          {alertes.length > 0 && (
+            <div>
+              <h2 className="ko-h3 mb-4 text-[20px] text-ko-ink">{t('attention')}</h2>
+              <PanneauAdmin>
                 <ul className="space-y-4">
                   {alertes.map((a) => (
                     <li key={a} className="flex gap-3">
@@ -359,9 +368,9 @@ export default async function TableauDeBordPage({ params }: Props) {
                     </li>
                   ))}
                 </ul>
-              )}
-            </PanneauAdmin>
-          </div>
+              </PanneauAdmin>
+            </div>
+          )}
         </div>
       </div>
     </>

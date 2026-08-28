@@ -4,11 +4,13 @@ import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
+import { creerCompteEtInviter } from '@/app/(admin)/[locale]/admin/utilisateurs/actions'
 import { exigerRole } from '@/lib/auth/garde'
+import { POSTE_LIVREUR } from '@/lib/constantes'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { estUuid } from '@/lib/utils/identifiant'
 import { rateLimit } from '@/lib/utils/rateLimit'
-import { STATUTS_DEMANDE, ROLES_EQUIPE } from '@/types'
+import { STATUTS_CANDIDATURE, ROLES_EQUIPE } from '@/types'
 
 /**
  * Gestion des candidatures — table candidatures, migration 0017.
@@ -25,17 +27,20 @@ import { STATUTS_DEMANDE, ROLES_EQUIPE } from '@/types'
  */
 
 /**
- * Changement de statut — nouveau / lu / traité.
+ * Changement de statut — nouveau / lu / traité / retenue / refusee.
  *
- * Réutilise STATUTS_DEMANDE : la table `candidatures` a exactement la même
- * contrainte CHECK que `demandes_contact` (0017 reprend 0001), et un second
- * jeu de constantes finirait par diverger du premier.
+ * ⚠️ Utilisait STATUTS_DEMANDE jusqu'au 27 août 2026 (étape 3/3, migration
+ * 0045) : les deux tables partageaient les mêmes trois valeurs par
+ * coïncidence, pas par contrat. `candidatures_statut_check` porte désormais
+ * deux valeurs de plus que `demandes_contact.statut` — STATUTS_CANDIDATURE
+ * reflète cette contrainte réelle, STATUTS_DEMANDE resterait figé aux trois
+ * premières et refuserait silencieusement tout passage à `retenue`.
  */
 export async function changerStatutCandidature(donnees: FormData): Promise<void> {
   const locale = String(donnees.get('locale') ?? 'fr')
   const id = String(donnees.get('id') ?? '')
   const statut = String(donnees.get('statut') ?? '')
-  if (!estUuid(id) || !STATUTS_DEMANDE.some((s) => s === statut)) return
+  if (!estUuid(id) || !STATUTS_CANDIDATURE.some((s) => s === statut)) return
 
   // Note honnête (étape 2/3) : compteur en mémoire de processus, remis à
   // zéro à chaque cold start Vercel — un ralentisseur, pas une défense.
@@ -183,4 +188,123 @@ export async function supprimerCandidature(donnees: FormData): Promise<void> {
   }
 
   revalidatePath(`/${locale}/admin/candidatures`)
+}
+
+/**
+ * Invitation depuis une candidature retenue — étape 3/3 (migration 0045).
+ *
+ * ---------------------------------------------------------------------------
+ * DÉCISION RENVERSÉE LE 27 AOÛT 2026 (Moussa)
+ *
+ * RepertoireLivreurs.tsx citait jusqu'ici une décision de Christian : « un
+ * candidat retenu comme chauffeur-livreur doit apparaître dans Livreurs SANS
+ * qu'on lui crée d'accès au site ». Cette action existe parce que cette
+ * décision est renversée — un candidat retenu PEUT désormais recevoir une
+ * invitation, mais jamais automatiquement : cette action ne s'exécute que sur
+ * un clic explicite, après confirmation dans l'interface (voir
+ * RepertoireLivreurs.tsx et TableauCandidatures.tsx).
+ *
+ * ---------------------------------------------------------------------------
+ * POSTE_ID, JAMAIS LE TITRE — demande explicite
+ *
+ * `candidature.postes` (text[]) contient les libellés cochés sur le
+ * formulaire public, jamais un identifiant fiable — un poste renommé depuis
+ * /admin/carrieres casserait silencieusement toute comparaison de chaîne.
+ * `poste_id` (migration 0045) est le lien fiable ; cette action refuse toute
+ * candidature dont `poste_id` ne pointe pas EXACTEMENT vers le poste
+ * `POSTE_LIVREUR` — y compris quand `postes` contient ce libellé mais que
+ * `poste_id` est resté NULL (rétroremplissage n'ayant pas pu trancher, ou
+ * candidature créée après coup sans jamais avoir été rattachée). Le
+ * rattachement incertain se signale dans l'INTERFACE (voir
+ * RepertoireLivreurs.tsx), jamais en autorisant l'action à sa place.
+ *
+ * ---------------------------------------------------------------------------
+ * RÉUTILISE creerCompteEtInviter, NE LE DUPLIQUE PAS
+ *
+ * Même fonction que ModaleInvitation/inviterUtilisateur (utilisateurs/actions.ts)
+ * — création du compte, rôle, lien, envoi Resend. Cette action-ci n'ajoute
+ * que ce qui lui est propre : identifier la candidature éligible, puis
+ * inscrire la trace de l'invitation sur LA CANDIDATURE (`invitation_envoyee_le`,
+ * `compte_id`) une fois le compte créé.
+ */
+
+export type EtatInvitationCandidat = {
+  erreur?: 'introuvable' | 'pas_eligible' | 'refuse' | 'existe_deja' | 'trop_de_tentatives' | 'serveur'
+  succes?: boolean
+  courrielEnvoye?: boolean
+  raisonEchecCourriel?: string
+  lien?: string
+}
+
+export async function inviterCandidatLivreur(
+  _precedent: EtatInvitationCandidat,
+  donnees: FormData,
+): Promise<EtatInvitationCandidat> {
+  const locale = String(donnees.get('locale') ?? 'fr')
+  const id = String(donnees.get('id') ?? '')
+  if (!estUuid(id)) return { erreur: 'introuvable' }
+
+  // Note honnête (étape 2/3) — voir changerStatutCandidature ci-dessus.
+  if (rateLimit(`invitation-candidat:${adresseDepuis(await headers())}`, { max: 10, windowMs: 3_600_000 })) {
+    return { erreur: 'trop_de_tentatives' }
+  }
+
+  const acces = await exigerRole(['admin'])
+  if (!acces) return { erreur: 'refuse' }
+  const { supabase } = acces
+
+  const { data: candidature, error: erreurLecture } = await supabase
+    .from('candidatures')
+    .select('id, email, statut, poste_id, postes, invitation_envoyee_le')
+    .eq('id', id)
+    .maybeSingle()
+  if (erreurLecture || !candidature) return { erreur: 'introuvable' }
+  if (candidature.invitation_envoyee_le) return { erreur: 'pas_eligible' }
+  if (candidature.statut !== 'retenue') return { erreur: 'pas_eligible' }
+
+  // Un seul aller-retour, pas une constante en mémoire de processus : le
+  // poste peut être renommé ou recréé, et cette action est trop rare pour
+  // que le coût d'une lecture supplémentaire compte face au risque de
+  // comparer contre un id périmé.
+  const { data: posteLivreur } = await supabase
+    .from('postes_carrieres')
+    .select('id')
+    .eq('titre_fr', POSTE_LIVREUR)
+    .maybeSingle()
+  if (!posteLivreur) return { erreur: 'pas_eligible' }
+
+  // Match CERTAIN par poste_id, ou repli INCERTAIN par libellé texte quand
+  // poste_id est resté NULL — même règle des DEUX côtés (voir aussi
+  // TableauCandidatures.tsx et livreurs/page.tsx, qui affichent l'un ou
+  // l'autre cas). Un poste_id qui pointe vers un AUTRE poste (ni null, ni
+  // celui du livreur) reste toujours refusé : ce n'est pas une incertitude,
+  // c'est une correspondance connue et différente.
+  const certain = candidature.poste_id === posteLivreur.id
+  const incertain = candidature.poste_id === null && candidature.postes.includes(POSTE_LIVREUR)
+  if (!certain && !incertain) return { erreur: 'pas_eligible' }
+
+  const resultat = await creerCompteEtInviter(acces, candidature.email, 'livreur')
+  if (!resultat.succes) return { erreur: resultat.erreur }
+
+  const { error: erreurMaj } = await supabase
+    .from('candidatures')
+    .update({ invitation_envoyee_le: new Date().toISOString(), compte_id: resultat.idCree })
+    .eq('id', id)
+  if (erreurMaj) {
+    // Le compte existe et l'invitation est partie — ne pas mentir en
+    // annonçant un échec. La candidature réapparaîtra simplement comme « pas
+    // encore invitée » au prochain chargement ; un second clic échouerait
+    // proprement sur `existe_deja` (préflight de creerCompteEtInviter) plutôt
+    // que de créer un doublon.
+    console.error('[candidatures] invitation envoyée mais colonnes non mises à jour', erreurMaj.message)
+  }
+
+  revalidatePath(`/${locale}/admin/candidatures`)
+  revalidatePath(`/${locale}/admin/livreurs`)
+  return {
+    succes: true,
+    courrielEnvoye: resultat.courrielEnvoye,
+    raisonEchecCourriel: resultat.raisonEchecCourriel,
+    lien: resultat.lien,
+  }
 }

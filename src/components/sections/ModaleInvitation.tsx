@@ -5,6 +5,7 @@ import { useActionState, useEffect, useRef, useState } from 'react'
 import { inviterUtilisateur, type EtatInvitation } from '@/app/(admin)/[locale]/admin/utilisateurs/actions'
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeAjouter, IconeFermer } from '@/components/ui/Icones'
+import { LienActivation } from '@/components/ui/LienActivation'
 import type { Role } from '@/types'
 
 type Libelles = {
@@ -18,6 +19,17 @@ type Libelles = {
   enCours: string
   succesTitre: string
   succesTexte: string
+  /**
+   * Deuxième issue possible après un succès — courriel non envoyé (compte
+   * quand même créé). Voir EtatInvitation.courrielEnvoye, actions.ts.
+   */
+  courrielEchecTitre: string
+  /** `{raison}` interpolé — message Resend brut ou clé absente. */
+  courrielEchecTexte: string
+  lienLabel: string
+  lienAide: string
+  lienCopier: string
+  lienCopie: string
   erreurDonnees: string
   erreurExisteDeja: string
   erreurRefuse: string
@@ -127,10 +139,35 @@ function ContenuInvitation({
   const erreur = etat.erreur ? (messages[etat.erreur] ?? libelles.erreurServeur) : null
 
   if (etat.succes) {
+    // Deux titres/textes distincts — voir la note de `courrielEchecTitre`
+    // dans le type Libelles : un courriel non envoyé n'est PAS la même
+    // issue qu'un envoi accepté par Resend, même si le compte est créé
+    // dans les deux cas.
+    const titre = etat.courrielEnvoye ? libelles.succesTitre : libelles.courrielEchecTitre
+    const texte = etat.courrielEnvoye
+      ? libelles.succesTexte
+      : libelles.courrielEchecTexte.replace('{raison}', etat.raisonEchecCourriel ?? '—')
+
     return (
       <div className="space-y-5">
-        <p className="ko-h3 text-[18px] text-ko-ink">{libelles.succesTitre}</p>
-        <p className="text-base leading-relaxed text-ko-ink">{libelles.succesTexte}</p>
+        <p className="ko-h3 text-[18px] text-ko-ink">{titre}</p>
+        <p className="text-base leading-relaxed text-ko-ink">{texte}</p>
+
+        {/* Affiché dans TOUS les cas de succès, pas seulement l'échec du
+            courriel — un lien « livré » par Resend n'est pas forcément
+            arrivé (voir la docstring de LienActivation.tsx). */}
+        {etat.lien && (
+          <LienActivation
+            lien={etat.lien}
+            libelles={{
+              label: libelles.lienLabel,
+              aide: libelles.lienAide,
+              copier: libelles.lienCopier,
+              copie: libelles.lienCopie,
+            }}
+          />
+        )}
+
         <button type="button" onClick={onFermer} className={buttonVariants({ variant: 'ghost', size: 'sm' })}>
           {libelles.fermer}
         </button>

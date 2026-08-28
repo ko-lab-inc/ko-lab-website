@@ -284,12 +284,20 @@ export type Database = {
           /** Migration 0028. CHECK : 'interne' — seule valeur possible tant que
            *  le Google Form externe n'écrit pas dans cette table. */
           canal: string
-          /** CHECK : 'nouveau' | 'lu' | 'traite' */
+          /** CHECK : 'nouveau' | 'lu' | 'traite' | 'retenue' | 'refusee' — les deux
+           *  dernières ajoutées par la migration 0045 (étape 3/3). */
           statut: string
           created_at: string
           /** Migration 0041. NULL = ligne antérieure à l'ajout de la case de consentement. */
           consentement_le: string | null
           consentement_version: string | null
+          /** Migration 0045. NULL = jamais invitée. */
+          invitation_envoyee_le: string | null
+          /** Migration 0045. references profils(id) on delete set null. */
+          compte_id: string | null
+          /** Migration 0045. references postes_carrieres(id) on delete set null —
+           *  NULL si le rétroremplissage n'a rattaché aucun poste avec certitude. */
+          poste_id: string | null
         }
         Insert: {
           id?: string
@@ -309,6 +317,9 @@ export type Database = {
           created_at?: string
           consentement_le?: string | null
           consentement_version?: string | null
+          invitation_envoyee_le?: string | null
+          compte_id?: string | null
+          poste_id?: string | null
         }
         Update: {
           id?: string
@@ -328,6 +339,9 @@ export type Database = {
           created_at?: string
           consentement_le?: string | null
           consentement_version?: string | null
+          invitation_envoyee_le?: string | null
+          compte_id?: string | null
+          poste_id?: string | null
         }
         Relationships: []
       }
