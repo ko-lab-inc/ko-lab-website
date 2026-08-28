@@ -83,9 +83,15 @@ export default async function RealisationsPage({ params }: Props) {
     <>
       {/* ------------------------------ En-tête ------------------------------ */}
       {/* Pas de photo ici, volontairement : la page EST une galerie. Un hero
-          photographique entrerait en concurrence avec les visuels du contenu. */}
-      <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+          photographique entrerait en concurrence avec les visuels du contenu.
+          `pt-20`/`pb-10` et `px-4` en mobile (27 août 2026, retour visuel sur
+          téléphone réel) : `pt-28`/`pb-14`/`px-6` laissaient un vide
+          disproportionné au-dessus du titre et grignotaient sur la largeur
+          disponible pour les photos plus bas — le desktop (`lg:`) n'est pas
+          concerné, il n'était pas en cause. Même `px-4` sur le conteneur de
+          la galerie plus bas, pour que les deux sections s'alignent. */}
+      <section className="border-b border-ko-line bg-ko-cream pb-10 pt-20 lg:pb-20 lg:pt-40">
+        <div className="mx-auto max-w-container px-4 lg:px-12">
           {/* Pas de label mono ici : il aurait répété mot pour mot le h1.
               Le compteur vit dans la galerie, où il suit le filtre actif. */}
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
@@ -99,8 +105,8 @@ export default async function RealisationsPage({ params }: Props) {
       </section>
 
       {/* ------------------------------ Galerie ------------------------------ */}
-      <section className="bg-ko-white py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+      <section className="bg-ko-white py-10 lg:py-24">
+        <div className="mx-auto max-w-container px-4 lg:px-12">
           {publiees ? (
             <Reveal>
               <GalerieRealisations

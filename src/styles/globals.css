@@ -582,7 +582,13 @@
    classe du type `w-[...${n}...]` ne figure dans aucun fichier source scanné
    par Tailwind, le JIT ne générerait donc aucune règle pour elle. */
 .carrousel-photo {
-  --gap: 0.75rem;
+  /* 0.5rem, pas 0.75rem (27 août 2026) : doit rester EXACTEMENT le gap réel
+     entre vignettes (`gap-2` sur le conteneur flex, GalerieRealisations.tsx)
+     — cette variable ne fixe pas l'écart elle-même, elle sert seulement à
+     calculer la largeur de chaque vignette compte tenu de l'écart réel ;
+     un désaccord entre les deux laisserait un résidu de quelques pixels,
+     débordement ou espace en trop, selon le sens de l'écart. */
+  --gap: 0.5rem;
   --gaps-visibles: 2;
   --apercu: 3.3;
   width: max(

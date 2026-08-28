@@ -134,7 +134,7 @@ export function GalerieRealisations({
       {/* ------------------------------ Filtres ------------------------------ */}
       {/* `role="group"` plutôt qu'une liste de liens : le filtrage ne change pas
           l'URL, ces boutons ne sont donc pas des destinations navigables. */}
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
       <div role="group" aria-label={labelFiltres} className="flex flex-wrap gap-2">
         {filtres.map(({ valeur, label }) => {
           const actif = valeur === categorie
@@ -167,21 +167,25 @@ export function GalerieRealisations({
       </div>
 
       {/* --------------------------- Rangées ---------------------------- */}
+      {/* Espacements resserrés en mobile (27 août 2026, retour visuel sur
+          téléphone réel) : mt-14/space-y-14/space-y-10/mb-6 empilaient trop
+          de vide entre les filtres, les catégories et les réalisations sur
+          petit écran — desktop (`lg:`) inchangé, il n'était pas en cause. */}
       {visibles.length === 0 ? (
-        <p className="mt-14 text-base text-ko-muted">{aucunResultat}</p>
+        <p className="mt-8 text-base text-ko-muted lg:mt-14">{aucunResultat}</p>
       ) : (
-        <div className="mt-14 space-y-14 lg:space-y-20">
+        <div className="mt-8 space-y-8 lg:mt-14 lg:space-y-20">
           {groupes.map((g) => (
             <div key={g.categorie}>
               {/* Titre de catégorie UNIQUEMENT en « Tout voir » — une
                   catégorie choisie au filtre l'a déjà annoncée, le répéter
                   ici dirait deux fois la même chose (demande explicite). */}
               {categorie === 'all' && (
-                <h2 className="ko-h3 mb-6 text-[20px] text-ko-ink lg:mb-8 lg:text-[24px]">
+                <h2 className="ko-h3 mb-4 text-[20px] text-ko-ink lg:mb-8 lg:text-[24px]">
                   {libellesCategories[g.categorie] ?? g.categorie}
                 </h2>
               )}
-              <div className="space-y-10 lg:space-y-14">
+              <div className="space-y-6 lg:space-y-14">
                 {g.items.map((r) => (
                   <RangeePhotos
                     key={r.cle}
@@ -348,7 +352,13 @@ function RangeePhotos({
           // (globals.css). Posé ici plutôt que sur chaque vignette : la
           // variable CSS hérite jusqu'aux boutons enfants.
           style={{ '--n': String(photos.length) } as React.CSSProperties}
-          className="scrollbar-none flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth lg:gap-4"
+          // `gap-2` en mobile, pas `gap-3` (27 août 2026, retour visuel sur
+          // téléphone réel) : resserre l'écart entre vignettes ET les
+          // agrandit un peu, `.carrousel-photo` (globals.css) partageant la
+          // largeur restante entre les photos — `--gap` y est ajusté en
+          // miroir, sinon la formule de largeur reste calée sur l'ancien
+          // écart. Desktop (`lg:gap-4`) inchangé.
+          className="scrollbar-none flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth lg:gap-4"
         >
           {photos.map((photo, i) => (
             <button
@@ -361,7 +371,14 @@ function RangeePhotos({
               // générique répété identique sur les huit boutons de la
               // rangée, qui empêcherait de les distinguer au clavier.
               aria-label={photo.alt || `${titre} — ${i + 1}/${photos.length}`}
-              className="carrousel-photo group relative aspect-[4/3] shrink-0 snap-start overflow-hidden rounded-xl bg-ko-cream2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ko-blue"
+              // `rounded-lg`, pas `rounded-xl` (27 août 2026) : sur une
+              // vignette de cette taille (~1/3 de la largeur d'un
+              // téléphone), le même rayon que sur les grandes photos du
+              // reste du site (Besoins, Boutique, Location…) se voit
+              // proportionnellement bien plus arrondi — resserré pour CETTE
+              // rangée dense de petites vignettes uniquement, les autres
+              // composants du site gardent `rounded-xl` sans changement.
+              className="carrousel-photo group relative aspect-[4/3] shrink-0 snap-start overflow-hidden rounded-lg bg-ko-cream2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ko-blue"
             >
               <Image
                 src={photo.src}
