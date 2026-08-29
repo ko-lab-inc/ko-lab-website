@@ -158,11 +158,18 @@ export function GalerieRealisations({
         })}
       </div>
 
-        {/* Compteur en direct. `aria-live="polite"` : le filtre ne change pas
-            l'URL et ne déplace pas le focus — sans annonce, un utilisateur de
-            lecteur d'écran n'aurait aucun retour sur l'effet de son clic. */}
-        <p aria-live="polite" className="label-mono text-ko-muted">
-          {t('compte', { n: visibles.length })}
+        {/* Étiquette visible — fixe depuis la révision éditoriale du 29 août
+            2026 (LOT A), ne reflète plus le nombre filtré. Pas d'aria-live
+            ici : un texte qui ne change jamais n'a rien à annoncer. */}
+        <p className="label-mono text-ko-muted">{t('compte')}</p>
+
+        {/* Annonce accessible, distincte de l'étiquette ci-dessus — le filtre
+            ne change pas l'URL et ne déplace pas le focus : sans elle, un
+            utilisateur de lecteur d'écran n'aurait aucun retour sur l'effet
+            de son clic, y compris quand le résultat est vide. `sr-only` :
+            jamais vue, seulement entendue. */}
+        <p aria-live="polite" className="sr-only">
+          {t('compte_annonce', { n: visibles.length })}
         </p>
       </div>
 
