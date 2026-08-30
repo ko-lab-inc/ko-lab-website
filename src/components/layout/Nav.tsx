@@ -8,6 +8,7 @@ import { useScrolled } from '@/hooks/useScrolled'
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeProfil } from '@/components/ui/Icones'
 import { LienPanier } from '@/components/ui/LienPanier'
+import { usePanier } from '@/lib/panier/PanierContext'
 import { cn } from '@/lib/utils/cn'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
 
@@ -50,6 +51,30 @@ export function Nav({
   const t = useTranslations('Nav')
   const pathname = usePathname()
   const scrolled = useScrolled()
+  /**
+   * Icône compte — visible seulement pour une session authentifiée (LOT B,
+   * §31, 29 août 2026). Réutilise `connecte` du panier plutôt que d'ajouter
+   * un second appel à /api/session : le panier le lit déjà au montage du
+   * layout marketing (PanierContext.tsx), un appel de plus n'aurait rien
+   * appris de plus, juste dupliqué le réseau.
+   *
+   * `connecte` est `null` tant que /api/session n'a pas répondu, `true`/
+   * `false` ensuite — un échec (réseau coupé, 429) y retombe déjà sur
+   * `false` dans PanierContext, jamais un état bloqué ni une boucle de
+   * requêtes : rien à refaire ici.
+   *
+   * `connecte && <Link>` couvre les trois états sans scintillement :
+   * `null` et `false` rendent tous les deux « rien », seul `true` affiche
+   * l'icône — elle ne peut donc jamais apparaître puis disparaître, elle ne
+   * fait qu'apparaître, une fois, si la session existe.
+   *
+   * Pas d'espace réservé pendant l'attente : même choix que `LienPanier`
+   * juste au-dessus, qui se rend déjà `null` sans réserver de place tant que
+   * `pret` est faux. Le décalage ne touche que les sessions déjà
+   * authentifiées (équipe, clients avec compte) — jamais un visiteur
+   * anonyme, qui ne voit l'icône ni avant ni après.
+   */
+  const { connecte } = usePanier()
   const locale = useLocale()
 
   // Phase 9 : sélecteur de langue. `pathname` (next-intl) est déjà sans
@@ -220,31 +245,32 @@ export function Nav({
           {panierActif && boutiqueActive && <LienPanier />}
 
           {/*
-            Compte — icône seule, comme le panier.
-
-            Pointe vers /compte et non vers /connexion : la page redirige
-            elle-même vers la connexion si personne n'est identifié. C'est le
-            comportement attendu d'une icône de profil — on clique pour voir
-            SON compte.
+            Compte — icône seule, comme le panier. Masquée au public depuis
+            le LOT B (§31, 29 août 2026) : voir `connecte` plus haut. Pointe
+            vers /compte et non vers /connexion : la page redirige elle-même
+            vers la connexion si personne n'est identifié — mais désormais,
+            si l'icône est visible, c'est déjà qu'une session existe.
 
             Simple lien, plus de fenêtre en surimpression : Christian a
             tranché pour la page pleine. Le formulaire y respire, et une seule
             façon d'arriver à la connexion vaut mieux que deux à tenir
             d'accord.
           */}
-          <Link
-            href={ROUTES.compte}
-            // Pas de préchargement : la destination dépend de la session. Next
-            // précharge par défaut tout lien visible, or /compte redirige vers
-            // la connexion pour un visiteur — la requête RSC est annulée en
-            // vol (ERR_ABORTED dans la console) et le résultat serait de toute
-            // façon inutilisable, puisqu'il périme dès qu'on se connecte.
-            prefetch={false}
-            aria-label={t('compte')}
-            className="flex h-11 w-11 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-black"
-          >
-            <IconeProfil taille={20} />
-          </Link>
+          {connecte && (
+            <Link
+              href={ROUTES.compte}
+              // Pas de préchargement : la destination dépend de la session. Next
+              // précharge par défaut tout lien visible, or /compte redirige vers
+              // la connexion pour un visiteur — la requête RSC est annulée en
+              // vol (ERR_ABORTED dans la console) et le résultat serait de toute
+              // façon inutilisable, puisqu'il périme dès qu'on se connecte.
+              prefetch={false}
+              aria-label={t('compte')}
+              className="flex h-11 w-11 items-center justify-center text-ko-ink transition-colors duration-200 hover:text-ko-black"
+            >
+              <IconeProfil taille={20} />
+            </Link>
+          )}
 
           {/* Sélecteur de langue — endonyme de la langue CIBLE, jamais traduit :
               un visiteur anglophone doit reconnaître « Français » écrit en
@@ -360,20 +386,28 @@ export function Nav({
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               {/* Sur mobile l'icône seule serait illisible hors du contexte de
-                  la barre : le libellé est écrit. */}
-              <Link
-                href={ROUTES.compte}
-                prefetch={false}
-                className="flex min-h-[44px] items-center gap-2 text-sm text-ko-muted"
-              >
-                <IconeProfil taille={18} />
-                {t('compte')}
-              </Link>
+                  la barre : le libellé est écrit. Masqué au public depuis le
+                  LOT B (§31, 29 août 2026) — voir `connecte` plus haut. */}
+              {connecte && (
+                <Link
+                  href={ROUTES.compte}
+                  prefetch={false}
+                  className="flex min-h-[44px] items-center gap-2 text-sm text-ko-muted"
+                >
+                  <IconeProfil taille={18} />
+                  {t('compte')}
+                </Link>
+              )}
 
+              {/* `ml-auto`, pas seulement `justify-between` du parent : sans
+                  ça, langue se retrouve collée à gauche quand `compte`
+                  disparaît (seul enfant restant d'un `justify-between`) —
+                  visiteur anonyme, donc le cas de tous les jours. `ml-auto`
+                  la garde à droite que `compte` soit là ou non. */}
               <Link
                 href={pathname}
                 locale={autreLocale}
-                className="flex min-h-[44px] items-center text-sm text-ko-muted"
+                className="ml-auto flex min-h-[44px] items-center text-sm text-ko-muted"
               >
                 {autreLocale === 'en' ? 'English' : 'Français'}
               </Link>
