@@ -28,21 +28,23 @@ export async function Footer() {
 
   const annee = new Date().getFullYear()
 
-  // boutiqueActive/concoursActif (0029, 0040) filtrent l'entrée ici, même
-  // motif que Nav.tsx.
+  // boutiqueActive (0029) filtre l'entrée ici, même motif que Nav.tsx.
+  // Concours retiré de la nav permanente (LOT B, §32, 29 août 2026) — la
+  // page et sa route restent en ligne pour un lien direct de campagne,
+  // seule l'entrée de menu disparaît. `reglages.concoursActif` (0040) n'a
+  // donc plus de filtre à alimenter ici — comparer `key` à 'concours'
+  // n'aurait plus de sens de type une fois l'entrée retirée du tableau
+  // (TS2367) — mais `reglages` continue de le porter pour tout le reste
+  // (sitemap, robots, /admin/reglages).
   const liensEntreprise = (
     [
       { key: 'apropos', href: ROUTES.apropos },
       { key: 'realisations', href: ROUTES.realisations },
       { key: 'carrieres', href: ROUTES.carrieres },
       { key: 'boutique', href: ROUTES.boutique },
-      { key: 'concours', href: ROUTES.concours },
       { key: 'location', href: ROUTES.location },
     ] as const
-  ).filter(
-    ({ key }) =>
-      (key !== 'boutique' || reglages.boutiqueActive) && (key !== 'concours' || reglages.concoursActif),
-  )
+  ).filter(({ key }) => key !== 'boutique' || reglages.boutiqueActive)
 
   const liensLegaux = [
     { key: 'confidentialite', href: ROUTES.politiqueConfidentialite },

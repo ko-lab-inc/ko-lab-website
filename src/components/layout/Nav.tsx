@@ -33,8 +33,15 @@ export function Nav({
   panierActif,
   /** Même raison que panierActif — reçu en prop, pas lu ici (composant client). */
   boutiqueActive,
-  /** Idem — concoursActif (migration 0040). */
-  concoursActif,
+  /**
+   * Idem — concoursActif (migration 0040). Non lue ici depuis le retrait de
+   * Concours de la nav permanente (LOT B, §32, 29 août 2026) — prop gardée
+   * dans la signature (l'appelant, layout.tsx, continue de la passer sans
+   * changement), seule cette entrée de menu a disparu. Renommée `_` :
+   * `noUnusedParameters` (tsconfig) refuse sinon le build sur une
+   * destructuration jamais lue.
+   */
+  concoursActif: _concoursActif,
 }: {
   panierActif: boolean
   boutiqueActive: boolean
@@ -93,18 +100,21 @@ export function Nav({
   // boutiqueActive/concoursActif filtrent l'entrée ici, en amont des deux
   // .map() (desktop et mobile) qui consomment ce tableau plus bas — un seul
   // endroit à tenir d'accord plutôt que deux rendus filtrés séparément.
+  // Concours retiré de la nav permanente (LOT B, §32, 29 août 2026) — la
+  // page et sa route restent en ligne pour un lien direct de campagne,
+  // seule l'entrée de menu disparaît. Le filtre sur `concoursActif`
+  // disparaît avec elle (comparer `key` à 'concours' n'a plus de sens de
+  // type une fois l'entrée retirée du tableau, TS2367) — voir la prop
+  // plus haut pour pourquoi `concoursActif` reste quand même déclarée.
   const liensSecondaires = (
     [
       { key: 'realisations', href: ROUTES.realisations },
       { key: 'location', href: ROUTES.location },
       { key: 'boutique', href: ROUTES.boutique },
-      { key: 'concours', href: ROUTES.concours },
       { key: 'apropos', href: ROUTES.apropos },
       { key: 'carrieres', href: ROUTES.carrieres },
     ] as const
-  ).filter(
-    ({ key }) => (key !== 'boutique' || boutiqueActive) && (key !== 'concours' || concoursActif),
-  )
+  ).filter(({ key }) => key !== 'boutique' || boutiqueActive)
 
   /**
    * Page courante — gras, demande initiale de Christian « gras + bleu ».
