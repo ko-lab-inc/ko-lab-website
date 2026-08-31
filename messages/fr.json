@@ -281,7 +281,15 @@
       "item_5": "Décors, signalisation et présentoirs",
       "item_6": "Reproduction de pièces difficiles à obtenir",
       "item_7": "Petites séries, gabarits et outils d'assemblage",
-      "item_8": "Livraison, installation et déploiement par KO-LAB"
+      "item_8": "Livraison, installation et déploiement par KO-LAB",
+      "processus_titre": "Notre processus",
+      "processus_1": "comprendre",
+      "processus_2": "concevoir",
+      "processus_3": "prototyper",
+      "processus_4": "tester et améliorer",
+      "processus_5": "préparer la production",
+      "processus_6": "produire",
+      "processus_7": "déployer"
     },
     "equipements": {
       "label": "Équipements et déploiement",

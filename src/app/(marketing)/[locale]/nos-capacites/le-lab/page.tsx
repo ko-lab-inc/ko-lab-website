@@ -4,10 +4,10 @@ import { notFound } from 'next/navigation'
 
 import { GalerieLab } from '@/components/sections/GalerieLab'
 import { PageCapacite } from '@/components/sections/PageCapacite'
+import { ProcessusLab } from '@/components/sections/ProcessusLab'
 import { routing } from '@/i18n/routing'
 import { lireGaleriePage } from '@/lib/galeries'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
-import { lireVideosPubliees } from '@/lib/videos'
 
 import type { Metadata } from 'next'
 
@@ -37,7 +37,7 @@ export default async function LeLabPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Capacites.lab')
-  const [videos, photosLab] = await Promise.all([lireVideosPubliees(), lireGaleriePage('le-lab', locale)])
+  const photosLab = await lireGaleriePage('le-lab', locale)
 
   // Le hero reprend la PREMIÈRE photo de la galerie plutôt qu'un emplacement
   // fixe séparé — duplication assumée (hero + première vignette), même
@@ -68,12 +68,17 @@ export default async function LeLabPage({ params }: Props) {
       // distincts plutôt que la même image deux fois dans le parcours.
       src={photoHero?.src ?? null}
       cadrage="object-center"
-      // Bande de vidéos façon bambulab.com, alimentée depuis /admin/videos
-      // (migration 0016). Tableau vide = quatre emplacements « Vidéo à
-      // venir », jamais une section masquée — voir BandeauVideos.tsx.
-      videos={videos}
+      // `videos` retirée (LOT E1, §11, 30 août 2026) : masquage, pas
+      // suppression — BandeauVideos.tsx, la table `videos` et /admin/videos
+      // restent tous intacts, ce composant ne reçoit simplement plus la
+      // prop. PageCapacite ne rend la bande QUE si `videos` est passée
+      // (voir sa propre docstring) : l'omettre suffit, pas besoin d'un
+      // tableau vide.
       contenuSupplementaire={
-        <GalerieLab photos={photosLab.map((p) => ({ url: p.src, alt: p.alt }))} />
+        <>
+          <GalerieLab photos={photosLab.map((p) => ({ url: p.src, alt: p.alt }))} />
+          <ProcessusLab />
+        </>
       }
     />
   )

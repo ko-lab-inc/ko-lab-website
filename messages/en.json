@@ -281,7 +281,15 @@
       "item_5": "Décor, signage and displays",
       "item_6": "Reproduction of hard-to-find parts",
       "item_7": "Small runs, jigs and assembly tools",
-      "item_8": "Delivery, installation and deployment by KO-LAB"
+      "item_8": "Delivery, installation and deployment by KO-LAB",
+      "processus_titre": "Our process",
+      "processus_1": "understand",
+      "processus_2": "design",
+      "processus_3": "prototype",
+      "processus_4": "test and refine",
+      "processus_5": "prepare production",
+      "processus_6": "produce",
+      "processus_7": "deploy"
     },
     "equipements": {
       "label": "Equipment and Deployment",
