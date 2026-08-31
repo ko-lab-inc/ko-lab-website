@@ -65,7 +65,7 @@ function medias(chemin: string): string {
 
 export const IMAGES = {
   /** Photo réelle — scène Fête du Canada Day 2026, plateau de scène en montage. */
-  hero: '/images/hero/hero-canada-day-2026.webp',
+  hero: '/images/hero/hero-equipe-nacelle-2026.webp',
 
   /**
    * Photo réelle — équipe KO-LAB préparant un déploiement pyrotechnique en
@@ -205,7 +205,7 @@ export const IMAGES = {
   // par variable (`IMAGES[cle]`), invisible à un grep sur `IMAGES\.` + nom
   // littéral — voir le même avertissement sur `labImpression3d` plus haut.
   chantierBalisage2026: medias('operations/chantier-balisage-2026.webp'),
-  transportRemorque2026: medias('deployment/transport-remorque-2026.webp'),
+  transportRemorque2026: medias('deployment/equipements-chargement-2026.webp'),
 
   // Remplacement du 21 août 2026 (voir note ci-dessus) — lot « terrasse 2021 »,
   // déjà vérifié sans marque tierce lisible ni personne identifiable au
@@ -286,7 +286,7 @@ export const IMAGES = {
   preuveTerrain: medias('installations/structure-eclairee-2024.webp'),
   realisationTerrain: medias('operations/preparation-terrain-2024.webp'),
   realisationInstallation: medias('installations/installation-guirlandes-2025.webp'),
-  realisationLab: unsplash('photo-1745448797900-35d08e85e9db'),
+  realisationLab: medias('lab/realisation-lab-impression-2026.webp'),
   /** Réutilisée par les Réalisations : la CNC porte déjà la section LAB. */
 
   /**

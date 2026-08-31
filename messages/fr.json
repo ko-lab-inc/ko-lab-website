@@ -179,7 +179,8 @@
       "a_venir": "Réalisation à venir",
       "titre_terrain": "Déploiement événementiel",
       "titre_installation": "Installation saisonnière",
-      "titre_lab": "Fabrication sur mesure"
+      "titre_lab": "Fabrication sur mesure",
+      "alt_lab": "Lettres « 20 » imprimées en 3D sur l'établi du LAB"
     },
     "ecosysteme": {
       "label": "Écosystème KO-LAB",

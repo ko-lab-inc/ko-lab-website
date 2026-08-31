@@ -57,6 +57,7 @@ export async function Realisations() {
       cle: 'installation',
       tag: tFiltres('filtre_installation'),
       titre: t('titre_installation'),
+      alt: undefined as string | undefined,
       src: IMAGES.realisationInstallation,
       // Recadrage neutre, à revérifier par capture d'écran réelle : l'ancien
       // CADRAGES.besoinInstaller était calé sur une autre photo (Canada Day),
@@ -68,6 +69,7 @@ export async function Realisations() {
       cle: 'lab',
       tag: tFiltres('filtre_lab'),
       titre: t('titre_lab'),
+      alt: t('alt_lab'),
       src: IMAGES.realisationLab,
       cadrage: 'object-center',
       style: FILTRE_TERRAIN,
@@ -109,11 +111,12 @@ export async function Realisations() {
 
           {/* Deux petites empilées */}
           <div className="grid grid-cols-1 gap-5">
-            {petites.map(({ cle, tag, titre, src, cadrage, style }) => (
+            {petites.map(({ cle, tag, titre, alt, src, cadrage, style }) => (
               <Reveal key={cle}>
                 <Carte
                   tag={tag}
                   titre={titre}
+                  alt={alt}
                   src={src}
                   cadrage={cadrage}
                   style={style}
@@ -135,6 +138,7 @@ export async function Realisations() {
 function Carte({
   tag,
   titre,
+  alt,
   src,
   cadrage,
   style,
@@ -145,6 +149,9 @@ function Carte({
   /** Nom du projet. Provisoirement « Réalisation à venir » : afficher de
    *  nouveau la catégorie ici ferait doublon avec la pastille. */
   titre: string
+  /** Description réelle de la photo, distincte du titre — repli sur `titre`
+   *  pour les cartes qui n'en ont pas encore une (voir Realisations.tsx). */
+  alt?: string
   src: string
   cadrage: string
   style: { filter: string }
@@ -158,7 +165,7 @@ function Carte({
       */}
       <Image
         src={src}
-        alt={titre}
+        alt={alt ?? titre}
         fill
         quality={80}
         sizes="(max-width: 1024px) 100vw, 66vw"

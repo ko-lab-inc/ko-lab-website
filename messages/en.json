@@ -179,7 +179,8 @@
       "a_venir": "Project coming soon",
       "titre_terrain": "Event deployment",
       "titre_installation": "Seasonal installation",
-      "titre_lab": "Custom fabrication"
+      "titre_lab": "Custom fabrication",
+      "alt_lab": "3D-printed \"20\" letters on the LAB workbench"
     },
     "ecosysteme": {
       "label": "The KO-LAB Ecosystem",
