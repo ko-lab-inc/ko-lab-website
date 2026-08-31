@@ -137,7 +137,8 @@
       "label": "01 — Field Operations",
       "title": "Reliable teams, coordinated, across multiple sites",
       "texte": "Labor, crew leaders, setup and teardown, logistics and transport. Our teams integrate with yours for the duration of the project.",
-      "lien": "See Field Operations"
+      "lien": "See Field Operations",
+      "mention": "multi-site operations"
     },
     "installations": {
       "label": "02 — Installations",

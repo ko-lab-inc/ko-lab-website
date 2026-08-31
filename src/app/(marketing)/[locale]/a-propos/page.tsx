@@ -55,12 +55,13 @@ export default async function AProposPage({ params }: Props) {
 
   const partenaires = ['turbo', 'spartan', 'emu', 'vip'] as const
 
-  const chiffres = [
-    { valeur: tStats('heures_valeur'), label: tStats('heures_label') },
-    { valeur: tStats('disciplines_valeur'), label: tStats('disciplines_label') },
-    { valeur: tStats('sites_valeur'), label: tStats('sites_label') },
-    { valeur: tStats('mandats_valeur'), label: tStats('mandats_label') },
-  ]
+  // Disciplines/sites/mandats retirés (LOT C, §24, révision Joe Himad,
+  // 30 août 2026) : pseudo-compteurs sans valeur vérifiable ("6", "Multi",
+  // "Gouv."). « 20 000+ heures de travail terrain » reste le seul chiffre
+  // public approuvé (CLAUDE.md) — une seule entrée, plus un tableau de
+  // quatre. Home.stats.disciplines_*/sites_*/mandats_* restent dans
+  // messages/*.json, volontairement non supprimées (consigne du brief).
+  const chiffre = { valeur: tStats('heures_valeur'), label: tStats('heures_label') }
 
   return (
     <>
@@ -131,25 +132,24 @@ export default async function AProposPage({ params }: Props) {
             <p className="mt-6 max-w-[56ch] text-base leading-relaxed text-ko-frost/60 lg:text-lg">
               {t('culture_texte')}
             </p>
-          </Reveal>
 
-          {/* Chiffres en filets, sans icône ni pastille — le vocabulaire de
-              lignes fines du skill 08. */}
-          <Reveal groupe className="mt-14 grid grid-cols-2 gap-px bg-ko-line-d lg:grid-cols-4">
-            {chiffres.map((c, i) => (
-              <div
-                key={c.label}
-                style={{ '--delai': `${i * 150}ms` } as React.CSSProperties}
-                className="cascade-stat bg-ko-black px-5 py-8"
-              >
-                <p className="font-serif text-[26px] font-light leading-none text-ko-white">
-                  {c.valeur}
-                </p>
-                <p className="mt-3 font-mono text-[11px] uppercase leading-relaxed tracking-[0.14em] text-ko-muted-d">
-                  {c.label}
-                </p>
-              </div>
-            ))}
+            {/* Chiffre unique — remplace la grille de 4 (LOT C, §24, 30 août
+                2026) : grid-cols-2/lg:grid-cols-4, les filets gap-px et
+                l'animation cascade-stat n'avaient plus de sens à une seule
+                entrée (cascade = apparition échelonnée de plusieurs cellules).
+                Dans le même <Reveal> que le texte ci-dessus plutôt qu'un bloc
+                à part en dessous : un chiffre isolé sous cette section
+                flottait sans rattachement visuel au texte qui le précède.
+                Même vocabulaire que la carte du hero et celle d'Opérations
+                terrain (32px serif + légende mono 10px). */}
+            <div className="mt-10 inline-flex flex-col rounded-2xl border border-ko-frost/15 bg-ko-frost/10 px-6 py-5 backdrop-blur-md">
+              <p className="font-serif text-[32px] font-light leading-none text-ko-white">
+                {chiffre.valeur}
+              </p>
+              <p className="mt-2 max-w-[16ch] font-mono text-[10px] uppercase leading-relaxed tracking-[0.14em] text-ko-frost/55">
+                {chiffre.label}
+              </p>
+            </div>
           </Reveal>
         </div>
       </section>

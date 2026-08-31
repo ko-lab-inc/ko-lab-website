@@ -22,12 +22,16 @@ export async function Hero() {
   const t = await getTranslations('Home.hero')
   const tStats = await getTranslations('Home.stats')
 
-  const stats = [
-    { valeur: tStats('heures_valeur'), label: tStats('heures_label') },
-    { valeur: tStats('disciplines_valeur'), label: tStats('disciplines_label') },
-    { valeur: tStats('sites_valeur'), label: tStats('sites_label') },
-    { valeur: tStats('mandats_valeur'), label: tStats('mandats_label') },
-  ]
+  // Disciplines/sites/mandats retirés (LOT C, §24, révision Joe Himad, 30 août
+  // 2026) : des pseudo-compteurs à l'apparence chiffrée pour des valeurs qui
+  // n'en étaient pas ("6", "Multi", "Gouv."), aucune vérifiable. « 20 000+
+  // heures de travail terrain » reste le seul chiffre public approuvé
+  // (CLAUDE.md) — une seule entrée, plus un tableau. Les clés
+  // Home.stats.disciplines_*/sites_*/mandats_* restent dans messages/*.json,
+  // volontairement non supprimées (consigne du brief) : inutilisées depuis
+  // ici — /a-propos (bloc « En bref ») les lit encore, retrait traité à
+  // part (même lot, description avant code, voir le rapport).
+  const stat = { valeur: tStats('heures_valeur'), label: tStats('heures_label') }
 
   return (
     <section className="mx-3 mt-3 lg:mx-4 lg:mt-4">
@@ -128,24 +132,24 @@ export async function Hero() {
           </div>
         </div>
 
-        {/* --------------------------- Carte stats --------------------------- */}
-        {/* Masquée sous md : elle chevaucherait le titre sur un écran étroit. */}
+        {/* --------------------------- Carte stat --------------------------- */}
+        {/* Masquée sous md : elle chevaucherait le titre sur un écran étroit
+            (inchangé par ce lot — n'affecte que ≥768px, jamais le téléphone).
+            Carte à une seule entrée depuis le 30 août 2026 (LOT C, §24) :
+            `grid grid-cols-2` n'avait plus de sens à un seul chiffre, aurait
+            laissé trois cases vides plutôt qu'une carte simple. */}
         <Reveal className="absolute bottom-8 right-8 z-10 hidden md:block">
           {/* data-hero-carte : remonte de 30px à contre-sens du défilement. */}
           <div
             data-hero-carte
-            className="grid grid-cols-2 gap-4 rounded-2xl border border-ko-frost/15 bg-ko-frost/10 p-6 backdrop-blur-md"
+            className="rounded-2xl border border-ko-frost/15 bg-ko-frost/10 p-6 backdrop-blur-md"
           >
-            {stats.map((stat) => (
-              <div key={stat.label}>
-                <p className="font-serif text-[32px] font-light leading-none text-ko-white">
-                  {stat.valeur}
-                </p>
-                <p className="mt-2 max-w-[16ch] font-mono text-[10px] uppercase leading-relaxed tracking-[0.14em] text-ko-frost/55">
-                  {stat.label}
-                </p>
-              </div>
-            ))}
+            <p className="font-serif text-[32px] font-light leading-none text-ko-white">
+              {stat.valeur}
+            </p>
+            <p className="mt-2 max-w-[16ch] font-mono text-[10px] uppercase leading-relaxed tracking-[0.14em] text-ko-frost/55">
+              {stat.label}
+            </p>
           </div>
         </Reveal>
       </div>

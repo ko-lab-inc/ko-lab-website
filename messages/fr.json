@@ -127,7 +127,7 @@
     "credibilite": {
       "label": "Crédibilité terrain",
       "title": "Des équipes de confiance pour des organisations d'envergure.",
-      "phrase": "Du gouvernement du Canada aux plus grands festivals de la région, nos équipes sont sur le terrain.",
+      "phrase": "Des équipes déployées sur des opérations multisites, des mandats gouvernementaux et des projets d'envergure.",
       "detail": "Plus de 20 000 heures de travail terrain, plusieurs sites coordonnés simultanément, et une capacité complète : main-d'œuvre, coordination, transport, montage, démontage, logistique et soutien opérationnel."
     },
     "capacites": {
@@ -137,7 +137,8 @@
       "label": "01 — Opérations terrain",
       "title": "Des équipes fiables, coordonnées, sur plusieurs sites",
       "texte": "Main-d'œuvre, chefs d'équipe, montage et démontage, logistique et transport. Nos équipes s'intègrent aux vôtres pour la durée du mandat.",
-      "lien": "Voir les opérations terrain"
+      "lien": "Voir les opérations terrain",
+      "mention": "opérations multisites"
     },
     "installations": {
       "label": "02 — Installations",

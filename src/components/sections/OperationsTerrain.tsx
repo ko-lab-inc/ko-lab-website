@@ -20,15 +20,19 @@ import type { AppLocale } from '@/i18n/routing'
  * dans une liste — la direction vise l'éditorial et l'immersif, pas quatre
  * cartes identiques (skill 08).
  *
- * Le bloc statistique reprend « Multi / Sites et horaires coordonnés
- * simultanément » de Home.stats — déjà vérifié, déjà affiché ailleurs sur le
- * site (hero) — plutôt qu'un chiffre inventé pour cette section : aucune
- * statistique nouvelle propre aux Opérations terrain n'a été fournie, et
- * CLAUDE.md interdit d'affirmer un nombre sans preuve.
+ * Le bloc statistique reprenait « Multi / Sites et horaires coordonnés
+ * simultanément » (Home.stats.sites_*) — retiré le 29 août 2026 (LOT C,
+ * §24, révision Joe Himad) : un pseudo-compteur à l'apparence chiffrée pour
+ * une valeur qui n'en était pas une, le seul chiffre public approuvé restant
+ * « 20 000+ heures ». Remplacé par une mention éditoriale sans chiffre,
+ * clé propre à cette section (`mention`, namespace Home.operations) plutôt
+ * que de réécrire Home.stats.sites_* : ces clés restent utilisées telles
+ * quelles par Hero.tsx, dont le retrait équivalent est encore en attente
+ * d'arbitrage (voir le rapport de la conversation, §5) — les modifier ici
+ * aurait changé le hero par ricochet, sans lien avec cette section.
  */
 export async function OperationsTerrain({ locale }: { locale: AppLocale }) {
   const t = await getTranslations('Home.operations')
-  const tStats = await getTranslations('Home.stats')
   const tCommun = await getTranslations('Commun')
 
   // operations_terrain (migration 0031, route A) — pilote UNIQUEMENT la photo
@@ -128,16 +132,15 @@ export async function OperationsTerrain({ locale }: { locale: AppLocale }) {
           </Link>
         </Reveal>
 
-        {/* Bloc statistique en overlay — même vocabulaire visuel que la carte
-            du hero (glass discret), masqué sous md où l'espace manque pour le
-            poser sans chevaucher le texte. */}
+        {/* Bloc en overlay — même vocabulaire visuel que la carte du hero
+            (glass discret), masqué sous md où l'espace manque pour le poser
+            sans chevaucher le texte. Une seule ligne depuis le retrait du
+            pseudo-compteur ci-dessus : une mention éditoriale n'a pas de
+            grand chiffre à afficher au-dessus d'elle. */}
         <Reveal className="absolute right-6 top-16 hidden md:block lg:right-12 lg:top-24">
           <div className="rounded-2xl border border-ko-frost/15 bg-ko-frost/10 px-6 py-5 backdrop-blur-md">
-            <p className="font-serif text-[32px] font-light leading-none text-ko-white">
-              {tStats('sites_valeur')}
-            </p>
-            <p className="mt-2 max-w-[18ch] font-mono text-[10px] uppercase leading-relaxed tracking-[0.14em] text-ko-frost/55">
-              {tStats('sites_label')}
+            <p className="max-w-[18ch] font-mono text-[10px] uppercase leading-relaxed tracking-[0.14em] text-ko-frost/55">
+              {t('mention')}
             </p>
           </div>
         </Reveal>
