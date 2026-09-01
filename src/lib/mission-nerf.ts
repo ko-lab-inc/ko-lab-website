@@ -31,3 +31,22 @@ export function dateEvenementQuebec(): string {
     day: '2-digit',
   }).format(new Date())
 }
+
+/**
+ * Heure d'un horodatage, dans le fuseau de l'événement — `HH:mm`, 24 h.
+ *
+ * Formatée ICI plutôt que dans le navigateur du dashboard : la TV affiche
+ * l'heure de Gatineau quel que soit le fuseau système réel de l'appareil qui
+ * l'exécute (un lecteur/PC mal configuré ne doit pas décaler l'affichage).
+ */
+export function heureQuebec(horodatage: string): string {
+  // 'en-CA', pas 'fr-CA' : les deux donnent bien 24 h (hour12: false), mais
+  // 'fr-CA' rend « 23 h 34 » (convention d'écriture canadienne-française)
+  // alors que la maquette attend « 23:34 » — vérifié en direct, pas supposé.
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Toronto',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date(horodatage))
+}

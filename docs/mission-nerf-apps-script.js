@@ -11,6 +11,50 @@
  * https://docs.google.com/forms/d/e/1FAIpQLSe8w68uNWha870jIbbiSqnKf8OmueHPBks2GT-oQpvioAuk-w/viewform
  *
  * -----------------------------------------------------------------------------
+ * ⚠️ HISTORIQUE — deux échecs successifs, cause réelle trouvée le 1er
+ * septembre 2026 par lecture du journal d'une VRAIE exécution
+ * -----------------------------------------------------------------------------
+ * Premier échec (31 août) : `onFormSubmit` plantait en moins d'une seconde,
+ * sans ligne créée. Corrigé en ajoutant un try/catch et une journalisation
+ * complète AVANT tout traitement (voir plus bas) — pas une correction du
+ * fond, un moyen de VOIR le fond au prochain essai.
+ *
+ * Ce prochain essai a donné la vraie cause, noir sur blanc dans les
+ * journaux :
+ *
+ *     Clés de premier niveau de e : ["toString","authMode","response",
+ *                                    "source","triggerUid"]
+ *     e.namedValues présent : NON
+ *
+ * ⚠️ DEUX FORMES D'ÉVÉNEMENT « sur envoi du formulaire », selon l'endroit où
+ * le déclencheur installable est créé — ce n'est PAS un détail cosmétique,
+ * ce sont deux formes de données différentes :
+ *   - Déclencheur posé DEPUIS LE FORMULAIRE (« Source de l'événement : à
+ *     partir du formulaire ») → l'événement porte `e.response`, un objet
+ *     FormResponse — PAS de `e.namedValues` du tout.
+ *   - Déclencheur posé DEPUIS LE TABLEUR de réponses lié → l'événement porte
+ *     `e.namedValues`, une map titre → réponse(s) — celle que ce script
+ *     attendait jusqu'ici.
+ *
+ * Le déclencheur de ce projet a toujours été posé depuis le formulaire (la
+ * bonne façon, seule capable d'appeler UrlFetchApp — voir INSTALLER LE
+ * DÉCLENCHEUR) : le script attendait la mauvaise forme depuis le début, pas
+ * un titre mal orthographié ni un déclencheur mal configuré.
+ *
+ * Ce fichier gère maintenant LES DEUX formes (voir
+ * `construireNamedValuesDepuisReponse` plus bas) : `e.response` en priorité,
+ * repli sur `e.namedValues` si un jour
+ * quelqu'un recrée le déclencheur depuis le tableur, erreur journalisée
+ * seulement si aucune des deux n'existe.
+ *
+ * Le try/catch et la journalisation complète AVANT tout traitement restent
+ * en place — c'est ce qui a permis de VOIR cette cause plutôt que de la
+ * deviner. Idem pour la distinction « titre de question introuvable » (une
+ * vraie erreur) contre « bloc vide » (normal — logique conditionnelle du
+ * formulaire : un parent qui inscrit 2 enfants ne voit jamais les questions
+ * des participants 3 à 5).
+ *
+ * -----------------------------------------------------------------------------
  * OÙ COLLER CE FICHIER
  * -----------------------------------------------------------------------------
  * Ouvrir le Google Form ci-dessus (en édition) > menu ⋮ (trois points) >
@@ -40,8 +84,8 @@
  * Une fonction simplement NOMMÉE `onFormSubmit` ne suffit PAS : Apps Script
  * la relierait automatiquement comme DÉCLENCHEUR SIMPLE, qui tourne sans
  * autorisation complète et ne PEUT PAS appeler UrlFetchApp (requêtes HTTP
- * sortantes) — l'envoi échouerait en silence, sans erreur visible nulle
- * part. Il faut un DÉCLENCHEUR INSTALLABLE, posé une fois à la main :
+ * sortantes) — l'envoi échouerait en silence. Il faut un DÉCLENCHEUR
+ * INSTALLABLE, posé une fois à la main :
  *
  *   Éditeur Apps Script > icône ⏰ Déclencheurs (menu de gauche) >
  *   + Ajouter un déclencheur >
@@ -51,6 +95,15 @@
  *       Type d'événement       : Sur envoi du formulaire
  *   > Enregistrer.
  *
+ *   « À partir du formulaire » est CONFIRMÉ CORRECT pour ce projet (journal
+ *   du 1er septembre) — c'est la seule source qui autorise UrlFetchApp. Elle
+ *   envoie `e.response`, pas `e.namedValues` : voir HISTORIQUE en tête de
+ *   fichier, ce n'était pas une erreur de configuration, ce script attendait
+ *   simplement la mauvaise forme de données. Un déclencheur posé « à partir
+ *   du tableur » fonctionnerait aussi désormais (repli automatique sur
+ *   `e.namedValues`), mais rien ne justifie de changer une configuration qui
+ *   marche.
+ *
  *   Un écran d'autorisation Google apparaît la première fois (« Google n'a
  *   pas vérifié cette application ») — normal pour un script qui nous
  *   appartient : Avancé > Accéder à [nom du projet] (dangereux) > Autoriser.
@@ -58,22 +111,41 @@
  * -----------------------------------------------------------------------------
  * TESTER SANS ATTENDRE UNE VRAIE SOUMISSION
  * -----------------------------------------------------------------------------
- * Dans l'éditeur : sélectionner `testerEnvoi` dans le menu déroulant de
- * fonctions (en haut), puis ▶ Exécuter. Ça déclenche aussi l'écran
- * d'autorisation ci-dessus si ce n'est pas déjà fait — à faire AVANT de
- * compter sur le déclencheur un soir d'événement. Voir la docstring de
- * `testerEnvoi` pour le nettoyage après coup.
+ * Deux fonctions de test, DEPUIS L'ÉDITEUR APPS SCRIPT (menu déroulant de
+ * fonctions en haut, puis ▶ Exécuter) :
+ *
+ *   - `testerEnvoi()`      — teste UNIQUEMENT jeton + URL + route (déjà
+ *                            confirmé bon). Crée une vraie ligne de test.
+ *   - `testerAnalyse()`    — teste UNIQUEMENT la logique de lecture (chemin
+ *                            de repli e.namedValues, le plus simple à
+ *                            simuler sans vraie soumission), SANS appel
+ *                            réseau : simule un événement avec un titre
+ *                            volontairement faux, pour vérifier que le
+ *                            signalement « TITRE INTROUVABLE » fonctionne
+ *                            avant de compter dessus un soir d'événement.
+ *
+ * Après le premier vrai `onFormSubmit` réel qui suit ce correctif : ouvrir
+ * Apps Script > Exécutions (icône horloge à gauche, PAS « Déclencheurs ») et
+ * lire les journaux de CETTE exécution — c'est là que Logger.log() écrit,
+ * pas nécessairement dans Google Cloud Logging.
  */
 
 const URL_SITE = 'https://ko-lab-center.ca/api/mission-nerf/decharges'
 
 /**
- * Titres EXACTS des questions du formulaire (vérifiés en direct sur le
- * formulaire cité plus haut, le 31 août 2026) — Apps Script indexe
- * `e.namedValues` par le TITRE de la question, jamais par sa position. Si un
- * titre est un jour reformulé dans le formulaire, cette liste doit être
- * corrigée EN MÊME TEMPS, sinon le participant correspondant cesse d'être
- * envoyé, sans le moindre message d'erreur.
+ * Titres EXACTS des questions du formulaire (revérifiés en direct sur le
+ * formulaire cité plus haut, le 1er septembre 2026, deux extractions
+ * indépendantes) — Apps Script indexe `e.namedValues` par le TITRE de la
+ * question, jamais par sa position. Si un titre est un jour reformulé dans
+ * le formulaire, cette liste doit être corrigée EN MÊME TEMPS — et si elle
+ * ne l'est pas, la journalisation ajoutée plus bas le signale maintenant
+ * bruyamment au lieu de filtrer le participant en silence.
+ *
+ * ⚠️ Le formulaire affiche « jusqu'à 4 enfants » dans son texte de
+ * présentation, mais propose bien 5 blocs de questions réels (participants
+ * 1 à 5, vérifié) — incohérence de contenu à signaler à Christian, sans
+ * lien avec ce script : les 5 blocs sont réels, la liste ci-dessous reste à
+ * 5 volontairement.
  *
  * Volontairement ABSENTS de cette liste : « Autorisez-vous cet enfant à
  * participer? » et « Souhaitez-vous inscrire un autre enfant? » — ces deux
@@ -84,6 +156,7 @@ const URL_SITE = 'https://ko-lab-center.ca/api/mission-nerf/decharges'
  */
 const CHAMPS_PARTICIPANT = [1, 2, 3, 4, 5].map(function (n) {
   return {
+    index: n,
     prenom: 'Prénom du participant ' + n,
     nom: 'Nom du participant ' + n,
     age: 'Âge du participant ' + n,
@@ -91,41 +164,176 @@ const CHAMPS_PARTICIPANT = [1, 2, 3, 4, 5].map(function (n) {
 })
 
 /**
- * Une valeur de `e.namedValues` est TOUJOURS un tableau, même pour une
- * question à réponse unique — absente (pas juste vide) si la question n'a
- * pas été atteinte dans le parcours logique du formulaire.
+ * Lit UN champ de e.namedValues, en distinguant deux cas très différents :
+ *
+ *   - manquant: true  → le TITRE n'existe pas du tout comme clé. Une vraie
+ *     erreur : accent/majuscule/espace différent, ou question renommée.
+ *   - manquant: false, valeur: ''  → le titre existe, mais cette réponse
+ *     est vide. NORMAL pour un bloc participant que la logique
+ *     conditionnelle du formulaire n'a pas présenté à ce répondant.
+ *
+ * La version précédente de ce fichier traitait les deux cas identiquement
+ * (chaîne vide), ce qui filtrait un vrai bug de titre exactement comme un
+ * bloc vide légitime — invisible dans les journaux.
  */
 function champ(namedValues, titre) {
+  if (!Object.prototype.hasOwnProperty.call(namedValues, titre)) {
+    return { manquant: true, valeur: '' }
+  }
   const valeurs = namedValues[titre]
-  return valeurs && valeurs[0] ? valeurs[0].trim() : ''
+  return { manquant: false, valeur: valeurs && valeurs[0] ? valeurs[0].trim() : '' }
+}
+
+/** JSON.stringify qui ne plante jamais — utilisé uniquement pour journaliser
+ *  un objet dont la forme n'est pas garantie (l'événement brut). */
+function versJsonSur(valeur) {
+  try {
+    return JSON.stringify(valeur)
+  } catch (err) {
+    return '(impossible à sérialiser : ' + err + ')'
+  }
+}
+
+/**
+ * Reconstruit l'équivalent de `e.namedValues` (map titre → tableau de
+ * réponses) à partir de `e.response`, la forme réellement envoyée par un
+ * déclencheur posé « à partir du formulaire » — voir HISTORIQUE en tête de
+ * fichier pour pourquoi les deux formes existent.
+ *
+ * `getResponse()` renvoie une chaîne pour une question à réponse unique
+ * (nos 15 titres) et un tableau pour une question à cases à cocher —
+ * toujours normalisé en tableau ici pour que `champ()` (identique pour les
+ * deux chemins) n'ait pas à connaître la différence.
+ *
+ * Un titre RÉPÉTÉ (« Autorisez-vous cet enfant à participer? », dupliqué sur
+ * les 5 blocs) empile ses réponses sous la même clé, dans l'ordre du
+ * formulaire — même comportement que `e.namedValues` sur un déclencheur
+ * tableur. Sans conséquence ici : CHAMPS_PARTICIPANT n'utilise jamais ces
+ * titres dupliqués (voir sa docstring).
+ */
+function construireNamedValuesDepuisReponse(reponse) {
+  const namedValues = {}
+
+  reponse.getItemResponses().forEach(function (itemReponse) {
+    const titre = itemReponse.getItem().getTitle()
+    const brut = itemReponse.getResponse()
+    const valeurs = Array.isArray(brut) ? brut : [brut]
+
+    namedValues[titre] = namedValues[titre] ? namedValues[titre].concat(valeurs) : valeurs
+  })
+
+  return namedValues
 }
 
 /**
  * Déclenchée automatiquement par le déclencheur INSTALLABLE (voir plus
  * haut) à chaque soumission du formulaire.
+ *
+ * Tout le corps est dans un try/catch : une exception ici doit atterrir
+ * dans les journaux de l'exécution, jamais disparaître en silence comme le
+ * 31 août.
  */
 function onFormSubmit(e) {
-  const namedValues = e.namedValues
+  try {
+    Logger.log('=== Mission NERF — nouvelle soumission ===')
 
-  const participants = CHAMPS_PARTICIPANT.map(function (champs) {
-    return {
-      prenom: champ(namedValues, champs.prenom),
-      nom: champ(namedValues, champs.nom),
-      age: champ(namedValues, champs.age),
+    // Contenu brut de l'événement — AVANT tout traitement, pour diagnostiquer
+    // même si tout le reste plante juste après cette ligne. C'est cette
+    // ligne qui a révélé la vraie cause le 1er septembre (e.response présent,
+    // e.namedValues absent) — la garder est ce qui rend un futur problème
+    // similaire diagnosticable sans deviner.
+    Logger.log('Clés de premier niveau de e : ' + versJsonSur(e ? Object.keys(e) : e))
+    Logger.log('e.response présent : ' + (e && e.response ? 'oui' : 'NON'))
+    Logger.log('e.namedValues présent : ' + (e && e.namedValues ? 'oui' : 'NON'))
+
+    // e.response D'ABORD — c'est la forme du déclencheur posé « à partir du
+    // formulaire », celle réellement utilisée par ce projet (voir
+    // HISTORIQUE). e.namedValues en repli, pour ne pas casser le script si
+    // quelqu'un recrée un jour le déclencheur depuis le tableur de réponses.
+    let namedValues
+    if (e && e.response) {
+      namedValues = construireNamedValuesDepuisReponse(e.response)
+      Logger.log('Source utilisée : e.response (déclencheur « formulaire »).')
+    } else if (e && e.namedValues) {
+      namedValues = e.namedValues
+      Logger.log('Source utilisée : e.namedValues (déclencheur « tableur »).')
+    } else {
+      Logger.log(
+        'ERREUR CRITIQUE : ni e.response ni e.namedValues ne sont présents — ' +
+          'impossible de lire les réponses. Vérifier le déclencheur : ' +
+          'Déclencheurs > onFormSubmit > Source de l\'événement doit être ' +
+          '« À partir du formulaire », type « Sur envoi du formulaire ». ' +
+          'Voir la section INSTALLER LE DÉCLENCHEUR en tête de ce fichier.',
+      )
+      return
     }
-  }).filter(function (p) {
-    // Bloc vide (participants 2 à 5, le plus souvent) : le prénom est le
-    // seul champ garanti rempli pour un participant réel présent — un bloc
-    // sans prénom n'est jamais une ligne à créer, ni à moitié remplie.
-    return p.prenom !== ''
-  })
 
-  if (participants.length === 0) {
-    Logger.log('Aucun participant avec un prénom rempli — rien envoyé.')
-    return
+    const clesReelles = Object.keys(namedValues)
+    Logger.log('Nombre de questions reçues dans cette soumission : ' + clesReelles.length)
+    Logger.log('Clés réelles : ' + versJsonSur(clesReelles))
+
+    const participants = []
+
+    CHAMPS_PARTICIPANT.forEach(function (bloc) {
+      const prenom = champ(namedValues, bloc.prenom)
+      const nom = champ(namedValues, bloc.nom)
+      const age = champ(namedValues, bloc.age)
+
+      const manquants = [prenom.manquant, nom.manquant, age.manquant]
+      const tousManquants = manquants.every(function (m) { return m })
+      const aucunManquant = manquants.every(function (m) { return !m })
+
+      // Les 3 questions d'un même bloc sont TOUJOURS présentées ensemble par
+      // la logique conditionnelle du formulaire (« Souhaitez-vous inscrire
+      // un autre enfant? ») — soit les 3 existent dans namedValues, soit
+      // aucune. Les 3 manquantes à la fois = normal, ce bloc n'a jamais été
+      // proposé à ce répondant. Rien à journaliser bruyamment.
+      if (tousManquants) return
+
+      // Un état MIXTE (1 ou 2 titres manquants sur les 3) ne peut PAS venir
+      // du formulaire lui-même — seulement d'un titre mal recopié dans
+      // CHAMPS_PARTICIPANT. C'est ÇA, la vraie erreur à signaler, distincte
+      // d'un bloc simplement non rempli.
+      if (!aucunManquant) {
+        const titresManquants = []
+        if (prenom.manquant) titresManquants.push('"' + bloc.prenom + '"')
+        if (nom.manquant) titresManquants.push('"' + bloc.nom + '"')
+        if (age.manquant) titresManquants.push('"' + bloc.age + '"')
+
+        Logger.log(
+          'TITRE INTROUVABLE — participant ' + bloc.index + ' : ' +
+            titresManquants.join(', ') +
+            ' absent(s) de e.namedValues alors que d\'autres titres du même ' +
+            'bloc SONT présents (voir la liste des clés réelles ci-dessus). ' +
+            'Un accent, une majuscule ou un espace a changé sur le ' +
+            'formulaire — CHAMPS_PARTICIPANT doit être corrigé pour ' +
+            'correspondre EXACTEMENT. Ce participant est ignoré pour cette ' +
+            'soumission tant que ce n\'est pas corrigé.',
+        )
+        return
+      }
+
+      if (prenom.valeur === '') {
+        // Les 3 titres existent mais le prénom est vide — improbable si la
+        // question est obligatoire côté formulaire, gardé par sécurité :
+        // jamais une ligne fantôme plutôt qu'une supposition.
+        return
+      }
+
+      participants.push({ prenom: prenom.valeur, nom: nom.valeur, age: age.valeur })
+    })
+
+    Logger.log('Participants retenus pour l\'envoi : ' + participants.length)
+
+    if (participants.length === 0) {
+      Logger.log('Aucun participant avec un prénom rempli — rien envoyé.')
+      return
+    }
+
+    envoyer(participants)
+  } catch (err) {
+    Logger.log('ERREUR NON ATTRAPÉE dans onFormSubmit : ' + err + '\n' + (err && err.stack))
   }
-
-  envoyer(participants)
 }
 
 /** Isolée de onFormSubmit pour pouvoir être rejouée depuis testerEnvoi(). */
@@ -159,15 +367,51 @@ function envoyer(participants) {
 }
 
 /**
- * Test manuel — menu déroulant de fonctions > testerEnvoi > ▶ Exécuter,
- * DEPUIS L'ÉDITEUR APPS SCRIPT. Envoie un participant factice clairement
- * identifiable comme test, avec le MÊME chemin de code que le déclencheur
- * réel (donc une vraie preuve que jeton + URL + route fonctionnent).
+ * Test manuel — menu déroulant de fonctions > testerEnvoi > ▶ Exécuter.
+ * Envoie un participant factice clairement identifiable comme test, avec le
+ * MÊME chemin de code que le déclencheur réel APRÈS l'analyse de
+ * l'événement (donc une preuve que jeton + URL + route fonctionnent — déjà
+ * confirmé le 31 août).
  *
- * ⚠️ Crée une vraie ligne dans `inscriptions_nerf` côté site si le jeton et
- * l'URL sont corrects — à supprimer après vérification (prénom
- * 'TEST_APPS_SCRIPT', facile à retrouver et à effacer).
+ * ⚠️ Crée une vraie ligne dans `inscriptions_nerf` côté site — à supprimer
+ * après vérification (prénom 'TEST_APPS_SCRIPT', facile à retrouver).
  */
 function testerEnvoi() {
   envoyer([{ prenom: 'TEST_APPS_SCRIPT', nom: 'TEST', age: '10' }])
+}
+
+/**
+ * Test manuel — menu déroulant de fonctions > testerAnalyse > ▶ Exécuter.
+ * Simule un événement de soumission SANS AUCUN effet de bord — ni appel
+ * réseau, ni ligne créée en base — pour vérifier que la lecture de
+ * e.namedValues et le signalement des titres introuvables fonctionnent,
+ * avant de compter dessus un soir d'événement.
+ *
+ * Le faux événement ci-dessous contient DÉLIBÉRÉMENT, et RIEN d'autre :
+ *   - un participant 1 en état MIXTE : prénom et nom présents, mais le
+ *     titre « Âge » est délibérément faux (mauvaise majuscule) — doit
+ *     produire une ligne « TITRE INTROUVABLE » dans les journaux ;
+ *   - aucune clé du tout pour les participants 2 à 5, simulant la logique
+ *     conditionnelle réelle du formulaire — doit être traité comme normal,
+ *     sans log d'erreur.
+ *
+ * Aucun bloc n'étant complet, `participants` reste vide : envoyer() n'est
+ * JAMAIS appelée, donc AUCUNE ligne créée en base — ce test est
+ * volontairement sans effet de bord.
+ *
+ * Lire les journaux après exécution (Apps Script > Exécutions) : on doit y
+ * voir « Participants retenus pour l'envoi : 0 », exactement 1 ligne
+ * « TITRE INTROUVABLE » citant "Âge du participant 1", et
+ * « Aucun participant avec un prénom rempli — rien envoyé. ».
+ */
+function testerAnalyse() {
+  onFormSubmit({
+    namedValues: {
+      'Prénom du participant 1': ['Test'],
+      'Nom du participant 1': ['Analyse'],
+      // Titre volontairement faux (mauvaise majuscule) — devrait être
+      // "Âge du participant 1" :
+      'age du participant 1': ['9'],
+    },
+  })
 }

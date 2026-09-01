@@ -1,3 +1,5 @@
+import { JetBrains_Mono, Orbitron } from 'next/font/google'
+
 import '@/styles/globals.css'
 
 import type { Metadata } from 'next'
@@ -18,10 +20,37 @@ import type { ReactNode } from 'react'
  * ancêtre ne peut être « retiré » par un enfant en App Router, et ce
  * dashboard n'a aucun contenu à traduire.
  *
- * Aucune police chargée ici : la typographie de l'écran TV reste à décider
- * au prompt qui construira l'écran lui-même, pas à celui qui pose la
- * fondation.
+ * -----------------------------------------------------------------------------
+ * TOUCHÉ AU PROMPT 2 (construction de l'écran) — deux ajouts, motivés
+ * -----------------------------------------------------------------------------
+ * 1. Polices — Orbitron (titre « MISSION NERF », identité propre à
+ *    Expérience Mobile, sans rapport avec Fraunces/Instrument Sans du site
+ *    vitrine) et JetBrains Mono (lectures chiffrées — même police que le
+ *    reste du site, mais chargée ICI, indépendamment : ce layout ne dépend
+ *    d'aucun autre, sur le même principe qui a justifié son existence).
+ *
+ * 2. `background: transparent` forcé sur html/body — nécessaire pour que la
+ *    zone caméra du dashboard (voir dashboard/page.tsx) soit un vrai trou
+ *    transparent pour OBS, pas juste visuellement sombre. `globals.css` fixe
+ *    `body { background-color: var(--ko-white) }` pour le reste du site
+ *    (@layer base) ; un style en ligne sur l'élément l'emporte sur cette
+ *    règle sans y toucher. Le fond visuellement sombre du dashboard vient
+ *    des PANNEAUX eux-mêmes (chacun son propre fond plein), jamais du body —
+ *    voir la note de dashboard/page.tsx pour le détail du mécanisme.
  */
+
+const orbitron = Orbitron({
+  subsets: ['latin'],
+  weight: ['700', '900'],
+  variable: '--font-nerf-title',
+  display: 'swap',
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ['latin'],
+  variable: '--font-mono',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Mission NERF',
@@ -34,8 +63,14 @@ export const metadata: Metadata = {
 
 export default function MissionNerfLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="fr">
-      <body className="antialiased">{children}</body>
+    <html
+      lang="fr"
+      className={`${orbitron.variable} ${jetbrainsMono.variable}`}
+      style={{ backgroundColor: 'transparent' }}
+    >
+      <body className="font-mono antialiased" style={{ backgroundColor: 'transparent' }}>
+        {children}
+      </body>
     </html>
   )
 }
