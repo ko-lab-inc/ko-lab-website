@@ -152,5 +152,12 @@ export const config = {
   // la session elle-même, avec createClient() de lib/supabase/server.ts — la
   // faire passer par ici lui imposerait le routage de langue, qui n'a aucun
   // sens pour du JSON.
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
+  //
+  // ⚠️ /mission-nerf exclu de la même façon (Mission NERF, Prompt 1) : ce
+  // dashboard vit hors du système de traduction — voir son propre layout.tsx
+  // — sans cette exclusion, next-intl le redirigerait vers /fr/mission-nerf/…
+  // (localePrefix: 'always', routing.ts), ce que l'URL publique attendue
+  // (ko-lab-center.ca/mission-nerf/dashboard, ouverte sans préfixe par OBS)
+  // interdit.
+  matcher: ['/((?!api|mission-nerf|_next|_vercel|.*\\..*).*)'],
 }

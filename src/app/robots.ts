@@ -47,7 +47,14 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api', ...chemins.flatMap((chemin) => [`/fr${chemin}`, `/en${chemin}`])],
+      // /mission-nerf : nu, comme /api — cette route vit hors du système de
+      // locale (Mission NERF, Prompt 1), un préfixe /fr ou /en ne
+      // s'appliquerait à rien de réel ici.
+      disallow: [
+        '/api',
+        '/mission-nerf',
+        ...chemins.flatMap((chemin) => [`/fr${chemin}`, `/en${chemin}`]),
+      ],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   }

@@ -736,6 +736,68 @@ export type Database = {
         }
         Relationships: []
       }
+      // Mission NERF (0046) — une ligne par participant, pas par décharge.
+      // Aucun GRANT anon/authenticated (voir la migration) : seul
+      // service_role y touche, donc les seuls consommateurs TypeScript sont
+      // des routes API server-only (getSupabaseAdmin()).
+      inscriptions_nerf: {
+        Row: {
+          id: string
+          recu_le: string
+          prenom: string
+          nom: string
+          age: number
+          decharge_id: string
+          statut: string
+          date_evenement: string
+        }
+        Insert: {
+          id?: string
+          recu_le?: string
+          prenom: string
+          nom: string
+          age: number
+          decharge_id: string
+          statut?: string
+          date_evenement: string
+        }
+        Update: {
+          id?: string
+          recu_le?: string
+          prenom?: string
+          nom?: string
+          age?: number
+          decharge_id?: string
+          statut?: string
+          date_evenement?: string
+        }
+        Relationships: []
+      }
+      // Mission NERF (0046) — singleton (verrou_singleton), une seule ligne.
+      etat_zone_nerf: {
+        Row: {
+          id: string
+          zone_ouverte: boolean
+          prochain_depart: string | null
+          derniere_remise_a_zero: string | null
+          verrou_singleton: boolean
+        }
+        Insert: {
+          id?: string
+          zone_ouverte?: boolean
+          prochain_depart?: string | null
+          derniere_remise_a_zero?: string | null
+          verrou_singleton?: boolean
+        }
+        Update: {
+          id?: string
+          zone_ouverte?: boolean
+          prochain_depart?: string | null
+          derniere_remise_a_zero?: string | null
+          verrou_singleton?: boolean
+        }
+        Relationships: []
+      }
     }
 
     Views: {

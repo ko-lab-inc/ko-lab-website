@@ -327,3 +327,30 @@ export const schemaInscription = z
     path: ['motDePasse'],
     message: 'reprend_courriel',
   })
+
+/**
+ * Une décharge Mission NERF (Google Apps Script -> /api/mission-nerf/decharges).
+ *
+ * Pas partagé avec un formulaire navigateur : rien ne rend cette forme
+ * publique, elle documente le contrat entre notre code et le script que
+ * l'Apps Script colle de son côté (voir mission-nerf.ts). Validée quand même
+ * avec la même rigueur que schemaContact — l'appelant est un script externe,
+ * pas un humain qui corrige sa saisie.
+ */
+export const schemaDechargeNerf = z.object({
+  // 1 à 5 : le formulaire a cinq blocs participant, les vides sont déjà
+  // filtrés côté Apps Script avant l'envoi — la route revalide quand même
+  // (« rien de ce qui vient du réseau n'est digne de confiance »).
+  participants: z
+    .array(
+      z.object({
+        prenom: z.string().trim().min(1).max(100),
+        nom: z.string().trim().min(1).max(100),
+        // z.coerce : le champ Google Form est un champ texte, l'âge arrive
+        // donc en chaîne (« 10 ») depuis l'Apps Script, jamais en nombre.
+        age: z.coerce.number().int().min(1).max(129),
+      }),
+    )
+    .min(1)
+    .max(5),
+})
