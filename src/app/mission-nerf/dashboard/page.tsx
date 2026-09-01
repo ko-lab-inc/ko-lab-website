@@ -2,6 +2,7 @@ import QRCode from 'qrcode'
 
 import { cn } from '@/lib/utils/cn'
 
+import './dashboard.css'
 import { IconeBouclierCoche } from './Icones'
 import { CartesStats, IndicateurConnexion, PanneauInscriptions, PastilleZone } from './ElementsEnDirect'
 import { MissionNerfProvider } from './MissionNerfProvider'
@@ -14,11 +15,31 @@ import { MissionNerfProvider } from './MissionNerfProvider'
  * proxy, robots, migration 0046, route POST de réception).
  *
  * Identité visuelle VOLONTAIREMENT distincte du site KO-LAB (demande
- * explicite) : fond marine, cyan/magenta, Orbitron pour les titres — aucun
- * token `ko-*` de globals.css n'est utilisé ici, uniquement la palette
- * Tailwind par défaut (cyan/pink/emerald/rose/slate), disponible sans
- * modification de tailwind.config.ts puisque son `theme.extend.colors`
- * AJOUTE les tokens KO-LAB sans retirer la palette standard.
+ * explicite) : fond marine, cyan/magenta, Russo One pour les titres et les
+ * grands chiffres — aucun token `ko-*` de globals.css n'est utilisé ici,
+ * uniquement la palette Tailwind par défaut (cyan/pink/emerald/rose/slate),
+ * disponible sans modification de tailwind.config.ts puisque son
+ * `theme.extend.colors` AJOUTE les tokens KO-LAB sans retirer la palette
+ * standard.
+ *
+ * -----------------------------------------------------------------------------
+ * ⚠️ REVUE VISUELLE DU 1er SEPTEMBRE 2026 — écart relevé face à la maquette
+ * -----------------------------------------------------------------------------
+ * Première version : chiffres en Orbitron, panneaux à coins arrondis
+ * génériques, icônes trop épaisses, titre plat. Corrections :
+ *   - Orbitron → Russo One (voir layout.tsx) pour le titre ET les grands
+ *     chiffres — rond, massif, lisible à 3 mètres ; le zéro barré d'Orbitron
+ *     lisait comme cassé, pas technique.
+ *   - `.panel-hud` (dashboard.css) : silhouette à coins coupés + double
+ *     liseré sur tous les panneaux OPAQUES — jamais sur la zone caméra, qui
+ *     doit rester un rectangle simple pour un recadrage OBS prévisible.
+ *   - Icônes (Icones.tsx) : trait aminci (1.6 → 1.15).
+ *   - Titre : dégradé + texture scanline + halo, voir <TitreMission/>.
+ *   - Densité de détails HUD augmentée (encoches, doubles traits) — ce sont
+ *     des marqueurs purement décoratifs, jamais un chiffre inventé.
+ * Tout est statique (aucun `@keyframes`, aucun filtre CSS en continu) : voir
+ * la note d'en-tête de dashboard.css sur le coût GPU/CPU d'un écran qui
+ * tourne 10 h sans surveillance.
  *
  * ---------------------------------------------------------------------------
  * ZONE CAMÉRA TRANSPARENTE — comment, et ce qu'il faut régler dans OBS
@@ -95,47 +116,105 @@ export default async function DashboardMissionNerf() {
  */
 function Entete() {
   return (
-    <header className="flex flex-col items-center gap-4 rounded-2xl border border-cyan-400/20 bg-[#060b18] px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+    <header className="panel-hud flex flex-col items-center gap-4 border border-cyan-400/25 bg-[#060b18] px-7 py-5 lg:flex-row lg:items-center lg:justify-between">
       <div className="flex items-center gap-2 leading-tight">
         <div>
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">Expérience</p>
-          <p className="[font-family:var(--font-nerf-title)] text-xl font-black uppercase leading-none text-cyan-400">
-            Mobile
-          </p>
-          <p className="[font-family:var(--font-nerf-title)] text-xl font-black uppercase leading-none text-white">
-            Ultime
-          </p>
+          <p className="[font-family:var(--font-nerf-title)] text-xl uppercase leading-none text-cyan-400">Mobile</p>
+          <p className="[font-family:var(--font-nerf-title)] text-xl uppercase leading-none text-white">Ultime</p>
         </div>
-        <div className="ml-1 flex gap-1" aria-hidden="true">
-          {[0, 1, 2].map((i) => (
-            <span key={i} className="h-4 w-1 -skew-x-12 bg-cyan-400/50" />
-          ))}
-        </div>
+        <TicksMesure nombre={3} />
       </div>
 
-      <div className="text-center">
-        <h1 className="[font-family:var(--font-nerf-title)] text-4xl font-black uppercase tracking-wide lg:text-6xl">
-          <span className="text-white">Mission</span> <span className="text-pink-500">Nerf</span>
-        </h1>
-        <p className="mt-1 font-mono text-xs uppercase tracking-[0.3em] text-cyan-300 lg:text-sm">
-          Centre de contrôle en direct
-        </p>
-      </div>
+      <TitreMission />
 
-      <PastilleZone />
+      <div className="flex items-center gap-3">
+        <TicksMesure nombre={2} couleur="pink" />
+        <PastilleZone />
+      </div>
     </header>
   )
 }
 
-/** 4 coins en L — motif HUD répété sur le panneau caméra. */
+/**
+ * « MISSION NERF » — dégradé + texture scanline + halo. Répond au relevé
+ * du 1er septembre (« plat, sans texture ») : le dégradé et la texture sont
+ * posés DANS le texte via `background-clip: text`, le halo via `text-shadow`
+ * (deux effets figés, calculés une fois, aucun coût continu).
+ */
+function TitreMission() {
+  return (
+    <div className="text-center">
+      <h1 className="[font-family:var(--font-nerf-title)] text-4xl uppercase tracking-wide lg:text-6xl">
+        <span
+          className="bg-clip-text text-transparent [text-shadow:0_0_28px_rgba(148,231,255,0.55)]"
+          style={{ backgroundImage: TEXTURE_TITRE('#ffffff', '#a9e8ff') }}
+        >
+          Mission
+        </span>{' '}
+        <span
+          className="bg-clip-text text-transparent [text-shadow:0_0_28px_rgba(236,72,153,0.6)]"
+          style={{ backgroundImage: TEXTURE_TITRE('#ffa9dc', '#ec4899') }}
+        >
+          Nerf
+        </span>
+      </h1>
+      <p className="mt-1 font-mono text-xs uppercase tracking-[0.3em] text-cyan-300 lg:text-sm">
+        Centre de contrôle en direct
+      </p>
+    </div>
+  )
+}
+
+/**
+ * Texture du titre : fines lignes horizontales (le grain « scanline » d'un
+ * écran de contrôle, motif fiable en CSS pur) fondues dans un dégradé de
+ * couleur — remplace une première tentative au bruit SVG (feTurbulence) qui
+ * se combinait mal avec `background-clip: text` et rendait le titre
+ * illisible. Statique, aucun calcul en continu.
+ */
+function TEXTURE_TITRE(haut: string, bas: string): string {
+  return (
+    'repeating-linear-gradient(0deg, rgba(10,17,30,0.5) 0px, rgba(10,17,30,0.5) 1px, transparent 1px, transparent 3px), ' +
+    `linear-gradient(180deg, ${haut} 0%, ${bas} 100%)`
+  )
+}
+
+/**
+ * Traits de mesure — vocabulaire « instrument technique » répété à plusieurs
+ * endroits de l'écran (brief du 1er septembre : « petits traits, tirets
+ * décoratifs... absents de l'écran »). Purement décoratif, `aria-hidden`.
+ */
+function TicksMesure({ nombre, couleur = 'cyan' }: { nombre: number; couleur?: 'cyan' | 'pink' }) {
+  return (
+    <div className="flex items-end gap-1" aria-hidden="true">
+      {Array.from({ length: nombre }).map((_, i) => (
+        <span
+          key={i}
+          className={cn(
+            '-skew-x-12',
+            couleur === 'cyan' ? 'bg-cyan-400/50' : 'bg-pink-400/50',
+            i % 2 === 0 ? 'h-4 w-1' : 'h-2.5 w-1',
+          )}
+        />
+      ))}
+    </div>
+  )
+}
+
+/** 4 coins en L, encoche prolongée — motif HUD du panneau caméra (le seul
+ *  panneau qui garde une silhouette rectangulaire, voir la docstring
+ *  ZONE CAMÉRA TRANSPARENTE). */
 function CoinsDecoratifs() {
-  const base = 'pointer-events-none absolute h-5 w-5 border-cyan-400/70'
+  const base = 'pointer-events-none absolute border-cyan-400/80'
   return (
     <>
-      <span className={cn(base, 'left-0 top-0 border-l-2 border-t-2')} />
-      <span className={cn(base, 'right-0 top-0 border-r-2 border-t-2')} />
-      <span className={cn(base, 'bottom-0 left-0 border-b-2 border-l-2')} />
-      <span className={cn(base, 'bottom-0 right-0 border-b-2 border-r-2')} />
+      <span className={cn(base, 'left-0 top-0 h-6 w-6 border-l-2 border-t-2')} />
+      <span className={cn(base, 'left-0 top-0 h-px w-3 -translate-x-3 bg-cyan-400/80')} />
+      <span className={cn(base, 'right-0 top-0 h-6 w-6 border-r-2 border-t-2')} />
+      <span className={cn(base, 'bottom-0 left-0 h-6 w-6 border-b-2 border-l-2')} />
+      <span className={cn(base, 'bottom-0 right-0 h-6 w-6 border-b-2 border-r-2')} />
+      <span className={cn(base, 'bottom-0 right-0 h-3 w-px translate-y-3 bg-cyan-400/80')} />
     </>
   )
 }
@@ -148,10 +227,10 @@ function CoinsDecoratifs() {
  */
 function PanneauCamera() {
   return (
-    <div className="relative min-h-[46vh] overflow-hidden rounded-2xl border border-cyan-400/30 lg:min-h-0">
+    <div className="relative min-h-[46vh] overflow-hidden border border-cyan-400/30 lg:min-h-0">
       <CoinsDecoratifs />
 
-      <div className="absolute left-4 top-4 z-10 flex items-center gap-2 rounded bg-black/70 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-white backdrop-blur-sm">
+      <div className="absolute left-4 top-4 z-10 flex items-center gap-2 bg-black/70 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-white backdrop-blur-sm">
         <span className="h-2 w-2 animate-pulse rounded-full bg-rose-500" aria-hidden="true" />
         Caméra en direct — Labyrinthe
       </div>
@@ -172,8 +251,11 @@ function PanneauCamera() {
  */
 function PanneauInscriptionsChrome() {
   return (
-    <div className="flex flex-col rounded-xl border border-cyan-400/25 bg-[#060b18] px-6 py-5">
-      <p className="font-mono text-xs uppercase tracking-[0.14em] text-cyan-300">Dernières inscriptions</p>
+    <div className="panel-hud flex flex-col border border-cyan-400/25 bg-[#060b18] px-7 py-5">
+      <div className="flex items-center gap-2">
+        <TicksMesure nombre={2} />
+        <p className="font-mono text-xs uppercase tracking-[0.14em] text-cyan-300">Dernières inscriptions</p>
+      </div>
       <PanneauInscriptions />
     </div>
   )
@@ -193,12 +275,12 @@ async function PanneauDecharge() {
   })
 
   return (
-    <div className="flex flex-col items-center justify-between gap-5 rounded-xl border border-pink-500/30 bg-[#060b18] px-6 py-5 sm:flex-row">
+    <div className="panel-hud flex flex-col items-center justify-between gap-5 border border-pink-500/30 bg-[#060b18] px-7 py-5 sm:flex-row">
       <div className="flex items-center gap-4 text-center sm:text-left">
-        <IconeBouclierCoche className="hidden h-10 w-10 shrink-0 text-pink-400 sm:block" />
+        <IconeBouclierCoche className="hidden h-9 w-9 shrink-0 text-pink-400 sm:block" />
         <div>
           <p className="font-mono text-xs uppercase tracking-wide text-slate-400">Formulaire de décharge</p>
-          <p className="[font-family:var(--font-nerf-title)] text-2xl font-black uppercase leading-tight text-pink-400">
+          <p className="[font-family:var(--font-nerf-title)] text-2xl uppercase leading-tight text-pink-400">
             Obligatoire
           </p>
           <p className="font-mono text-xs uppercase tracking-wide text-slate-400">avant de participer</p>

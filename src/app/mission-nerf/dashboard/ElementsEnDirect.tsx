@@ -99,6 +99,14 @@ export function CartesStats() {
   )
 }
 
+/**
+ * Grands chiffres — Russo One (rond, massif, une seule graisse, pas de
+ * `font-bold`/`font-black` : le fichier de police chargé ne porte QUE le
+ * poids 400, forcer un poids non chargé produirait un gras synthétique du
+ * navigateur, plus flou que la police elle-même). Halo en `text-shadow`
+ * pour le côté « lumineux » relevé manquant le 1er septembre — statique,
+ * calculé une fois, aucun coût continu sur 10 h.
+ */
 function Carte({
   icone,
   label,
@@ -113,15 +121,17 @@ function Carte({
   note?: string
 }) {
   return (
-    <div className="flex flex-1 flex-col justify-center gap-2 rounded-xl border border-cyan-400/25 bg-[#060b18] px-6 py-5 shadow-[0_0_30px_-12px_rgba(34,211,238,0.4)]">
+    <div className="panel-hud relative flex flex-1 flex-col justify-center gap-1 border border-cyan-400/25 bg-[#060b18] px-7 py-5 shadow-[0_0_30px_-12px_rgba(34,211,238,0.35)]">
       <div className="flex items-center gap-2 text-slate-400">
-        <span className={couleur === 'cyan' ? 'text-cyan-400' : 'text-pink-400'}>{icone}</span>
+        <span className={couleur === 'cyan' ? 'text-cyan-300' : 'text-pink-400'}>{icone}</span>
         <span className="font-mono text-[11px] uppercase tracking-[0.14em]">{label}</span>
       </div>
       <p
         className={cn(
-          '[font-family:var(--font-nerf-title)] text-4xl font-bold leading-none',
-          couleur === 'cyan' ? 'text-cyan-400' : 'text-pink-400',
+          '[font-family:var(--font-nerf-title)] text-[64px] leading-[1.05] tracking-tight',
+          couleur === 'cyan'
+            ? 'text-cyan-300 [text-shadow:0_0_18px_rgba(103,232,249,0.85),0_0_46px_rgba(34,211,238,0.5)]'
+            : 'text-pink-400 [text-shadow:0_0_18px_rgba(244,114,182,0.85),0_0_46px_rgba(236,72,153,0.5)]',
         )}
       >
         {valeur}

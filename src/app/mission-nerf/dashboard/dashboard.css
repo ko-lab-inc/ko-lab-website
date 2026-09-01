@@ -1,0 +1,57 @@
+/**
+ * Feuille de style propre au dashboard Mission NERF — jamais importée
+ * ailleurs. Contient le vocabulaire visuel « HUD » (panneaux à coins coupés,
+ * double liseré) que Tailwind seul n'exprime pas proprement : un clip-path
+ * hexagonal + une bordure intérieure décalée, ni l'un ni l'autre commodément
+ * exprimables en classes utilitaires sans les répéter partout.
+ *
+ * Statique — aucune animation ici, aucun `@keyframes` ni `filter: blur()` en
+ * continu : l'écran tourne 10 h sans surveillance, un effet qui coûte cher
+ * au rendu n'a pas sa place (voir aussi le correctif du 1er septembre 2026,
+ * revue visuelle contre la maquette).
+ */
+
+/* Panneau à coins coupés (haut-gauche, bas-droite) — silhouette HUD répétée
+   sur tous les panneaux opaques du dashboard, SAUF la zone caméra (doit
+   rester un rectangle simple pour un recadrage OBS prévisible). */
+.panel-hud {
+  position: relative;
+  --coupe: 18px;
+  clip-path: polygon(
+    var(--coupe) 0,
+    100% 0,
+    100% calc(100% - var(--coupe)),
+    calc(100% - var(--coupe)) 100%,
+    0 100%,
+    0 var(--coupe)
+  );
+}
+
+/* Second liseré, décalé de 3px vers l'intérieur — le « double contour » de
+   la maquette. Pseudo-élément plutôt que box-shadow : un box-shadow est
+   rogné de façon imprévisible par le clip-path du parent selon le moteur de
+   rendu, un ::before avec son propre clip-path ne l'est pas. */
+.panel-hud::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  pointer-events: none;
+  --coupe-int: 15px;
+  clip-path: polygon(
+    var(--coupe-int) 0,
+    100% 0,
+    100% calc(100% - var(--coupe-int)),
+    calc(100% - var(--coupe-int)) 100%,
+    0 100%,
+    0 var(--coupe-int)
+  );
+  border: 1px solid var(--panel-hud-liseré-int, rgba(103, 232, 249, 0.22));
+}
+
+/* Petite encoche décorative — un trait qui déborde légèrement du coin coupé,
+   motif « mesure technique » répété en plusieurs points de l'écran. Pure
+   décoration, jamais porteuse d'une donnée réelle. */
+.encoche {
+  position: absolute;
+  background: var(--encoche-couleur, #22d3ee);
+}

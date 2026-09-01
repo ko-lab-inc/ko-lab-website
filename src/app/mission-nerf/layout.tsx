@@ -1,4 +1,4 @@
-import { JetBrains_Mono, Orbitron } from 'next/font/google'
+import { JetBrains_Mono, Russo_One } from 'next/font/google'
 
 import '@/styles/globals.css'
 
@@ -23,11 +23,19 @@ import type { ReactNode } from 'react'
  * -----------------------------------------------------------------------------
  * TOUCHÉ AU PROMPT 2 (construction de l'écran) — deux ajouts, motivés
  * -----------------------------------------------------------------------------
- * 1. Polices — Orbitron (titre « MISSION NERF », identité propre à
- *    Expérience Mobile, sans rapport avec Fraunces/Instrument Sans du site
- *    vitrine) et JetBrains Mono (lectures chiffrées — même police que le
- *    reste du site, mais chargée ICI, indépendamment : ce layout ne dépend
- *    d'aucun autre, sur le même principe qui a justifié son existence).
+ * 1. Polices — Russo One (titre « MISSION NERF » ET grands chiffres : bloc,
+ *    rond, fort contraste, lisible à 3 mètres — remplace Orbitron le 1er
+ *    septembre 2026, dont le zéro barré et le dessin anguleux lisaient comme
+ *    « cassé » plutôt que technique, relevé par Christian) et JetBrains Mono
+ *    (labels, timestamps — même police que le reste du site, mais chargée
+ *    ICI, indépendamment : ce layout ne dépend d'aucun autre, sur le même
+ *    principe qui a justifié son existence).
+ *
+ *    Les deux via next/font/google : téléchargées au build, servies depuis
+ *    ko-lab-center.ca — même mécanisme, même fiabilité que Fraunces/
+ *    Instrument Sans/JetBrains Mono du site vitrine, déjà éprouvé en
+ *    production. Repli explicite (`system-ui, sans-serif` / `monospace`)
+ *    si jamais un fichier de police échouait à charger.
  *
  * 2. `background: transparent` forcé sur html/body — nécessaire pour que la
  *    zone caméra du dashboard (voir dashboard/page.tsx) soit un vrai trou
@@ -39,9 +47,9 @@ import type { ReactNode } from 'react'
  *    voir la note de dashboard/page.tsx pour le détail du mécanisme.
  */
 
-const orbitron = Orbitron({
+const russoOne = Russo_One({
   subsets: ['latin'],
-  weight: ['700', '900'],
+  weight: '400',
   variable: '--font-nerf-title',
   display: 'swap',
 })
@@ -65,7 +73,7 @@ export default function MissionNerfLayout({ children }: { children: ReactNode })
   return (
     <html
       lang="fr"
-      className={`${orbitron.variable} ${jetbrainsMono.variable}`}
+      className={`${russoOne.variable} ${jetbrainsMono.variable}`}
       style={{ backgroundColor: 'transparent' }}
     >
       <body className="font-mono antialiased" style={{ backgroundColor: 'transparent' }}>
