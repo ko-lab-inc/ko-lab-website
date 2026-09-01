@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
-import { dateEvenementQuebec, heureQuebec } from '@/lib/mission-nerf'
+import { dateEvenementQuebec, heureQuebec, lireCompteursDuJour } from '@/lib/mission-nerf'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
@@ -26,14 +26,18 @@ import { rateLimit } from '@/lib/utils/rateLimit'
  * plutôt qu'un accès direct depuis le navigateur.
  *
  * ---------------------------------------------------------------------------
- * COUNT(DISTINCT decharge_id) SANS RPC NI MIGRATION
+ * COMPTEURS PARTAGÉS AVEC LE PANNEAU STAFF (Prompt 3)
  * ---------------------------------------------------------------------------
- * PostgREST ne sait pas produire un COUNT(DISTINCT ...) directement sur la
- * table de base. Plutôt qu'ajouter une fonction SQL (hors périmètre de ce
- * prompt — « Aucune migration »), la colonne `decharge_id` de la journée est
- * lue ici, CÔTÉ SERVEUR, et dédupliquée avec un Set — le navigateur ne voit
- * jamais ces UUID, seulement le nombre final. Le volume (au plus quelques
- * centaines de lignes par soirée) rend ça largement suffisant.
+ * `lireCompteursDuJour()` (lib/mission-nerf.ts) calcule participants et
+ * décharges — y compris le filtre de remise à zéro (`derniere_remise_a_zero`)
+ * posé par le panneau staff. Un calcul dupliqué ici aurait pu diverger de
+ * celui du staff sans que ça se voie avant un soir d'événement, staff et TV
+ * sous les yeux du même parent.
+ *
+ * COUNT(DISTINCT decharge_id) SANS RPC NI MIGRATION : PostgREST ne sait pas
+ * le produire nativement — la colonne est dédupliquée avec un Set côté
+ * serveur (voir `lireCompteursDuJour`), le navigateur ne voit jamais ces
+ * UUID, seulement le nombre final.
  */
 
 export const dynamic = 'force-dynamic'
@@ -57,7 +61,7 @@ function verSortie(params: {
 }) {
   return {
     zoneOuverte: params.zoneOuverte,
-    prochainDepart: params.prochainDepart ? params.prochainDepart.slice(0, 5) : null,
+    prochainDepart: params.prochainDepart,
     participants: params.participants,
     decharges: params.decharges,
     dernieres: params.dernieres.map((r) => ({
@@ -80,13 +84,8 @@ export async function GET(req: NextRequest) {
   const aujourdhui = dateEvenementQuebec()
 
   try {
-    const [participantsRes, dechargesRes, etatRes, dernieresRes] = await Promise.all([
-      supabase
-        .from('inscriptions_nerf')
-        .select('id', { count: 'exact', head: true })
-        .eq('date_evenement', aujourdhui),
-      supabase.from('inscriptions_nerf').select('decharge_id').eq('date_evenement', aujourdhui),
-      supabase.from('etat_zone_nerf').select('zone_ouverte, prochain_depart').single(),
+    const [compteurs, dernieresRes] = await Promise.all([
+      lireCompteursDuJour(supabase),
       supabase
         .from('inscriptions_nerf')
         .select('prenom, recu_le, statut')
@@ -95,19 +94,14 @@ export async function GET(req: NextRequest) {
         .limit(4),
     ])
 
-    if (participantsRes.error) throw participantsRes.error
-    if (dechargesRes.error) throw dechargesRes.error
-    if (etatRes.error) throw etatRes.error
     if (dernieresRes.error) throw dernieresRes.error
-
-    const decharges = new Set(dechargesRes.data.map((r) => r.decharge_id)).size
 
     return NextResponse.json(
       verSortie({
-        zoneOuverte: etatRes.data.zone_ouverte,
-        prochainDepart: etatRes.data.prochain_depart,
-        participants: participantsRes.count ?? 0,
-        decharges,
+        zoneOuverte: compteurs.zoneOuverte,
+        prochainDepart: compteurs.prochainDepart,
+        participants: compteurs.participants,
+        decharges: compteurs.decharges,
         dernieres: dernieresRes.data,
       }),
       { headers: SANS_CACHE },
