@@ -5,11 +5,33 @@
  * hexagonal + une bordure intérieure décalée, ni l'un ni l'autre commodément
  * exprimables en classes utilitaires sans les répéter partout.
  *
- * Statique — aucune animation ici, aucun `@keyframes` ni `filter: blur()` en
- * continu : l'écran tourne 10 h sans surveillance, un effet qui coûte cher
- * au rendu n'a pas sa place (voir aussi le correctif du 1er septembre 2026,
- * revue visuelle contre la maquette).
+ * Volontairement statique dans l'ensemble — aucun `filter: blur()` ni effet
+ * coûteux en continu : l'écran tourne 10 h sans surveillance (voir le
+ * correctif du 1er septembre 2026, revue visuelle contre la maquette).
+ *
+ * Exception assumée : `clignotement-lent` ci-dessous, EXPLICITEMENT demandée
+ * pour « DÉPART IMMINENT » (décompte de la carte Prochain départ). Une
+ * animation d'opacité pure, composée par le GPU sans recalcul de mise en
+ * page ni de peinture à chaque frame — un coût négligeable même sur 10 h,
+ * sans rapport avec les effets lourds évités ailleurs (flous, dégradés
+ * animés). Respecte `prefers-reduced-motion`.
  */
+
+@keyframes clignotement-lent {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+  }
+}
 
 /* Panneau à coins coupés (haut-gauche, bas-droite) — silhouette HUD répétée
    sur tous les panneaux opaques du dashboard, SAUF la zone caméra (doit

@@ -156,6 +156,16 @@ function PagePanneau({
           </button>
         </form>
 
+        {/* Bandeau de signalement — PAS de blocage (brief du 1er septembre,
+            « signaler, jamais interdire ») : la zone peut s'ouvrir avant que
+            le premier groupe soit formé, ce bandeau le rappelle sans rien
+            empêcher. Disparaît dès qu'une heure est réglée. */}
+        {compteurs.zoneOuverte && !compteurs.prochainDepart && (
+          <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-sm text-amber-200">
+            Zone ouverte, aucun départ annoncé.
+          </p>
+        )}
+
         {/* 2. Prochain départ — raccourcis d'abord (un tap), gros boutons :
             c'est l'usage principal. Heure précise en repli, volontairement
             plus petite — voir la docstring de ce fichier pour le détail du

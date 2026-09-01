@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils/cn'
 
 import { EncochesCoins } from './Decor'
+import { DecompteDepart } from './DecompteDepart'
 import { IconeCoche, IconeHorloge, IconePersonnes, IconePressePapier } from './Icones'
 import { useMissionNerf } from './MissionNerfProvider'
 
@@ -95,7 +96,20 @@ export function CartesStats() {
         couleur="pink"
         note={moyenne ? `moy. ${moyenne} enfant/décharge` : undefined}
       />
-      <Carte icone={<IconeHorloge className="h-9 w-9" />} label="Prochain départ" valeur={donnees?.prochainDepart ?? '—'} couleur="cyan" />
+      <Carte
+        icone={<IconeHorloge className="h-9 w-9" />}
+        label="Prochain départ"
+        // « À VENIR » plutôt qu'un tiret muet quand la zone est ouverte sans
+        // heure réglée (brief du 1er septembre, « signaler l'absence
+        // d'heure, sans bloquer ») : un tiret ne dit pas si l'écran est
+        // cassé ou si l'info arrive simplement. Zone fermée sans heure
+        // réglée : rien à annoncer, le tiret reste approprié.
+        valeur={donnees?.prochainDepart ?? (donnees?.zoneOuverte ? 'À VENIR' : '—')}
+        couleur="cyan"
+        // Décompte affiché SEULEMENT si une heure est réellement réglée —
+        // pas de compte à rebours vers « À VENIR » ou « — ».
+        dessous={donnees?.prochainDepart ? <DecompteDepart /> : undefined}
+      />
     </div>
   )
 }
@@ -119,12 +133,17 @@ function Carte({
   valeur,
   couleur,
   note,
+  dessous,
 }: {
   icone: React.ReactNode
   label: string
   valeur: string | number
   couleur: 'cyan' | 'pink'
   note?: string
+  /** Emplacement libre sous le chiffre — utilisé UNIQUEMENT par la carte
+   *  « Prochain départ » (DecompteDepart), les deux autres cartes ne le
+   *  passent jamais. */
+  dessous?: React.ReactNode
 }) {
   return (
     <div className="panel-hud relative flex flex-1 items-center gap-4 border border-cyan-400/40 bg-[#060b18] px-5 py-4 shadow-[0_0_30px_-12px_rgba(34,211,238,0.35)]">
@@ -152,6 +171,7 @@ function Carte({
           {valeur}
         </p>
         {note && <p className="font-mono text-[11px] text-slate-500">{note}</p>}
+        {dessous}
       </div>
     </div>
   )
