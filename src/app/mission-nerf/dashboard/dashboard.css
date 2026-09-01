@@ -27,16 +27,20 @@
   );
 }
 
-/* Second liseré, décalé de 3px vers l'intérieur — le « double contour » de
+/* Second liseré, décalé de 6px vers l'intérieur — le « double contour » de
    la maquette. Pseudo-élément plutôt que box-shadow : un box-shadow est
    rogné de façon imprévisible par le clip-path du parent selon le moteur de
-   rendu, un ::before avec son propre clip-path ne l'est pas. */
+   rendu, un ::before avec son propre clip-path ne l'est pas.
+   ⚠️ Écart relevé le 1er septembre : à 3px d'écart et 0.22 d'opacité, les
+   deux liserés se confondaient visuellement en une seule ligne. Écart porté
+   à 6px, opacité à 0.45 — repéré comme deux traits distincts à l'œil, pas
+   seulement au pixel. */
 .panel-hud::before {
   content: '';
   position: absolute;
-  inset: 3px;
+  inset: 6px;
   pointer-events: none;
-  --coupe-int: 15px;
+  --coupe-int: 14px;
   clip-path: polygon(
     var(--coupe-int) 0,
     100% 0,
@@ -45,7 +49,7 @@
     0 100%,
     0 var(--coupe-int)
   );
-  border: 1px solid var(--panel-hud-liseré-int, rgba(103, 232, 249, 0.22));
+  border: 1px solid var(--panel-hud-liseré-int, rgba(103, 232, 249, 0.45));
 }
 
 /* Petite encoche décorative — un trait qui déborde légèrement du coin coupé,

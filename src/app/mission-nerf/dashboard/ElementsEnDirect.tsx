@@ -2,11 +2,17 @@
 
 import { cn } from '@/lib/utils/cn'
 
+import { EncochesCoins } from './Decor'
 import { IconeCoche, IconeHorloge, IconePersonnes, IconePressePapier } from './Icones'
 import { useMissionNerf } from './MissionNerfProvider'
 
 /**
  * Pastille d'état de la zone — en-tête, à droite.
+ *
+ * ⚠️ Agrandie et dotée de coins coupés + chevrons le 1er septembre (revue
+ * contre docs/maquette-dashboard-nerf.png) : la première version était une
+ * pilule arrondie simple, nettement plus petite et plus discrète que la
+ * maquette.
  *
  * `donnees === null` (avant la première lecture réussie) affiche un état
  * neutre, jamais « fermée » ou « ouverte » par défaut : deviner serait pire
@@ -16,9 +22,7 @@ export function PastilleZone() {
   const { donnees } = useMissionNerf()
 
   if (!donnees) {
-    return (
-      <Pastille couleur="slate" texte="CONNEXION…" />
-    )
+    return <Pastille couleur="slate" texte="CONNEXION…" />
   }
 
   return donnees.zoneOuverte ? (
@@ -32,15 +36,17 @@ function Pastille({ couleur, texte }: { couleur: 'green' | 'red' | 'slate'; text
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-2 rounded-full border px-4 py-2 font-mono text-xs font-semibold tracking-[0.12em]',
-        couleur === 'green' && 'border-emerald-400/40 bg-emerald-400/10 text-emerald-300',
-        couleur === 'red' && 'border-rose-500/40 bg-rose-500/10 text-rose-300',
-        couleur === 'slate' && 'border-slate-500/40 bg-slate-500/10 text-slate-400',
+        'panel-hud relative inline-flex items-center gap-3 border px-6 py-3 font-mono text-sm font-semibold tracking-[0.12em]',
+        couleur === 'green' && 'border-emerald-400/60 bg-emerald-400/10 text-emerald-300',
+        couleur === 'red' && 'border-rose-500/60 bg-rose-500/10 text-rose-300',
+        couleur === 'slate' && 'border-slate-500/50 bg-slate-500/10 text-slate-400',
       )}
+      style={{ '--coupe': '10px' } as React.CSSProperties}
     >
+      <EncochesCoins couleur={couleur === 'red' ? 'pink' : 'cyan'} taille="sm" />
       <span
         className={cn(
-          'h-2 w-2 rounded-full',
+          'h-2.5 w-2.5 rounded-full',
           couleur === 'green' && 'bg-emerald-400',
           couleur === 'red' && 'bg-rose-500',
           couleur === 'slate' && 'bg-slate-400',
@@ -77,24 +83,19 @@ export function CartesStats() {
   return (
     <div className="flex h-full flex-col justify-between gap-4">
       <Carte
-        icone={<IconePersonnes className="h-6 w-6" />}
+        icone={<IconePersonnes className="h-9 w-9" />}
         label="Participants aujourd'hui"
         valeur={participants ?? '—'}
         couleur="cyan"
       />
       <Carte
-        icone={<IconePressePapier className="h-6 w-6" />}
+        icone={<IconePressePapier className="h-9 w-9" />}
         label="Décharges complétées"
         valeur={`${participants ?? '—'} / ${decharges ?? '—'}`}
         couleur="pink"
         note={moyenne ? `moy. ${moyenne} enfant/décharge` : undefined}
       />
-      <Carte
-        icone={<IconeHorloge className="h-6 w-6" />}
-        label="Prochain départ"
-        valeur={donnees?.prochainDepart ?? '—'}
-        couleur="cyan"
-      />
+      <Carte icone={<IconeHorloge className="h-9 w-9" />} label="Prochain départ" valeur={donnees?.prochainDepart ?? '—'} couleur="cyan" />
     </div>
   )
 }
@@ -106,6 +107,11 @@ export function CartesStats() {
  * navigateur, plus flou que la police elle-même). Halo en `text-shadow`
  * pour le côté « lumineux » relevé manquant le 1er septembre — statique,
  * calculé une fois, aucun coût continu sur 10 h.
+ *
+ * ⚠️ Disposition refaite le 1er septembre (revue contre la maquette) :
+ * l'icône vivait en petit à côté du label, au-dessus du chiffre. La
+ * maquette la place dans son PROPRE cadre à gauche, aussi haute que le
+ * chiffre, label + chiffre empilés à droite — refait à l'identique.
  */
 function Carte({
   icone,
@@ -121,22 +127,32 @@ function Carte({
   note?: string
 }) {
   return (
-    <div className="panel-hud relative flex flex-1 flex-col justify-center gap-1 border border-cyan-400/25 bg-[#060b18] px-7 py-5 shadow-[0_0_30px_-12px_rgba(34,211,238,0.35)]">
-      <div className="flex items-center gap-2 text-slate-400">
-        <span className={couleur === 'cyan' ? 'text-cyan-300' : 'text-pink-400'}>{icone}</span>
-        <span className="font-mono text-[11px] uppercase tracking-[0.14em]">{label}</span>
-      </div>
-      <p
+    <div className="panel-hud relative flex flex-1 items-center gap-4 border border-cyan-400/40 bg-[#060b18] px-5 py-4 shadow-[0_0_30px_-12px_rgba(34,211,238,0.35)]">
+      <EncochesCoins couleur={couleur} taille="sm" />
+
+      <div
         className={cn(
-          '[font-family:var(--font-nerf-title)] text-[64px] leading-[1.05] tracking-tight',
-          couleur === 'cyan'
-            ? 'text-cyan-300 [text-shadow:0_0_18px_rgba(103,232,249,0.85),0_0_46px_rgba(34,211,238,0.5)]'
-            : 'text-pink-400 [text-shadow:0_0_18px_rgba(244,114,182,0.85),0_0_46px_rgba(236,72,153,0.5)]',
+          'flex h-16 w-16 shrink-0 items-center justify-center rounded-md border',
+          couleur === 'cyan' ? 'border-cyan-400/40 bg-cyan-400/5 text-cyan-300' : 'border-pink-400/40 bg-pink-400/5 text-pink-400',
         )}
       >
-        {valeur}
-      </p>
-      {note && <p className="font-mono text-[11px] text-slate-500">{note}</p>}
+        {icone}
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-slate-400">{label}</p>
+        <p
+          className={cn(
+            '[font-family:var(--font-nerf-title)] text-[46px] leading-[1.05] tracking-tight',
+            couleur === 'cyan'
+              ? 'text-cyan-300 [text-shadow:0_0_18px_rgba(103,232,249,0.85),0_0_46px_rgba(34,211,238,0.5)]'
+              : 'text-pink-400 [text-shadow:0_0_18px_rgba(244,114,182,0.85),0_0_46px_rgba(236,72,153,0.5)]',
+          )}
+        >
+          {valeur}
+        </p>
+        {note && <p className="font-mono text-[11px] text-slate-500">{note}</p>}
+      </div>
     </div>
   )
 }
