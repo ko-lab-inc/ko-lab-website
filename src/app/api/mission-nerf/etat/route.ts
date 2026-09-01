@@ -7,7 +7,7 @@ import { rateLimit } from '@/lib/utils/rateLimit'
 
 /**
  * Lecture pour le dashboard Mission NERF — compteurs, état de la zone,
- * 4 dernières inscriptions.
+ * inscriptions du jour (jusqu'à 200 — voir plus bas).
  *
  * ---------------------------------------------------------------------------
  * PAS DE JETON ICI — à la différence de /api/mission-nerf/decharges
@@ -86,12 +86,19 @@ export async function GET(req: NextRequest) {
   try {
     const [compteurs, dernieresRes] = await Promise.all([
       lireCompteursDuJour(supabase),
+      // Réagencement du 1er septembre 2026 (brief : « voir plus d'inscrits,
+      // pouvoir scroller ») — 4 → 200. Le panneau du dashboard défile
+      // maintenant verticalement (PanneauInscriptions, ElementsEnDirect.tsx)
+      // au lieu d'afficher un nombre fixe de lignes ; 200 couvre largement
+      // une journée d'événement (le plus gros lot de test observé à ce jour
+      // était 30 lignes) sans renvoyer une table non bornée si quelque chose
+      // dérape.
       supabase
         .from('inscriptions_nerf')
         .select('prenom, recu_le, statut')
         .eq('date_evenement', aujourdhui)
         .order('recu_le', { ascending: false })
-        .limit(4),
+        .limit(200),
     ])
 
     if (dernieresRes.error) throw dernieresRes.error

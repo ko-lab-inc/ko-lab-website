@@ -59,7 +59,7 @@ function Pastille({ couleur, texte }: { couleur: 'green' | 'red' | 'slate'; text
 }
 
 /**
- * Les 3 cartes de droite — un seul composant plutôt que trois : les 3
+ * Les 3 cartes de stats — un seul composant plutôt que trois : les 3
  * valeurs viennent de la MÊME lecture (useMissionNerf), pas de trois fetch
  * séparés, donc pas de raison de séparer leur rendu non plus.
  *
@@ -70,6 +70,14 @@ function Pastille({ couleur, texte }: { couleur: 'green' | 'red' | 'slate'; text
  * dans un cas qui n'arrive quasiment jamais. Remplacée par une moyenne
  * enfants/décharge — une info réelle et toujours vraie, plutôt qu'un
  * symbole de réussite qui ne s'allumerait jamais en pratique.
+ *
+ * ⚠️ RÉAGENCEMENT DU 1er SEPTEMBRE 2026 — ce composant rendait un `<div
+ * flex-col>` empilant les 3 cartes verticalement (elles vivaient à côté de
+ * la caméra). Il rend maintenant un Fragment de 3 `<Carte>` NUES : le
+ * parent (dashboard/page.tsx) les place directement comme 3 colonnes d'une
+ * grille `grid-cols-4` (avec PanneauDecharge en 4e colonne) — la mise en
+ * page/l'espacement égal est désormais la responsabilité du parent, pas de
+ * ce composant.
  */
 export function CartesStats() {
   const { donnees } = useMissionNerf()
@@ -90,7 +98,7 @@ export function CartesStats() {
   const departSansHeureUtile = decompte.etat === 'aucun' || decompte.etat === 'perime'
 
   return (
-    <div className="flex h-full flex-col justify-between gap-4">
+    <>
       <Carte
         icone={<IconePersonnes className="h-9 w-9" />}
         label="Participants aujourd'hui"
@@ -131,7 +139,7 @@ export function CartesStats() {
           ) : undefined
         }
       />
-    </div>
+    </>
   )
 }
 
@@ -167,7 +175,7 @@ function Carte({
   dessous?: React.ReactNode
 }) {
   return (
-    <div className="panel-hud relative flex flex-1 items-center gap-4 border border-cyan-400/40 bg-[#060b18] px-5 py-4 shadow-[0_0_30px_-12px_rgba(34,211,238,0.35)]">
+    <div className="panel-hud relative flex items-center gap-4 border border-cyan-400/40 bg-[#060b18] px-5 py-4 shadow-[0_0_30px_-12px_rgba(34,211,238,0.35)]">
       <EncochesCoins couleur={couleur} taille="sm" />
 
       <div
@@ -199,17 +207,27 @@ function Carte({
 }
 
 /**
- * Liste des 4 dernières inscriptions — PRÉNOM SEUL, jamais nom/âge : la
- * route /api/mission-nerf/etat ne renvoie de toute façon que ça (voir
- * `verSortie` dans cette route), mais le rappeler ici documente pourquoi ce
- * composant ne cherche même pas à afficher davantage.
+ * Liste des inscriptions du jour — PRÉNOM SEUL, jamais nom/âge : la route
+ * /api/mission-nerf/etat ne renvoie de toute façon que ça (voir `verSortie`
+ * dans cette route), mais le rappeler ici documente pourquoi ce composant ne
+ * cherche même pas à afficher davantage.
+ *
+ * ⚠️ RÉAGENCEMENT DU 1er SEPTEMBRE 2026 — affichait auparavant les 4
+ * dernières, centrées verticalement (`justify-center`), dans une carte
+ * courte à côté des 3 cartes de stats. Le panneau parent
+ * (PanneauInscriptionsChrome, dashboard/page.tsx) occupe maintenant toute la
+ * hauteur de la rangée caméra ; la limite côté API est passée de 4 à 200
+ * (voir api/mission-nerf/etat/route.ts) pour montrer tous les inscrits du
+ * jour, avec défilement vertical (`overflow-y-auto`) plutôt qu'un
+ * centrage — `justify-center` n'aurait plus de sens avec une vraie liste
+ * longue à faire défiler depuis le haut.
  */
 export function PanneauInscriptions() {
   const { donnees } = useMissionNerf()
   const lignes = donnees?.dernieres ?? []
 
   return (
-    <ul className="flex flex-1 flex-col justify-center gap-1">
+    <ul className="mt-3 min-h-0 flex-1 overflow-y-auto pr-1 [scrollbar-width:thin]">
       {lignes.length === 0 ? (
         <li className="py-2 text-sm text-slate-500">En attente des premières inscriptions…</li>
       ) : (

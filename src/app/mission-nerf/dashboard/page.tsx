@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import QRCode from 'qrcode'
 
 import { cn } from '@/lib/utils/cn'
@@ -77,10 +78,13 @@ import { MissionNerfProvider } from './MissionNerfProvider'
  *      bas dans la liste = derrière visuellement).
  *   3. Recadrer/positionner la source RTSP pour qu'elle occupe exactement le
  *      rectangle de la zone caméra — coordonnées mesurées sur une capture
- *      1920×1080 réelle, données dans le rapport de la conversation
- *      (dépendent de la résolution native du flux RTSP, pas fournies ici).
- *      Rectangle INCHANGÉ par cette deuxième passe de révision (brief :
- *      « ne se touche pas ») : x:32 y:182 largeur:1221 hauteur:573.
+ *      1920×1080 réelle (dépendent de la résolution native du flux RTSP, pas
+ *      fournies ici).
+ *      ⚠️ RECTANGLE CHANGÉ par le réagencement du 1er septembre (caméra
+ *      élargie 2fr → 3fr, cartes redescendues en bas) — l'ancien repère
+ *      (x:32 y:182 largeur:1221 hauteur:573) NE S'APPLIQUE PLUS. Re-mesurer
+ *      sur une capture 1920×1080 fraîche avant de recadrer la source RTSP
+ *      dans OBS, sinon l'image débordera ou laissera des bandes vides.
  *   4. Vérification simple avant l'événement : poser une Source couleur
  *      unie dans la scène, sous la Browser Source — si sa couleur apparaît
  *      exactement dans le rectangle caméra et nulle part ailleurs, la
@@ -90,19 +94,48 @@ import { MissionNerfProvider } from './MissionNerfProvider'
 const URL_FORMULAIRE =
   'https://docs.google.com/forms/d/e/1FAIpQLSe8w68uNWha870jIbbiSqnKf8OmueHPBks2GT-oQpvioAuk-w/viewform'
 
+/**
+ * ---------------------------------------------------------------------------
+ * RÉAGENCEMENT DU 1er SEPTEMBRE 2026 (demande du boss, sur site) — trois
+ * changements, non liés à la maquette d'origine
+ * ---------------------------------------------------------------------------
+ * 1. Caméra élargie (2fr → 3fr) : plus de place à l'image en direct.
+ * 2. Les 3 cartes (Participants/Décharges/Prochain départ), auparavant
+ *    empilées à droite de la caméra, descendent en bas et deviennent 3
+ *    colonnes d'une rangée de 4 (avec le panneau décharge/QR, lui aussi
+ *    rétréci pour matcher) — largeurs et espacements égaux.
+ * 3. « Dernières inscriptions » prend leur ancienne place à droite de la
+ *    caméra : plus grand, défilable verticalement (voir PanneauInscriptions
+ *    dans ElementsEnDirect.tsx et la limite relevée de 4 à 200 lignes côté
+ *    API), pour montrer tous les inscrits du jour plutôt que les 4 derniers.
+ *
+ *    ⚠️ `min-h-screen` → `h-screen` sur le conteneur racine ci-dessous, dans
+ *    la même passe : une liste longue avec `min-h-screen` (« au moins » la
+ *    hauteur de l'écran, sans plafond) poussait toute la page plus haute que
+ *    1080px au lieu de faire défiler le panneau — `overflow-y-auto` sur un
+ *    enfant `flex-1` n'a d'effet que si un ancêtre lui impose une hauteur
+ *    FERME, pas seulement un minimum. `h-screen` colle exactement au canevas
+ *    OBS (toujours 1920×1080, fixé dans la Browser Source) : rien en dehors
+ *    de ces 1080px n'est de toute façon visible dans le flux composité.
+ */
 export default async function DashboardMissionNerf() {
   return (
     <MissionNerfProvider>
-      <div className="relative flex min-h-screen w-full flex-col gap-5 p-6 text-white lg:gap-6 lg:p-8">
+      <div className="relative flex h-screen w-full flex-col gap-5 overflow-hidden p-6 text-white lg:gap-6 lg:p-8">
         <Entete />
 
-        <div className="grid flex-1 grid-cols-1 gap-5 lg:grid-cols-[2fr_1fr] lg:gap-6">
+        {/* min-h-0 indispensable ici : sans lui, un enfant flex garde son
+            min-height:auto par défaut et grandit selon son CONTENU (la
+            liste d'inscriptions) au lieu de respecter flex-1 — c'est ce qui
+            empêchait le défilement d'apparaître malgré min-h-0 posé plus
+            bas dans l'arbre (PanneauInscriptionsChrome, le <ul>). */}
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 lg:grid-cols-[3fr_1fr] lg:gap-6">
           <PanneauCamera />
-          <CartesStats />
+          <PanneauInscriptionsChrome />
         </div>
 
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1.3fr_1fr] lg:gap-6">
-          <PanneauInscriptionsChrome />
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+          <CartesStats />
           <PanneauDecharge />
         </div>
 
@@ -131,12 +164,15 @@ function Entete() {
     <header className="panel-hud relative grid grid-cols-1 items-center gap-4 border border-cyan-400/40 bg-[#060b18] px-8 py-6 lg:grid-cols-[1fr_auto_1fr]">
       <EncochesCoins taille="md" />
 
-      <div className="flex items-center gap-2 leading-tight">
-        <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-slate-400">Expérience</p>
-          <p className="[font-family:var(--font-nerf-title)] text-xl uppercase leading-none text-cyan-400">Mobile</p>
-          <p className="[font-family:var(--font-nerf-title)] text-xl uppercase leading-none text-white">Ultime</p>
-        </div>
+      <div className="flex items-center gap-2">
+        <Image
+          src="/mission-nerf/logo-nerf.png"
+          alt="Expérience Mobile Ultime"
+          width={500}
+          height={500}
+          priority
+          className="h-16 w-16 shrink-0"
+        />
         <TicksMesure nombre={3} />
       </div>
 
@@ -267,12 +303,21 @@ function PanneauCamera() {
  * Chrome statique du panneau « dernières inscriptions » (bordure, titre) —
  * les LIGNES elles-mêmes sont dans PanneauInscriptions (client), voir
  * ElementsEnDirect.tsx.
+ *
+ * ⚠️ `min-h-0` + `overflow-hidden` ici, `min-h-0 overflow-y-auto` sur le
+ * `<ul>` dans PanneauInscriptions — nécessaire pour que la liste défile
+ * DANS le panneau (réagencement du 1er septembre : ce panneau prend
+ * maintenant toute la hauteur de la rangée caméra, via l'étirement par
+ * défaut de CSS Grid) plutôt que de pousser le panneau plus haut que son
+ * voisin. Sans `min-h-0` sur les deux niveaux, un enfant flex/grid ne
+ * rétrécit jamais sous la taille de son contenu — piège classique qui
+ * empêcherait tout simplement le défilement d'apparaître.
  */
 function PanneauInscriptionsChrome() {
   return (
-    <div className="panel-hud relative flex flex-col border border-cyan-400/40 bg-[#060b18] px-7 py-5">
+    <div className="panel-hud relative flex min-h-0 flex-col overflow-hidden border border-cyan-400/40 bg-[#060b18] px-7 py-5">
       <EncochesCoins taille="sm" />
-      <div className="flex items-center gap-2">
+      <div className="flex shrink-0 items-center gap-2">
         <TicksMesure nombre={2} />
         <p className="font-mono text-xs uppercase tracking-[0.14em] text-cyan-300">Dernières inscriptions</p>
       </div>
@@ -285,27 +330,32 @@ function PanneauInscriptionsChrome() {
  * Panneau décharge + QR — Server Component asynchrone : le SVG est généré
  * une fois par rendu de page via `qrcode`, jamais côté client (pas de
  * dépendance JS supplémentaire envoyée au navigateur pour ça).
+ *
+ * ⚠️ Empilé verticalement et centré depuis le réagencement du 1er septembre
+ * (avant : icône+texte à gauche, QR à droite, côte à côte) — ce panneau est
+ * maintenant une des 4 colonnes égales de la rangée du bas, plus étroit
+ * qu'avant ; la disposition horizontale d'origine n'aurait plus eu la place
+ * de respirer. QR réduit à 130px (152px avant) pour la même raison.
  */
 async function PanneauDecharge() {
   const svgQr = await QRCode.toString(URL_FORMULAIRE, {
     type: 'svg',
     margin: 1,
-    width: 152,
+    width: 130,
     color: { dark: '#0a1128ff', light: '#ffffffff' },
   })
 
   return (
-    <div className="panel-hud relative flex flex-col items-center justify-between gap-5 border border-pink-500/40 bg-[#060b18] px-7 py-5 sm:flex-row">
+    <div className="panel-hud relative flex flex-col items-center gap-4 border border-pink-500/40 bg-[#060b18] px-6 py-5 text-center">
       <EncochesCoins couleur="pink" taille="sm" />
 
-      <div className="flex items-center gap-4 text-center sm:text-left">
-        <IconeBouclierCoche className="hidden h-10 w-10 shrink-0 text-pink-400 sm:block" />
-        <div>
-          <p className="font-mono text-xs uppercase tracking-wide text-slate-400">Formulaire de décharge</p>
-          <p className="[font-family:var(--font-nerf-title)] text-2xl uppercase leading-tight text-pink-400">
+      <div className="flex items-center gap-3">
+        <IconeBouclierCoche className="h-9 w-9 shrink-0 text-pink-400" />
+        <div className="text-left">
+          <p className="font-mono text-[11px] uppercase tracking-wide text-slate-400">Formulaire de décharge</p>
+          <p className="[font-family:var(--font-nerf-title)] text-xl uppercase leading-tight text-pink-400">
             Obligatoire
           </p>
-          <p className="font-mono text-xs uppercase tracking-wide text-slate-400">avant de participer</p>
         </div>
       </div>
 
