@@ -134,7 +134,13 @@ export default async function DashboardMissionNerf() {
           <PanneauInscriptionsChrome />
         </div>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+        {/* h-[174px] = hauteur mesurée de l'en-tête (<header>) — demande du
+            boss : la rangée du bas doit faire EXACTEMENT la même hauteur
+            que la section MISSION NERF, pour garantir un maximum d'espace
+            à la caméra (rangée flex-1 au-dessus). Les 4 panneaux ont chacun
+            `h-full` pour remplir cette hauteur fixe plutôt que de la
+            dicter par leur contenu. */}
+        <div className="grid h-[174px] shrink-0 grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
           <CartesStats />
           <PanneauDecharge />
         </div>
@@ -171,7 +177,7 @@ function Entete() {
           width={500}
           height={500}
           priority
-          className="h-16 w-16 shrink-0"
+          className="h-20 w-20 shrink-0"
         />
         <TicksMesure nombre={3} />
       </div>
@@ -335,34 +341,41 @@ function PanneauInscriptionsChrome() {
  * (avant : icône+texte à gauche, QR à droite, côte à côte) — ce panneau est
  * maintenant une des 4 colonnes égales de la rangée du bas, plus étroit
  * qu'avant ; la disposition horizontale d'origine n'aurait plus eu la place
- * de respirer. QR réduit à 130px (152px avant) pour la même raison.
+ * de respirer.
+ *
+ * ⚠️ Repassé en ligne horizontale (icône+texte à gauche, QR à droite) le
+ * 1er septembre, après le premier essai empilé verticalement : le brief
+ * demandait de RÉDUIRE la hauteur de toute la rangée du bas (empilé
+ * verticalement, c'était le panneau le plus haut des 4, donc celui qui
+ * forçait la hauteur de la rangée entière via l'étirement CSS Grid). QR
+ * réduit à 90px (130px, puis 152px avant) et texte « Scannez ici » retiré
+ * (redondant avec le QR lui-même) pour la même raison.
  */
 async function PanneauDecharge() {
   const svgQr = await QRCode.toString(URL_FORMULAIRE, {
     type: 'svg',
     margin: 1,
-    width: 130,
+    width: 90,
     color: { dark: '#0a1128ff', light: '#ffffffff' },
   })
 
   return (
-    <div className="panel-hud relative flex flex-col items-center gap-4 border border-pink-500/40 bg-[#060b18] px-6 py-5 text-center">
+    <div className="panel-hud relative flex h-full items-center justify-between gap-4 border border-pink-500/40 bg-[#060b18] px-5 py-3">
       <EncochesCoins couleur="pink" taille="sm" />
 
       <div className="flex items-center gap-3">
-        <IconeBouclierCoche className="h-9 w-9 shrink-0 text-pink-400" />
-        <div className="text-left">
-          <p className="font-mono text-[11px] uppercase tracking-wide text-slate-400">Formulaire de décharge</p>
-          <p className="[font-family:var(--font-nerf-title)] text-xl uppercase leading-tight text-pink-400">
+        <IconeBouclierCoche className="h-10 w-10 shrink-0 text-pink-400" />
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-wide text-slate-400">Formulaire de décharge</p>
+          <p className="[font-family:var(--font-nerf-title)] text-lg uppercase leading-tight text-pink-400">
             Obligatoire
           </p>
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-2">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cyan-300">Scannez ici</p>
+      <div className="flex shrink-0 flex-col items-center gap-1">
         <div
-          className="rounded-lg bg-white p-2"
+          className="rounded-lg bg-white p-1.5"
           // svgQr vient de QRCode.toString(URL_FORMULAIRE, …) — URL_FORMULAIRE
           // est une constante fixe de ce fichier, jamais une entrée
           // utilisateur : aucun risque d'injection via ce
@@ -370,6 +383,7 @@ async function PanneauDecharge() {
           // sérialisé en chaîne.
           dangerouslySetInnerHTML={{ __html: svgQr }}
         />
+        <p className="font-mono text-[9px] uppercase tracking-[0.15em] text-cyan-300">Scannez ici</p>
       </div>
     </div>
   )

@@ -100,20 +100,20 @@ export function CartesStats() {
   return (
     <>
       <Carte
-        icone={<IconePersonnes className="h-9 w-9" />}
+        icone={<IconePersonnes className="h-10 w-10" />}
         label="Participants aujourd'hui"
         valeur={participants ?? '—'}
         couleur="cyan"
       />
       <Carte
-        icone={<IconePressePapier className="h-9 w-9" />}
+        icone={<IconePressePapier className="h-10 w-10" />}
         label="Décharges complétées"
         valeur={`${participants ?? '—'} / ${decharges ?? '—'}`}
         couleur="pink"
         note={moyenne ? `moy. ${moyenne} enfant/décharge` : undefined}
       />
       <Carte
-        icone={<IconeHorloge className="h-9 w-9" />}
+        icone={<IconeHorloge className="h-10 w-10" />}
         label="Prochain départ"
         // « À VENIR » plutôt qu'un tiret muet quand la zone est ouverte sans
         // heure UTILE (brief du 1er septembre, « signaler l'absence d'heure,
@@ -175,7 +175,7 @@ function Carte({
   dessous?: React.ReactNode
 }) {
   return (
-    <div className="panel-hud relative flex items-center gap-4 border border-cyan-400/40 bg-[#060b18] px-5 py-4 shadow-[0_0_30px_-12px_rgba(34,211,238,0.35)]">
+    <div className="panel-hud relative flex h-full items-center gap-4 border border-cyan-400/40 bg-[#060b18] px-5 py-3 shadow-[0_0_30px_-12px_rgba(34,211,238,0.35)]">
       <EncochesCoins couleur={couleur} taille="sm" />
 
       <div
