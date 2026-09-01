@@ -9,7 +9,7 @@
  * `server-only`. Ce fichier-ci ne contient que des calculs de date PURS,
  * rien de secret : il peut être importé aussi bien par une route API que
  * par le décompte client de la carte « Prochain départ »
- * (dashboard/DecompteDepart.tsx).
+ * (dashboard/useDecompteDepart.ts).
  *
  * `lib/mission-nerf.ts` réexporte les trois premières fonctions pour ne
  * rien changer côté appelants déjà existants (routes API, Server Actions) —
@@ -85,9 +85,14 @@ function secondesDepuisMinuitQuebec(instant: Date): number {
 }
 
 /**
- * Secondes restantes jusqu'à la PROCHAINE occurrence de `heureCible`
- * (`HH:mm`) dans le fuseau de l'événement, à partir de `maintenant`.
- * Ne renvoie jamais de valeur négative — un départ déjà passé donne 0.
+ * Écart, en secondes, entre MAINTENANT et la PROCHAINE occurrence de
+ * `heureCible` (`HH:mm`) dans le fuseau de l'événement — POSITIF si le
+ * départ est à venir, NÉGATIF s'il est déjà passé (ex. -180 = passé depuis
+ * 3 minutes). Signée depuis la correction du 1er septembre 2026 : le
+ * dashboard a besoin de savoir DEPUIS COMBIEN DE TEMPS un départ est passé
+ * pour décider quand basculer « DÉPART IMMINENT » → « À VENIR » (voir
+ * `dashboard/useDecompteDepart.ts`) — un simple clamp à 0 effaçait cette
+ * information. Seul appelant à ce jour, donc rien d'autre à migrer.
  *
  * ⚠️ CALCULÉE EN COMPARANT DES SECONDES-DEPUIS-MINUIT (Québec), PAS DES
  * OBJETS Date CONSTRUITS AVEC L'HORLOGE DU NAVIGATEUR. Le téléphone/PC qui
@@ -102,16 +107,18 @@ function secondesDepuisMinuitQuebec(instant: Date): number {
  *   - Un départ réglé pour « il y a quelques minutes » (page rechargée un
  *     peu tard, ou l'heure réglée vient tout juste de passer) — l'écart
  *     entre « aujourd'hui à cette heure » et maintenant est PETIT (quelques
- *     minutes) → reste interprété comme aujourd'hui, déjà passé → 0
- *     (DÉPART IMMINENT), jamais un compte à rebours vers demain.
+ *     minutes) → reste interprété comme aujourd'hui, déjà passé → une petite
+ *     valeur négative, jamais un compte à rebours vers demain.
  *
  *   - Un départ réglé à 00:15 alors qu'il est 23:50 — « aujourd'hui à
  *     00:15 » est passé de 23 h 35, largement PLUS de 12 h → réinterprété
- *     comme DEMAIN à 00:15, soit 25 minutes plus tard.
+ *     comme DEMAIN à 00:15, soit 25 minutes plus tard (valeur positive).
  *
  * 12 h est le seuil naturel pour cette distinction : un vrai départ ne se
  * règle jamais des heures à l'avance dans le passé, donc tout écart de plus
- * de 12 h ne peut venir que d'un passage de minuit à réinterpréter.
+ * de 12 h ne peut venir que d'un passage de minuit à réinterpréter. Le délai
+ * de grâce « DÉPART IMMINENT » (quelques minutes, très inférieur à 12 h) ne
+ * peut donc jamais chevaucher ce seuil.
  */
 export function secondesRestantesQuebec(heureCible: string, maintenant: Date = new Date()): number {
   const [heures = 0, minutes = 0] = heureCible.split(':').map(Number)
@@ -121,5 +128,5 @@ export function secondesRestantesQuebec(heureCible: string, maintenant: Date = n
   let diff = cibleSecondes - maintenantSecondes
   if (diff < -12 * 3600) diff += 24 * 3600
 
-  return Math.max(0, diff)
+  return diff
 }

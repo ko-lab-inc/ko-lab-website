@@ -18,7 +18,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  * ⚠️ Les calculs de fuseau (dateEvenementQuebec, heureQuebec,
  * dansNMinutesQuebec) vivent désormais dans mission-nerf-fuseau.ts, un
  * fichier SANS `import 'server-only'` — le décompte de la carte « Prochain
- * départ » (dashboard/DecompteDepart.tsx) tourne dans le NAVIGATEUR et a
+ * départ » (dashboard/useDecompteDepart.ts) tourne dans le NAVIGATEUR et a
  * besoin du même calcul de fuseau que celui-ci, sans jamais pouvoir importer
  * ce fichier-ci (qui porte l'authentification staff, laquelle ne doit
  * jamais atterrir dans un bundle client). Réexportées ci-dessous pour que

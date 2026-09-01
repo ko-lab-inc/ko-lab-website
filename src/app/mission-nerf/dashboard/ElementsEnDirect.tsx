@@ -3,9 +3,9 @@
 import { cn } from '@/lib/utils/cn'
 
 import { EncochesCoins } from './Decor'
-import { DecompteDepart } from './DecompteDepart'
 import { IconeCoche, IconeHorloge, IconePersonnes, IconePressePapier } from './Icones'
 import { useMissionNerf } from './MissionNerfProvider'
+import { useDecompteDepart } from './useDecompteDepart'
 
 /**
  * Pastille d'état de la zone — en-tête, à droite.
@@ -73,6 +73,7 @@ function Pastille({ couleur, texte }: { couleur: 'green' | 'red' | 'slate'; text
  */
 export function CartesStats() {
   const { donnees } = useMissionNerf()
+  const decompte = useDecompteDepart(donnees?.prochainDepart)
 
   const participants = donnees?.participants
   const decharges = donnees?.decharges
@@ -80,6 +81,13 @@ export function CartesStats() {
     participants !== undefined && decharges !== undefined && decharges > 0
       ? (participants / decharges).toFixed(1)
       : null
+
+  // « Périmé » (bascule du 1er septembre, délai de grâce dans
+  // useDecompteDepart.ts) traité EXACTEMENT comme « aucune heure réglée » —
+  // même valeur affichée, même absence de ligne de décompte. `prochain_depart`
+  // n'est ni lu comme périmé ni modifié en base : c'est une décision
+  // d'affichage prise ici, à chaque tick, jamais écrite nulle part.
+  const departSansHeureUtile = decompte.etat === 'aucun' || decompte.etat === 'perime'
 
   return (
     <div className="flex h-full flex-col justify-between gap-4">
@@ -100,15 +108,28 @@ export function CartesStats() {
         icone={<IconeHorloge className="h-9 w-9" />}
         label="Prochain départ"
         // « À VENIR » plutôt qu'un tiret muet quand la zone est ouverte sans
-        // heure réglée (brief du 1er septembre, « signaler l'absence
-        // d'heure, sans bloquer ») : un tiret ne dit pas si l'écran est
-        // cassé ou si l'info arrive simplement. Zone fermée sans heure
-        // réglée : rien à annoncer, le tiret reste approprié.
-        valeur={donnees?.prochainDepart ?? (donnees?.zoneOuverte ? 'À VENIR' : '—')}
+        // heure UTILE (brief du 1er septembre, « signaler l'absence d'heure,
+        // sans bloquer », étendu le 1er septembre au cas d'une heure réglée
+        // mais périmée depuis plus de 5 min — même état, même message,
+        // volontairement indistinguable pour le public). Zone fermée : rien
+        // à annoncer, le tiret reste approprié dans les deux cas.
+        valeur={departSansHeureUtile ? (donnees?.zoneOuverte ? 'À VENIR' : '—') : (donnees?.prochainDepart ?? '—')}
         couleur="cyan"
-        // Décompte affiché SEULEMENT si une heure est réellement réglée —
-        // pas de compte à rebours vers « À VENIR » ou « — ».
-        dessous={donnees?.prochainDepart ? <DecompteDepart /> : undefined}
+        // Ligne de décompte affichée SEULEMENT en compte à rebours ou en
+        // grâce « imminent » — jamais sous « À VENIR » ou « — ».
+        dessous={
+          decompte.etat === 'compte' || decompte.etat === 'imminent' ? (
+            <p
+              className={
+                decompte.etat === 'imminent'
+                  ? 'font-mono text-sm font-semibold uppercase tracking-wide text-rose-300 [animation:clignotement-lent_2.4s_ease-in-out_infinite]'
+                  : 'font-mono text-sm text-slate-300'
+              }
+            >
+              {decompte.texte}
+            </p>
+          ) : undefined
+        }
       />
     </div>
   )
@@ -141,7 +162,7 @@ function Carte({
   couleur: 'cyan' | 'pink'
   note?: string
   /** Emplacement libre sous le chiffre — utilisé UNIQUEMENT par la carte
-   *  « Prochain départ » (DecompteDepart), les deux autres cartes ne le
+   *  « Prochain départ » (useDecompteDepart), les deux autres cartes ne le
    *  passent jamais. */
   dessous?: React.ReactNode
 }) {
