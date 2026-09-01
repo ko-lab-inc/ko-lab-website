@@ -124,12 +124,18 @@ export default async function DashboardMissionNerf() {
       <div className="relative flex h-screen w-full flex-col gap-5 overflow-hidden p-6 text-white lg:gap-6 lg:p-8">
         <Entete />
 
-        {/* min-h-0 indispensable ici : sans lui, un enfant flex garde son
-            min-height:auto par défaut et grandit selon son CONTENU (la
-            liste d'inscriptions) au lieu de respecter flex-1 — c'est ce qui
-            empêchait le défilement d'apparaître malgré min-h-0 posé plus
-            bas dans l'arbre (PanneauInscriptionsChrome, le <ul>). */}
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 lg:grid-cols-[3fr_1fr] lg:gap-6">
+        {/* ⚠️ N'est PLUS une grille à 2 colonnes depuis cette révision — brief
+            du boss : « Dernières inscriptions » doit laisser voir la caméra
+            À TRAVERS elle (vitre sombre semi-transparente), pas lui prendre
+            sa propre portion de largeur à côté. La caméra occupe maintenant
+            TOUTE la largeur de cette rangée ; le panneau inscriptions est
+            posé PAR-DESSUS en position absolue, à droite, avec un fond
+            `bg-[#060b18]/55` au lieu d'un fond plein — la vidéo transparaît
+            au travers de son propre fond, pas seulement dans le rectangle
+            resté vide. `min-h-0` toujours nécessaire sur ce conteneur pour
+            que la liste défile dans le panneau plutôt que de déborder (voir
+            PanneauInscriptionsChrome plus bas). */}
+        <div className="relative min-h-0 flex-1">
           <PanneauCamera />
           <PanneauInscriptionsChrome />
         </div>
@@ -171,13 +177,16 @@ function Entete() {
       <EncochesCoins taille="md" />
 
       <div className="flex items-center gap-2">
+        {/* h-24 = 96px, mesuré comme la hauteur réelle du <h1> « MISSION
+            NERF » (text-8xl, line-height 1) — demande du boss : le logo
+            « se voit moins » à côté du titre, même hauteur pour les deux. */}
         <Image
           src="/mission-nerf/logo-nerf.png"
           alt="Expérience Mobile Ultime"
           width={500}
           height={500}
           priority
-          className="h-20 w-20 shrink-0"
+          className="h-24 w-24 shrink-0"
         />
         <TicksMesure nombre={3} />
       </div>
@@ -285,10 +294,16 @@ function TicksMesure({ nombre, couleur = 'cyan' }: { nombre: number; couleur?: '
  * `EncochesCoins` (taille "md") remplace les 4 coins en L codés en dur ici
  * avant la deuxième revue — même motif que tous les autres panneaux, sans
  * dupliquer le balisage.
+ *
+ * ⚠️ `absolute inset-0` depuis la révision « vitre sombre » — occupe
+ * maintenant TOUTE la largeur de la rangée (le parent, `page.tsx`, est
+ * passé de grille 2 colonnes à conteneur `relative` simple), avec
+ * PanneauInscriptionsChrome posé par-dessus en overlay semi-transparent à
+ * droite. Toujours transparent partout SAUF sous cet overlay.
  */
 function PanneauCamera() {
   return (
-    <div className="relative min-h-[46vh] overflow-hidden border border-cyan-400/40 lg:min-h-0">
+    <div className="absolute inset-0 min-h-[46vh] overflow-hidden border border-cyan-400/40 lg:min-h-0">
       <EncochesCoins taille="md" />
 
       <div className="absolute left-4 top-4 z-10 flex items-center gap-2 bg-black/70 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-white backdrop-blur-sm">
@@ -312,16 +327,40 @@ function PanneauCamera() {
  *
  * ⚠️ `min-h-0` + `overflow-hidden` ici, `min-h-0 overflow-y-auto` sur le
  * `<ul>` dans PanneauInscriptions — nécessaire pour que la liste défile
- * DANS le panneau (réagencement du 1er septembre : ce panneau prend
- * maintenant toute la hauteur de la rangée caméra, via l'étirement par
- * défaut de CSS Grid) plutôt que de pousser le panneau plus haut que son
- * voisin. Sans `min-h-0` sur les deux niveaux, un enfant flex/grid ne
- * rétrécit jamais sous la taille de son contenu — piège classique qui
- * empêcherait tout simplement le défilement d'apparaître.
+ * DANS le panneau plutôt que de pousser le panneau plus haut que son
+ * voisin. Sans `min-h-0` sur les deux niveaux, un enfant flex ne rétrécit
+ * jamais sous la taille de son contenu — piège classique qui empêcherait
+ * tout simplement le défilement d'apparaître.
+ *
+ * ⚠️ « VITRE SOMBRE » — brief du boss sur site : ce panneau doit laisser
+ * voir la caméra à travers lui, pas juste être posé à côté. Deux
+ * changements pour ça :
+ *   1. `absolute inset-y-0 right-0` au lieu d'être une colonne de grille —
+ *      il flotte maintenant PAR-DESSUS PanneauCamera (élargie à toute la
+ *      largeur de la rangée), pas à côté.
+ *   2. `bg-[#060b18]/55` au lieu de `bg-[#060b18]` plein — 55 % d'opacité,
+ *      choisi comme point de départ « sombre mais on voit à travers »,
+ *      valeur à ajuster après un premier coup d'œil réel (le boss doit
+ *      juger si c'est lisible/joli en vrai, pas en théorie).
+ *
+ * ⚠️ PAS de `backdrop-blur` — inutile ici : ce filtre ne floute que ce que
+ * LE NAVIGATEUR a lui-même dessiné derrière l'élément. La caméra n'existe
+ * pas à ce stade (zone laissée vide exprès, voir PanneauCamera) — c'est OBS
+ * qui la compose PAR-DESSOUS, APRÈS que le navigateur ait fini de rendre la
+ * page. Un `backdrop-blur` ici flouterait du vide, pas la vidéo finale.
+ *
+ * ⚠️ `!absolute` (avec le `!`) — piège découvert en testant : `.panel-hud`
+ * (dashboard.css) fixe lui-même `position: relative` sur CE MÊME élément.
+ * Classe utilitaire Tailwind et règle CSS classique ont la même
+ * spécificité (une classe) ; celle chargée en dernier dans le bundle
+ * gagnait, ce qui annulait silencieusement `absolute` — le panneau
+ * retombait dans le flux normal (pleine largeur, hauteur de son contenu)
+ * au lieu de flotter par-dessus la caméra. Le `!` force l'`!important`
+ * Tailwind, qui gagne quelle que soit l'ordre de chargement.
  */
 function PanneauInscriptionsChrome() {
   return (
-    <div className="panel-hud relative flex min-h-0 flex-col overflow-hidden border border-cyan-400/40 bg-[#060b18] px-7 py-5">
+    <div className="panel-hud !absolute inset-y-0 right-0 z-10 flex w-full min-h-0 flex-col overflow-hidden border border-cyan-400/40 bg-[#060b18]/55 px-7 py-5 lg:w-[420px]">
       <EncochesCoins taille="sm" />
       <div className="flex shrink-0 items-center gap-2">
         <TicksMesure nombre={2} />
