@@ -186,8 +186,8 @@ function CarteProchainDepart() {
             '[font-family:var(--font-nerf-title)] whitespace-nowrap leading-[1.05] tracking-tight',
             libelle ? 'text-[30px]' : 'text-[46px]',
             decompte.etat === 'imminent'
-              ? 'text-rose-300 [animation:clignotement-lent_2.4s_ease-in-out_infinite] [text-shadow:0_0_18px_rgba(244,63,94,0.85),0_0_46px_rgba(244,63,94,0.5)]'
-              : 'text-cyan-300 [text-shadow:0_0_18px_rgba(103,232,249,0.85),0_0_46px_rgba(34,211,238,0.5)]',
+              ? 'text-rose-300 [animation:clignotement-lent_2.4s_ease-in-out_infinite] [text-shadow:0_0_10px_rgba(244,63,94,0.45),0_0_24px_rgba(244,63,94,0.2)]'
+              : 'text-cyan-300 [text-shadow:0_0_10px_rgba(103,232,249,0.45),0_0_24px_rgba(34,211,238,0.2)]',
           )}
         >
           {texteDominant}
@@ -220,6 +220,12 @@ function CarteProchainDepart() {
  * navigateur, plus flou que la police elle-même). Halo en `text-shadow`
  * pour le côté « lumineux » relevé manquant le 1er septembre — statique,
  * calculé une fois, aucun coût continu sur 10 h.
+ *
+ * ⚠️ Intensité réduite le soir du 1er septembre (deuxième passe, testé sur
+ * la vraie TV/projecteur) : 18px/0,85 + 46px/0,5 lisait trop lumineux en
+ * vrai, au point de nuire à la lisibilité des chiffres. Ramené à 10px/0,45
+ * + 24px/0,2 — même langage visuel (double halo, teinte de la carte),
+ * juste moins agressif.
  *
  * ⚠️ Disposition refaite le 1er septembre (revue contre la maquette) :
  * l'icône vivait en petit à côté du label, au-dessus du chiffre. La
@@ -263,8 +269,8 @@ function Carte({
           className={cn(
             '[font-family:var(--font-nerf-title)] text-[46px] leading-[1.05] tracking-tight',
             couleur === 'cyan'
-              ? 'text-cyan-300 [text-shadow:0_0_18px_rgba(103,232,249,0.85),0_0_46px_rgba(34,211,238,0.5)]'
-              : 'text-pink-400 [text-shadow:0_0_18px_rgba(244,114,182,0.85),0_0_46px_rgba(236,72,153,0.5)]',
+              ? 'text-cyan-300 [text-shadow:0_0_10px_rgba(103,232,249,0.45),0_0_24px_rgba(34,211,238,0.2)]'
+              : 'text-pink-400 [text-shadow:0_0_10px_rgba(244,114,182,0.45),0_0_24px_rgba(236,72,153,0.2)]',
           )}
         >
           {valeur}

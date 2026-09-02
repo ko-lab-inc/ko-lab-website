@@ -4,6 +4,7 @@ import QRCode from 'qrcode'
 import { cn } from '@/lib/utils/cn'
 
 import './dashboard.css'
+import { CanevasAEchelle } from './CanevasAEchelle'
 import { EncochesCoins } from './Decor'
 import { IconeBouclierCoche } from './Icones'
 import { CartesStats, IndicateurConnexion, PanneauInscriptions, PastilleZone } from './ElementsEnDirect'
@@ -109,50 +110,68 @@ const URL_FORMULAIRE =
  *    dans ElementsEnDirect.tsx et la limite relevée de 4 à 200 lignes côté
  *    API), pour montrer tous les inscrits du jour plutôt que les 4 derniers.
  *
- *    ⚠️ `min-h-screen` → `h-screen` sur le conteneur racine ci-dessous, dans
- *    la même passe : une liste longue avec `min-h-screen` (« au moins » la
- *    hauteur de l'écran, sans plafond) poussait toute la page plus haute que
- *    1080px au lieu de faire défiler le panneau — `overflow-y-auto` sur un
- *    enfant `flex-1` n'a d'effet que si un ancêtre lui impose une hauteur
- *    FERME, pas seulement un minimum. `h-screen` colle exactement au canevas
- *    OBS (toujours 1920×1080, fixé dans la Browser Source) : rien en dehors
- *    de ces 1080px n'est de toute façon visible dans le flux composité.
+ *    ⚠️ `min-h-screen` → `h-screen` sur le conteneur racine, dans la même
+ *    passe : une liste longue avec `min-h-screen` (« au moins » la hauteur
+ *    de l'écran, sans plafond) poussait toute la page plus haute que 1080px
+ *    au lieu de faire défiler le panneau — `overflow-y-auto` sur un enfant
+ *    `flex-1` n'a d'effet que si un ancêtre lui impose une hauteur FERME,
+ *    pas seulement un minimum.
+ *
+ *    ⚠️ `h-screen` → `h-[1080px]` (et `w-full` → `w-[1920px]`) le soir même,
+ *    DEUXIÈME passe : ouvert directement dans un onglet de navigateur
+ *    redimensionné (pas via OBS), le dashboard débordait franchement —
+ *    textes d'état coupés, badge de zone qui retombe sur deux lignes, QR
+ *    coupé par le bord de fenêtre. Cause : toutes les tailles de cet écran
+ *    sont des pixels FIXES (`text-[30px]`, `h-[174px]`, `w-[420px]`…),
+ *    délibérément, pour un rendu identique au pixel près dans OBS (toujours
+ *    exactement 1920×1080, fixé dans la Browser Source) — mais `h-screen`
+ *    faisait varier la hauteur du CONTENEUR selon la fenêtre réelle sans
+ *    jamais faire varier ces valeurs fixes à l'intérieur, d'où le
+ *    débordement dès que la fenêtre n'était plus 1920×1080 pile.
+ *
+ *    Le canevas est maintenant un rectangle FIXE 1920×1080, mis à l'échelle
+ *    dans son ensemble par CanevasAEchelle.tsx pour tenir dans la fenêtre
+ *    réelle, quelle qu'elle soit — voir sa docstring pour le détail et la
+ *    preuve que le cas OBS (viewport exactement 1920×1080) reste
+ *    inchangé au pixel près (échelle = 1, aucune mise à l'échelle).
  */
 export default async function DashboardMissionNerf() {
   return (
     <MissionNerfProvider>
-      <div className="relative flex h-screen w-full flex-col gap-5 overflow-hidden p-6 text-white lg:gap-6 lg:p-8">
-        <Entete />
+      <CanevasAEchelle>
+        <div className="relative flex h-[1080px] w-[1920px] flex-col gap-6 overflow-hidden p-8 text-white">
+          <Entete />
 
-        {/* ⚠️ N'est PLUS une grille à 2 colonnes depuis cette révision — brief
-            du boss : « Dernières inscriptions » doit laisser voir la caméra
-            À TRAVERS elle (vitre sombre semi-transparente), pas lui prendre
-            sa propre portion de largeur à côté. La caméra occupe maintenant
-            TOUTE la largeur de cette rangée ; le panneau inscriptions est
-            posé PAR-DESSUS en position absolue, à droite, avec un fond
-            `bg-[#060b18]/55` au lieu d'un fond plein — la vidéo transparaît
-            au travers de son propre fond, pas seulement dans le rectangle
-            resté vide. `min-h-0` toujours nécessaire sur ce conteneur pour
-            que la liste défile dans le panneau plutôt que de déborder (voir
-            PanneauInscriptionsChrome plus bas). */}
-        <div className="relative min-h-0 flex-1">
-          <PanneauCamera />
-          <PanneauInscriptionsChrome />
+          {/* ⚠️ N'est PLUS une grille à 2 colonnes depuis cette révision — brief
+              du boss : « Dernières inscriptions » doit laisser voir la caméra
+              À TRAVERS elle (vitre sombre semi-transparente), pas lui prendre
+              sa propre portion de largeur à côté. La caméra occupe maintenant
+              TOUTE la largeur de cette rangée ; le panneau inscriptions est
+              posé PAR-DESSUS en position absolue, à droite, avec un fond
+              `bg-[#060b18]/55` au lieu d'un fond plein — la vidéo transparaît
+              au travers de son propre fond, pas seulement dans le rectangle
+              resté vide. `min-h-0` toujours nécessaire sur ce conteneur pour
+              que la liste défile dans le panneau plutôt que de déborder (voir
+              PanneauInscriptionsChrome plus bas). */}
+          <div className="relative min-h-0 flex-1">
+            <PanneauCamera />
+            <PanneauInscriptionsChrome />
+          </div>
+
+          {/* h-[174px] = hauteur mesurée de l'en-tête (<header>) — demande du
+              boss : la rangée du bas doit faire EXACTEMENT la même hauteur
+              que la section MISSION NERF, pour garantir un maximum d'espace
+              à la caméra (rangée flex-1 au-dessus). Les 4 panneaux ont chacun
+              `h-full` pour remplir cette hauteur fixe plutôt que de la
+              dicter par leur contenu. */}
+          <div className="grid h-[174px] shrink-0 grid-cols-4 gap-6">
+            <CartesStats />
+            <PanneauDecharge />
+          </div>
+
+          <IndicateurConnexion />
         </div>
-
-        {/* h-[174px] = hauteur mesurée de l'en-tête (<header>) — demande du
-            boss : la rangée du bas doit faire EXACTEMENT la même hauteur
-            que la section MISSION NERF, pour garantir un maximum d'espace
-            à la caméra (rangée flex-1 au-dessus). Les 4 panneaux ont chacun
-            `h-full` pour remplir cette hauteur fixe plutôt que de la
-            dicter par leur contenu. */}
-        <div className="grid h-[174px] shrink-0 grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-          <CartesStats />
-          <PanneauDecharge />
-        </div>
-
-        <IndicateurConnexion />
-      </div>
+      </CanevasAEchelle>
     </MissionNerfProvider>
   )
 }
@@ -164,7 +183,7 @@ export default async function DashboardMissionNerf() {
  * body transparent : invisible dans un navigateur normal (fond blanc par
  * défaut du navigateur), pas seulement dans OBS.
  *
- * Grille 3 colonnes (`lg:grid-cols-[1fr_auto_1fr]`), pas un simple
+ * Grille 3 colonnes (`grid-cols-[1fr_auto_1fr]`), pas un simple
  * `justify-between` : un flex laisse le bloc central prendre seulement la
  * largeur de son propre contenu, alors que la maquette lui donne presque
  * toute la largeur — la grille force les colonnes latérales à rester
@@ -173,27 +192,32 @@ export default async function DashboardMissionNerf() {
  */
 function Entete() {
   return (
-    <header className="panel-hud relative grid grid-cols-1 items-center gap-4 border border-cyan-400/40 bg-[#060b18] px-8 py-6 lg:grid-cols-[1fr_auto_1fr]">
+    <header className="panel-hud relative grid grid-cols-[1fr_auto_1fr] items-center gap-4 border border-cyan-400/40 bg-[#060b18] px-8 py-6">
       <EncochesCoins taille="md" />
 
       <div className="flex items-center gap-2">
-        {/* h-24 = 96px, mesuré comme la hauteur réelle du <h1> « MISSION
-            NERF » (text-8xl, line-height 1) — demande du boss : le logo
-            « se voit moins » à côté du titre, même hauteur pour les deux. */}
+        {/* ⚠️ 116px, pas plus — toujours « trop petit » de l'avis du boss après
+            96px (h-24), mais mesuré : la colonne du titre (MISSION NERF +
+            sous-titre) fait 124px de haut, c'est ELLE qui fixe la hauteur de
+            l'en-tête (174px), qui fixe à son tour la hauteur de la rangée du
+            bas (même contrainte) ET la hauteur disponible à la caméra
+            au-dessus. Dépasser 124px ferait grandir l'en-tête tout entier —
+            116px est le maximum qui laisse encore une marge de sécurité (8px)
+            sans toucher à aucune des mesures déjà calibrées. */}
         <Image
           src="/mission-nerf/logo-nerf.png"
           alt="Expérience Mobile Ultime"
           width={500}
           height={500}
           priority
-          className="h-24 w-24 shrink-0"
+          className="h-[116px] w-[116px] shrink-0"
         />
         <TicksMesure nombre={3} />
       </div>
 
       <TitreMission />
 
-      <div className="flex items-center justify-self-center gap-3 lg:justify-self-end">
+      <div className="flex items-center justify-self-end gap-3">
         <TicksMesure nombre={4} couleur="pink" />
         <PastilleZone />
       </div>
@@ -215,7 +239,7 @@ function Entete() {
 function TitreMission() {
   return (
     <div className="flex flex-col items-center">
-      <h1 className="[font-family:var(--font-nerf-title)] text-5xl uppercase tracking-wide sm:text-6xl lg:text-8xl">
+      <h1 className="[font-family:var(--font-nerf-title)] text-8xl uppercase tracking-wide">
         <span
           className="bg-clip-text text-transparent [text-shadow:0_0_28px_rgba(148,231,255,0.55)]"
           style={{ backgroundImage: TEXTURE_TITRE('#ffffff', '#a9e8ff') }}
@@ -229,7 +253,7 @@ function TitreMission() {
           Nerf
         </span>
       </h1>
-      <p className="mt-2 flex items-center gap-3 font-mono text-xs uppercase tracking-[0.3em] text-cyan-300 lg:text-sm">
+      <p className="mt-2 flex items-center gap-3 font-mono text-sm uppercase tracking-[0.3em] text-cyan-300">
         <ConnecteurLigne />
         Centre de contrôle en direct
         <ConnecteurLigne inverse />
@@ -244,7 +268,7 @@ function ConnecteurLigne({ inverse = false }: { inverse?: boolean }) {
   return (
     <span className={inverse ? 'flex items-center gap-2 flex-row-reverse' : 'flex items-center gap-2'} aria-hidden="true">
       <span className="h-1.5 w-1.5 rounded-full border border-cyan-300" />
-      <span className="h-px w-8 bg-cyan-300/60 sm:w-12" />
+      <span className="h-px w-12 bg-cyan-300/60" />
     </span>
   )
 }
@@ -287,9 +311,7 @@ function TicksMesure({ nombre, couleur = 'cyan' }: { nombre: number; couleur?: '
 
 /**
  * Zone caméra — voir la docstring en tête de fichier pour le mécanisme de
- * transparence. `min-h-[46vh]` plutôt qu'une hauteur fixe : garde une taille
- * raisonnable même si le contenu autour change, sans dépendre de `flex-1`
- * seul sur un écran plus bas que 1080px.
+ * transparence.
  *
  * `EncochesCoins` (taille "md") remplace les 4 coins en L codés en dur ici
  * avant la deuxième revue — même motif que tous les autres panneaux, sans
@@ -300,10 +322,17 @@ function TicksMesure({ nombre, couleur = 'cyan' }: { nombre: number; couleur?: '
  * passé de grille 2 colonnes à conteneur `relative` simple), avec
  * PanneauInscriptionsChrome posé par-dessus en overlay semi-transparent à
  * droite. Toujours transparent partout SAUF sous cet overlay.
+ *
+ * ⚠️ `min-h-[46vh] lg:min-h-0` RETIRÉ le soir du 1er septembre (passage au
+ * canevas fixe 1920×1080, voir CanevasAEchelle.tsx) : `46vh` mesurait la
+ * hauteur du VRAI viewport du navigateur, plus rien à voir avec la hauteur
+ * du canevas une fois celui-ci fixé puis mis à l'échelle — et de toute
+ * façon inutile : `inset-0` fixe déjà la taille exactement sur le parent
+ * (`relative min-h-0 flex-1`), un `min-height` ne peut rien y changer.
  */
 function PanneauCamera() {
   return (
-    <div className="absolute inset-0 min-h-[46vh] overflow-hidden border border-cyan-400/40 lg:min-h-0">
+    <div className="absolute inset-0 overflow-hidden border border-cyan-400/40">
       <EncochesCoins taille="md" />
 
       <div className="absolute left-4 top-4 z-10 flex items-center gap-2 bg-black/70 px-3 py-1.5 font-mono text-[11px] uppercase tracking-wide text-white backdrop-blur-sm">
@@ -360,7 +389,7 @@ function PanneauCamera() {
  */
 function PanneauInscriptionsChrome() {
   return (
-    <div className="panel-hud !absolute inset-y-0 right-0 z-10 flex w-full min-h-0 flex-col overflow-hidden border border-cyan-400/40 bg-[#060b18]/55 px-7 py-5 lg:w-[420px]">
+    <div className="panel-hud !absolute inset-y-0 right-0 z-10 flex w-[420px] min-h-0 flex-col overflow-hidden border border-cyan-400/40 bg-[#060b18]/55 px-7 py-5">
       <EncochesCoins taille="sm" />
       <div className="flex shrink-0 items-center gap-2">
         <TicksMesure nombre={2} />
@@ -387,19 +416,37 @@ function PanneauInscriptionsChrome() {
  * demandait de RÉDUIRE la hauteur de toute la rangée du bas (empilé
  * verticalement, c'était le panneau le plus haut des 4, donc celui qui
  * forçait la hauteur de la rangée entière via l'étirement CSS Grid). QR
- * réduit à 90px (130px, puis 152px avant) et texte « Scannez ici » retiré
- * (redondant avec le QR lui-même) pour la même raison.
+ * réduit à 90px (130px, puis 152px avant) pour la même raison ; « Scannez
+ * ici » réintroduit sous le QR dans une révision suivante (retiré une
+ * seule fois, dans cette passe-ci — pas d'un bout à l'autre du chantier).
+ *
+ * ⚠️ QR remonté à 118px le soir du 1er septembre (deuxième passe, retour du
+ * terrain) : à 90px, illisible par un téléphone à distance normale — trop
+ * peu de pixels par module malgré `shape-rendering: crispEdges` déjà posé
+ * par défaut par la bibliothèque `qrcode` (vérifié en inspectant le SVG
+ * généré : ce n'était donc pas un problème d'anti-aliasing à corriger,
+ * seulement de taille). 118px reste dans le budget de hauteur de la carte
+ * (174px, moins padding, icône et libellé « Scannez ici ») — vérifié par
+ * mesure réelle, pas à l'œil.
  */
 async function PanneauDecharge() {
   const svgQr = await QRCode.toString(URL_FORMULAIRE, {
     type: 'svg',
     margin: 1,
-    width: 90,
+    width: 125,
     color: { dark: '#0a1128ff', light: '#ffffffff' },
   })
 
   return (
-    <div className="panel-hud relative flex h-full items-center justify-between gap-4 border border-pink-500/40 bg-[#060b18] px-5 py-3">
+    // ⚠️ py-2 (pas py-3 comme les 3 autres cartes) — LOCAL à ce panneau
+    // uniquement, pour regagner de la place verticale au QR. Mesuré : à
+    // py-3 + p-1.5 sur la boîte blanche, la marge restante au-dessus/en
+    // dessous de la colonne QR+libellé n'était que de 1,25px de CHAQUE
+    // côté — trop juste pour grandir encore sans risquer un débordement
+    // (le clip-path de .panel-hud coupe silencieusement tout ce qui dépasse
+    // la boîte, ça n'aurait pas fait grandir la carte, ça aurait rogné le
+    // QR). Ce padding réduit ne touche QUE cette carte, pas les 3 autres.
+    <div className="panel-hud relative flex h-full items-center justify-between gap-4 border border-pink-500/40 bg-[#060b18] px-5 py-2">
       <EncochesCoins couleur="pink" taille="sm" />
 
       <div className="flex items-center gap-3">
@@ -412,9 +459,9 @@ async function PanneauDecharge() {
         </div>
       </div>
 
-      <div className="flex shrink-0 flex-col items-center gap-1">
+      <div className="flex shrink-0 flex-col items-center gap-0.5">
         <div
-          className="rounded-lg bg-white p-1.5"
+          className="rounded-lg bg-white p-1"
           // svgQr vient de QRCode.toString(URL_FORMULAIRE, …) — URL_FORMULAIRE
           // est une constante fixe de ce fichier, jamais une entrée
           // utilisateur : aucun risque d'injection via ce
