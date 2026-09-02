@@ -192,11 +192,22 @@ function CarteProchainDepart() {
         >
           {texteDominant}
         </p>
-        {/* Heure réglée — TOUJOURS visible tant qu'elle existe, même en
-            « SESSION EN COURS » ou « DÉPART IMMINENT » : c'est la même
-            donnée que le panneau staff affiche (« actuellement hh:mm »),
-            jamais effacée en base par cette bascule d'affichage. */}
-        {donnees?.prochainDepart && <p className="font-mono text-sm text-slate-400">{donnees.prochainDepart}</p>}
+        {/* Ligne secondaire — heure réglée par défaut (même donnée que le
+            panneau staff, « actuellement hh:mm »), REMPLACÉE par le temps
+            écoulé, ticker à la seconde, pendant SESSION EN COURS (brief du
+            soir du 1er septembre, 2e partie : plus utile à un parent qu'une
+            heure figée une fois la partie commencée — même hiérarchie
+            « seconde ligne », zéro risque sur la hauteur de la carte).
+            ⚠️ `prochain_depart` N'EST PLUS « jamais effacée » — fermer la
+            zone l'efface désormais volontairement (staff/actions.ts,
+            basculerZone) : c'est exactement ce qui fait disparaître cette
+            ligne (et toute la carte SESSION EN COURS) quand la zone ferme,
+            au lieu des deux états contradictoires observés en production. */}
+        {decompte.etat === 'enCours' ? (
+          <p className="font-mono text-sm text-slate-400">Depuis {decompte.ecouleTexte}</p>
+        ) : (
+          donnees?.prochainDepart && <p className="font-mono text-sm text-slate-400">{donnees.prochainDepart}</p>
+        )}
       </div>
     </div>
   )

@@ -24,13 +24,22 @@ import { DELAI_GRACE_DEPART_SECONDES, secondesRestantesQuebec } from '@/lib/miss
  * Ne modifie ni ne lit `etat_zone_nerf.prochain_depart` en base — purement un
  * délai d'AFFICHAGE, côté navigateur. Le panneau staff n'utilise pas cet
  * état pour SON propre affichage de l'heure (toujours « actuellement
- * hh:mm », sans bascule — écran de pilotage, pas d'annonce), mais lit le
- * même seuil pour son bandeau de rappel (voir staff/page.tsx).
+ * hh:mm », sans bascule — écran de pilotage, pas d'annonce), et porte
+ * désormais son propre chrono de session indépendant (ChronoSession.tsx) —
+ * mais lit le même seuil pour savoir quand l'afficher.
+ *
+ * ⚠️ AJOUT DU 1er SEPTEMBRE (SOIR, DEUXIÈME PASSE) — `ecouleTexte` sur
+ * l'état `enCours` : le dashboard TV affiche maintenant lui aussi le temps
+ * écoulé depuis le départ (décision de l'utilisateur — corrige un premier
+ * arbitrage qui l'avait placé sur le panneau staff uniquement). Calculé ICI
+ * plutôt que dans le composant d'affichage : un seul endroit qui lit
+ * `secondesRestantesQuebec`, pas un deuxième calcul qui pourrait diverger
+ * du texte « SESSION EN COURS » lui-même.
  */
 export type EtatDecompte =
   | { etat: 'compte'; texte: string }
   | { etat: 'imminent'; texte: 'DÉPART IMMINENT' }
-  | { etat: 'enCours'; texte: 'SESSION EN COURS' }
+  | { etat: 'enCours'; texte: 'SESSION EN COURS'; ecouleTexte: string }
   | { etat: 'aucun' }
 
 /**
@@ -73,5 +82,11 @@ export function useDecompteDepart(cible: string | null | undefined): EtatDecompt
   const ecoule = -diff
   if (ecoule <= DELAI_GRACE_DEPART_SECONDES) return { etat: 'imminent', texte: 'DÉPART IMMINENT' }
 
-  return { etat: 'enCours', texte: 'SESSION EN COURS' }
+  const minutesEcoulees = Math.floor(ecoule / 60)
+  const secondesEcoulees = ecoule % 60
+  return {
+    etat: 'enCours',
+    texte: 'SESSION EN COURS',
+    ecouleTexte: `${minutesEcoulees}:${String(secondesEcoulees).padStart(2, '0')}`,
+  }
 }

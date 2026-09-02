@@ -78,6 +78,26 @@ export async function deconnexionStaff(): Promise<void> {
  * requête : PostgREST ne sait pas exprimer « inverse la valeur actuelle »
  * sans la relire d'abord, et le volume ici (une poignée de bascules par
  * soirée) rend le coût de l'aller-retour supplémentaire non pertinent.
+ *
+ * ⚠️ FERMER LA ZONE EFFACE `prochain_depart` — brief du soir du 1er
+ * septembre 2026, observé en production : zone_ouverte et prochain_depart
+ * étaient deux données indépendantes, donc fermer la zone ne touchait
+ * jamais l'heure. Une fois un départ réglé, la carte du dashboard restait
+ * condamnée à SESSION EN COURS jusqu'à minuit (aucune heure future à
+ * régler en fin de soirée) — et pire, affichait ZONE FERMÉE + SESSION EN
+ * COURS simultanément, deux affirmations qui ne peuvent pas être vraies
+ * ensemble.
+ *
+ * DÉCISION (pas de bouton « Terminer la session » séparé) : un geste de
+ * plus à oublier dans un panneau déjà chargé — fermer la zone EST le
+ * signal que la session est terminée, l'effacement de l'heure en découle
+ * automatiquement, dans la MÊME écriture (jamais deux requêtes séparées :
+ * un état intermédiaire où l'heure serait encore là mais la zone déjà
+ * fermée ne doit jamais être observable, même une fraction de seconde).
+ *
+ * OUVRIR la zone ne touche PAS `prochain_depart` — le premier groupe n'est
+ * pas toujours formé à l'ouverture ; le bandeau ambre existant
+ * (« Zone ouverte, aucun départ annoncé ») couvre déjà ce cas.
  */
 export async function basculerZone(): Promise<void> {
   await assurerSessionStaff()
@@ -86,9 +106,11 @@ export async function basculerZone(): Promise<void> {
   const { data, error } = await supabase.from('etat_zone_nerf').select('zone_ouverte').single()
   if (error) throw error
 
+  const zoneVaSouvrir = !data.zone_ouverte
+
   const { error: erreurMaj } = await supabase
     .from('etat_zone_nerf')
-    .update({ zone_ouverte: !data.zone_ouverte })
+    .update(zoneVaSouvrir ? { zone_ouverte: true } : { zone_ouverte: false, prochain_depart: null })
     .eq('verrou_singleton', true)
   if (erreurMaj) throw erreurMaj
 
