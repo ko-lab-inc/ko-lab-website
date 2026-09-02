@@ -114,8 +114,8 @@ export const DELAI_GRACE_DEPART_SECONDES = 5 * 60
  * 'America/Toronto' })`, exactement la même primitive que le reste de ce
  * fichier — jamais une deuxième façon de raisonner sur l'heure.
  *
- * ⚠️ PASSAGE DE MINUIT — règle du seuil de 12 h, qui tranche entre les deux
- * seuls cas réels qui se présentent en pratique :
+ * ⚠️ PASSAGE DE MINUIT — règle du seuil de 12 h, DANS LES DEUX SENS, qui
+ * tranche entre les cas réels qui se présentent en pratique :
  *
  *   - Un départ réglé pour « il y a quelques minutes » (page rechargée un
  *     peu tard, ou l'heure réglée vient tout juste de passer) — l'écart
@@ -127,11 +127,25 @@ export const DELAI_GRACE_DEPART_SECONDES = 5 * 60
  *     00:15 » est passé de 23 h 35, largement PLUS de 12 h → réinterprété
  *     comme DEMAIN à 00:15, soit 25 minutes plus tard (valeur positive).
  *
- * 12 h est le seuil naturel pour cette distinction : un vrai départ ne se
- * règle jamais des heures à l'avance dans le passé, donc tout écart de plus
- * de 12 h ne peut venir que d'un passage de minuit à réinterpréter. Le délai
- * de grâce « DÉPART IMMINENT » (quelques minutes, très inférieur à 12 h) ne
- * peut donc jamais chevaucher ce seuil.
+ *   - ⚠️ SENS INVERSE, AJOUTÉ LE SOIR DU 1er SEPTEMBRE 2026 (trouvé en
+ *     vérifiant le chrono du panneau staff, ChronoSession.tsx, sur un
+ *     scénario de passage de minuit) : un départ réglé à 23:58 la veille,
+ *     vérifié à 00:05 LE LENDEMAIN — sans ce deuxième ajustement, « 23:58
+ *     aujourd'hui » lit comme 23 h 53 DANS LE FUTUR (85980 s), pas comme
+ *     passé depuis 7 min. Un vrai départ ne se règle jamais plus de 12 h à
+ *     l'avance non plus, donc tout écart DE PLUS de 12 h dans l'autre sens
+ *     ne peut venir que du même passage de minuit, à réinterpréter comme
+ *     HIER. Sans ce correctif, une session qui chevauche minuit fait
+ *     disparaître le chrono staff (silencieusement, `diff >= 0` ne
+ *     déclenche rien) et affiche un compte à rebours absurde
+ *     (« dans 1433 min ») sur le dashboard au lieu de SESSION EN COURS.
+ *
+ * 12 h est le seuil naturel pour cette distinction, dans les deux sens : un
+ * vrai départ ne se règle jamais plus de 12 h à l'avance ni ne reste affiché
+ * plus de 12 h après coup, donc tout écart de plus de 12 h ne peut venir que
+ * d'un passage de minuit à réinterpréter. Le délai de grâce « DÉPART
+ * IMMINENT » (quelques minutes, très inférieur à 12 h) ne peut donc jamais
+ * chevaucher ce seuil.
  */
 export function secondesRestantesQuebec(heureCible: string, maintenant: Date = new Date()): number {
   const [heures = 0, minutes = 0] = heureCible.split(':').map(Number)
@@ -140,6 +154,7 @@ export function secondesRestantesQuebec(heureCible: string, maintenant: Date = n
 
   let diff = cibleSecondes - maintenantSecondes
   if (diff < -12 * 3600) diff += 24 * 3600
+  if (diff > 12 * 3600) diff -= 24 * 3600
 
   return diff
 }

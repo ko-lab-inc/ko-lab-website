@@ -4,18 +4,17 @@ import { cn } from '@/lib/utils/cn'
 
 import {
   COOKIE_SESSION_STAFF,
-  DELAI_GRACE_DEPART_SECONDES,
   dateEvenementQuebec,
   heureQuebec,
   lireCompteursDuJour,
   sessionStaffValide,
   type CompteursMissionNerf,
 } from '@/lib/mission-nerf'
-import { secondesRestantesQuebec } from '@/lib/mission-nerf-fuseau'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { basculerZone, connexionStaff, deconnexionStaff, definirProchainDepart } from './actions'
 import { BoutonRemiseAZero } from './BoutonRemiseAZero'
 import { ChampMotDePasse } from './ChampMotDePasse'
+import { ChronoSession } from './ChronoSession'
 
 /**
  * Panneau staff Mission NERF — écran protégé, pensé pour un téléphone tenu
@@ -131,18 +130,6 @@ function PagePanneau({
   compteurs: CompteursMissionNerf
   dernieres: readonly Derniere[]
 }) {
-  // « Session en cours » — brief du soir du 1er septembre 2026 : passé le
-  // même délai de grâce que le dashboard (DELAI_GRACE_DEPART_SECONDES,
-  // partagé depuis mission-nerf-fuseau.ts pour que les deux écrans
-  // s'accordent), un rappel discret plutôt qu'un état d'affichage
-  // différent — le staff a TOUJOURS besoin de voir l'heure réglée telle
-  // quelle (écran de pilotage), ce bandeau ajoute juste un signal, ne
-  // remplace rien. Recalculé à chaque rendu de page (Server Component, pas
-  // de tick en direct ici) — cohérent avec le reste de cette page, qui ne
-  // se met à jour qu'au rechargement ou après une action.
-  const enCoursDepuisPlusDe5Min =
-    compteurs.prochainDepart !== null && -secondesRestantesQuebec(compteurs.prochainDepart) > DELAI_GRACE_DEPART_SECONDES
-
   return (
     <div className="min-h-screen bg-[#0a0f1a] p-5 font-mono text-white">
       <header className="mb-6">
@@ -151,6 +138,15 @@ function PagePanneau({
       </header>
 
       <div className="flex flex-col gap-5">
+        {/* 0. Chrono de session — EN HAUT, avant même le bouton de zone
+            (brief du soir du 1er septembre, 2e partie) : c'est l'info dont
+            le staff a besoin en premier pour décider quand arrêter un
+            groupe. Composant client (ChronoSession.tsx) — seul endroit de
+            ce panneau qui défile à la seconde ; s'absente tout seul (rend
+            null) tant qu'aucun départ n'est passé ou dès qu'un départ futur
+            est réglé. */}
+        <ChronoSession prochainDepart={compteurs.prochainDepart} />
+
         {/* 1. Zone — l'action la plus fréquente : un seul bouton, pleine
             largeur, sans confirmation (immédiatement réversible). */}
         <form action={basculerZone}>
@@ -177,17 +173,6 @@ function PagePanneau({
         {compteurs.zoneOuverte && !compteurs.prochainDepart && (
           <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-sm text-amber-200">
             Zone ouverte, aucun départ annoncé.
-          </p>
-        )}
-
-        {/* Rappel « session en cours » — brief du soir du 1er septembre :
-            le dashboard public bascule sur « SESSION EN COURS » passé ce
-            même délai, le staff a besoin du même signal pour penser à
-            régler le prochain départ. Signaler, jamais bloquer — pas de
-            bouton désactivé, la zone reste manipulable normalement. */}
-        {enCoursDepuisPlusDe5Min && (
-          <p className="rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-sm text-amber-200">
-            Session en cours depuis {compteurs.prochainDepart} — régler le prochain départ à la sortie du groupe.
           </p>
         )}
 
