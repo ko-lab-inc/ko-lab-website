@@ -85,6 +85,19 @@ function secondesDepuisMinuitQuebec(instant: Date): number {
 }
 
 /**
+ * Délai de grâce (secondes) pendant lequel un départ passé reste affiché
+ * comme « DÉPART IMMINENT » avant de basculer sur un état « session en
+ * cours » — partagé entre le dashboard (bascule d'affichage,
+ * dashboard/useDecompteDepart.ts) et le panneau staff (bandeau de rappel,
+ * staff/page.tsx), pour que les deux écrans s'accordent sur LE MÊME seuil.
+ * Choisi le 1er septembre 2026 : voir la docstring de useDecompteDepart.ts
+ * pour la justification complète (assez long pour qu'un parent en retard
+ * de quelques minutes comprenne encore qu'il vient de manquer le départ,
+ * assez court pour ne jamais empiéter sur le départ suivant).
+ */
+export const DELAI_GRACE_DEPART_SECONDES = 5 * 60
+
+/**
  * Écart, en secondes, entre MAINTENANT et la PROCHAINE occurrence de
  * `heureCible` (`HH:mm`) dans le fuseau de l'événement — POSITIF si le
  * départ est à venir, NÉGATIF s'il est déjà passé (ex. -180 = passé depuis

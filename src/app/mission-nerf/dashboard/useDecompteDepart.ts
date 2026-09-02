@@ -2,41 +2,35 @@
 
 import { useEffect, useState } from 'react'
 
-import { secondesRestantesQuebec } from '@/lib/mission-nerf-fuseau'
+import { DELAI_GRACE_DEPART_SECONDES, secondesRestantesQuebec } from '@/lib/mission-nerf-fuseau'
 
 /**
  * Délai de grâce pendant lequel « DÉPART IMMINENT » reste affiché après
- * l'heure réglée, avant que la carte ne bascule sur « À VENIR ».
+ * l'heure réglée, avant que la carte ne bascule sur un état « session en
+ * cours ». Valeur (5 min) dans `DELAI_GRACE_DEPART_SECONDES`
+ * (mission-nerf-fuseau.ts) — partagée avec le bandeau de rappel du panneau
+ * staff (staff/page.tsx), voir sa docstring pour la justification complète
+ * du chiffre.
  *
- * ⚠️ CORRECTION DU 1er SEPTEMBRE 2026 — en production, un départ réglé à
- * 07:43 affichait encore « DÉPART IMMINENT » à 07:45 et au-delà, indéfiniment,
- * tant que le staff ne réglait pas l'heure suivante. Comportement voulu (le
- * décompte ne repart jamais seul), mais un écran qui annonce un départ passé
- * depuis vingt minutes a l'air cassé pour un parent qui le regarde en passant.
- *
- * 5 minutes retenues, ni plus ni moins :
- *   - ASSEZ LONG pour qu'un parent qui arrive juste après le départ voie
- *     encore « DÉPART IMMINENT » et comprenne qu'il vient tout juste de le
- *     manquer (ou qu'il faut se dépêcher), plutôt que de tomber sur un écran
- *     qui semble n'avoir rien annoncé.
- *   - ASSEZ COURT pour ne jamais empiéter sur le PROCHAIN départ : les
- *     raccourcis du panneau staff proposent des intervalles de 10 à 30 min
- *     (`dansNMinutesQuebec`) — à 5 min, la grâce est toujours largement
- *     écoulée avant même le plus court de ces intervalles, donc l'écran ne
- *     peut jamais laisser croire qu'un DEUXIÈME départ est imminent alors que
- *     c'est encore un écho du premier.
+ * ⚠️ CORRECTION DU SOIR DU 1er SEPTEMBRE 2026 — un départ réglé à 21:45
+ * affichait « DÉPART IMMINENT » à 21:47 (correct), « À VENIR » à 21:51
+ * (délai de grâce déclenché comme prévu) — mais « À VENIR » ment : passé
+ * l'heure de départ, la partie EST en cours, elle n'est pas « à venir ».
+ * Un parent qui arrive à ce moment-là lit qu'un groupe n'est pas encore
+ * parti alors qu'il est déjà dans le labyrinthe. Nouvel état `enCours`
+ * (« SESSION EN COURS ») pour ce cas précis ; `aucun` (« À VENIR ») ne sert
+ * plus QUE quand aucune heure n'a jamais été réglée.
  *
  * Ne modifie ni ne lit `etat_zone_nerf.prochain_depart` en base — purement un
- * délai d'AFFICHAGE, côté navigateur. Le panneau staff n'utilise pas ce
- * délai : il affiche l'heure réglée telle quelle, sans bascule (écran de
- * pilotage, pas d'annonce — voir staff/page.tsx).
+ * délai d'AFFICHAGE, côté navigateur. Le panneau staff n'utilise pas cet
+ * état pour SON propre affichage de l'heure (toujours « actuellement
+ * hh:mm », sans bascule — écran de pilotage, pas d'annonce), mais lit le
+ * même seuil pour son bandeau de rappel (voir staff/page.tsx).
  */
-const DELAI_GRACE_SECONDES = 5 * 60
-
 export type EtatDecompte =
   | { etat: 'compte'; texte: string }
   | { etat: 'imminent'; texte: 'DÉPART IMMINENT' }
-  | { etat: 'perime' }
+  | { etat: 'enCours'; texte: 'SESSION EN COURS' }
   | { etat: 'aucun' }
 
 /**
@@ -77,7 +71,7 @@ export function useDecompteDepart(cible: string | null | undefined): EtatDecompt
   }
 
   const ecoule = -diff
-  if (ecoule <= DELAI_GRACE_SECONDES) return { etat: 'imminent', texte: 'DÉPART IMMINENT' }
+  if (ecoule <= DELAI_GRACE_DEPART_SECONDES) return { etat: 'imminent', texte: 'DÉPART IMMINENT' }
 
-  return { etat: 'perime' }
+  return { etat: 'enCours', texte: 'SESSION EN COURS' }
 }

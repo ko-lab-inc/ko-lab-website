@@ -73,15 +73,20 @@ function Pastille({ couleur, texte }: { couleur: 'green' | 'red' | 'slate'; text
  *
  * ⚠️ RÉAGENCEMENT DU 1er SEPTEMBRE 2026 — ce composant rendait un `<div
  * flex-col>` empilant les 3 cartes verticalement (elles vivaient à côté de
- * la caméra). Il rend maintenant un Fragment de 3 `<Carte>` NUES : le
- * parent (dashboard/page.tsx) les place directement comme 3 colonnes d'une
- * grille `grid-cols-4` (avec PanneauDecharge en 4e colonne) — la mise en
+ * la caméra). Il rend maintenant un Fragment de 3 cartes NUES : le parent
+ * (dashboard/page.tsx) les place directement comme 3 colonnes d'une grille
+ * `grid-cols-4` (avec PanneauDecharge en 4e colonne) — la mise en
  * page/l'espacement égal est désormais la responsabilité du parent, pas de
  * ce composant.
+ *
+ * ⚠️ CORRECTION DU SOIR DU 1er SEPTEMBRE 2026 — la carte « Prochain départ »
+ * n'utilise plus le `<Carte>` générique : elle a sa propre hiérarchie
+ * visuelle (décompte dominant, heure en secondaire) et un état de plus
+ * (« session en cours ») incompatible avec le gabarit valeur+note des deux
+ * autres cartes. Voir `CarteProchainDepart` plus bas.
  */
 export function CartesStats() {
   const { donnees } = useMissionNerf()
-  const decompte = useDecompteDepart(donnees?.prochainDepart)
 
   const participants = donnees?.participants
   const decharges = donnees?.decharges
@@ -89,13 +94,6 @@ export function CartesStats() {
     participants !== undefined && decharges !== undefined && decharges > 0
       ? (participants / decharges).toFixed(1)
       : null
-
-  // « Périmé » (bascule du 1er septembre, délai de grâce dans
-  // useDecompteDepart.ts) traité EXACTEMENT comme « aucune heure réglée » —
-  // même valeur affichée, même absence de ligne de décompte. `prochain_depart`
-  // n'est ni lu comme périmé ni modifié en base : c'est une décision
-  // d'affichage prise ici, à chaque tick, jamais écrite nulle part.
-  const departSansHeureUtile = decompte.etat === 'aucun' || decompte.etat === 'perime'
 
   return (
     <>
@@ -112,34 +110,95 @@ export function CartesStats() {
         couleur="pink"
         note={moyenne ? `moy. ${moyenne} enfant/décharge` : undefined}
       />
-      <Carte
-        icone={<IconeHorloge className="h-10 w-10" />}
-        label="Prochain départ"
-        // « À VENIR » plutôt qu'un tiret muet quand la zone est ouverte sans
-        // heure UTILE (brief du 1er septembre, « signaler l'absence d'heure,
-        // sans bloquer », étendu le 1er septembre au cas d'une heure réglée
-        // mais périmée depuis plus de 5 min — même état, même message,
-        // volontairement indistinguable pour le public). Zone fermée : rien
-        // à annoncer, le tiret reste approprié dans les deux cas.
-        valeur={departSansHeureUtile ? (donnees?.zoneOuverte ? 'À VENIR' : '—') : (donnees?.prochainDepart ?? '—')}
-        couleur="cyan"
-        // Ligne de décompte affichée SEULEMENT en compte à rebours ou en
-        // grâce « imminent » — jamais sous « À VENIR » ou « — ».
-        dessous={
-          decompte.etat === 'compte' || decompte.etat === 'imminent' ? (
-            <p
-              className={
-                decompte.etat === 'imminent'
-                  ? 'font-mono text-sm font-semibold uppercase tracking-wide text-rose-300 [animation:clignotement-lent_2.4s_ease-in-out_infinite]'
-                  : 'font-mono text-sm text-slate-300'
-              }
-            >
-              {decompte.texte}
-            </p>
-          ) : undefined
-        }
-      />
+      <CarteProchainDepart />
     </>
+  )
+}
+
+/**
+ * Carte « Prochain départ » — hiérarchie visuelle INVERSÉE par rapport aux
+ * deux autres cartes (brief du soir du 1er septembre) :
+ *
+ *   AVANT : gros chiffre (46px) = heure réglée / « À VENIR » ; décompte en
+ *           petit texte (14px) en dessous. Le décompte — la seule info
+ *           utile à un parent qui attend — était le plus petit élément.
+ *   APRÈS : le décompte (ou l'état, si aucun décompte numérique n'a de
+ *           sens) devient l'élément dominant ; l'heure réglée passe en
+ *           ligne secondaire, petite, grise, toujours visible tant qu'une
+ *           heure existe.
+ *
+ * Deux tailles pour l'élément dominant, jamais une troisième :
+ *   - `text-[46px]` (identique au « 1 » et au « 1 / 1 » des cartes
+ *     voisines) pour un DÉCOMPTE NUMÉRIQUE (« dans 14 min », « 0:47 ») —
+ *     court, tient large.
+ *   - `text-[30px]` pour un LIBELLÉ D'ÉTAT (« DÉPART IMMINENT »,
+ *     « SESSION EN COURS », « À VENIR ») — mesuré via canvas.measureText
+ *     avec la police et le poids réels (Russo One 400), pas à l'œil :
+ *     « SESSION EN COURS » (le plus long des trois) occupe environ 288px
+ *     dans une colonne d'environ 326px disponibles à 1920×1080 — marge
+ *     d'environ 38px, confortable sans gaspiller la taille. Les deux autres
+ *     libellés, plus courts, partagent cette même taille plutôt que de
+ *     varier chacun dans son coin — un état ne doit pas paraître plus ou
+ *     moins important qu'un autre à cause de sa seule longueur de texte.
+ *     `whitespace-nowrap` interdit tout retour à la ligne qui changerait la
+ *     hauteur de la carte (contrainte dure : la rangée est calée sur la
+ *     hauteur de l'en-tête, 174px, et le trou caméra en dépend).
+ */
+function CarteProchainDepart() {
+  const { donnees } = useMissionNerf()
+  const decompte = useDecompteDepart(donnees?.prochainDepart)
+
+  let texteDominant: string
+  let libelle: boolean
+  switch (decompte.etat) {
+    case 'compte':
+      texteDominant = decompte.texte
+      libelle = false
+      break
+    case 'imminent':
+    case 'enCours':
+      texteDominant = decompte.texte
+      libelle = true
+      break
+    default:
+      // « aucun » — pas de décompte possible : soit personne n'attend
+      // (zone fermée), soit la zone est ouverte sans heure encore réglée
+      // (brief du 1er septembre, « signaler l'absence d'heure, sans
+      // bloquer »). Seul cas restant où « À VENIR » a un sens — voir la
+      // docstring de useDecompteDepart.ts pour pourquoi ce n'est plus le
+      // cas d'un départ passé depuis plus de 5 min.
+      texteDominant = donnees?.zoneOuverte ? 'À VENIR' : '—'
+      libelle = true
+  }
+
+  return (
+    <div className="panel-hud relative flex h-full items-center gap-4 border border-cyan-400/40 bg-[#060b18] px-5 py-3 shadow-[0_0_30px_-12px_rgba(34,211,238,0.35)]">
+      <EncochesCoins couleur="cyan" taille="sm" />
+
+      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-md border border-cyan-400/40 bg-cyan-400/5 text-cyan-300">
+        <IconeHorloge className="h-10 w-10" />
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-slate-400">Prochain départ</p>
+        <p
+          className={cn(
+            '[font-family:var(--font-nerf-title)] whitespace-nowrap leading-[1.05] tracking-tight',
+            libelle ? 'text-[30px]' : 'text-[46px]',
+            decompte.etat === 'imminent'
+              ? 'text-rose-300 [animation:clignotement-lent_2.4s_ease-in-out_infinite] [text-shadow:0_0_18px_rgba(244,63,94,0.85),0_0_46px_rgba(244,63,94,0.5)]'
+              : 'text-cyan-300 [text-shadow:0_0_18px_rgba(103,232,249,0.85),0_0_46px_rgba(34,211,238,0.5)]',
+          )}
+        >
+          {texteDominant}
+        </p>
+        {/* Heure réglée — TOUJOURS visible tant qu'elle existe, même en
+            « SESSION EN COURS » ou « DÉPART IMMINENT » : c'est la même
+            donnée que le panneau staff affiche (« actuellement hh:mm »),
+            jamais effacée en base par cette bascule d'affichage. */}
+        {donnees?.prochainDepart && <p className="font-mono text-sm text-slate-400">{donnees.prochainDepart}</p>}
+      </div>
+    </div>
   )
 }
 

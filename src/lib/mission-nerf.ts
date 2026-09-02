@@ -23,8 +23,18 @@ import type { SupabaseClient } from '@supabase/supabase-js'
  * ce fichier-ci (qui porte l'authentification staff, laquelle ne doit
  * jamais atterrir dans un bundle client). Réexportées ci-dessous pour que
  * rien ne change côté appelants existants.
+ *
+ * `DELAI_GRACE_DEPART_SECONDES` réexporté depuis le 1er septembre (soir) :
+ * staff/page.tsx en a besoin pour son bandeau « session en cours », avec
+ * EXACTEMENT le même seuil que le dashboard — jamais une deuxième valeur
+ * qui pourrait diverger.
  */
-export { dateEvenementQuebec, heureQuebec, dansNMinutesQuebec } from '@/lib/mission-nerf-fuseau'
+export {
+  dateEvenementQuebec,
+  heureQuebec,
+  dansNMinutesQuebec,
+  DELAI_GRACE_DEPART_SECONDES,
+} from '@/lib/mission-nerf-fuseau'
 
 type LigneEtatZone = {
   zone_ouverte: boolean
