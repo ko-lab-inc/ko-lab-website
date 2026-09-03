@@ -6,10 +6,24 @@ import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils/cn'
 
 const CLE_SESSION = 'kolab-intro-vue'
+/**
+ * Timing ralenti le 3 septembre 2026 (point 2 du prompt de corrections
+ * finales) : l'animation totalisait 2,7s (4×350 + 850 + 450), jugée « trop
+ * rapide » — cible du brief : environ 4 à 4,5s. Nouveau total :
+ * 4×500 + 1500 + 500 = 4000ms, en bas de la fourchette demandée plutôt que
+ * de la dépasser. La séquence de mots (Créer/Fabriquer/Installer/Déployer)
+ * et la phrase finale restent inchangées — seule leur tenue à l'écran
+ * s'allonge. Le brief liste aussi une ligne-pont « Alors, on fait quoi
+ * aujourd'hui? » entre les mots et la révélation : la phrase finale
+ * (`Home.hero.title`) EST déjà cette question, au mot près la « question
+ * principale » de la marque (CLAUDE.md) — dupliquer une variante paraphrasée
+ * juste avant aurait fait bégayer la séquence sur la même idée deux fois de
+ * suite. Rien à ajouter, seulement à ralentir.
+ */
 /** Par mot — inclut son temps d'entrée (200ms, voir globals.css) et sa tenue. */
-const DUREE_MOT = 350
-const DUREE_PHRASE = 850
-const DUREE_SORTIE = 450
+const DUREE_MOT = 500
+const DUREE_PHRASE = 1500
+const DUREE_SORTIE = 500
 /** Fondu écourté quand la personne saute volontairement — pas la peine de lui
  *  faire attendre la sortie « normale » une fois la décision prise. */
 const DUREE_SORTIE_RAPIDE = 200
