@@ -37,10 +37,10 @@ export type PosteCarte = {
   /**
    * Déjà résolu dans la langue demandée. Replie sur le français si
    * titre_en/description_en/exigences_en sont vides pour ce poste — jamais
-   * une chaîne inventée (Phase 9 : trois postes sur neuf n'ont pas de titre
-   * anglais fourni par le brief, « Chauffeur-livreur », « Technicien 3D » et
-   * « Administration & coordination » — mieux vaut un titre français exact
-   * qu'un titre anglais deviné).
+   * une chaîne inventée. Les trois derniers titres manquants (« Chauffeur-
+   * livreur », « Technicien 3D », « Administration & coordination ») ont été
+   * traduits le 3 septembre 2026 (point 28 des corrections finales) ; le
+   * repli reste actif pour tout futur poste publié sans titre anglais.
    */
   titre: string
   /** RAW — toujours la valeur française de la base, jamais traduit : c'est
