@@ -286,6 +286,25 @@ export function Nav({
             </Link>
           )}
 
+          {/* « Se connecter » — ajouté le 3 septembre 2026 : Christian n'avait
+              plus aucun moyen de rejoindre /connexion depuis un appareil où il
+              n'était pas déjà connecté (masqué au public par LOT B, §31, mais
+              ça le bloquait lui aussi). Même traitement discret que le
+              sélecteur de langue juste en dessous — texte muted, pas un CTA —
+              pour rester dans l'esprit « pas mis de l'avant publiquement » du
+              §31 sans le rendre introuvable. `connecte === false` seulement,
+              jamais pendant `null` (chargement) : évite un lien qui clignote
+              avant de disparaître pour une session déjà active. */}
+          {connecte === false && (
+            <Link
+              href={ROUTES.connexion}
+              prefetch={false}
+              className="flex min-h-[44px] items-center text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
+            >
+              {t('se_connecter')}
+            </Link>
+          )}
+
           {/* Sélecteur de langue — endonyme de la langue CIBLE, jamais traduit :
               un visiteur anglophone doit reconnaître « Français » écrit en
               français, pas une version anglicisée. Exception délibérée à la
@@ -413,6 +432,21 @@ export function Nav({
                 >
                   <IconeProfil taille={18} />
                   {t('compte')}
+                </Link>
+              )}
+
+              {/* « Se connecter » — même raison que la version desktop plus
+                  haut dans ce fichier : sans appareil déjà connecté, il
+                  n'existait plus aucun moyen d'atteindre /connexion depuis le
+                  menu mobile. */}
+              {connecte === false && (
+                <Link
+                  href={ROUTES.connexion}
+                  prefetch={false}
+                  onClick={() => setMenuOuvert(false)}
+                  className="flex min-h-[44px] items-center text-sm text-ko-muted"
+                >
+                  {t('se_connecter')}
                 </Link>
               )}
 
