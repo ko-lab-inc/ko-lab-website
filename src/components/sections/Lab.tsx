@@ -83,7 +83,9 @@ export async function Lab() {
 
             <Link
               href={ROUTES.lab}
-              className="mt-10 inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-sm border border-ko-frost/30 px-7 py-4 text-sm text-ko-white transition-colors duration-200 hover:border-ko-white hover:bg-ko-frost/10"
+              // /50, pas /30 — bordure trop faible sur zone claire de photo,
+              // corrigé le 3 septembre 2026 (voir Hero.tsx pour le détail).
+              className="mt-10 inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-sm border border-ko-frost/50 px-7 py-4 text-sm text-ko-white transition-colors duration-200 hover:border-ko-white hover:bg-ko-frost/10"
             >
               {t('lien')}
               <span aria-hidden="true">→</span>

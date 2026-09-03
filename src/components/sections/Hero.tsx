@@ -121,10 +121,16 @@ export async function Hero() {
             </Link>
 
             {/* Ghost blanc : la variante claire du design system a une bordure
-                ko-line, invisible sur photo sombre. */}
+                ko-line, invisible sur photo sombre. Bordure passée de /30 à
+                /50 le 3 septembre 2026 (signalé sur mobile réel) : contre une
+                zone claire de la photo (sol, ciel), un filet blanc à 30 %
+                d'opacité se distinguait à peine du bouton plein juste à côté —
+                même changement reporté sur les 3 autres usages de cette
+                classe (EquipementsDeploiement.tsx, Lab.tsx,
+                OperationsTerrain.tsx), vocabulaire partagé. */}
             <Link
               href={ROUTES.capacites}
-              className="inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-sm border border-ko-frost/30 px-7 py-4 text-sm text-ko-white transition-colors duration-200 hover:border-ko-white hover:bg-ko-frost/10"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2.5 rounded-sm border border-ko-frost/50 px-7 py-4 text-sm text-ko-white transition-colors duration-200 hover:border-ko-white hover:bg-ko-frost/10"
             >
               {t('cta_secondary')}
               <span aria-hidden="true">→</span>

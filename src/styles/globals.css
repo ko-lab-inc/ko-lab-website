@@ -449,6 +449,21 @@
     text-underline-offset: 3px;
   }
 
+  /* Annule l'anneau bleu global (:focus-visible plus haut) pour CE bouton
+     précis — corrigé le 3 septembre 2026, signalé sur mobile réel. Le
+     composant pose le focus par programme dès l'ouverture de l'intro
+     (IntroAnimee.tsx, pour l'annonce immédiate au lecteur d'écran) : sans
+     geste clavier préalable, certains navigateurs mobiles (Chrome/Samsung
+     Internet Android, constaté) affichent quand même l'anneau au premier
+     focus de la page, ce qui donnait un cadre bleu épais et inattendu autour
+     du bouton dès l'ouverture. Le soulignement ci-dessus reste le signal de
+     focus pour CE bouton, clavier ou non — suffisant, déjà le comportement
+     voulu au survol souris. Le reste du site garde l'anneau standard : ce
+     bouton est le seul à s'auto-focaliser sans geste de la personne. */
+  .intro-passer:focus-visible {
+    outline: none;
+  }
+
   @media (min-width: 640px) {
     .intro-passer {
       right: 32px;
