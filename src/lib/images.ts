@@ -129,17 +129,32 @@ export const IMAGES = {
   labImpression3d: medias('lab/lab-machine-2026.webp'),
 
   /**
-   * Photo réelle — nacelle élévatrice en action, pose d'une enseigne F.Auger
-   * en hauteur (lot enseignes du 20 août 2026, `Installation d'enseigne en
-   * cours`). Remplace enfin l'Unsplash : montre bien une pose en hauteur,
-   * condition posée par Christian pour ce remplacement — même photo que
-   * `enseignePose2026` ci-dessous, dupliquée volontairement (même raison que
-   * `besoinLouer`/`locationStructures`).
+   * ⚠️ REMPLACÉE le 3 septembre 2026 (revue du prompt de corrections finales,
+   * point 9) — l'ancienne photo montrait une nacelle posant une enseigne
+   * F.Auger dont le texte publicitaire (« Paysagement/Landscaping — gazon
+   * synthétique ») était lisible et dominant en hero de la page
+   * Installations : donnait exactement l'impression interdite par le brief
+   * (« KO-LAB = entreprise de paysagement »). Signalé aussi comme un risque
+   * déjà identifié ailleurs dans ce fichier pour la même famille de photos
+   * (voir `enseignePoseAlt2026` plus bas, écartée du hub pour la même
+   * raison) — pas appliqué à ce hero-ci à l'époque.
    *
-   * F.Auger est le CLIENT dont l'enseigne est posée, jamais présenté comme
-   * une marque KO-LAB — voir KO-LAB-PHOTOS/_metadonnees.txt.
+   * Nouvelle photo : nacelle élévatrice en hauteur sur une façade
+   * commerciale, technicien au travail — installation d'affichage vitrine
+   * pour des commerces locataires (barbier, studio beauté). Fichier déjà
+   * présent dans Storage (`installations/`, uploadé le 29 août 2026) mais
+   * jamais câblé nulle part avant ce remplacement — trouvé en listant le
+   * dossier Storage directement, pas suggéré par un commit existant.
+   *
+   * Commerces tiers visibles en arrière-plan (vitrines imprimées) :
+   * confirmé par l'utilisateur (3 septembre 2026) que ce n'est PAS le même
+   * cas que Pacini/Village Transition — ces impressions vitrine sont un
+   * travail RÉALISÉ PAR KO-LAB (impression + installation, activité réelle
+   * de l'entreprise via son volet impression/Turbo Impression), pas une
+   * photo d'un client tiers non sollicité. Aucune demande du boss de la
+   * retirer.
    */
-  installationNacelle: medias('installations/enseigne-pose-2026.webp'),
+  installationNacelle: medias('installations/installations-1787967308818.jpg'),
 
   /**
    * Photos réelles — lot Installations, correspondance fournie par Christian
@@ -350,10 +365,16 @@ export const CADRAGES = {
    */
   besoinInstaller: 'object-[55%_82%]',
   /**
-   * Photo réelle (nacelle F.Auger, lot enseignes 2026), format portrait en
-   * hero pleine largeur — nacelle et ouvrier dans le tiers supérieur du
-   * cadre. Réglage initial, à revérifier par capture d'écran réelle (l'ancien
-   * 50%/58% était calé sur l'ex-photo Unsplash).
+   * ⚠️ Recalé le 3 septembre 2026 avec le remplacement de la photo
+   * (`installationNacelle` dans IMAGES, voir sa docstring) — nouvelle photo
+   * paysage (2304×1092), nacelle et technicien centrés-haut plutôt que
+   * dans le tiers supérieur droit de l'ancienne. Le voile de lisibilité du
+   * hero assombrit la GAUCHE du cadre (voir PageCapacite.tsx, dégradé
+   * `from-ko-scrim/[0.92] ... to-ko-scrim/45`) : le point focal doit rester
+   * du côté droit, plus clair, pour que le sujet reste visible derrière le
+   * texte. Réglage initial posé par estimation des coordonnées du sujet
+   * dans l'image (~55% horizontal, ~32% vertical), à confirmer par capture
+   * d'écran réelle du rendu — voir le rapport de la conversation.
    */
-  installationNacelle: 'object-[62%_28%]',
+  installationNacelle: 'object-[55%_32%]',
 } as const
