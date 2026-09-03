@@ -422,53 +422,27 @@
     background: var(--ko-blue);
   }
 
-  /* Bouton « Passer l'introduction » — discret, coin bas-droit. Padding
-     généreux malgré le petit texte : la cible tactile/clic reste confortable
-     sans agrandir visuellement le libellé. `label-mono-d` (fond sombre, voir
-     plus haut) donne déjà la police, la casse et le bleu-2 réglementaires ;
-     :focus-visible global (plus haut dans ce fichier) donne l'anneau bleu.
-     Pas d'opacité réduite par défaut : --ko-blue-2 sur --ko-black n'atteint
-     déjà que 6,37:1 (voir label-mono-d) — le ternir aurait fait passer le
-     contraste réel sous 4,5:1 pour ce petit texte, testé et corrigé avant
-     publication plutôt qu'après. Le soulignement au survol/focus suffit
-     comme signal d'interaction, sans toucher au contraste. */
+  /* Bouton « Passer l'introduction » — INVISIBLE depuis le 3 septembre 2026
+     (signalé sur mobile réel : la personne ne voulait aucun bouton visible
+     pendant l'animation, même sans le cadre de focus corrigé juste avant).
+     Reste dans le DOM, focalisable et annoncé par un lecteur d'écran —
+     retiré seulement de l'écran, jamais de l'arbre d'accessibilité, avec le
+     patron standard « visually hidden » (1×1px, texte non coupé, jamais
+     `display:none` qui sortirait l'élément de la navigation clavier). Une
+     personne voyante saute déjà l'intro par un tap/clic/touche n'importe où
+     sur l'écran (voir l'écouteur global dans IntroAnimee.tsx) — ce bouton
+     n'était qu'un raccourci explicite en plus de ce geste, jamais le seul
+     moyen d'agir. */
   .intro-passer {
     position: absolute;
-    right: 20px;
-    bottom: 20px;
-    padding: 10px 14px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-  }
-
-  .intro-passer:hover,
-  .intro-passer:focus-visible {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  /* Annule l'anneau bleu global (:focus-visible plus haut) pour CE bouton
-     précis — corrigé le 3 septembre 2026, signalé sur mobile réel. Le
-     composant pose le focus par programme dès l'ouverture de l'intro
-     (IntroAnimee.tsx, pour l'annonce immédiate au lecteur d'écran) : sans
-     geste clavier préalable, certains navigateurs mobiles (Chrome/Samsung
-     Internet Android, constaté) affichent quand même l'anneau au premier
-     focus de la page, ce qui donnait un cadre bleu épais et inattendu autour
-     du bouton dès l'ouverture. Le soulignement ci-dessus reste le signal de
-     focus pour CE bouton, clavier ou non — suffisant, déjà le comportement
-     voulu au survol souris. Le reste du site garde l'anneau standard : ce
-     bouton est le seul à s'auto-focaliser sans geste de la personne. */
-  .intro-passer:focus-visible {
-    outline: none;
-  }
-
-  @media (min-width: 640px) {
-    .intro-passer {
-      right: 32px;
-      bottom: 32px;
-    }
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
   }
 }
 

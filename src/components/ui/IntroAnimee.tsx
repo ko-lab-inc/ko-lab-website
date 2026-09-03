@@ -206,16 +206,18 @@ export function IntroAnimee() {
         <span className="intro-filet" />
       </div>
 
-      {/* Cible focalisable réelle pour le clavier — cliquer/Entrée/Espace ici
-          appelle `passer()` directement. Les écouteurs globaux couvrent aussi
-          n'importe quelle touche pendant que l'intro joue (voir plus haut) ;
-          ce bouton est ce que la personne peut VOIR et VISER, souris ou
-          clavier, plutôt que deviner qu'un raccourci existe. */}
+      {/* Cible focalisable pour le clavier/lecteur d'écran — visuellement
+          invisible depuis le 3 septembre 2026 (.intro-passer, globals.css),
+          jamais retirée du DOM ni de la navigation clavier. Cliquer/Entrée/
+          Espace ici appelle `passer()` directement ; les écouteurs globaux
+          couvrent en plus n'importe quelle touche/tap/clic pendant que
+          l'intro joue (voir plus haut) — c'est CE geste, pas ce bouton, que
+          voit et vise une personne voyante. */}
       <button
         ref={boutonPasserRef}
         type="button"
         onClick={passer}
-        className="intro-passer label-mono label-mono-d"
+        className="intro-passer"
       >
         {t('passer')}
       </button>
