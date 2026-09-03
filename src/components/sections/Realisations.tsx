@@ -33,11 +33,11 @@ export async function Realisations() {
   // TYPE de projet attendu. Les trois titres différaient auparavant zéro : ils
   // affichaient tous « Réalisation à venir ».
   // Les trois cartes sont maintenant des photos réelles KO-LAB, toutes sur
-  // FILTRE_TERRAIN. realisationTerrain suit toujours besoinDeployer
-  // (Besoins.tsx), même photo, même filtre des deux côtés — le bug du
-  // 19 août 2026 (carte orangée, « deux températures différentes » pour la
-  // même photo selon la section) s'appliquait ici ; corrigé le 20 août 2026,
-  // en même temps que son remplacement par une vraie photo.
+  // FILTRE_TERRAIN. realisationTerrain NE SUIT PLUS besoinDeployer depuis le
+  // 3 septembre 2026 : les deux pointaient sur la photo de feux d'artifice
+  // retirée du site ce jour-là (voir images.ts). Chacune a maintenant sa
+  // propre photo ET son propre cadrage — celle-ci montre une livraison de
+  // mobilier événementiel, ce que la carte annonce.
   // realisationInstallation, en revanche, ne suit plus besoinInstaller depuis
   // le 20 août 2026 (revue visuelle, point 1) : cette photo apparaissait déjà
   // sur l'accueil et dans le hub /nos-capacites. Elle affiche maintenant
@@ -48,7 +48,7 @@ export async function Realisations() {
     tag: tFiltres('filtre_terrain'),
     titre: t('titre_terrain'),
     src: IMAGES.realisationTerrain,
-    cadrage: CADRAGES.besoinDeployer,
+    cadrage: CADRAGES.realisationTerrain,
     style: FILTRE_TERRAIN,
   }
 

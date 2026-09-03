@@ -68,14 +68,22 @@ export const IMAGES = {
   hero: '/images/hero/hero-equipe-nacelle-2026.webp',
 
   /**
-   * Photo réelle — équipe KO-LAB préparant un déploiement pyrotechnique en
-   * conditions hivernales, Feux sur glace 2024 (lot du 20 août 2026,
-   * `Préparation montage`). Remplace enfin l'Unsplash : le dossier Canada Day
-   * 2026 pour ce besoin était resté vide, celui-ci comble le manque.
-   * Événement volontairement non nommé dans les textes — mandat d'avant 2025,
-   * consigne existante (voir KO-LAB-PHOTOS/_metadonnees.txt).
+   * ⚠️ REMPLACÉE le 3 septembre 2026, sur demande directe de Christian :
+   * l'ancienne photo (`operations/preparation-terrain-2024.webp`) montrait
+   * trois personnes câblant des mortiers de feux d'artifice (déploiement
+   * pyrotechnique, Feux sur glace 2024). Un mandat réel, mais qui donne
+   * l'impression que KO-LAB fait de la pyrotechnie — hors de ce que le site
+   * décrit. Retirée des TROIS surfaces où elle apparaissait (ce besoin,
+   * la carte « Déploiement événementiel » du bloc Réalisations de l'accueil,
+   * et le hub /nos-capacites) ; fichier laissé dans Storage, plus référencé
+   * nulle part.
+   *
+   * Nouvelle photo : les deux camions KO-LAB (Sierra HD noir, Silverado
+   * blanc), portes brandées « KO-LAB INC. », sur un terrain avant
+   * déploiement. Aucune marque tierce, aucune personne. Fichier déjà dans
+   * Storage (`deployment/`), jamais câblé avant ce remplacement.
    */
-  besoinDeployer: medias('operations/preparation-terrain-2024.webp'),
+  besoinDeployer: medias('deployment/deployment-camion-1787966001728.jpg'),
 
   /** Photo réelle — équipe KO-LAB (gilets orange) sur site, Canada Day 2026. */
   besoinInstaller: medias('home/besoin-installer-2026.webp'),
@@ -315,12 +323,22 @@ export const IMAGES = {
   // jamais la même photo qu'une autre page déjà très visible. Elles reprennent
   // maintenant structureEclairee2024 et installationsGuirlandes à la place,
   // deux photos du lot du jour même qui n'avaient pas encore de consommateur.
-  // realisationTerrain continue de suivre besoinDeployer (photo réelle depuis
-  // le 20 août 2026, pas concernée par la redistribution — un seul autre
-  // emplacement, non consécutif). realisationLab (soudeur) reste seule encore
-  // Unsplash — voir son commentaire plus haut.
+  // realisationTerrain NE SUIT PLUS besoinDeployer depuis le 3 septembre 2026 :
+  // les deux pointaient sur la photo de feux d'artifice retirée ce jour-là
+  // (voir besoinDeployer plus haut pour la raison). Elles prennent maintenant
+  // deux photos distinctes du même lot `deployment/`, chacune ajustée à son
+  // emplacement — les camions brandés pour le besoin « déployer », la livraison
+  // de mobilier pour la carte « Déploiement événementiel ». realisationLab
+  // (soudeur) reste seule encore Unsplash — voir son commentaire plus haut.
   preuveTerrain: medias('installations/structure-eclairee-2024.webp'),
-  realisationTerrain: medias('operations/preparation-terrain-2024.webp'),
+  /**
+   * Photo réelle — remorque KO-LAB chargée de mobilier événementiel (tables
+   * cocktail, barils) livrée sur un site sous chapiteaux, camion attelé,
+   * membre de l'équipe au travail. Colle au libellé de la carte
+   * (« Déploiement événementiel ») bien mieux que la photo pyrotechnique
+   * qu'elle remplace. Fichier déjà dans Storage, jamais câblé avant.
+   */
+  realisationTerrain: medias('deployment/deployment-camion-1787966108829.jpg'),
   realisationInstallation: medias('installations/installation-guirlandes-2025.webp'),
   realisationLab: medias('lab/realisation-lab-impression-2026.webp'),
   /** Réutilisée par les Réalisations : la CNC porte déjà la section LAB. */
@@ -370,13 +388,21 @@ export const IMAGES = {
  */
 export const CADRAGES = {
   /**
-   * Photo réelle (équipe KO-LAB, Feux sur glace 2024), format paysage 3:2
-   * recadré dans une carte 16/9 — l'équipe occupe le centre-haut du cadre,
-   * les caisses de mortiers le bas. Réglage initial, à revérifier par capture
-   * d'écran réelle comme besoinInstaller ci-dessous (l'ancien réglage 30%/25%
-   * était calé sur l'ex-silhouette Unsplash, sans rapport avec cette photo).
+   * Photo réelle (les deux camions KO-LAB), format portrait 3:4 recadré dans
+   * une carte 16/9 — les camions occupent la bande centrale, ciel au-dessus
+   * et herbe en dessous. 55 % vertical plutôt que 30 % : le réglage précédent
+   * était calé sur la photo pyrotechnique remplacée le 3 septembre 2026 et
+   * n'aurait montré que du ciel ici. Vérifié par capture d'écran réelle.
    */
-  besoinDeployer: 'object-[50%_30%]',
+  besoinDeployer: 'object-[50%_55%]',
+  /**
+   * Photo réelle (remorque de mobilier livrée sur site), format paysage 4:3 —
+   * la remorque chargée traverse le bas du cadre, les chapiteaux occupent le
+   * haut. Cadrage propre à cette carte depuis le 3 septembre 2026 : elle
+   * partageait celui de besoinDeployer tant que les deux emplacements
+   * pointaient sur la même photo.
+   */
+  realisationTerrain: 'object-[50%_60%]',
   /**
    * Photo réelle (équipe KO-LAB, Canada Day 2026), format portrait recadré
    * dans une carte 16/9 — le groupe se tient dans le tiers bas du cadre.
