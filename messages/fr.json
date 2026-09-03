@@ -30,7 +30,7 @@
     },
     "location": {
       "title": "Location d'équipement — KO-LAB",
-      "description": "Remorques, nacelles, outils et matériel d'installation. Consultez l'inventaire et faites votre demande."
+      "description": "Mobilier, scène, clôtures, éclairage, décor, équipements terrain et infrastructures. Consultez notre inventaire ou envoyez-nous votre demande."
     },
     "boutique": {
       "title": "Boutique — KO-LAB",
@@ -123,7 +123,7 @@
       "fabriquer_titre": "Fabriquer une solution",
       "fabriquer_texte": "Conception, prototypage, impression 3D, laser et CNC au LAB.",
       "louer_titre": "Louer de l'équipement",
-      "louer_texte": "Remorques, nacelles, outils et matériel d'installation."
+      "louer_texte": "Mobilier, scène, clôtures, éclairage, décor et équipements terrain."
     },
     "credibilite": {
       "label": "Crédibilité terrain",
@@ -204,7 +204,7 @@
       "location_tag": "Rentman",
       "boutique_tag": "Sur commande",
       "location_titre": "Location",
-      "location_texte": "Remorques, nacelles, outils et matériel d'installation. Inventaire complet et demande en ligne.",
+      "location_texte": "Mobilier, scène, clôtures, éclairage, décor, équipements terrain et infrastructures.",
       "location_lien": "Voir l'inventaire",
       "boutique_titre": "Boutique",
       "boutique_texte": "Des équipements sélectionnés, accompagnés par une équipe qui les utilise réellement.",

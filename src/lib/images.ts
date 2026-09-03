@@ -379,7 +379,24 @@ export const IMAGES = {
    * réutilisée ici pour le même besoin — duplication assumée, pas une erreur.
    */
   locationStructures: medias('rental/location-structures-2026.webp'),
-  locationAmbiance: medias('rental/location-ambiance-2026.webp'),
+  /**
+   * ⚠️ REMPLACÉE le 3 septembre 2026, sur demande directe de Christian :
+   * l'ancienne photo (`rental/location-ambiance-2026.webp`) montrait un grand
+   * dôme éclairé en bleu de nuit — or ce chapiteau N'APPARTIENT PAS à
+   * KO-LAB. Ce qui se loue, c'est ce qu'il y a DEDANS (mobilier, tables,
+   * chaises) ; mettre la tente en grand sur la section Location laissait
+   * croire l'inverse. Le grand visuel de cette section est le premier
+   * argument de l'offre : il doit montrer l'inventaire réel.
+   *
+   * Nouvelle photo : salle dressée — longues tables nappées, chaises
+   * pliantes blanches, couverts et chandeliers, dans un lieu industriel.
+   * Que du mobilier KO-LAB, aucune marque tierce dans le cadre. Deux autres
+   * candidates du même dossier (DEVFEST, `location-1787967564738.jpg` et
+   * `location-1787967667892.jpg`) montraient le bon mobilier mais aussi une
+   * enseigne Bud Light et la scène Devfest — écartées pour cette raison.
+   * Fichier déjà dans Storage, jamais câblé avant.
+   */
+  locationAmbiance: medias('rental/amenagement-salle-2023.webp'),
 } as const
 
 /**

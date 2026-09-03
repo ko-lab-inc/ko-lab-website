@@ -30,7 +30,7 @@
     },
     "location": {
       "title": "Equipment Rental — KO-LAB",
-      "description": "Trailers, lifts, tools and installation equipment. Check the inventory and make your request."
+      "description": "Furniture, staging, fencing, lighting, décor, field equipment and infrastructure. Browse our inventory or send us your request."
     },
     "boutique": {
       "title": "Shop — KO-LAB",
@@ -123,7 +123,7 @@
       "fabriquer_titre": "Build a Solution",
       "fabriquer_texte": "Design, prototyping, 3D printing, laser and CNC at The LAB.",
       "louer_titre": "Rent Equipment",
-      "louer_texte": "Trailers, lifts, tools and installation equipment."
+      "louer_texte": "Furniture, staging, fencing, lighting, décor and field equipment."
     },
     "credibilite": {
       "label": "Field Credibility",
@@ -204,7 +204,7 @@
       "location_tag": "Rentman",
       "boutique_tag": "By Request",
       "location_titre": "Rentals",
-      "location_texte": "Trailers, lifts, tools and installation equipment. Full inventory and online requests.",
+      "location_texte": "Furniture, staging, fencing, lighting, décor, field equipment and infrastructure.",
       "location_lien": "See Inventory",
       "boutique_titre": "Shop",
       "boutique_texte": "Selected equipment, backed by a team that actually uses it.",
