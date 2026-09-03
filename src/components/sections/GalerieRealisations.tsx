@@ -51,6 +51,17 @@ export type RealisationCarte = {
    * toute réalisation sans la moindre image.
    */
   photos: readonly ImageSlide[]
+  /**
+   * Capacités mobilisées, en plus de `categorie` (point 16 du prompt de
+   * corrections finales, 3 septembre 2026) — `categorie` reste le SEUL
+   * champ qui pilote le filtre et le regroupement par section (un seul
+   * panier possible) ; `tags` n'affiche qu'un complément visuel pour les
+   * réalisations dont le mandat a mobilisé plusieurs capacités (ex. DEVFEST :
+   * structures + mobilier + opérations, pas seulement « Équipements »).
+   * Vide pour la plupart des réalisations — rien ne s'affiche alors, pas de
+   * chip vide.
+   */
+  tags: readonly string[]
 }
 
 type Filtre = {
@@ -198,6 +209,7 @@ export function GalerieRealisations({
                     key={r.cle}
                     titre={r.titre}
                     compte={t('serie_compte', { n: r.photos.length })}
+                    tags={r.tags}
                     photos={r.photos}
                     desature={r.desature}
                     onOuvrir={(index) => setOuverte({ realisation: r, index })}
@@ -277,6 +289,7 @@ function photosStylees(r: RealisationCarte): readonly ImageSlide[] {
 function RangeePhotos({
   titre,
   compte,
+  tags,
   photos,
   desature,
   onOuvrir,
@@ -284,6 +297,7 @@ function RangeePhotos({
 }: {
   titre: string
   compte: string
+  tags: readonly string[]
   photos: readonly ImageSlide[]
   desature: boolean
   onOuvrir: (index: number) => void
@@ -349,6 +363,22 @@ function RangeePhotos({
         </h3>
         <p className="label-mono shrink-0 text-ko-muted">{compte}</p>
       </div>
+
+      {/* Capacités mobilisées — seulement si le mandat en couvre plusieurs
+          (point 16, voir RealisationCarte.tags). La plupart des réalisations
+          n'ont rien ici : `tags` vide, aucun filet ajouté. */}
+      {tags.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-2 lg:mb-4">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="border border-ko-line px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-ko-muted"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
 
       <div className="relative">
         <div

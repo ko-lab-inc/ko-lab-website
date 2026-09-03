@@ -157,6 +157,7 @@ function versCarte(r: RealisationPubliee): RealisationCarte {
     categorie: r.categorie,
     titre: r.titre,
     description: r.description ?? '',
+    tags: r.tags,
     // `premiere` est garantie par `lireRealisationsPubliees()`, qui écarte
     // déjà toute réalisation sans la moindre image.
     src: premiere?.url ?? '',
