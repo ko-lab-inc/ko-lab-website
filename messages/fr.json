@@ -512,7 +512,7 @@
       "envoyer": "Envoyer ma candidature",
       "en_cours": "Envoi…",
       "succes_titre": "Candidature envoyée",
-      "succes_texte": "Merci — nous l'avons bien reçue. L'équipe revient vers vous si votre profil correspond à un poste ouvert.",
+      "succes_texte": "Merci — nous l'avons bien reçue. L'équipe revient vers vous dans les 48 heures ouvrables si votre profil correspond à un poste ouvert.",
       "erreur_donnees": "Vérifiez les champs obligatoires : il en manque un, ou l'un d'eux est mal rempli.",
       "erreur_cv": "Le CV n'a pas pu être envoyé. Vérifiez que c'est un PDF, un DOC ou un DOCX de moins de 10 Mo.",
       "erreur_trop": "Trop de candidatures envoyées depuis cet appareil. Patientez quelques minutes.",

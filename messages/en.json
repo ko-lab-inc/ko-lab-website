@@ -512,7 +512,7 @@
       "envoyer": "Submit My Application",
       "en_cours": "Sending…",
       "succes_titre": "Application Sent",
-      "succes_texte": "Thank you — we've received it. The team will follow up if your profile matches an open position.",
+      "succes_texte": "Thank you — we've received it. The team will follow up within 48 business hours if your profile matches an open position.",
       "erreur_donnees": "Check the required fields: one is missing, or one wasn't filled in correctly.",
       "erreur_cv": "The résumé couldn't be sent. Make sure it's a PDF, DOC or DOCX under 10 MB.",
       "erreur_trop": "Too many applications sent from this device. Please wait a few minutes.",
