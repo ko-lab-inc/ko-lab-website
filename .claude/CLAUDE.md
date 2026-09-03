@@ -276,3 +276,21 @@ Si ce fichier dit encore `ko-lab-center.ca` dans un contexte de courriel
 (`info@ko-lab-center.ca`, `rh@ko-lab-center.ca`) ailleurs qu'ici, c'est qu'il
 ment : signaler l'écart. Une URL de site (`https://ko-lab-center.ca/...`),
 elle, reste correcte.
+
+⚠️ Complété le 27 août 2026 — `ko-lab.ca` HÉBERGE un site, contrairement à ce
+que disait la correction du 2 août : c'est l'ANCIEN site KO-LAB, encore en
+ligne chez GoDaddy, distinct du dépôt de ce projet. Confirmé par Christian le
+même jour : le plan est de migrer ce domaine vers le nouveau site une fois le
+développement terminé, pas maintenant — ne rien changer côté DNS/GoDaddy tant
+que Christian ne le demande pas explicitement.
+
+Conséquence SEO déjà vérifiée en direct : Google connaît et indexe
+`ko-lab.ca` (l'ancien site), pas `ko-lab-center.ca` (`site:ko-lab-center.ca`
+renvoie 0 résultat au 27 août 2026) — ce n'est pas un problème de code, ni le
+robots.txt (vérifié en ligne, autorise l'indexation) ni le sitemap.xml (existe,
+bien formé) n'en sont la cause. Deux causes cumulées : le site n'a
+probablement jamais été soumis à Google Search Console, et l'ancien domaine
+concurrence l'index tant qu'il reste actif séparément. Se réglera de
+lui-même à la migration de domaine ; en attendant, soumettre
+`ko-lab-center.ca` à Search Console reste utile et indépendant de cette
+migration.
