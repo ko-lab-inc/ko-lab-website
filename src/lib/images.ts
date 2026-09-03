@@ -225,11 +225,32 @@ export const IMAGES = {
   // Remplacement du 21 août 2026 (voir note ci-dessus) — lot « terrasse 2021 »,
   // déjà vérifié sans marque tierce lisible ni personne identifiable au
   // premier plan lors du traitement de la réalisation Terrasse LPG le même
-  // jour. terrasseStructure2021 reprend l'ancien emplacement hero
+  // jour. terrasseStructure2021 reprenait l'ancien emplacement hero
   // (operations-terrain) de signalisationAlt2026 ; l'autre reprend
   // l'emplacement de galerie d'installations de enseigneCommerciale2026.
+  //
+  // ⚠️ terrasseStructure2021 RETIRÉE du hero operations-terrain le
+  // 3 septembre 2026 (point 7 des corrections finales) : le remplacement du
+  // 21 août avait priorisé l'absence de marque tierce/personne identifiable
+  // (urgent à l'époque), pas le sujet — cette photo montre la construction
+  // d'une pergola en bois (charpente), plus proche d'« Installations » que
+  // d'« Opérations terrain ». Reste utilisée ailleurs (constante conservée) ;
+  // voir baseOperationsAerienne ci-dessous pour le remplacement.
   terrasseStructure2021: medias('installations/terrasse-structure-2021.webp'),
   terrasseAmenagee2021: medias('installations/terrasse-amenagee-2021.webp'),
+
+  /**
+   * Photo réelle — vue aérienne (drone) d'une base d'opérations KO-LAB sur
+   * site : tente et véhicule utilitaire tout-terrain aux couleurs KO-LAB
+   * (« OPS-01 »), remorque fermée, zone de préparation/matériel. Choisie le
+   * 3 septembre 2026 (point 7) comme nouveau hero de la page Opérations
+   * terrain — remplace terrasseStructure2021 (voir sa note ci-dessus).
+   * Aucune marque tierce lisible, aucune personne identifiable au premier
+   * plan (silhouettes lointaines en plongée). Fichier déjà présent dans
+   * Storage (`operations/`) mais jamais câblé nulle part avant ce
+   * remplacement — trouvé en listant le dossier Storage directement.
+   */
+  baseOperationsAerienne: medias('operations/besoin-1-1787965898520.jpg'),
 
   // HAP 2023 — 2 destinations propres sur 6 (décor illuminé et montage en
   // cours écartés : visage d'enfant identifiable + flou pour l'un, texte

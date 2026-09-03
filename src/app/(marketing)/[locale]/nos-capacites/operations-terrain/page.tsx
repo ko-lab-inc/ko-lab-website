@@ -57,13 +57,14 @@ export default async function OperationsTerrainPage({ params }: Props) {
         t('item_7'),
         t('item_8'),
       ]}
-      // terrasseStructure2021 depuis le 21 août 2026 — remplace
-      // signalisationAlt2026 (photo de numérotation Village Transition,
-      // retirée : client réel présenté comme exemple générique, non
-      // sollicité — voir la note dans lib/images.ts). Choisie pour ce hero
-      // notamment parce que sa composition centrée en perspective supporte
-      // bien un recadrage large sans perdre son sujet.
-      src={IMAGES.terrasseStructure2021}
+      // chantierBalisage2026 depuis le 3 septembre 2026 (point 7 des
+      // corrections finales) — remplace terrasseStructure2021, qui montrait
+      // une construction de pergola (charpente) plutôt qu'une opération
+      // terrain ; voir la note dans lib/images.ts pour l'historique complet
+      // de cet emplacement hero. Reprise de la galerie (nacelle en
+      // opération sur un chantier, vue aérienne) — retirée de la galerie
+      // pour ne pas apparaître deux fois sur la même page.
+      src={IMAGES.chantierBalisage2026}
       cadrage="object-center"
       // Galerie branchée sur galeries_photos depuis l'étape 3/3 (migration
       // 0043) — le hero (Canada Day) reste en dur, IMAGES.terrasseStructure2021
