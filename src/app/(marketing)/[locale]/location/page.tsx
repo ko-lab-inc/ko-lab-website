@@ -42,11 +42,23 @@ export default async function LocationPage({ params }: Props) {
   const tCommun = await getTranslations('Commun')
   const images = await lireGaleriePage('location', locale)
 
+  // ⚠️ Passé de 4 à 7 catégories le 3 septembre 2026 (point 18 du prompt de
+  // corrections finales) : les 4 anciennes (Remorques/Nacelles/Outils/
+  // Mobilier événementiel) donnaient l'impression que l'offre de location
+  // se limitait à de l'équipement de chantier — contredisait le texte
+  // d'intro de cette même page (« Mobilier, scène, clôtures, éclairage,
+  // décor, équipements terrain et infrastructures »), déjà à jour depuis
+  // une passe précédente mais jamais suivi ici. Remorques et nacelles sont
+  // repliées dans « Équipements terrain », comme le brief le permet
+  // explicitement plutôt que de les faire disparaître.
   const categories = [
-    { cle: 'remorques', titre: t('cat_remorques_titre'), texte: t('cat_remorques_texte') },
-    { cle: 'nacelles', titre: t('cat_nacelles_titre'), texte: t('cat_nacelles_texte') },
-    { cle: 'outils', titre: t('cat_outils_titre'), texte: t('cat_outils_texte') },
     { cle: 'mobilier', titre: t('cat_mobilier_titre'), texte: t('cat_mobilier_texte') },
+    { cle: 'scenes', titre: t('cat_scenes_titre'), texte: t('cat_scenes_texte') },
+    { cle: 'clotures', titre: t('cat_clotures_titre'), texte: t('cat_clotures_texte') },
+    { cle: 'eclairage', titre: t('cat_eclairage_titre'), texte: t('cat_eclairage_texte') },
+    { cle: 'decor', titre: t('cat_decor_titre'), texte: t('cat_decor_texte') },
+    { cle: 'equipements_terrain', titre: t('cat_equipements_terrain_titre'), texte: t('cat_equipements_terrain_texte') },
+    { cle: 'infrastructures', titre: t('cat_infrastructures_titre'), texte: t('cat_infrastructures_texte') },
   ]
 
   return (
