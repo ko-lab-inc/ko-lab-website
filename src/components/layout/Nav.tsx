@@ -85,8 +85,13 @@ export function Nav({
   const [menuOuvert, setMenuOuvert] = useState(false)
   const [capacitesOuvert, setCapacitesOuvert] = useState(false)
 
-  // Referme les panneaux à chaque navigation : sans ça, le menu mobile reste
-  // ouvert par-dessus la nouvelle page.
+  // Filet de sécurité pour une navigation SANS clic sur un lien du menu —
+  // retour arrière du navigateur, navigation clavier/programmatique : sans
+  // ça, le menu mobile reste ouvert par-dessus la nouvelle page. Chaque lien
+  // du panneau mobile ferme déjà le menu à son propre onClick (corrigé le
+  // 3 septembre 2026 — cliquer sur la page où on est déjà ne change jamais
+  // `pathname`, donc ce seul effet ne suffisait pas : le menu restait ouvert
+  // après un clic sur son propre lien actif).
   //
   // ⚠️ PENDANT LE RENDU, PAS DANS UN EFFET — motif recommandé par React pour
   // « réinitialiser un état quand une prop change » (ici, le chemin) : un
@@ -163,7 +168,16 @@ export function Nav({
   return (
     <header
       className={cn(
-        'sticky top-0 z-40 bg-ko-cream transition-colors duration-250',
+        // z-50, pas z-40 : WidgetAide/ChatCrisp (bulle d'aide) et
+        // BoutonRetourHaut (flèche « remonter ») sont tous les deux fixed
+        // z-40 en bas à droite — même valeur que la nav, donc l'ordre du DOM
+        // tranchait, et les deux widgets (rendus après <Nav> dans le layout)
+        // passaient PAR-DESSUS le panneau mobile ouvert, chevauchant
+        // « English » et le bouton « Démarrer un projet » (constaté le
+        // 3 septembre 2026). Le panneau mobile est opaque (bg-ko-cream) et
+        // couvre déjà cette zone : au-dessus d'eux, il les masque proprement
+        // tant qu'il est ouvert, sans toucher à leur propre z-index.
+        'sticky top-0 z-50 bg-ko-cream transition-colors duration-250',
         // Filet qui apparaît au défilement — skill 20. Bordure toujours
         // présente mais transparente : pas de saut de hauteur à la bascule.
         'border-b',
@@ -348,6 +362,7 @@ export function Nav({
               <li key={key}>
                 <Link
                   href={href}
+                  onClick={() => setMenuOuvert(false)}
                   aria-current={estActif(href) ? 'page' : undefined}
                   className={cn(
                     'flex min-h-[44px] items-center pl-5 text-base',
@@ -365,6 +380,7 @@ export function Nav({
               <li key={key}>
                 <Link
                   href={href}
+                  onClick={() => setMenuOuvert(false)}
                   aria-current={estActif(href) ? 'page' : undefined}
                   className={cn(
                     'flex min-h-[52px] items-center text-base',
@@ -392,6 +408,7 @@ export function Nav({
                 <Link
                   href={ROUTES.compte}
                   prefetch={false}
+                  onClick={() => setMenuOuvert(false)}
                   className="flex min-h-[44px] items-center gap-2 text-sm text-ko-muted"
                 >
                   <IconeProfil taille={18} />
@@ -407,6 +424,7 @@ export function Nav({
               <Link
                 href={pathname}
                 locale={autreLocale}
+                onClick={() => setMenuOuvert(false)}
                 className="ml-auto flex min-h-[44px] items-center text-sm text-ko-muted"
               >
                 {autreLocale === 'en' ? 'English' : 'Français'}
@@ -417,6 +435,7 @@ export function Nav({
                 raison (voir plus haut dans ce fichier). */}
             <Link
               href={ROUTES.contact}
+              onClick={() => setMenuOuvert(false)}
               className={cn('w-full', buttonVariants({ variant: 'bleu', size: 'sm' }))}
             >
               {t('cta')}
