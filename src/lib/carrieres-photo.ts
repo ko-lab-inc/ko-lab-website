@@ -21,11 +21,7 @@
  * ---------------------------------------------------------------------------
  */
 
-export type ClePhotoRepli =
-  | 'chantierBalisage2026'
-  | 'amenagementSite2025'
-  | 'deploiementCamion'
-  | 'labImpression3d'
+export type ClePhotoRepli = 'chantierBalisage2026' | 'amenagementSite2025' | 'labImpression3d'
 
 export type ResolutionPhotoPoste =
   | { source: 'assignee'; url: string }
@@ -51,6 +47,16 @@ export type ResolutionPhotoPoste =
  * et amenagementSite2025 restent thématiquement justes (chantier/opérations,
  * aménagement de site événementiel) sans dupliquer l'accueil.
  *
+ * 'Transport & logistique' ne renvoie plus deploiementCamion depuis le
+ * 3 septembre 2026 (point 15/29 du prompt de corrections finales) : cette
+ * photo montre une caisse de camionnette pleine de bouteilles Gatorade et
+ * Eska (logos tiers dominants) — déjà retirée de l'accueil pour cette même
+ * raison le 20 août 2026 (voir images.ts), mais ce repli-ci continuait de
+ * l'afficher en direct sur la fiche « Chauffeur-livreur » de /carrieres,
+ * repéré seulement maintenant. Aucune autre photo réelle de camion/transport
+ * disponible en Storage à ce jour — PhotoPlaceholder plutôt qu'une photo qui
+ * dessert le propos.
+ *
  * LE JOUR OÙ LES NEUF POSTES AURONT LEUR photo_url ASSIGNÉE depuis
  * /admin/carrieres, cette fonction et son import dans resoudrePhotoPoste
  * peuvent disparaître — elle n'existe que pour éviter que la page publique ne
@@ -66,13 +72,11 @@ export function photoPourDepartement(departement: string): ClePhotoRepli | null 
       return 'chantierBalisage2026'
     case 'Logistique événementielle':
       return 'amenagementSite2025'
-    case 'Transport & logistique':
-      return 'deploiementCamion'
     case 'Lab créatif':
       return 'labImpression3d'
-    // Installation, Atelier, Administration & coordination, Bureau : aucune
-    // photo réelle ne correspond honnêtement — PhotoPlaceholder (voir
-    // l'appelant).
+    // Installation, Transport & logistique, Atelier, Administration &
+    // coordination, Bureau : aucune photo réelle ne correspond honnêtement —
+    // PhotoPlaceholder (voir l'appelant).
     default:
       return null
   }
