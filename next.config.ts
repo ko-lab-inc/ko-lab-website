@@ -194,6 +194,27 @@ const nextConfig: NextConfig = {
     // Le skill 12 impose quality={85} sur le hero et 80/75 sur les grilles.
     // Chaque valeur utilisée dans le code DOIT figurer ici.
     qualities: [75, 80, 85],
+    /**
+     * ⚠️ CAUSE RACINE du quota d'images épuisé — corrigé le 3 septembre 2026.
+     *
+     * Next 16 met une image optimisée en cache 4 h seulement (défaut
+     * minimumCacheTTL = 14400 s). Passé ce délai, la MÊME image est
+     * re-transformée à la requête suivante et recompte dans le quota Vercel.
+     * Avec ~113 images servies à plusieurs largeurs, ça consomme des
+     * centaines de transformations par jour : les 5 000/mois du plan Hobby
+     * ont été épuisées, et /_next/image répondait 402 pour toute
+     * transformation pas déjà en cache (photos neuves cassées, largeurs
+     * mobiles cassées).
+     *
+     * Un an de cache : nos images sont du contenu statique dans Supabase
+     * Storage, une même URL sert toujours les mêmes octets.
+     *
+     * ⚠️ CONSÉQUENCE À TENIR : ne JAMAIS réécrire une image en place sous le
+     * même nom dans Storage — la version optimisée périmée resterait servie
+     * un an. Toujours téléverser sous un nouveau nom de fichier, puis
+     * repointer la référence (medias_emplacements, IMAGES, ou galeries_photos).
+     */
+    minimumCacheTTL: 31536000,
     // Breakpoints du skill 11 : 375 (iPhone SE) est la cible mobile la plus contraignante.
     deviceSizes: [375, 640, 768, 1024, 1280, 1920],
     // MIGRATION : `images.domains` a été supprimé en Next 16. remotePatterns
