@@ -322,7 +322,7 @@ export function PanneauInscriptions() {
               sombre garantit la lisibilité quoi qu'il y ait derrière,
               sans dépendre de l'opacité du panneau.
             */}
-            <span className="truncate text-lg font-semibold text-cyan-300 [text-shadow:0_2px_6px_rgba(0,0,0,0.95)]">
+            <span className="truncate text-xl font-bold tracking-wide text-cyan-300 [text-shadow:0_2px_6px_rgba(0,0,0,0.95)]">
               {ligne.prenom}
             </span>
             <span className="font-mono text-sm text-slate-200 [text-shadow:0_2px_6px_rgba(0,0,0,0.95)]">
