@@ -343,13 +343,21 @@ export function PanneauInscriptions() {
  * Indicateur de connexion perdue — DISCRET (brief, §« tenue sur 10 heures »).
  * Coin de l'écran, petit, ambre plutôt que rouge alarmant : signale sans
  * paniquer un parent qui regarderait l'écran au mauvais moment.
+ *
+ * ⚠️ `bg-[#060b18e6]` en hexadécimal à 8 chiffres, PAS `bg-[#060b18]/90` —
+ * ce dernier ne génère aucune règle CSS (Tailwind 3.4.19, modificateur
+ * d'opacité sur couleur hexadécimale arbitraire). Cet indicateur est resté
+ * SANS FOND jusqu'au 4 septembre 2026 : du texte ambre posé directement sur
+ * la vidéo, donc illisible exactement au moment où il doit alerter la régie.
+ * Trouvé en cherchant si le même piège frappait ailleurs après l'avoir
+ * corrigé sur le panneau inscriptions (voir sa docstring dans page.tsx).
  */
 export function IndicateurConnexion() {
   const { connexionPerdue } = useMissionNerf()
   if (!connexionPerdue) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full border border-amber-400/40 bg-[#060b18]/90 px-3 py-1.5 font-mono text-[11px] text-amber-300 backdrop-blur-sm">
+    <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full border border-amber-400/40 bg-[#060b18e6] px-3 py-1.5 font-mono text-[11px] text-amber-300 backdrop-blur-sm">
       <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
       connexion instable — dernières données affichées
     </div>

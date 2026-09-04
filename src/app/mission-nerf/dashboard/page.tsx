@@ -148,7 +148,7 @@ export default async function DashboardMissionNerf() {
               sa propre portion de largeur à côté. La caméra occupe maintenant
               TOUTE la largeur de cette rangée ; le panneau inscriptions est
               posé PAR-DESSUS en position absolue, à droite, avec un fond
-              `bg-[#060b18]/55` au lieu d'un fond plein — la vidéo transparaît
+              `bg-[#060b18eb]` au lieu d'un fond plein — la vidéo transparaît
               au travers de son propre fond, pas seulement dans le rectangle
               resté vide. `min-h-0` toujours nécessaire sur ce conteneur pour
               que la liste défile dans le panneau plutôt que de déborder (voir
