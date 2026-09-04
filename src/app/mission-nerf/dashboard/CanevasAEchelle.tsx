@@ -54,8 +54,29 @@ export function CanevasAEchelle({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('resize', recalculer)
   }, [])
 
+  /**
+   * ⚠️ FOND OPAQUE SEULEMENT QUAND LA PAGE EST RÉDUITE — corrigé le
+   * 4 septembre 2026, en direct sur le site pendant le montage.
+   *
+   * Ce conteneur portait `bg-[#05070c]` en dur : utile pour remplir les bandes
+   * du letterbox quand le canevas est mis à l'échelle dans un navigateur
+   * normal, mais c'est un fond PLEIN ÉCRAN OPAQUE — dans OBS il recouvrait
+   * la source caméra placée derrière la Browser Source, et le trou caméra
+   * s'affichait noir. Symptôme constaté : désactiver la Browser Source
+   * faisait réapparaître la caméra.
+   *
+   * Il contredisait l'intention documentée partout ailleurs dans cet écran
+   * (layout.tsx force html/body transparents, PanneauCamera est vide exprès,
+   * chaque panneau porte son propre fond) — jamais un fond global.
+   *
+   * Dans OBS la Browser Source fait exactement 1920×1080, donc `echelle === 1`
+   * et le fond disparaît. Il ne réapparaît que quand la page est réellement
+   * rétrécie, c'est-à-dire hors OBS, là où il sert vraiment à quelque chose.
+   */
   return (
-    <div className="flex h-screen w-screen items-center justify-center overflow-hidden bg-[#05070c]">
+    <div
+      className={`flex h-screen w-screen items-center justify-center overflow-hidden ${echelle < 1 ? "bg-[#05070c]" : ""}`}
+    >
       <div style={{ transform: `scale(${echelle})`, transformOrigin: 'center center' }}>{children}</div>
     </div>
   )
