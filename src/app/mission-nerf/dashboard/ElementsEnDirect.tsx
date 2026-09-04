@@ -90,10 +90,23 @@ export function CartesStats() {
 
   const participants = donnees?.participants
   const decharges = donnees?.decharges
-  const moyenne =
+  /**
+   * ⚠️ LA CARTE AFFICHE LES DÉCHARGES, PAS LES PARTICIPANTS — corrigé en
+   * direct le 4 septembre 2026, sur retour du boss devant l'écran.
+   *
+   * Elle affichait `${participants} / ${decharges}`, soit « 8 / 5 » sous le
+   * titre « Décharges complétées ». Deux défauts : la barre oblique se lit
+   * spontanément « 8 sur 5 » — un total dépassé, donc incompréhensible — et
+   * le nombre de participants est DÉJÀ la carte juste à gauche.
+   *
+   * Le vrai rapport est l'inverse : un parent signe UNE décharge pour
+   * PLUSIEURS enfants. La carte montre donc le nombre de décharges (ce que
+   * son titre annonce) et la couverture passe en note.
+   */
+  const couverture =
     participants !== undefined && decharges !== undefined && decharges > 0
-      ? (participants / decharges).toFixed(1)
-      : null
+      ? `${participants} enfant${participants > 1 ? 's' : ''} couvert${participants > 1 ? 's' : ''} · moy. ${(participants / decharges).toFixed(1).replace('.', ',')}/décharge`
+      : undefined
 
   return (
     <>
@@ -106,9 +119,9 @@ export function CartesStats() {
       <Carte
         icone={<IconePressePapier className="h-10 w-10" />}
         label="Décharges complétées"
-        valeur={`${participants ?? '—'} / ${decharges ?? '—'}`}
+        valeur={decharges ?? '—'}
         couleur="pink"
-        note={moyenne ? `moy. ${moyenne} enfant/décharge` : undefined}
+        note={couverture}
       />
       <CarteProchainDepart />
     </>
