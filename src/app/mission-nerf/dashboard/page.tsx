@@ -367,10 +367,15 @@ function PanneauCamera() {
  *   1. `absolute inset-y-0 right-0` au lieu d'être une colonne de grille —
  *      il flotte maintenant PAR-DESSUS PanneauCamera (élargie à toute la
  *      largeur de la rangée), pas à côté.
- *   2. `bg-[#060b18]/55` au lieu de `bg-[#060b18]` plein — 55 % d'opacité,
- *      choisi comme point de départ « sombre mais on voit à travers »,
- *      valeur à ajuster après un premier coup d'œil réel (le boss doit
- *      juger si c'est lisible/joli en vrai, pas en théorie).
+ *   2. `bg-[#060b18]/92` au lieu de `bg-[#060b18]` plein — la vidéo
+ *      transparaît encore très légèrement, mais le texte reste lisible.
+ *
+ *      ⚠️ Était à /55, posé comme point de départ « à ajuster après un
+ *      premier coup d'œil réel ». Jugé sur site le 4 septembre 2026, en
+ *      plein jour : à 55 % l'arène très claire passait au travers et les
+ *      noms des inscrits devenaient illisibles. Remonté à 92 % — la
+ *      LISIBILITÉ DE LA LISTE prime sur l'effet de vitre, la caméra
+ *      occupe déjà toute la surface derrière.
  *
  * ⚠️ PAS de `backdrop-blur` — inutile ici : ce filtre ne floute que ce que
  * LE NAVIGATEUR a lui-même dessiné derrière l'élément. La caméra n'existe
@@ -389,7 +394,7 @@ function PanneauCamera() {
  */
 function PanneauInscriptionsChrome() {
   return (
-    <div className="panel-hud !absolute inset-y-0 right-0 z-10 flex w-[420px] min-h-0 flex-col overflow-hidden border border-cyan-400/40 bg-[#060b18]/55 px-7 py-5">
+    <div className="panel-hud !absolute inset-y-0 right-0 z-10 flex w-[420px] min-h-0 flex-col overflow-hidden border border-cyan-400/40 bg-[#060b18]/92 px-7 py-5">
       <EncochesCoins taille="sm" />
       <div className="flex shrink-0 items-center gap-2">
         <TicksMesure nombre={2} />
