@@ -51,7 +51,19 @@ export async function Location() {
           <Reveal>
             <div className="grid grid-cols-2 gap-3">
               <div className="relative col-span-2 aspect-[16/9] overflow-hidden rounded-xl bg-ko-cream2">
+                // ⚠️ unoptimized : contournement de l'optimiseur Vercel, ajouté le
+                // 3 septembre 2026. L'optimisation d'images du compte est épuisée —
+                // /_next/image répond 402 pour toute transformation PAS DÉJÀ en cache,
+                // donc toute image nouvellement câblée s'affiche cassée en production
+                // (constaté sur cette photo, vérifié par requête directe : les anciennes
+                // largeurs répondent 200, les nouvelles 402). Le fichier source a été
+                // redimensionné et converti en WebP exprès pour pouvoir être servi tel
+                // quel sans coût de performance déraisonnable.
+                // À RETIRER dès que le quota Vercel est rétabli : cette prop prive
+                // l'image du srcset responsive, un téléphone télécharge la version
+                // pleine largeur.
                 <Image
+                  unoptimized
                   src={IMAGES.locationAmbiance}
                   alt=""
                   fill
