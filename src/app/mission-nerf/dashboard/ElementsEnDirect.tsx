@@ -312,8 +312,22 @@ export function PanneauInscriptions() {
             key={i}
             className="grid grid-cols-[1fr_auto_auto] items-center gap-6 border-t border-white/5 py-3 first:border-t-0 first:pt-0"
           >
-            <span className="truncate text-lg text-white">{ligne.prenom}</span>
-            <span className="font-mono text-sm text-slate-400">{ligne.heure}</span>
+            {/*
+              ⚠️ CYAN + HALO SOMBRE, PAS DU BLANC — corrigé en direct le
+              4 septembre 2026, première inscription réelle à l'écran.
+              Le prénom en `text-white` sur le fond du panneau devenait
+              illisible dès que l'arène (très claire en plein jour) se
+              voyait derrière : blanc sur blanc. Le cyan est la couleur
+              d'accent du HUD, il tranche sur la vidéo ; le `text-shadow`
+              sombre garantit la lisibilité quoi qu'il y ait derrière,
+              sans dépendre de l'opacité du panneau.
+            */}
+            <span className="truncate text-lg font-semibold text-cyan-300 [text-shadow:0_2px_6px_rgba(0,0,0,0.95)]">
+              {ligne.prenom}
+            </span>
+            <span className="font-mono text-sm text-slate-200 [text-shadow:0_2px_6px_rgba(0,0,0,0.95)]">
+              {ligne.heure}
+            </span>
             <span className="flex items-center gap-1.5 font-mono text-xs uppercase tracking-wide text-emerald-400">
               <IconeCoche className="h-3.5 w-3.5" />
               validé
