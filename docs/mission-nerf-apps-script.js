@@ -1003,3 +1003,53 @@ function marquerApresEnvoiDirect(e, code) {
       'la renvoyer en double dans 5 minutes — surveiller la liste du staff.',
   )
 }
+
+/* ===========================================================================
+ * RACCOURCIS D'EXÉCUTION — 5 septembre 2026
+ * ===========================================================================
+ *
+ * ⚠️ Pourquoi ces fonctions existent, alors qu'elles ne font qu'appeler une
+ * autre fonction avec deux nombres : le bouton ▶ Exécuter de l'éditeur Apps
+ * Script lance la fonction choisie SANS AUCUN ARGUMENT. Impossible d'y
+ * taper `preparerRattrapage(130, 358)` — la fonction partirait avec des
+ * paramètres `undefined`.
+ *
+ * Un raccourci nommé, avec ses bornes écrites en clair, est donc la seule
+ * façon de déclencher une plage précise depuis l'éditeur. Il a un avantage
+ * de plus : les numéros restent lisibles et vérifiables dans le dépôt,
+ * plutôt que tapés à la volée un soir d'événement.
+ *
+ * Ces deux-là sont DATÉS et à USAGE UNIQUE. Une fois la journée du
+ * 5 septembre rattrapée, elles ne servent plus à rien : les relancer ne
+ * ferait que remettre en file des lignes déjà envoyées, donc les renvoyer
+ * en double. À supprimer une fois le rattrapage confirmé.
+ */
+
+/**
+ * ⚠️ USAGE UNIQUE — mesuré le 5 septembre 2026 à 18 h 30.
+ *
+ * Les lignes 130 à 358 sont ABSENTES de la base, sans ambiguïté : la
+ * journée du 5 septembre commence à la ligne 130 (fonction resumerTableur),
+ * et la toute première inscription réellement enregistrée ce jour-là porte
+ * l'heure 17:55:22 — soit la ligne 359, horodatée 17:55:18 dans le
+ * formulaire, quatre secondes plus tôt, le temps de l'appel API.
+ *
+ * 229 familles. Ne rien envoyer ici : le déclencheur horaire les drainera
+ * par paquets d'une centaine, en marquant chacune au passage.
+ */
+function mettreEnFileLes229ManquantesDu5Septembre() {
+  preparerRattrapage(130, 358)
+}
+
+/**
+ * ⚠️ DIAGNOSTIC — n'écrit rien, n'envoie rien.
+ *
+ * Les lignes 359 à 383 sont PANACHÉES : 25 réponses, dont 15 sont bien
+ * arrivées en base et 10 se sont perdues. L'heure seule ne permet pas de
+ * les départager (l'écart entre l'horodateur du formulaire et l'heure
+ * d'insertion va de 3 à 13 secondes selon la charge), il faut comparer les
+ * NOMS. Cette fonction les affiche.
+ */
+function listerLaZoneAmbigueDu5Septembre() {
+  listerLignes(359, 383)
+}
