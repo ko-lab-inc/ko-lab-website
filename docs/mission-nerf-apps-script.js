@@ -389,7 +389,19 @@ function onFormSubmit(e) {
       return
     }
 
-    envoyer(participants)
+    const code = envoyer(participants)
+
+    // Marquage de la ligne APRES un envoi direct reussi — voir
+    // marquerApresEnvoiDirect : sans lui, le rattrapage automatique
+    // reenverrait en double tout ce qui vient de partir en direct.
+    if (code >= 200 && code < 300) {
+      marquerApresEnvoiDirect(e, code)
+    } else {
+      Logger.log(
+        'Envoi direct en echec (statut ' + code + ') — ligne volontairement ' +
+          'LAISSEE SANS MARQUE, pour que le rattrapage la reprenne.',
+      )
+    }
   } catch (err) {
     Logger.log('ERREUR NON ATTRAPÉE dans onFormSubmit : ' + err + '\n' + (err && err.stack))
   }
@@ -547,6 +559,17 @@ const PAUSE_ENTRE_ENVOIS_MS = 2500
 const DUREE_MAX_MS = 4 * 60 * 1000
 
 /**
+ * Delai de grace avant qu'une ligne devienne eligible au rattrapage.
+ *
+ * Une soumission qui vient d'arriver est peut-etre en train d'etre traitee
+ * par onFormSubmit a la seconde meme ou le rattrapage passe. Sans ce delai,
+ * les deux chemins enverraient la meme famille — un doublon dans la liste
+ * du staff, au pire moment. Cinq minutes laissent tout le temps a l'envoi
+ * direct de finir et d'ecrire sa marque.
+ */
+const DELAI_GRACE_MS = 5 * 60 * 1000
+
+/**
  * Ouvre la feuille de réponses liée au formulaire.
  *
  * L'identifiant du tableur est demandé au formulaire lui-même : rien à
@@ -639,6 +662,20 @@ function traiterLignes(ligneDebut, ligneFin, forcer) {
     }
 
     const ligne = debut + i
+
+    // Trop recente pour etre jugee : l'envoi direct est peut-etre encore en
+    // cours. Ignoree ce passage-ci, reprise au suivant. Jamais applique a
+    // rattraperPlage, dont l'appelant a deja verifie ce qu'il demande.
+    const horodateur = donnees[i][0]
+    if (
+      !forcer &&
+      horodateur instanceof Date &&
+      Date.now() - horodateur.getTime() < DELAI_GRACE_MS
+    ) {
+      ignorees += 1
+      continue
+    }
+
     const marque = donnees[i][suivi.indice - 1]
     const dejaTraitee = marque !== '' && marque !== null && marque !== undefined
     if (!forcer && dejaTraitee) {
@@ -791,4 +828,100 @@ function resumerTableur() {
         : String(brut)
     Logger.log('ligne ' + ligne + ' : ' + affiche)
   }
+}
+
+/* ===========================================================================
+ * MARQUAGE DES ENVOIS DIRECTS
+ * ===========================================================================
+ *
+ * ⚠️ Défaut trouvé le 5 septembre 2026, juste après avoir écrit le
+ * rattrapage — avant qu'il ne fasse de dégâts, mais de justesse.
+ *
+ * `onFormSubmit` envoie la soumission tout de suite, mais n'écrivait AUCUNE
+ * marque dans le tableur : la colonne de suivi restait vide sur la ligne
+ * correspondante. Le rattrapage automatique, qui traite précisément les
+ * lignes non marquées, aurait donc renvoyé en double CHAQUE inscription
+ * arrivée en direct, cinq minutes après son arrivée. Le tableau du staff
+ * aurait compté deux fois chaque famille, un soir d'événement.
+ *
+ * Les deux chemins doivent donc écrire la même marque. Reste à retrouver
+ * QUELLE ligne : l'événement de soumission ne porte pas de numéro de ligne.
+ * Il porte un horodateur, et c'est exactement ce que Google Forms écrit en
+ * colonne A. La correspondance se fait donc à la seconde près, sur les 50
+ * dernières lignes seulement — celle qu'on cherche vient d'être ajoutée.
+ */
+
+/**
+ * Retrouve la ligne d'une soumission par son horodateur et y écrit `marque`.
+ * Renvoie false si aucune correspondance — jamais d'exception.
+ */
+function marquerLigneParHorodateur(horodateur, marque) {
+  if (!(horodateur instanceof Date)) return false
+
+  const feuille = feuilleReponses()
+  const suivi = preparerSuivi(feuille)
+  const derniereLigne = feuille.getLastRow()
+  if (derniereLigne < 2) return false
+
+  const debut = Math.max(2, derniereLigne - 49)
+  const colonneA = feuille.getRange(debut, 1, derniereLigne - debut + 1, 1).getValues()
+
+  // Comparaison à la SECONDE : le tableur et l'événement portent la même
+  // valeur, mais les millisecondes ne survivent pas toujours à l'écriture
+  // dans une cellule.
+  const cible = Math.floor(horodateur.getTime() / 1000)
+
+  // Du bas vers le haut — la ligne cherchée vient d'être ajoutée.
+  for (let i = colonneA.length - 1; i >= 0; i -= 1) {
+    const valeur = colonneA[i][0]
+    if (valeur instanceof Date && Math.floor(valeur.getTime() / 1000) === cible) {
+      feuille.getRange(debut + i, suivi.indice).setValue(marque)
+      return true
+    }
+  }
+
+  return false
+}
+
+/**
+ * Marque la ligne d'un envoi direct réussi. Appelée par `onFormSubmit`
+ * UNIQUEMENT après un 2xx — un échec reste sans marque exprès, pour que le
+ * rattrapage le reprenne.
+ *
+ * Trois essais espacés : Google Forms écrit la ligne du tableur et déclenche
+ * le script en parallèle, sans garantir l'ordre. La ligne peut donc ne pas
+ * encore exister à la première recherche.
+ *
+ * Ne lève JAMAIS : l'envoi a déjà réussi à ce stade, un problème de marquage
+ * ne doit pas transformer une soumission enregistrée en exception. Le pire
+ * cas est un doublon, journalisé bruyamment pour être retrouvable.
+ */
+function marquerApresEnvoiDirect(e, code) {
+  if (!e || !e.response || typeof e.response.getTimestamp !== 'function') {
+    Logger.log(
+      'AVERTISSEMENT : pas d\'horodateur dans l\'evenement (declencheur ' +
+        '« tableur » ?) — ligne non marquee, le rattrapage risque un doublon.',
+    )
+    return
+  }
+
+  const marque = 'OK direct ' + new Date().toISOString() + ' (' + code + ')'
+
+  for (let essai = 1; essai <= 3; essai += 1) {
+    try {
+      if (marquerLigneParHorodateur(e.response.getTimestamp(), marque)) {
+        Logger.log('Ligne du tableur marquee : ' + marque + ' (essai ' + essai + ').')
+        return
+      }
+    } catch (err) {
+      Logger.log('Marquage — echec de l\'essai ' + essai + ' : ' + err)
+    }
+    Utilities.sleep(2000)
+  }
+
+  Logger.log(
+    'AVERTISSEMENT : ligne introuvable dans le tableur apres 3 essais. ' +
+      'L\'inscription EST enregistree en base, mais le rattrapage pourrait ' +
+      'la renvoyer en double dans 5 minutes — surveiller la liste du staff.',
+  )
 }
