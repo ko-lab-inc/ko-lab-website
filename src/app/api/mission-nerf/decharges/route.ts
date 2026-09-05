@@ -80,9 +80,32 @@ export async function POST(req: NextRequest) {
   // Voir mission-nerf.ts : fuseau de l'événement, pas celui du serveur.
   const dateEvenement = dateEvenementQuebec()
 
+  /**
+   * ⚠️ NOM VIDE -> tiret, jamais la chaîne vide — ajouté le 5 septembre 2026,
+   * en pleine journée d'événement, après un 500 en production.
+   *
+   * Le formulaire a été refait : prénom et nom sont saisis dans UN SEUL champ
+   * (« Prénom, Nom »), que l'Apps Script sépare. Un parent qui n'écrit qu'un
+   * prénom produit donc un nom vide — cas légitime et fréquent.
+   *
+   * Le schéma zod l'accepte désormais, mais la BASE non :
+   *
+   *     nom text not null check (char_length(trim(nom)) > 0)   -- migration 0046
+   *
+   * L'insertion partait donc en erreur et la route répondait 500, ce qui
+   * perdait TOUTE la soumission — donc toute la fratrie — pour un nom de
+   * famille manquant sur un seul enfant.
+   *
+   * Le tiret satisfait la contrainte sans inventer de patronyme, et se lit
+   * comme « non fourni » dans la liste du staff. Corriger la contrainte
+   * elle-même serait plus propre, mais demande une migration à jouer à la
+   * main : à faire à froid, pas pendant l'événement.
+   */
+  const NOM_ABSENT = '—'
+
   const lignes = analyse.data.participants.map((p) => ({
     prenom: p.prenom,
-    nom: p.nom,
+    nom: p.nom.trim() === '' ? NOM_ABSENT : p.nom,
     age: p.age,
     decharge_id: dechargeId,
     date_evenement: dateEvenement,
