@@ -7,6 +7,8 @@ import {
   dateEvenementQuebec,
   heureQuebec,
   lireCompteursDuJour,
+  lireHistoriqueParJour,
+  type JourMissionNerf,
   sessionStaffValide,
   type CompteursMissionNerf,
 } from '@/lib/mission-nerf'
@@ -76,8 +78,9 @@ export default async function PageStaff({ searchParams }: Props) {
   const supabase = getSupabaseAdmin()
   const aujourdhui = dateEvenementQuebec()
 
-  const [compteurs, dernieresRes] = await Promise.all([
+  const [compteurs, historique, dernieresRes] = await Promise.all([
     lireCompteursDuJour(supabase),
+    lireHistoriqueParJour(supabase),
     supabase
       .from('inscriptions_nerf')
       .select('prenom, nom, age, recu_le, statut')
@@ -88,7 +91,14 @@ export default async function PageStaff({ searchParams }: Props) {
 
   if (dernieresRes.error) throw dernieresRes.error
 
-  return <PagePanneau compteurs={compteurs} dernieres={dernieresRes.data} />
+  return (
+    <PagePanneau
+      compteurs={compteurs}
+      historique={historique}
+      aujourdhui={aujourdhui}
+      dernieres={dernieresRes.data}
+    />
+  )
 }
 
 function PageConnexion({ erreur }: { erreur?: string }) {
@@ -125,9 +135,15 @@ type Derniere = { prenom: string; nom: string; age: number; recu_le: string; sta
 
 function PagePanneau({
   compteurs,
+  historique,
+  aujourdhui,
   dernieres,
 }: {
   compteurs: CompteursMissionNerf
+  /** Une ligne par journée d’événement, la plus récente en premier. */
+  historique: readonly JourMissionNerf[]
+  /** Date du jour dans le fuseau de l’événement — sert à surligner sa ligne. */
+  aujourdhui: string
   dernieres: readonly Derniere[]
 }) {
   return (
@@ -251,6 +267,58 @@ function PagePanneau({
             <p className="text-[10px] uppercase tracking-wide text-slate-300">Décharges</p>
             <p className="mt-1 text-5xl font-bold text-pink-300">{compteurs.decharges}</p>
           </div>
+        </section>
+
+        {/* 3bis. Historique par journée — demandé sur site le 5 septembre 2026.
+            Le dashboard public ne montre QUE le jour courant (voir
+            lireCompteursDuJour) ; l'équipe n'avait aucun moyen de revoir les
+            journées précédentes. Écran interne, donc on peut afficher le
+            détail complet. */}
+        <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+          <p className="mb-3 text-xs uppercase tracking-wide text-slate-300">
+            Participants par journée
+          </p>
+          {historique.length === 0 ? (
+            <p className="text-sm text-slate-400">Aucune inscription enregistrée.</p>
+          ) : (
+            <>
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="text-[10px] uppercase tracking-wide text-slate-400">
+                    <th className="pb-2 font-normal">Date</th>
+                    <th className="pb-2 text-right font-normal">Participants</th>
+                    <th className="pb-2 text-right font-normal">Décharges</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historique.map((jour) => (
+                    <tr
+                      key={jour.date}
+                      className={
+                        jour.date === aujourdhui
+                          ? 'border-t border-white/5 font-semibold text-cyan-300'
+                          : 'border-t border-white/5 text-slate-200'
+                      }
+                    >
+                      <td className="py-2">
+                        {jour.date}
+                        {jour.date === aujourdhui ? " — aujourd'hui" : ''}
+                      </td>
+                      <td className="py-2 text-right tabular-nums">{jour.participants}</td>
+                      <td className="py-2 text-right tabular-nums">{jour.decharges}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="mt-3 flex justify-between border-t border-white/15 pt-3 text-sm font-bold">
+                <span className="uppercase tracking-wide text-slate-300">Total</span>
+                <span className="tabular-nums text-white">
+                  {historique.reduce((s, j) => s + j.participants, 0)} participants ·{' '}
+                  {historique.reduce((s, j) => s + j.decharges, 0)} décharges
+                </span>
+              </div>
+            </>
+          )}
         </section>
 
         {/* 4. Dernières inscriptions — nom et âge visibles ICI seulement :

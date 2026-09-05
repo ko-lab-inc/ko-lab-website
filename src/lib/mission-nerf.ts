@@ -68,6 +68,57 @@ export type CompteursMissionNerf = {
  * relue en entier pour la période comptée et dédupliquée avec un Set,
  * jamais renvoyée telle quelle au navigateur.
  */
+/** Une journée d'événement, telle qu'affichée dans l'historique du staff. */
+export type JourMissionNerf = {
+  date: string
+  participants: number
+  decharges: number
+}
+
+/**
+ * Historique complet, une ligne par journée d'événement — panneau staff.
+ *
+ * Demandé sur site le 5 septembre 2026 : le dashboard public se remet à zéro
+ * chaque jour (« Participants aujourd'hui »), ce qui est voulu, mais l'équipe
+ * n'avait alors AUCUN moyen de revoir le bilan des jours précédents.
+ *
+ * ⚠️ Regroupement en JavaScript, pas en SQL — même raison que les décharges
+ * du jour dans `lireCompteursDuJour` : PostgREST n'exprime nativement ni
+ * GROUP BY ni COUNT(DISTINCT). On relit les deux colonnes nécessaires et on
+ * agrège ici.
+ *
+ * ⚠️ La remise à zéro du staff (`derniere_remise_a_zero`) n'est PAS appliquée
+ * ici, contrairement au compteur du jour : c'est un historique, il doit
+ * refléter tout ce qui a été enregistré. Remettre le compteur du jour à zéro
+ * pendant l'événement ne doit pas effacer la journée de l'historique.
+ */
+export async function lireHistoriqueParJour(
+  supabase: SupabaseClient<Database>,
+): Promise<JourMissionNerf[]> {
+  const { data, error } = await supabase
+    .from('inscriptions_nerf')
+    .select('date_evenement, decharge_id')
+    // Borne de sécurité : un événement de plusieurs jours reste très loin
+    // en dessous, mais une table non bornée ne doit jamais partir en mémoire.
+    .limit(10000)
+  if (error) throw error
+
+  const parJour = new Map<string, { participants: number; decharges: Set<string> }>()
+  for (const ligne of data) {
+    const jour = parJour.get(ligne.date_evenement) ?? {
+      participants: 0,
+      decharges: new Set<string>(),
+    }
+    jour.participants += 1
+    if (ligne.decharge_id) jour.decharges.add(ligne.decharge_id)
+    parJour.set(ligne.date_evenement, jour)
+  }
+
+  return [...parJour.entries()]
+    .map(([date, v]) => ({ date, participants: v.participants, decharges: v.decharges.size }))
+    .sort((a, b) => b.date.localeCompare(a.date))
+}
+
 export async function lireCompteursDuJour(
   supabase: SupabaseClient<Database>,
 ): Promise<CompteursMissionNerf> {
