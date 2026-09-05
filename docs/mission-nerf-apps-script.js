@@ -864,3 +864,34 @@ function testerAnalyse() {
   }
   listerLignes(Math.max(2, derniereLigne - 2), derniereLigne)
 }
+
+/* ===========================================================================
+ * RACCOURCI DATÉ — 5 septembre 2026, à supprimer après usage
+ * ===========================================================================
+ *
+ * ⚠️ Pourquoi ce raccourci existe alors qu'il ne fait qu'appeler
+ * `preparerRattrapage` : le bouton ▶ Exécuter de l'éditeur Apps Script lance
+ * la fonction choisie SANS AUCUN ARGUMENT. Impossible d'y taper des bornes.
+ *
+ * Remet en file TOUTE la journée du 5 septembre — de la ligne 130 (première
+ * réponse du jour, relevée par `resumerTableur`) jusqu'à la dernière ligne
+ * du tableur, quelle qu'elle soit au moment de l'exécution.
+ *
+ * ⚠️ ORDRE OBLIGATOIRE, sous peine de doublons :
+ *
+ *   1. Coller la nouvelle version du script et l'enregistrer. Sans ça, le
+ *      rattrapage relirait le tableur avec l'analyseur cassé.
+ *   2. Exécuter CETTE fonction. Elle efface les marques, n'envoie rien : le
+ *      premier envoi n'aura lieu qu'au prochain passage du déclencheur.
+ *   3. Supprimer les lignes du 5 septembre en base, dans la foulée. Toute
+ *      inscription arrivée entre (2) et (3) est ainsi supprimée puis
+ *      renvoyée proprement — c'est pour ça que (3) vient APRÈS (2).
+ *   4. Ne plus rien toucher. Le déclencheur draine par paquets d'une
+ *      centaine toutes les 5 minutes.
+ *
+ * Les inscriptions arrivant APRÈS (3) sont enregistrées et marquées par
+ * `onFormSubmit` : le rattrapage les ignore, aucun doublon possible.
+ */
+function remettreEnFileToutLe5Septembre() {
+  preparerRattrapage(130, feuilleReponses().getLastRow())
+}
