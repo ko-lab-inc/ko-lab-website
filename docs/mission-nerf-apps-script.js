@@ -531,11 +531,13 @@ function testerAnalyse() {
  * Les lignes déjà envoyées en direct n'ont évidemment aucune marque. Sans
  * précaution, le premier rattrapage les renverrait TOUTES en double.
  *
- *   1. Exécuter `initialiserSuivi()` — marque toutes les lignes existantes
- *      comme déjà traitées, SANS RIEN ENVOYER.
- *   2. Puis `rattraperPlage(debut, fin)` sur les seules lignes réellement
- *      absentes de la base (numéros lus dans le tableur, en-tête = ligne 1).
- *   3. Enfin, poser le déclencheur horaire :
+ *   1. `initialiserSuivi()` — marque toutes les lignes existantes comme
+ *      déjà traitées, SANS RIEN ENVOYER.
+ *   2. `resumerTableur()` puis `listerLignes(debut, fin)` — diagnostics
+ *      purs, pour identifier les lignes réellement absentes de la base.
+ *   3. `preparerRattrapage(debut, fin)` — efface la marque de ces
+ *      lignes-là. Instantané, n'envoie rien.
+ *   4. Poser le déclencheur horaire, qui draine la file par paquets :
  *        Déclencheurs > + Ajouter un déclencheur
  *        Fonction : rattrapageAutomatique
  *        Source   : Horaire > Minuteur > Toutes les 5 minutes
@@ -627,12 +629,20 @@ function namedValuesDeLigne(entetes, valeurs) {
 }
 
 /**
- * Moteur commun du rattrapage.
+ * Moteur unique du rattrapage — un seul mode, volontairement.
  *
- * `forcer` ignore la marque existante — réservé à `rattraperPlage`, jamais
- * utilisé par le déclencheur automatique.
+ * ⚠️ Un mode « forcer » (renvoyer une plage sans regarder les marques) a
+ * existé ici et a été RETIRÉ le 5 septembre 2026 : il ne survivait pas à la
+ * coupure des 6 minutes d'Apps Script. Une plage de 229 lignes demande
+ * environ 10 minutes ; l'exécution s'arrêtait donc à mi-chemin, et la
+ * relancer renvoyait EN DOUBLE tout ce qui était déjà parti.
+ *
+ * Le remplacement est `preparerRattrapage`, qui se contente d'effacer les
+ * marques d'une plage. Le moteur ci-dessous la draine ensuite passage après
+ * passage, en sautant ce qui porte déjà « OK » — reprenable par
+ * construction, sans jamais renvoyer deux fois la même ligne.
  */
-function traiterLignes(ligneDebut, ligneFin, forcer) {
+function traiterLignes(ligneDebut, ligneFin) {
   const debutMs = Date.now()
   const feuille = feuilleReponses()
   const suivi = preparerSuivi(feuille)
@@ -664,11 +674,9 @@ function traiterLignes(ligneDebut, ligneFin, forcer) {
     const ligne = debut + i
 
     // Trop recente pour etre jugee : l'envoi direct est peut-etre encore en
-    // cours. Ignoree ce passage-ci, reprise au suivant. Jamais applique a
-    // rattraperPlage, dont l'appelant a deja verifie ce qu'il demande.
+    // cours. Ignoree ce passage-ci, reprise au suivant.
     const horodateur = donnees[i][0]
     if (
-      !forcer &&
       horodateur instanceof Date &&
       Date.now() - horodateur.getTime() < DELAI_GRACE_MS
     ) {
@@ -678,7 +686,7 @@ function traiterLignes(ligneDebut, ligneFin, forcer) {
 
     const marque = donnees[i][suivi.indice - 1]
     const dejaTraitee = marque !== '' && marque !== null && marque !== undefined
-    if (!forcer && dejaTraitee) {
+    if (dejaTraitee) {
       ignorees += 1
       continue
     }
@@ -716,7 +724,7 @@ function traiterLignes(ligneDebut, ligneFin, forcer) {
  * marqué, du haut vers le bas du tableur.
  */
 function rattrapageAutomatique() {
-  traiterLignes(2, null, false)
+  traiterLignes(2, null)
 }
 
 /**
@@ -741,29 +749,99 @@ function initialiserSuivi() {
 
   Logger.log(
     nombre + ' ligne(s) marquée(s) comme déjà traitées. Utiliser ' +
-      'rattraperPlage(debut, fin) pour envoyer celles qui manquent vraiment.',
+      'preparerRattrapage(debut, fin) pour remettre en file celles qui ' +
+      'manquent vraiment en base.',
   )
 }
 
 /**
- * Force l'envoi d'une plage de lignes, marquées ou non.
- * Numéros lus directement dans le tableur (l'en-tête est la ligne 1) :
+ * Met une plage de lignes EN FILE pour le rattrapage — en effaçant leur
+ * marque de suivi. N'envoie rien elle-même, ne prend qu'une seconde.
  *
- *   rattraperPlage(150, 320)
+ *   preparerRattrapage(130, 358)
  *
- * ⚠️ À n'utiliser que sur une plage dont on a VÉRIFIÉ qu'elle manque en base.
- * Cette fonction ne sait pas ce qui a déjà été inséré — elle renvoie tout.
+ * C'est le déclencheur horaire qui enverra ensuite, par paquets d'environ
+ * 100 lignes toutes les 5 minutes, en marquant chacune au passage. Rien à
+ * surveiller : une exécution coupée par la limite des 6 minutes reprend
+ * exactement où elle s'est arrêtée.
+ *
+ * ⚠️ À n'utiliser que sur une plage dont on a VÉRIFIÉ qu'elle manque en
+ * base — voir `listerLignes` pour l'inspecter avant. Effacer la marque
+ * d'une ligne déjà enregistrée la fait repartir en double.
  */
-function rattraperPlage(ligneDebut, ligneFin) {
-  traiterLignes(ligneDebut, ligneFin, true)
+function preparerRattrapage(ligneDebut, ligneFin) {
+  const feuille = feuilleReponses()
+  const suivi = preparerSuivi(feuille)
+  const derniereLigne = feuille.getLastRow()
+
+  const debut = Math.max(2, ligneDebut)
+  const fin = Math.min(ligneFin, derniereLigne)
+  if (fin < debut) {
+    Logger.log('Plage vide — rien a preparer.')
+    return
+  }
+
+  const vides = []
+  for (let ligne = debut; ligne <= fin; ligne += 1) vides.push([''])
+  feuille.getRange(debut, suivi.indice, vides.length, 1).setValues(vides)
+
+  Logger.log(
+    vides.length + ' ligne(s) mises en file (lignes ' + debut + ' a ' + fin + '). ' +
+      'Le declencheur horaire les enverra par paquets. Aucun envoi immediat.',
+  )
+}
+
+/**
+ * Diagnostic — n'écrit RIEN, n'envoie RIEN. Affiche, pour chaque ligne
+ * d'une plage, son heure, sa marque de suivi et les participants que le
+ * script en tirerait.
+ *
+ *   listerLignes(359, 383)
+ *
+ * Sert à trancher les cas ambigus : quand une partie seulement d'une plage
+ * est déjà en base, comparer ces noms à ceux de la base dit exactement
+ * quelles lignes mettre en file — se fier aux horodateurs seuls ne suffit
+ * pas, l'écart entre l'heure du formulaire et l'heure d'insertion varie de
+ * quelques secondes.
+ */
+function listerLignes(ligneDebut, ligneFin) {
+  const feuille = feuilleReponses()
+  const suivi = preparerSuivi(feuille)
+  const derniereLigne = feuille.getLastRow()
+
+  const debut = Math.max(2, ligneDebut)
+  const fin = Math.min(ligneFin, derniereLigne)
+  if (fin < debut) {
+    Logger.log('Plage vide.')
+    return
+  }
+
+  const largeur = feuille.getLastColumn()
+  const donnees = feuille.getRange(debut, 1, fin - debut + 1, largeur).getValues()
+  const fuseau = Session.getScriptTimeZone()
+
+  for (let i = 0; i < donnees.length; i += 1) {
+    const brut = donnees[i][0]
+    const heure =
+      brut instanceof Date ? Utilities.formatDate(brut, fuseau, 'HH:mm:ss') : String(brut)
+    const participants = construireParticipants(namedValuesDeLigne(suivi.entetes, donnees[i]))
+    const noms = participants
+      .map(function (p) {
+        return p.prenom + ' ' + (p.nom || '-') + ' (' + p.age + ')'
+      })
+      .join(' + ')
+    Logger.log(
+      'ligne ' + (debut + i) + ' | ' + heure + ' | ' + (noms || 'AUCUN PARTICIPANT LISIBLE'),
+    )
+  }
 }
 
 /**
  * Diagnostic — n'écrit RIEN, n'envoie RIEN. À exécuter avant
- * `rattraperPlage` pour savoir quels numéros de ligne lui donner.
+ * `preparerRattrapage` pour savoir quels numéros de ligne lui donner.
  *
- * Pourquoi cette fonction existe : `rattraperPlage` exige des numéros de
- * ligne, et un tableur de 376 réponses ne se lit pas à l'œil. Pire, se
+ * Pourquoi cette fonction existe : `preparerRattrapage` exige des numéros
+ * de ligne, et un tableur de 383 réponses ne se lit pas à l'œil. Pire, se
  * tromper de borne coûte cher dans les deux sens — trop bas, on renvoie en
  * double ce qui est déjà en base ; trop haut, des familles restent
  * absentes le soir de l'événement.
