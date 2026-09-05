@@ -2,191 +2,237 @@
  * Mission NERF — envoi des décharges vers le site KO-LAB.
  *
  * Ce fichier n'est PAS exécuté par ce dépôt (aucun build, aucun `npm run`
- * ne le touche) — c'est du code Google Apps Script, à coller à la main
- * dans l'éditeur Apps Script du Google Form. Conservé ici comme unique
- * source de vérité du script, pour ne pas dépendre de ce qui vit
- * uniquement dans l'éditeur en ligne de Google.
+ * ne le touche) — c'est du code Google Apps Script, à coller à la main dans
+ * l'éditeur Apps Script du Google Form. Conservé ici comme unique source de
+ * vérité, pour ne pas dépendre de ce qui vit uniquement chez Google.
  *
- * Formulaire concerné :
+ * Formulaire :
  * https://docs.google.com/forms/d/e/1FAIpQLSe8w68uNWha870jIbbiSqnKf8OmueHPBks2GT-oQpvioAuk-w/viewform
  *
- * -----------------------------------------------------------------------------
- * ⚠️ HISTORIQUE — deux échecs successifs, cause réelle trouvée le 1er
- * septembre 2026 par lecture du journal d'une VRAIE exécution
- * -----------------------------------------------------------------------------
- * Premier échec (31 août) : `onFormSubmit` plantait en moins d'une seconde,
- * sans ligne créée. Corrigé en ajoutant un try/catch et une journalisation
- * complète AVANT tout traitement (voir plus bas) — pas une correction du
- * fond, un moyen de VOIR le fond au prochain essai.
+ * =============================================================================
+ * ⚠️ POURQUOI CE FICHIER A ÉTÉ RÉÉCRIT LE 5 SEPTEMBRE 2026, EN SOIRÉE
+ * =============================================================================
  *
- * Ce prochain essai a donné la vraie cause, noir sur blanc dans les
- * journaux :
+ * Trois pannes en cinq jours, toutes de la MÊME famille : le script cherchait
+ * les réponses par le TITRE EXACT de la question.
  *
- *     Clés de premier niveau de e : ["toString","authMode","response",
- *                                    "source","triggerUid"]
- *     e.namedValues présent : NON
+ *   31 août     — `onFormSubmit` plantait sans laisser de trace.
+ *   1er sept.   — le script lisait `e.namedValues`, absent d'un déclencheur
+ *                 posé « à partir du formulaire » (qui envoie `e.response`).
+ *   5 sept.     — les titres avaient changé : 320 lignes dans le tableur,
+ *                 zéro en base pendant toute une journée d'événement.
  *
- * ⚠️ DEUX FORMES D'ÉVÉNEMENT « sur envoi du formulaire », selon l'endroit où
- * le déclencheur installable est créé — ce n'est PAS un détail cosmétique,
- * ce sont deux formes de données différentes :
- *   - Déclencheur posé DEPUIS LE FORMULAIRE (« Source de l'événement : à
- *     partir du formulaire ») → l'événement porte `e.response`, un objet
- *     FormResponse — PAS de `e.namedValues` du tout.
- *   - Déclencheur posé DEPUIS LE TABLEUR de réponses lié → l'événement porte
- *     `e.namedValues`, une map titre → réponse(s) — celle que ce script
- *     attendait jusqu'ici.
+ * Le correctif du 5 septembre au matin a lui-même échoué, et c'est le plus
+ * instructif. Les titres ont été recopiés à la main depuis un journal
+ * d'exécution, et l'un d'eux a perdu un espace au passage :
  *
- * Le déclencheur de ce projet a toujours été posé depuis le formulaire (la
- * bonne façon, seule capable d'appeler UrlFetchApp — voir INSTALLER LE
- * DÉCLENCHEUR) : le script attendait la mauvaise forme depuis le début, pas
- * un titre mal orthographié ni un déclencheur mal configuré.
+ *     titre réel du formulaire :  "Participant␣␣#1 - Prénom, Nom"   (DEUX espaces)
+ *     constante écrite dans le code : "Participant␣#1 - Prénom, Nom"  (UN espace)
  *
- * Ce fichier gère maintenant LES DEUX formes (voir
- * `construireNamedValuesDepuisReponse` plus bas) : `e.response` en priorité,
- * repli sur `e.namedValues` si un jour
- * quelqu'un recrée le déclencheur depuis le tableur, erreur journalisée
- * seulement si aucune des deux n'existe.
- *
- * Le try/catch et la journalisation complète AVANT tout traitement restent
- * en place — c'est ce qui a permis de VOIR cette cause plutôt que de la
- * deviner. Idem pour la distinction « titre de question introuvable » (une
- * vraie erreur) contre « bloc vide » (normal — logique conditionnelle du
- * formulaire : un parent qui inscrit 2 enfants ne voit jamais les questions
- * des participants 3 à 5).
+ * Invisible à l'œil, fatal à une comparaison de chaînes. Le bloc du premier
+ * enfant n'était plus trouvé. Pire : les enfants 3, 4 et 5 vivent sous
+ * "PRÉNOM, NOM" en MAJUSCULES, un titre que le code ne cherchait pas non
+ * plus. Résultat, une seule colonne était lue — la 13, celle du DEUXIÈME
+ * enfant. L'aîné disparaissait, la fratrie disparaissait, et une famille à
+ * un seul enfant ne produisait rien du tout. 136 décharges enregistrées,
+ * 136 participants, moyenne de 1,0 enfant par famille contre 1,8 et 2,0 les
+ * jours précédents : c'est ce chiffre impossible qui a mis la puce à
+ * l'oreille.
  *
  * -----------------------------------------------------------------------------
- * OÙ COLLER CE FICHIER
+ * CE QUI CHANGE, ET POURQUOI ÇA NE PEUT PLUS CASSER PAREIL
  * -----------------------------------------------------------------------------
- * Ouvrir le Google Form ci-dessus (en édition) > menu ⋮ (trois points) >
- * Éditeur de scripts (ou Extensions > Apps Script selon la version).
- * Remplacer le contenu de Code.gs par ce fichier.
  *
- * -----------------------------------------------------------------------------
- * CONFIGURATION AVANT LE PREMIER ENVOI
- * -----------------------------------------------------------------------------
- * 1. Dans l'éditeur Apps Script : icône ⚙ Paramètres du projet > Propriétés
- *    du script > Ajouter une propriété script :
+ * 1. PLUS AUCUNE LECTURE PAR TITRE EXACT. Le script se repère sur la colonne
+ *    « Nom du participant N » — le seul titre unique et sans piège de
+ *    ponctuation du formulaire — et lit le PRÉNOM juste à sa gauche, l'ÂGE
+ *    juste à sa droite. La comparaison se fait sur un titre normalisé
+ *    (minuscules, espaces multiples réduits) : un espace en trop, une
+ *    majuscule, un accent de casse ne peuvent plus rien casser.
  *
- *        Propriété : MISSION_NERF_TOKEN
- *        Valeur    : EXACTEMENT la même valeur que MISSION_NERF_WEBHOOK_TOKEN
- *                    configurée sur Vercel (.env.example en documente la
- *                    génération — openssl rand -hex 32 ou équivalent).
+ * 2. UN SEUL ANALYSEUR. L'ancienne version en avait deux — un pour
+ *    l'événement de soumission (`e.response`), un pour le tableur — qui
+ *    devaient rester d'accord entre eux. Ils ne l'étaient pas. Désormais
+ *    `onFormSubmit` retrouve SA ligne dans le tableur et la fait passer par
+ *    exactement le même code que le rattrapage. Une seule vérité, un seul
+ *    chemin à tester.
  *
- *    Ne JAMAIS écrire ce jeton en dur dans ce fichier : PropertiesService
- *    existe précisément pour l'en garder à l'écart du code source.
- *
- * 2. Vérifier URL_SITE ci-dessous si le domaine change un jour (voir
- *    docs/bascule-domaine.md).
+ * 3. L'ÂGE EST EXTRAIT, PAS EXIGÉ. « 8 ans », « 9 a », « 11  » donnent 8, 9,
+ *    11. L'ancienne version rejetait tout ce qui n'était pas un nombre pur,
+ *    et perdait ces enfants-là en silence.
  *
  * -----------------------------------------------------------------------------
- * INSTALLER LE DÉCLENCHEUR — ÉTAPE MANUELLE OBLIGATOIRE
+ * STRUCTURE RÉELLE DU TABLEUR (relevée en direct le 5 septembre 2026)
  * -----------------------------------------------------------------------------
- * Une fonction simplement NOMMÉE `onFormSubmit` ne suffit PAS : Apps Script
- * la relierait automatiquement comme DÉCLENCHEUR SIMPLE, qui tourne sans
- * autorisation complète et ne PEUT PAS appeler UrlFetchApp (requêtes HTTP
- * sortantes) — l'envoi échouerait en silence. Il faut un DÉCLENCHEUR
- * INSTALLABLE, posé une fois à la main :
+ * 41 colonnes de formulaire, plus la colonne de suivi ajoutée par ce script.
+ * Les cinq blocs participants sont réguliers, espacés de 5 colonnes :
  *
- *   Éditeur Apps Script > icône ⏰ Déclencheurs (menu de gauche) >
- *   + Ajouter un déclencheur >
- *       Fonction à exécuter    : onFormSubmit
- *       Déploiement            : Head
- *       Source de l'événement  : À partir du formulaire
- *       Type d'événement       : Sur envoi du formulaire
- *   > Enregistrer.
+ *    col  8  Participant  #1 - Prénom, Nom     <- prénom (deux espaces !)
+ *    col  9  Nom du participant 1              <- ANCRE
+ *    col 10  Participant #1 - ÂGE              <- âge (espace final)
+ *    col 11  Autorisez-vous cet enfant à participer?
+ *    col 12  Souhaitez-vous inscrire un autre enfant?
+ *    col 13  Prénom, Nom                       <- enfant 2
+ *    col 14  Nom du participant 2              <- ANCRE
+ *    col 15  ÂGE
+ *    ... et ainsi de suite jusqu'au bloc 5 (col 28/29/30).
  *
- *   « À partir du formulaire » est CONFIRMÉ CORRECT pour ce projet (journal
- *   du 1er septembre) — c'est la seule source qui autorise UrlFetchApp. Elle
- *   envoie `e.response`, pas `e.namedValues` : voir HISTORIQUE en tête de
- *   fichier, ce n'était pas une erreur de configuration, ce script attendait
- *   simplement la mauvaise forme de données. Un déclencheur posé « à partir
- *   du tableur » fonctionnerait aussi désormais (repli automatique sur
- *   `e.namedValues`), mais rien ne justifie de changer une configuration qui
- *   marche.
+ * Le code ne code AUCUN de ces numéros en dur : il retrouve les ancres à
+ * chaque exécution. Si le formulaire est réorganisé, ça continue de marcher.
+ * Si une ancre disparaît vraiment, le journal le dit bruyamment au lieu de
+ * filtrer les participants en silence — c'est ce silence qui a coûté une
+ * journée entière.
  *
- *   Un écran d'autorisation Google apparaît la première fois (« Google n'a
- *   pas vérifié cette application ») — normal pour un script qui nous
- *   appartient : Avancé > Accéder à [nom du projet] (dangereux) > Autoriser.
+ * =============================================================================
+ * INSTALLATION
+ * =============================================================================
  *
- * -----------------------------------------------------------------------------
- * TESTER SANS ATTENDRE UNE VRAIE SOUMISSION
- * -----------------------------------------------------------------------------
- * Deux fonctions de test, DEPUIS L'ÉDITEUR APPS SCRIPT (menu déroulant de
- * fonctions en haut, puis ▶ Exécuter) :
+ * OÙ COLLER : ouvrir le formulaire en édition > menu ⋮ > Éditeur de scripts
+ * (ou Extensions > Apps Script) > remplacer tout le contenu de Code.gs.
  *
- *   - `testerEnvoi()`      — teste UNIQUEMENT jeton + URL + route (déjà
- *                            confirmé bon). Crée une vraie ligne de test.
- *   - `testerAnalyse()`    — teste UNIQUEMENT la logique de lecture (chemin
- *                            de repli e.namedValues, le plus simple à
- *                            simuler sans vraie soumission), SANS appel
- *                            réseau : simule un événement avec un titre
- *                            volontairement faux, pour vérifier que le
- *                            signalement « TITRE INTROUVABLE » fonctionne
- *                            avant de compter dessus un soir d'événement.
+ * JETON : icône ⚙ Paramètres du projet > Propriétés du script > Ajouter :
+ *     Propriété : MISSION_NERF_TOKEN
+ *     Valeur    : la même que MISSION_NERF_WEBHOOK_TOKEN sur Vercel.
+ * Ne JAMAIS écrire ce jeton en dur ici.
  *
- * Après le premier vrai `onFormSubmit` réel qui suit ce correctif : ouvrir
- * Apps Script > Exécutions (icône horloge à gauche, PAS « Déclencheurs ») et
- * lire les journaux de CETTE exécution — c'est là que Logger.log() écrit,
- * pas nécessairement dans Google Cloud Logging.
+ * DEUX DÉCLENCHEURS, tous deux posés à la main (icône ⏰ Déclencheurs) :
+ *
+ *   a) Fonction `onFormSubmit` — envoi immédiat
+ *        Déploiement : Head
+ *        Source      : À partir du formulaire
+ *        Type        : Sur envoi du formulaire
+ *
+ *      ⚠️ Une fonction simplement NOMMÉE `onFormSubmit` serait reliée comme
+ *      déclencheur SIMPLE, qui ne peut pas appeler UrlFetchApp — l'envoi
+ *      échouerait en silence. Il FAUT le poser à la main.
+ *
+ *   b) Fonction `rattrapageAutomatique` — filet de sécurité
+ *        Déploiement : Head
+ *        Source      : Déclencheur horaire
+ *        Type        : Intervalle en minutes > Toutes les 5 minutes
+ *
+ *      C'est lui qui rattrape tout ce que (a) aurait raté : bug, coupure
+ *      réseau, quota Google. Sans lui, une panne de (a) se solde par des
+ *      données perdues sans que personne ne le sache — exactement ce qui
+ *      s'est produit le 5 septembre.
+ *
+ * OÙ LIRE LES JOURNAUX : icône ⏱ Exécutions (PAS « Déclencheurs »).
  */
 
 const URL_SITE = 'https://ko-lab-center.ca/api/mission-nerf/decharges'
 
-/**
- * Titres EXACTS des questions du formulaire (revérifiés en direct sur le
- * formulaire cité plus haut, le 1er septembre 2026, deux extractions
- * indépendantes) — Apps Script indexe `e.namedValues` par le TITRE de la
- * question, jamais par sa position. Si un titre est un jour reformulé dans
- * le formulaire, cette liste doit être corrigée EN MÊME TEMPS — et si elle
- * ne l'est pas, la journalisation ajoutée plus bas le signale maintenant
- * bruyamment au lieu de filtrer le participant en silence.
- *
- * ⚠️ Le formulaire affiche « jusqu'à 4 enfants » dans son texte de
- * présentation, mais propose bien 5 blocs de questions réels (participants
- * 1 à 5, vérifié) — incohérence de contenu à signaler à Christian, sans
- * lien avec ce script : les 5 blocs sont réels, la liste ci-dessous reste à
- * 5 volontairement.
-/**
- * Titres EXACTS des questions du formulaire — RÉÉCRITS le 5 septembre 2026,
- * en pleine journée d'événement, après lecture des journaux d'une vraie
- * exécution.
- *
- * ⚠️ LE FORMULAIRE A ÉTÉ REFAIT — l'ancienne liste ne correspondait plus à
- * RIEN. Le script trouvait 0 participant et sortait sans jamais appeler
- * l'API : exécutions « Terminée », aucune erreur, aucune donnée. 320 lignes
- * dans le tableur, zéro en base.
- *
- * Titres réellement reçus (ligne « Clés réelles » du journal) :
- *
- *   "Participant #1 - Prénom, Nom"   "Participant #1 - ÂGE "
- *   "Prénom, Nom"                    "ÂGE "
- *
- * Trois différences de fond avec l'ancien formulaire :
- *   1. Prénom et nom sont FUSIONNÉS dans un seul champ.
- *   2. Seul le participant 1 est numéroté. Les suivants réutilisent les
- *      MÊMES titres, sans numéro — ils arrivent donc empilés dans un
- *      tableau sous une seule clé (voir la boucle dans onFormSubmit).
- *   3. « ÂGE » porte un ESPACE FINAL. Invisible à l'œil, fatal à la
- *      comparaison : ne jamais retirer cet espace en « nettoyant » ce
- *      fichier sans revérifier le journal.
- */
-const TITRE_P1_NOM = 'Participant #1 - Prénom, Nom'
-const TITRE_P1_AGE = 'Participant #1 - ÂGE '
-const TITRE_SUITE_NOM = 'Prénom, Nom'
-const TITRE_SUITE_AGE = 'ÂGE '
+/* ===========================================================================
+ * REPÉRAGE DES COLONNES
+ * =========================================================================== */
 
 /**
- * Sépare « Prénom, Nom » en deux champs — le formulaire ne les distingue
- * plus, la base et l'API si.
+ * Titre de l'ANCRE, en forme normalisée. Le numéro du bloc est ajouté au
+ * bout : « nom du participant 1 », « nom du participant 2 », etc.
  *
- * Accepte la virgule (format annoncé par le titre) comme l'espace simple,
- * parce qu'un parent qui remplit à la main écrit « Jean Dupont » aussi
- * souvent que « Jean, Dupont ». Sans séparateur, tout part dans le prénom
- * et le nom reste vide — l'API l'accepte depuis le 5 septembre 2026, plutôt
- * que de rejeter TOUTE la famille pour un nom manquant.
+ * Cette colonne a été choisie parce qu'elle est la seule du formulaire à
+ * porter un titre à la fois UNIQUE (les autres se répètent d'un bloc à
+ * l'autre) et SANS PIÈGE de ponctuation — pas de « # », pas de virgule, pas
+ * d'accent, pas d'espace double.
+ */
+const TITRE_ANCRE = 'nom du participant '
+
+/** Nombre de blocs participants proposés par le formulaire. */
+const NOMBRE_BLOCS = 5
+
+/** Titre de la colonne de suivi, ajoutée au tableur si elle n'existe pas. */
+const COLONNE_SUIVI = 'Envoi KO-LAB'
+
+/** Pause entre deux envois — l'API plafonne à 30/min, on reste en dessous. */
+const PAUSE_ENTRE_ENVOIS_MS = 2500
+
+/** Marge avant la coupure à 6 minutes imposée par Apps Script. */
+const DUREE_MAX_MS = 4 * 60 * 1000
+
+/**
+ * Délai de grâce avant qu'une ligne devienne éligible au rattrapage.
+ *
+ * Une soumission qui vient d'arriver est peut-être en train d'être traitée
+ * par `onFormSubmit` à la seconde même où le rattrapage passe. Sans ce
+ * délai, les deux chemins enverraient la même famille — un doublon dans la
+ * liste du staff, au pire moment.
+ */
+const DELAI_GRACE_MS = 5 * 60 * 1000
+
+/**
+ * Normalise un titre de colonne avant comparaison : minuscules, espaces
+ * multiples réduits à un seul, bords rognés.
+ *
+ * ⚠️ VOLONTAIREMENT SANS EXPRESSION RÉGULIÈRE. Une regex a déjà été cassée
+ * dans ce fichier le 5 septembre 2026 par un antislash perdu à la réécriture
+ * (`/\s+/` devenu `/s+/`), ce qui a écarté TOUS les participants sans que
+ * rien ne le signale. Un découpage sur l'espace ne peut pas se casser de
+ * cette façon.
+ */
+function normaliserTitre(brut) {
+  const texte = String(brut === null || brut === undefined ? '' : brut).toLowerCase()
+  const morceaux = texte.split(' ')
+  const utiles = []
+  for (let i = 0; i < morceaux.length; i += 1) {
+    if (morceaux[i] !== '') utiles.push(morceaux[i])
+  }
+  return utiles.join(' ')
+}
+
+/**
+ * Retrouve, pour chaque bloc participant, les indices (base 0) des colonnes
+ * prénom / nom / âge, à partir de la ligne d'en-tête.
+ *
+ * L'ancre « Nom du participant N » donne la colonne du nom ; le prénom est
+ * juste à sa gauche, l'âge juste à sa droite. Vérifié sur les cinq blocs du
+ * formulaire réel le 5 septembre 2026.
+ *
+ * Un bloc dont l'ancre est introuvable est SIGNALÉ puis sauté — jamais
+ * ignoré en silence.
+ */
+function reperesParticipants(entetes) {
+  const normalises = []
+  for (let i = 0; i < entetes.length; i += 1) normalises.push(normaliserTitre(entetes[i]))
+
+  const reperes = []
+  for (let n = 1; n <= NOMBRE_BLOCS; n += 1) {
+    const index = normalises.indexOf(TITRE_ANCRE + n)
+    if (index === -1) {
+      Logger.log(
+        'ANCRE INTROUVABLE : aucune colonne « Nom du participant ' + n + ' » dans ' +
+          "le tableur. Le bloc " + n + ' est ignore. Si le formulaire a ete ' +
+          'modifie, comparer avec la sortie de inspecterEntetes().',
+      )
+      continue
+    }
+    if (index === 0 || index + 1 >= entetes.length) {
+      Logger.log(
+        'ANCRE EN BORD DE TABLEUR (colonne ' + (index + 1) + ') pour le bloc ' + n +
+          ' : impossible de lire le prenom a gauche ou l age a droite. Bloc ignore.',
+      )
+      continue
+    }
+    reperes.push({ numero: n, prenom: index - 1, nom: index, age: index + 1 })
+  }
+
+  return reperes
+}
+
+/* ===========================================================================
+ * LECTURE D'UNE LIGNE
+ * =========================================================================== */
+
+/**
+ * Sépare « Prénom Nom » en deux champs — utilisé UNIQUEMENT en repli, quand
+ * la colonne « Nom du participant N » est vide et que le prénom contient
+ * visiblement les deux.
+ *
+ * Accepte la virgule comme l'espace : un parent qui remplit à la main écrit
+ * « Jean Dupont » aussi souvent que « Jean, Dupont ». Sans séparateur, tout
+ * part dans le prénom et le nom reste vide — l'API l'accepte depuis le
+ * 5 septembre 2026 plutôt que de rejeter toute la famille.
  */
 function separerNomComplet(brut) {
-  const texte = (brut || '').trim()
+  const texte = String(brut === null || brut === undefined ? '' : brut).trim()
   if (texte === '') return { prenom: '', nom: '' }
 
   const parVirgule = texte.split(',')
@@ -194,230 +240,121 @@ function separerNomComplet(brut) {
     return { prenom: parVirgule[0].trim(), nom: parVirgule.slice(1).join(',').trim() }
   }
 
-  const morceaux = texte.split(/\s+/)
-  if (morceaux.length === 1) return { prenom: morceaux[0], nom: '' }
+  const morceaux = []
+  const bruts = texte.split(' ')
+  for (let i = 0; i < bruts.length; i += 1) {
+    if (bruts[i] !== '') morceaux.push(bruts[i])
+  }
+  if (morceaux.length <= 1) return { prenom: texte, nom: '' }
   return { prenom: morceaux[0], nom: morceaux.slice(1).join(' ') }
 }
 
 /**
- * Lit UN champ de e.namedValues, en distinguant deux cas très différents :
+ * Extrait un âge exploitable d'une cellule. Renvoie une chaîne de chiffres,
+ * ou '' si rien d'utilisable.
  *
- *   - manquant: true  → le TITRE n'existe pas du tout comme clé. Une vraie
- *     erreur : accent/majuscule/espace différent, ou question renommée.
- *   - manquant: false, valeur: ''  → le titre existe, mais cette réponse
- *     est vide. NORMAL pour un bloc participant que la logique
- *     conditionnelle du formulaire n'a pas présenté à ce répondant.
+ * Les parents écrivent « 8 », « 8 ans », « 9 a », « 11  ». L'ancienne
+ * version exigeait un nombre pur et perdait tous les autres en silence : on
+ * lit donc les chiffres de tête et on s'arrête au premier caractère qui n'en
+ * est pas un.
  *
- * La version précédente de ce fichier traitait les deux cas identiquement
- * (chaîne vide), ce qui filtrait un vrai bug de titre exactement comme un
- * bloc vide légitime — invisible dans les journaux.
+ * Sans expression régulière, pour la raison expliquée dans normaliserTitre.
  */
-function champ(namedValues, titre) {
-  if (!Object.prototype.hasOwnProperty.call(namedValues, titre)) {
-    return { manquant: true, valeur: '' }
+function ageDepuisTexte(brut) {
+  const texte = String(brut === null || brut === undefined ? '' : brut).trim()
+  if (texte === '') return ''
+
+  let chiffres = ''
+  for (let i = 0; i < texte.length; i += 1) {
+    const c = texte.charAt(i)
+    if (c >= '0' && c <= '9') chiffres += c
+    else break
   }
-  const valeurs = namedValues[titre]
-  return { manquant: false, valeur: valeurs && valeurs[0] ? valeurs[0].trim() : '' }
-}
+  if (chiffres === '') return ''
 
-/** JSON.stringify qui ne plante jamais — utilisé uniquement pour journaliser
- *  un objet dont la forme n'est pas garantie (l'événement brut). */
-function versJsonSur(valeur) {
-  try {
-    return JSON.stringify(valeur)
-  } catch (err) {
-    return '(impossible à sérialiser : ' + err + ')'
-  }
+  const n = Number(chiffres)
+  if (!(n >= 1 && n <= 129)) return ''
+  return String(n)
 }
 
 /**
- * Reconstruit l'équivalent de `e.namedValues` (map titre → tableau de
- * réponses) à partir de `e.response`, la forme réellement envoyée par un
- * déclencheur posé « à partir du formulaire » — voir HISTORIQUE en tête de
- * fichier pour pourquoi les deux formes existent.
+ * Construit la liste des participants d'UNE ligne du tableur.
  *
- * `getResponse()` renvoie une chaîne pour une question à réponse unique
- * (nos 15 titres) et un tableau pour une question à cases à cocher —
- * toujours normalisé en tableau ici pour que `champ()` (identique pour les
- * deux chemins) n'ait pas à connaître la différence.
- *
- * Un titre RÉPÉTÉ (« Autorisez-vous cet enfant à participer? », dupliqué sur
- * les 5 blocs) empile ses réponses sous la même clé, dans l'ordre du
- * formulaire — même comportement que `e.namedValues` sur un déclencheur
- * tableur. Sans conséquence ici : CHAMPS_PARTICIPANT n'utilise jamais ces
- * titres dupliqués (voir sa docstring).
+ * C'est LE seul analyseur du fichier. `onFormSubmit` comme
+ * `rattrapageAutomatique` passent tous les deux par ici — c'est ce qui
+ * garantit qu'une ligne rattrapée produit exactement les mêmes données
+ * qu'une ligne envoyée sur le moment.
  */
-function construireNamedValuesDepuisReponse(reponse) {
-  const namedValues = {}
-
-  reponse.getItemResponses().forEach(function (itemReponse) {
-    const titre = itemReponse.getItem().getTitle()
-    const brut = itemReponse.getResponse()
-    const valeurs = Array.isArray(brut) ? brut : [brut]
-
-    namedValues[titre] = namedValues[titre] ? namedValues[titre].concat(valeurs) : valeurs
-  })
-
-  return namedValues
-}
-
-/**
- * Age exploitable ? Test NUMERIQUE, volontairement SANS expression
- * reguliere.
- *
- * La version precedente utilisait une regex dont l'antislash a ete perdu
- * lors d'une reecriture (5 septembre 2026) : le motif cherchait alors la
- * lettre d au lieu d'un chiffre, et TOUS les participants etaient ecartes.
- * Un test arithmetique ne peut pas se casser de cette facon.
- */
-function ageExploitable(texte) {
-  if (texte === '') return false
-  const n = Number(texte)
-  return isFinite(n) && Math.floor(n) === n && n >= 1 && n <= 129
-}
-
-/**
- * Construit la liste des participants a envoyer, a partir d'une map
- * titre -> reponses.
- *
- * Au niveau superieur (et non plus imbriquee dans onFormSubmit) pour etre
- * partagee avec le rattrapage : les deux chemins doivent lire le formulaire
- * EXACTEMENT de la meme facon, sinon un rattrapage produirait des donnees
- * differentes d'un enregistrement en direct.
- */
-function construireParticipants(namedValues) {
+function participantsDeLigne(entetes, valeurs) {
   const participants = []
+  const reperes = reperesParticipants(entetes)
 
-  function ajouter(nomComplet, age, provenance) {
-    const identite = separerNomComplet(nomComplet)
-    if (identite.prenom === '') return
+  for (let i = 0; i < reperes.length; i += 1) {
+    const r = reperes[i]
+    const prenomBrut = String(valeurs[r.prenom] === null || valeurs[r.prenom] === undefined ? '' : valeurs[r.prenom]).trim()
+    const nomBrut = String(valeurs[r.nom] === null || valeurs[r.nom] === undefined ? '' : valeurs[r.nom]).trim()
+    const ageBrut = valeurs[r.age]
 
-    // Un age inexploitable ecarte CE participant, pas toute la fratrie :
-    // l'API valide le tableau entier, un seul age invalide la ferait
-    // repondre 400 et TOUTE la soumission serait perdue.
-    const ageTexte = (age || '').trim()
-    if (!ageExploitable(ageTexte)) {
-      Logger.log(
-        'PARTICIPANT ECARTE (' + provenance + ') : ' + identite.prenom +
-          ' a un age inexploitable (' + ageTexte + '). Les autres sont envoyes.',
-      )
-      return
+    // Bloc vide : NORMAL. La logique conditionnelle du formulaire ne montre
+    // les blocs 2 a 5 qu'a ceux qui inscrivent plusieurs enfants.
+    if (prenomBrut === '' && nomBrut === '') continue
+
+    let prenom = prenomBrut
+    let nom = nomBrut
+    if (prenom === '') {
+      // Seul le nom est rempli — on le prend comme identite.
+      prenom = nomBrut
+      nom = ''
+    } else if (nom === '') {
+      // Nom absent mais prenom contenant peut-etre les deux (« Jean Dupont »).
+      const identite = separerNomComplet(prenomBrut)
+      prenom = identite.prenom
+      nom = identite.nom
     }
 
-    participants.push({ prenom: identite.prenom, nom: identite.nom, age: ageTexte })
-    Logger.log(
-      'Participant retenu (' + provenance + ') : ' + identite.prenom +
-        ' / ' + (identite.nom || '(sans nom)') + ' / age ' + ageTexte,
-    )
-  }
+    const age = ageDepuisTexte(ageBrut)
+    if (age === '') {
+      // Un age illisible ecarte CE participant, pas toute la fratrie : l'API
+      // valide le tableau entier, un seul age invalide ferait repondre 400 et
+      // TOUTE la soumission serait perdue.
+      Logger.log(
+        'PARTICIPANT ECARTE (bloc ' + r.numero + ') : ' + prenom +
+          ' a un age illisible (' + ageBrut + '). Les autres partent quand meme.',
+      )
+      continue
+    }
 
-  const p1Nom = champ(namedValues, TITRE_P1_NOM)
-  const p1Age = champ(namedValues, TITRE_P1_AGE)
-  if (p1Nom.manquant) {
+    participants.push({ prenom: prenom, nom: nom, age: age })
     Logger.log(
-      'TITRE INTROUVABLE : ' + TITRE_P1_NOM + ' absent. Le formulaire a ' +
-        'probablement ete modifie : comparer avec la ligne Cles reelles et ' +
-        'corriger les constantes TITRE_* en tete de fichier.',
+      'Participant retenu (bloc ' + r.numero + ') : ' + prenom + ' / ' +
+        (nom || '(sans nom)') + ' / age ' + age,
     )
-  } else {
-    ajouter(p1Nom.valeur, p1Age.valeur, 'participant #1')
-  }
-
-  // Participants 2 et suivants : MEMES titres repetes, donc reponses
-  // empilees sous une seule cle. Tableaux paralleles, indice par indice.
-  const nomsSuite = namedValues[TITRE_SUITE_NOM] || []
-  const agesSuite = namedValues[TITRE_SUITE_AGE] || []
-  for (let i = 0; i < nomsSuite.length; i += 1) {
-    ajouter(nomsSuite[i], agesSuite[i], 'bloc suivant #' + (i + 2))
   }
 
   return participants
 }
+
+/* ===========================================================================
+ * ENVOI VERS L'API
+ * =========================================================================== */
+
 /**
- * Déclenchée automatiquement par le déclencheur INSTALLABLE (voir plus
- * haut) à chaque soumission du formulaire.
+ * Envoie une famille et renvoie le CODE HTTP.
  *
- * Tout le corps est dans un try/catch : une exception ici doit atterrir
- * dans les journaux de l'exécution, jamais disparaître en silence comme le
- * 31 août.
+ * ⚠️ Le code est RENVOYÉ, pas seulement journalisé : c'est lui qui permet à
+ * l'appelant de marquer la ligne « OK » ou de la laisser à retenter. Sans
+ * cette valeur, impossible de distinguer un envoi réussi d'un rejet.
  */
-function onFormSubmit(e) {
-  try {
-    Logger.log('=== Mission NERF — nouvelle soumission ===')
-
-    // Contenu brut de l'événement — AVANT tout traitement, pour diagnostiquer
-    // même si tout le reste plante juste après cette ligne. C'est cette
-    // ligne qui a révélé la vraie cause le 1er septembre (e.response présent,
-    // e.namedValues absent) — la garder est ce qui rend un futur problème
-    // similaire diagnosticable sans deviner.
-    Logger.log('Clés de premier niveau de e : ' + versJsonSur(e ? Object.keys(e) : e))
-    Logger.log('e.response présent : ' + (e && e.response ? 'oui' : 'NON'))
-    Logger.log('e.namedValues présent : ' + (e && e.namedValues ? 'oui' : 'NON'))
-
-    // e.response D'ABORD — c'est la forme du déclencheur posé « à partir du
-    // formulaire », celle réellement utilisée par ce projet (voir
-    // HISTORIQUE). e.namedValues en repli, pour ne pas casser le script si
-    // quelqu'un recrée un jour le déclencheur depuis le tableur de réponses.
-    let namedValues
-    if (e && e.response) {
-      namedValues = construireNamedValuesDepuisReponse(e.response)
-      Logger.log('Source utilisée : e.response (déclencheur « formulaire »).')
-    } else if (e && e.namedValues) {
-      namedValues = e.namedValues
-      Logger.log('Source utilisée : e.namedValues (déclencheur « tableur »).')
-    } else {
-      Logger.log(
-        'ERREUR CRITIQUE : ni e.response ni e.namedValues ne sont présents — ' +
-          'impossible de lire les réponses. Vérifier le déclencheur : ' +
-          'Déclencheurs > onFormSubmit > Source de l\'événement doit être ' +
-          '« À partir du formulaire », type « Sur envoi du formulaire ». ' +
-          'Voir la section INSTALLER LE DÉCLENCHEUR en tête de ce fichier.',
-      )
-      return
-    }
-
-    const clesReelles = Object.keys(namedValues)
-    Logger.log('Nombre de questions reçues dans cette soumission : ' + clesReelles.length)
-    Logger.log('Clés réelles : ' + versJsonSur(clesReelles))
-
-    const participants = construireParticipants(namedValues)
-
-    Logger.log('Participants retenus pour l\'envoi : ' + participants.length)
-
-    if (participants.length === 0) {
-      Logger.log('Aucun participant avec un prénom rempli — rien envoyé.')
-      return
-    }
-
-    const code = envoyer(participants)
-
-    // Marquage de la ligne APRES un envoi direct reussi — voir
-    // marquerApresEnvoiDirect : sans lui, le rattrapage automatique
-    // reenverrait en double tout ce qui vient de partir en direct.
-    if (code >= 200 && code < 300) {
-      marquerApresEnvoiDirect(e, code)
-    } else {
-      Logger.log(
-        'Envoi direct en echec (statut ' + code + ') — ligne volontairement ' +
-          'LAISSEE SANS MARQUE, pour que le rattrapage la reprenne.',
-      )
-    }
-  } catch (err) {
-    Logger.log('ERREUR NON ATTRAPÉE dans onFormSubmit : ' + err + '\n' + (err && err.stack))
-  }
-}
-
-/** Isolée de onFormSubmit pour pouvoir être rejouée depuis testerEnvoi(). */
 function envoyer(participants) {
   const jeton = PropertiesService.getScriptProperties().getProperty('MISSION_NERF_TOKEN')
 
   if (!jeton) {
     Logger.log(
-      'MISSION_NERF_TOKEN absent des propriétés du script — voir la ' +
-        'section CONFIGURATION en tête de fichier. Envoi annulé.',
+      'MISSION_NERF_TOKEN absent des proprietes du script — voir la section ' +
+        'INSTALLATION en tete de fichier. Envoi annule.',
     )
-    // 0 = « pas même tenté ». L'appelant le traite comme un échec, donc la
-    // ligne reste à retenter une fois le jeton configuré.
+    // 0 = « pas meme tente ». Traite comme un echec, donc la ligne reste a
+    // retenter une fois le jeton configure.
     return 0
   }
 
@@ -426,221 +363,145 @@ function envoyer(participants) {
     contentType: 'application/json',
     headers: { 'X-Mission-Nerf-Token': jeton },
     payload: JSON.stringify({ participants: participants }),
-    // Ne JAMAIS laisser une erreur HTTP lever une exception silencieuse :
-    // le corps de la réponse (erreur 400/401/500 incluse) doit atterrir
-    // dans les journaux pour pouvoir être diagnostiqué après coup.
+    // Ne JAMAIS laisser une erreur HTTP lever une exception silencieuse : le
+    // corps de la reponse (400/401/500 inclus) doit atterrir dans le journal.
     muteHttpExceptions: true,
   })
 
   const code = reponse.getResponseCode()
-
-  Logger.log('Envoi Mission NERF — statut %s, réponse : %s', code, reponse.getContentText())
-
-  // ⚠️ Le code HTTP est RENVOYÉ, pas seulement journalisé : c'est lui qui
-  // permet au rattrapage automatique de marquer la ligne « OK » ou
-  // « ERREUR » dans le tableur. Sans cette valeur de retour, il serait
-  // incapable de distinguer un envoi réussi d'un rejet, et remarquerait
-  // toutes les lignes comme traitées.
+  Logger.log('Envoi Mission NERF — statut ' + code + ', reponse : ' + reponse.getContentText())
   return code
 }
 
-/**
- * Test manuel — menu déroulant de fonctions > testerEnvoi > ▶ Exécuter.
- * Envoie un participant factice clairement identifiable comme test, avec le
- * MÊME chemin de code que le déclencheur réel APRÈS l'analyse de
- * l'événement (donc une preuve que jeton + URL + route fonctionnent — déjà
- * confirmé le 31 août).
- *
- * ⚠️ Crée une vraie ligne dans `inscriptions_nerf` côté site — à supprimer
- * après vérification (prénom 'TEST_APPS_SCRIPT', facile à retrouver).
- */
-function testerEnvoi() {
-  envoyer([{ prenom: 'TEST_APPS_SCRIPT', nom: 'TEST', age: '10' }])
-}
-
-/**
- * Test manuel — menu déroulant de fonctions > testerAnalyse > ▶ Exécuter.
- * Simule un événement de soumission SANS AUCUN effet de bord — ni appel
- * réseau, ni ligne créée en base — pour vérifier que la lecture de
- * e.namedValues et le signalement des titres introuvables fonctionnent,
- * avant de compter dessus un soir d'événement.
- *
- * Le faux événement ci-dessous contient DÉLIBÉRÉMENT, et RIEN d'autre :
- *   - un participant 1 en état MIXTE : prénom et nom présents, mais le
- *     titre « Âge » est délibérément faux (mauvaise majuscule) — doit
- *     produire une ligne « TITRE INTROUVABLE » dans les journaux ;
- *   - aucune clé du tout pour les participants 2 à 5, simulant la logique
- *     conditionnelle réelle du formulaire — doit être traité comme normal,
- *     sans log d'erreur.
- *
- * Aucun bloc n'étant complet, `participants` reste vide : envoyer() n'est
- * JAMAIS appelée, donc AUCUNE ligne créée en base — ce test est
- * volontairement sans effet de bord.
- *
- * Lire les journaux après exécution (Apps Script > Exécutions) : on doit y
- * voir « Participants retenus pour l'envoi : 0 », exactement 1 ligne
- * « TITRE INTROUVABLE » citant "Âge du participant 1", et
- * « Aucun participant avec un prénom rempli — rien envoyé. ».
- */
-function testerAnalyse() {
-  onFormSubmit({
-    namedValues: {
-      // Participant 1 — titre numéroté, nom complet en un seul champ.
-      'Participant #1 - Prénom, Nom': ['Test Analyse'],
-      'Participant #1 - ÂGE ': ['9'],
-      // Deux participants supplémentaires : MÊMES titres répétés, empilés
-      // dans un tableau — c'est la forme réelle du formulaire depuis sa
-      // refonte. Le second n'a qu'un prénom, pour vérifier que le nom vide
-      // ne fait plus tomber toute la soumission.
-      'Prénom, Nom': ['Alex, Tremblay', 'Sam'],
-      'ÂGE ': ['7', '11'],
-    },
-  })
-}
-
 /* ===========================================================================
- * RATTRAPAGE AUTOMATIQUE
- * ===========================================================================
- *
- * Pourquoi ce mécanisme existe : le 5 septembre 2026, le formulaire a été
- * refait et le script ne reconnaissait plus aucun titre de question. Il
- * sortait sans rien envoyer et sans erreur. 320 lignes se sont accumulées
- * dans le tableur pendant qu'on croyait le système sain — et une fois le bug
- * corrigé, elles ne sont PAS remontées toutes seules : `onFormSubmit` ne se
- * déclenche qu'à une NOUVELLE soumission, jamais rétroactivement.
- *
- * Ce rattrapage supprime cette classe de panne : même si l'envoi en direct
- * échoue (bug, coupure réseau, quota Google), la ligne finit par partir.
- *
- * ---------------------------------------------------------------------------
- * COMMENT LES DOUBLONS SONT ÉVITÉS
- * ---------------------------------------------------------------------------
- * Une colonne de suivi est ajoutée à la FIN du tableur de réponses. Chaque
- * ligne y porte son état : « OK » avec la date, ou « ERREUR » avec le code
- * HTTP. Seules les lignes dont cette cellule est VIDE sont traitées.
- *
- * C'est la seule méthode fiable ici : un simple compteur de dernière ligne
- * traitée sauterait définitivement toute ligne ayant échoué une fois. Écrite
- * dans le tableur, la marque reste lisible par un humain, survit à une
- * réinstallation du script, et se corrige à la main (vider la cellule
- * suffit à forcer un réessai).
- *
- * ---------------------------------------------------------------------------
- * ⚠️ À FAIRE UNE SEULE FOIS, AVANT D'ACTIVER LE DÉCLENCHEUR HORAIRE
- * ---------------------------------------------------------------------------
- * Les lignes déjà envoyées en direct n'ont évidemment aucune marque. Sans
- * précaution, le premier rattrapage les renverrait TOUTES en double.
- *
- *   1. `initialiserSuivi()` — marque toutes les lignes existantes comme
- *      déjà traitées, SANS RIEN ENVOYER.
- *   2. `resumerTableur()` puis `listerLignes(debut, fin)` — diagnostics
- *      purs, pour identifier les lignes réellement absentes de la base.
- *   3. `preparerRattrapage(debut, fin)` — efface la marque de ces
- *      lignes-là. Instantané, n'envoie rien.
- *   4. Poser le déclencheur horaire, qui draine la file par paquets :
- *        Déclencheurs > + Ajouter un déclencheur
- *        Fonction : rattrapageAutomatique
- *        Source   : Horaire > Minuteur > Toutes les 5 minutes
- *
- * ---------------------------------------------------------------------------
- * LIMITES RESPECTÉES
- * ---------------------------------------------------------------------------
- * L'API plafonne à 30 requêtes par minute et par IP ; Apps Script coupe une
- * exécution à 6 minutes. Chaque envoi est donc suivi d'une pause, et la
- * boucle s'arrête d'elle-même avant la limite de temps. Ce qui n'a pas été
- * traité repart au passage suivant, cinq minutes plus tard.
- */
-
-/** Titre de la colonne de suivi, ajoutée au tableur si elle n'existe pas. */
-const COLONNE_SUIVI = 'Envoi KO-LAB'
-
-/** Pause entre deux envois — l'API plafonne à 30/min, on reste très en dessous. */
-const PAUSE_ENTRE_ENVOIS_MS = 2500
-
-/** Marge avant la coupure à 6 minutes imposée par Apps Script. */
-const DUREE_MAX_MS = 4 * 60 * 1000
-
-/**
- * Delai de grace avant qu'une ligne devienne eligible au rattrapage.
- *
- * Une soumission qui vient d'arriver est peut-etre en train d'etre traitee
- * par onFormSubmit a la seconde meme ou le rattrapage passe. Sans ce delai,
- * les deux chemins enverraient la meme famille — un doublon dans la liste
- * du staff, au pire moment. Cinq minutes laissent tout le temps a l'envoi
- * direct de finir et d'ecrire sa marque.
- */
-const DELAI_GRACE_MS = 5 * 60 * 1000
+ * ACCÈS AU TABLEUR
+ * =========================================================================== */
 
 /**
  * Ouvre la feuille de réponses liée au formulaire.
  *
  * L'identifiant du tableur est demandé au formulaire lui-même : rien à
- * configurer à la main, et rien à corriger si le tableur est un jour recréé.
+ * configurer à la main, rien à corriger si le tableur est un jour recréé.
  */
 function feuilleReponses() {
   const idTableur = FormApp.getActiveForm().getDestinationId()
   if (!idTableur) {
     throw new Error(
-      "Ce formulaire n'a pas de tableur de réponses lié. Dans le formulaire : " +
-        'onglet Réponses > icône tableur > créer ou sélectionner une feuille.',
+      "Ce formulaire n'a pas de tableur de reponses lie. Dans le formulaire : " +
+        'onglet Reponses > icone tableur > creer ou selectionner une feuille.',
     )
   }
   return SpreadsheetApp.openById(idTableur).getSheets()[0]
 }
 
 /**
- * Indice (base 1) de la colonne de suivi, créée au besoin.
- * Renvoie aussi les en-têtes, pour éviter une seconde lecture du tableur.
+ * Indice (base 1) de la colonne de suivi, créée au besoin. Renvoie aussi les
+ * en-têtes, pour éviter une seconde lecture du tableur.
  */
 function preparerSuivi(feuille) {
   const derniereColonne = feuille.getLastColumn()
   const entetes = feuille.getRange(1, 1, 1, derniereColonne).getValues()[0]
 
-  let indice = entetes.indexOf(COLONNE_SUIVI) + 1
-  if (indice === 0) {
+  let indice = -1
+  for (let i = 0; i < entetes.length; i += 1) {
+    if (String(entetes[i]) === COLONNE_SUIVI) {
+      indice = i + 1
+      break
+    }
+  }
+  if (indice === -1) {
     indice = derniereColonne + 1
     feuille.getRange(1, indice).setValue(COLONNE_SUIVI)
-    Logger.log('Colonne de suivi créée en position ' + indice)
+    Logger.log('Colonne de suivi creee en position ' + indice)
   }
 
   return { indice: indice, entetes: entetes }
 }
 
 /**
- * Reconstruit une map titre → tableau de réponses pour UNE ligne du tableur.
+ * Retrouve une ligne par son horodateur (colonne A), à la seconde près.
+ * Renvoie `{ ligne, valeurs }` ou null.
  *
- * Un titre répété (les blocs participants 2 à 5) occupe PLUSIEURS colonnes
- * portant le même en-tête. Elles sont empilées dans le même tableau, dans
- * l'ordre des colonnes — exactement la forme qu'attend
- * `construireParticipants`, identique à celle d'un envoi en direct. C'est ce
- * qui garantit qu'une ligne rattrapée produit les mêmes données qu'une ligne
- * envoyée sur le moment.
+ * L'événement de soumission ne porte pas de numéro de ligne — il porte un
+ * horodateur, et c'est exactement ce que Google Forms écrit en colonne A.
+ * Recherche limitée aux 50 dernières lignes, du bas vers le haut : celle
+ * qu'on cherche vient d'être ajoutée.
+ *
+ * Comparaison à la SECONDE : le tableur et l'événement portent la même
+ * valeur, mais les millisecondes ne survivent pas toujours à l'écriture dans
+ * une cellule.
  */
-function namedValuesDeLigne(entetes, valeurs) {
-  const map = {}
-  for (let i = 0; i < entetes.length; i += 1) {
-    const titre = String(entetes[i])
-    if (titre === '' || titre === COLONNE_SUIVI) continue
-    const brut = valeurs[i]
-    const valeur = brut === null || brut === undefined ? '' : String(brut)
-    map[titre] = map[titre] ? map[titre].concat([valeur]) : [valeur]
+function ligneParHorodateur(feuille, horodateur) {
+  if (!(horodateur instanceof Date)) return null
+
+  const derniereLigne = feuille.getLastRow()
+  if (derniereLigne < 2) return null
+
+  const debut = Math.max(2, derniereLigne - 49)
+  const largeur = feuille.getLastColumn()
+  const donnees = feuille.getRange(debut, 1, derniereLigne - debut + 1, largeur).getValues()
+  const cible = Math.floor(horodateur.getTime() / 1000)
+
+  for (let i = donnees.length - 1; i >= 0; i -= 1) {
+    const valeur = donnees[i][0]
+    if (valeur instanceof Date && Math.floor(valeur.getTime() / 1000) === cible) {
+      return { ligne: debut + i, valeurs: donnees[i] }
+    }
   }
-  return map
+
+  return null
+}
+
+/* ===========================================================================
+ * TRAITEMENT
+ * =========================================================================== */
+
+/**
+ * Traite UNE ligne : analyse, envoi, marquage. Renvoie 'envoyee', 'vide' ou
+ * 'echec'.
+ *
+ * Le marquage est ce qui empêche les doublons : le rattrapage ne touche que
+ * les lignes dont la cellule de suivi est vide. Un envoi en échec reste donc
+ * volontairement SANS marque quand il vient du direct (voir onFormSubmit) —
+ * c'est ce qui permet au rattrapage de le reprendre.
+ */
+function traiterUneLigne(feuille, suivi, ligne, valeurs, marqueSiEchec) {
+  const participants = participantsDeLigne(suivi.entetes, valeurs)
+
+  if (participants.length === 0) {
+    feuille.getRange(ligne, suivi.indice).setValue('VIDE — aucun participant lisible')
+    Logger.log('Ligne ' + ligne + ' : aucun participant lisible, rien envoye.')
+    return 'vide'
+  }
+
+  const code = envoyer(participants)
+
+  if (code >= 200 && code < 300) {
+    feuille.getRange(ligne, suivi.indice).setValue('OK ' + new Date().toISOString())
+    return 'envoyee'
+  }
+
+  if (marqueSiEchec) {
+    // Marque d'echec EXPLICITE : la ligne reste identifiable par un humain,
+    // mais ne sera pas retentee en boucle a chaque passage si la cause est
+    // permanente. Vider la cellule suffit a forcer un reessai.
+    feuille.getRange(ligne, suivi.indice).setValue('ERREUR ' + code)
+  }
+  return 'echec'
 }
 
 /**
- * Moteur unique du rattrapage — un seul mode, volontairement.
+ * Moteur du rattrapage — un seul mode, volontairement.
  *
  * ⚠️ Un mode « forcer » (renvoyer une plage sans regarder les marques) a
- * existé ici et a été RETIRÉ le 5 septembre 2026 : il ne survivait pas à la
- * coupure des 6 minutes d'Apps Script. Une plage de 229 lignes demande
- * environ 10 minutes ; l'exécution s'arrêtait donc à mi-chemin, et la
- * relancer renvoyait EN DOUBLE tout ce qui était déjà parti.
+ * existé ici et a été RETIRÉ : il ne survivait pas à la coupure des
+ * 6 minutes d'Apps Script. Une plage de 229 lignes demande une dizaine de
+ * minutes ; l'exécution s'arrêtait à mi-chemin, et la relancer renvoyait EN
+ * DOUBLE tout ce qui était déjà parti.
  *
- * Le remplacement est `preparerRattrapage`, qui se contente d'effacer les
- * marques d'une plage. Le moteur ci-dessous la draine ensuite passage après
- * passage, en sautant ce qui porte déjà « OK » — reprenable par
- * construction, sans jamais renvoyer deux fois la même ligne.
+ * Le remplacement est `preparerRattrapage`, qui efface les marques d'une
+ * plage. Ce moteur la draine ensuite passage après passage, en sautant ce
+ * qui porte déjà une marque — reprenable par construction.
  */
 function traiterLignes(ligneDebut, ligneFin) {
   const debutMs = Date.now()
@@ -651,7 +512,7 @@ function traiterLignes(ligneDebut, ligneFin) {
   const fin = Math.min(ligneFin || derniereLigne, derniereLigne)
   const debut = Math.max(ligneDebut || 2, 2)
   if (fin < debut) {
-    Logger.log('Aucune ligne à traiter.')
+    Logger.log('Aucune ligne a traiter.')
     return
   }
 
@@ -665,7 +526,7 @@ function traiterLignes(ligneDebut, ligneFin) {
   for (let i = 0; i < donnees.length; i += 1) {
     if (Date.now() - debutMs > DUREE_MAX_MS) {
       Logger.log(
-        'Limite de temps atteinte — arrêt volontaire à la ligne ' + (debut + i) +
+        'Limite de temps atteinte — arret volontaire a la ligne ' + (debut + i) +
           '. Le reste partira au prochain passage.',
       )
       break
@@ -676,56 +537,95 @@ function traiterLignes(ligneDebut, ligneFin) {
     // Trop recente pour etre jugee : l'envoi direct est peut-etre encore en
     // cours. Ignoree ce passage-ci, reprise au suivant.
     const horodateur = donnees[i][0]
-    if (
-      horodateur instanceof Date &&
-      Date.now() - horodateur.getTime() < DELAI_GRACE_MS
-    ) {
+    if (horodateur instanceof Date && Date.now() - horodateur.getTime() < DELAI_GRACE_MS) {
       ignorees += 1
       continue
     }
 
     const marque = donnees[i][suivi.indice - 1]
-    const dejaTraitee = marque !== '' && marque !== null && marque !== undefined
-    if (dejaTraitee) {
+    if (marque !== '' && marque !== null && marque !== undefined) {
       ignorees += 1
       continue
     }
 
-    const participants = construireParticipants(namedValuesDeLigne(suivi.entetes, donnees[i]))
-    if (participants.length === 0) {
-      feuille.getRange(ligne, suivi.indice).setValue('VIDE — aucun participant lisible')
-      ignorees += 1
-      continue
-    }
-
-    const code = envoyer(participants)
-    if (code >= 200 && code < 300) {
-      feuille.getRange(ligne, suivi.indice).setValue('OK ' + new Date().toISOString())
-      envoyees += 1
-    } else {
-      // Marque d'échec EXPLICITE : la ligne reste identifiable par un humain,
-      // mais ne sera pas retentée en boucle à chaque passage si la cause est
-      // permanente. Vider la cellule suffit à forcer un réessai.
-      feuille.getRange(ligne, suivi.indice).setValue('ERREUR ' + code)
-      echecs += 1
-    }
+    const issue = traiterUneLigne(feuille, suivi, ligne, donnees[i], true)
+    if (issue === 'envoyee') envoyees += 1
+    else if (issue === 'vide') ignorees += 1
+    else echecs += 1
 
     Utilities.sleep(PAUSE_ENTRE_ENVOIS_MS)
   }
 
   Logger.log(
-    'Rattrapage terminé — ' + envoyees + ' envoyée(s), ' + ignorees +
-      ' ignorée(s), ' + echecs + ' en échec.',
+    'Rattrapage termine — ' + envoyees + ' envoyee(s), ' + ignorees +
+      ' ignoree(s), ' + echecs + ' en echec.',
   )
 }
 
-/**
- * Point d'entrée du déclencheur horaire : traite tout ce qui n'est pas encore
- * marqué, du haut vers le bas du tableur.
- */
+/** Point d'entrée du déclencheur horaire. */
 function rattrapageAutomatique() {
   traiterLignes(2, null)
 }
+
+/* ===========================================================================
+ * ENVOI IMMÉDIAT
+ * =========================================================================== */
+
+/**
+ * Déclenchée par le déclencheur INSTALLABLE à chaque soumission.
+ *
+ * Ne lit PLUS l'événement lui-même : elle retrouve sa ligne dans le tableur
+ * et la fait passer par `traiterUneLigne`, exactement comme le rattrapage.
+ * C'est la leçon du 5 septembre — deux analyseurs qui doivent s'accorder
+ * finissent toujours par diverger, et le désaccord ne se voit pas.
+ *
+ * Trois essais espacés : Google Forms écrit la ligne du tableur et déclenche
+ * le script en parallèle, sans garantir l'ordre. Si la ligne reste
+ * introuvable, on ne force rien — le rattrapage la prendra dans 5 minutes.
+ * Tout le corps est dans un try/catch : une exception ici doit atterrir dans
+ * les journaux, jamais disparaître comme le 31 août.
+ */
+function onFormSubmit(e) {
+  try {
+    Logger.log('=== Mission NERF — nouvelle soumission ===')
+
+    if (!e || !e.response || typeof e.response.getTimestamp !== 'function') {
+      Logger.log(
+        "Evenement sans e.response : impossible de retrouver la ligne. Le " +
+          'rattrapage la prendra dans 5 minutes. Verifier que le declencheur ' +
+          "onFormSubmit a bien « A partir du formulaire » comme source.",
+      )
+      return
+    }
+
+    const horodateur = e.response.getTimestamp()
+    const feuille = feuilleReponses()
+    const suivi = preparerSuivi(feuille)
+
+    for (let essai = 1; essai <= 3; essai += 1) {
+      const trouve = ligneParHorodateur(feuille, horodateur)
+      if (trouve) {
+        Logger.log('Ligne ' + trouve.ligne + ' retrouvee (essai ' + essai + ').')
+        // marqueSiEchec = false : un echec doit rester SANS marque pour que
+        // le rattrapage le reprenne tout seul.
+        traiterUneLigne(feuille, suivi, trouve.ligne, trouve.valeurs, false)
+        return
+      }
+      Utilities.sleep(2000)
+    }
+
+    Logger.log(
+      'Ligne introuvable dans le tableur apres 3 essais — rien envoye ici. ' +
+        'Le rattrapage automatique la prendra au prochain passage.',
+    )
+  } catch (err) {
+    Logger.log('ERREUR NON ATTRAPEE dans onFormSubmit : ' + err + ' | ' + (err && err.stack))
+  }
+}
+
+/* ===========================================================================
+ * OUTILS D'EXPLOITATION
+ * =========================================================================== */
 
 /**
  * ⚠️ À EXÉCUTER UNE SEULE FOIS, avant d'activer le déclencheur horaire.
@@ -738,36 +638,34 @@ function initialiserSuivi() {
   const suivi = preparerSuivi(feuille)
   const derniereLigne = feuille.getLastRow()
   if (derniereLigne < 2) {
-    Logger.log('Tableur vide — rien à initialiser.')
+    Logger.log('Tableur vide — rien a initialiser.')
     return
   }
 
   const nombre = derniereLigne - 1
   const marques = []
-  for (let i = 0; i < nombre; i += 1) marques.push(['INITIALISÉ — non envoyé'])
+  for (let i = 0; i < nombre; i += 1) marques.push(['INITIALISE — non envoye'])
   feuille.getRange(2, suivi.indice, nombre, 1).setValues(marques)
 
   Logger.log(
-    nombre + ' ligne(s) marquée(s) comme déjà traitées. Utiliser ' +
+    nombre + ' ligne(s) marquee(s) comme deja traitees. Utiliser ' +
       'preparerRattrapage(debut, fin) pour remettre en file celles qui ' +
       'manquent vraiment en base.',
   )
 }
 
 /**
- * Met une plage de lignes EN FILE pour le rattrapage — en effaçant leur
- * marque de suivi. N'envoie rien elle-même, ne prend qu'une seconde.
- *
- *   preparerRattrapage(130, 358)
+ * Met une plage de lignes EN FILE pour le rattrapage, en effaçant leur
+ * marque. N'envoie rien, ne prend qu'une seconde.
  *
  * C'est le déclencheur horaire qui enverra ensuite, par paquets d'environ
- * 100 lignes toutes les 5 minutes, en marquant chacune au passage. Rien à
- * surveiller : une exécution coupée par la limite des 6 minutes reprend
- * exactement où elle s'est arrêtée.
+ * 100 lignes toutes les 5 minutes, en marquant chacune au passage. Une
+ * exécution coupée par la limite des 6 minutes reprend exactement où elle
+ * s'est arrêtée.
  *
- * ⚠️ À n'utiliser que sur une plage dont on a VÉRIFIÉ qu'elle manque en
- * base — voir `listerLignes` pour l'inspecter avant. Effacer la marque
- * d'une ligne déjà enregistrée la fait repartir en double.
+ * ⚠️ À n'utiliser que sur une plage dont on a VÉRIFIÉ qu'elle manque en base
+ * — voir `listerLignes`. Effacer la marque d'une ligne déjà enregistrée la
+ * fait repartir en double.
  */
 function preparerRattrapage(ligneDebut, ligneFin) {
   const feuille = feuilleReponses()
@@ -792,16 +690,13 @@ function preparerRattrapage(ligneDebut, ligneFin) {
 }
 
 /**
- * Diagnostic — n'écrit RIEN, n'envoie RIEN. Affiche, pour chaque ligne
- * d'une plage, son heure, sa marque de suivi et les participants que le
- * script en tirerait.
+ * Diagnostic — n'écrit rien, n'envoie rien. Pour chaque ligne d'une plage :
+ * heure, marque de suivi, et participants que le script en tirerait.
  *
- *   listerLignes(359, 383)
- *
- * Sert à trancher les cas ambigus : quand une partie seulement d'une plage
- * est déjà en base, comparer ces noms à ceux de la base dit exactement
- * quelles lignes mettre en file — se fier aux horodateurs seuls ne suffit
- * pas, l'écart entre l'heure du formulaire et l'heure d'insertion varie de
+ * C'est la fonction à lancer AVANT `preparerRattrapage` quand une plage est
+ * partiellement en base : comparer ces noms à ceux de la base dit exactement
+ * quelles lignes remettre en file. Se fier aux horodateurs seuls ne suffit
+ * pas — l'écart entre l'heure du formulaire et l'heure d'insertion varie de
  * quelques secondes.
  */
 function listerLignes(ligneDebut, ligneFin) {
@@ -824,37 +719,27 @@ function listerLignes(ligneDebut, ligneFin) {
     const brut = donnees[i][0]
     const heure =
       brut instanceof Date ? Utilities.formatDate(brut, fuseau, 'HH:mm:ss') : String(brut)
-    const participants = construireParticipants(namedValuesDeLigne(suivi.entetes, donnees[i]))
-    const noms = participants
-      .map(function (p) {
-        return p.prenom + ' ' + (p.nom || '-') + ' (' + p.age + ')'
-      })
-      .join(' + ')
+    const participants = participantsDeLigne(suivi.entetes, donnees[i])
+    const noms = []
+    for (let p = 0; p < participants.length; p += 1) {
+      noms.push(participants[p].prenom + ' ' + (participants[p].nom || '-') +
+        ' (' + participants[p].age + ')')
+    }
     Logger.log(
-      'ligne ' + (debut + i) + ' | ' + heure + ' | ' + (noms || 'AUCUN PARTICIPANT LISIBLE'),
+      'ligne ' + (debut + i) + ' | ' + heure + ' | ' +
+        (noms.length ? noms.join(' + ') : 'AUCUN PARTICIPANT LISIBLE'),
     )
   }
 }
 
 /**
- * Diagnostic — n'écrit RIEN, n'envoie RIEN. À exécuter avant
- * `preparerRattrapage` pour savoir quels numéros de ligne lui donner.
+ * Diagnostic — n'écrit rien, n'envoie rien. Réponses par journée, avec la
+ * première et la dernière ligne de chacune.
  *
- * Pourquoi cette fonction existe : `preparerRattrapage` exige des numéros
- * de ligne, et un tableur de 383 réponses ne se lit pas à l'œil. Pire, se
- * tromper de borne coûte cher dans les deux sens — trop bas, on renvoie en
- * double ce qui est déjà en base ; trop haut, des familles restent
- * absentes le soir de l'événement.
- *
- * Journalise, pour chaque journée : la première et la dernière ligne, et
- * combien de réponses elle contient. Ce nombre se compare directement au
- * nombre de DÉCHARGES en base pour la même date (une ligne de tableur = une
- * décharge = une famille), ce qui dit sans ambiguïté quelle journée est
- * complète et laquelle ne l'est pas.
- *
- * Détaille ensuite les 25 dernières lignes avec leur heure : c'est là que
- * se trouve la frontière entre « perdu » et « déjà envoyé » le jour où le
- * script a été réparé en pleine journée.
+ * Ce nombre se compare directement au nombre de DÉCHARGES en base pour la
+ * même date (une ligne de tableur = une décharge = une famille), ce qui dit
+ * sans ambiguïté quelle journée est complète et laquelle ne l'est pas.
+ * Détaille ensuite les 25 dernières lignes avec leur heure.
  */
 function resumerTableur() {
   const feuille = feuilleReponses()
@@ -864,10 +749,9 @@ function resumerTableur() {
     return
   }
 
-  // Colonne A — l'horodateur, posé par Google Forms lui-même sur toute
-  // feuille de réponses. Lu par position et non par titre : c'est la seule
-  // colonne dont la place est garantie par Google, quel que soit le nom que
-  // porte l'en-tête dans la langue du compte.
+  // Colonne A — l'horodateur, pose par Google Forms sur toute feuille de
+  // reponses. Lu par POSITION et non par titre : c'est la seule colonne dont
+  // la place est garantie, quelle que soit la langue du compte.
   const horodateurs = feuille.getRange(2, 1, derniereLigne - 1, 1).getValues()
   const fuseau = Session.getScriptTimeZone()
 
@@ -888,13 +772,14 @@ function resumerTableur() {
     jours[jour].nombre += 1
   }
 
-  Logger.log('=== Réponses par journée (fuseau du script : ' + fuseau + ') ===')
-  ordre.forEach(function (jour) {
-    const j = jours[jour]
+  Logger.log('=== Reponses par journee (fuseau du script : ' + fuseau + ') ===')
+  for (let i = 0; i < ordre.length; i += 1) {
+    const j = jours[ordre[i]]
     Logger.log(
-      jour + ' : lignes ' + j.premiere + ' a ' + j.derniere + '  (' + j.nombre + ' reponse(s))',
+      ordre[i] + ' : lignes ' + j.premiere + ' a ' + j.derniere +
+        '  (' + j.nombre + ' reponse(s))',
     )
-  })
+  }
 
   const debutDetail = Math.max(2, derniereLigne - 24)
   Logger.log('=== Detail des dernieres lignes (' + debutDetail + ' a ' + derniereLigne + ') ===')
@@ -908,171 +793,14 @@ function resumerTableur() {
   }
 }
 
-/* ===========================================================================
- * MARQUAGE DES ENVOIS DIRECTS
- * ===========================================================================
- *
- * ⚠️ Défaut trouvé le 5 septembre 2026, juste après avoir écrit le
- * rattrapage — avant qu'il ne fasse de dégâts, mais de justesse.
- *
- * `onFormSubmit` envoie la soumission tout de suite, mais n'écrivait AUCUNE
- * marque dans le tableur : la colonne de suivi restait vide sur la ligne
- * correspondante. Le rattrapage automatique, qui traite précisément les
- * lignes non marquées, aurait donc renvoyé en double CHAQUE inscription
- * arrivée en direct, cinq minutes après son arrivée. Le tableau du staff
- * aurait compté deux fois chaque famille, un soir d'événement.
- *
- * Les deux chemins doivent donc écrire la même marque. Reste à retrouver
- * QUELLE ligne : l'événement de soumission ne porte pas de numéro de ligne.
- * Il porte un horodateur, et c'est exactement ce que Google Forms écrit en
- * colonne A. La correspondance se fait donc à la seconde près, sur les 50
- * dernières lignes seulement — celle qu'on cherche vient d'être ajoutée.
- */
-
 /**
- * Retrouve la ligne d'une soumission par son horodateur et y écrit `marque`.
- * Renvoie false si aucune correspondance — jamais d'exception.
- */
-function marquerLigneParHorodateur(horodateur, marque) {
-  if (!(horodateur instanceof Date)) return false
-
-  const feuille = feuilleReponses()
-  const suivi = preparerSuivi(feuille)
-  const derniereLigne = feuille.getLastRow()
-  if (derniereLigne < 2) return false
-
-  const debut = Math.max(2, derniereLigne - 49)
-  const colonneA = feuille.getRange(debut, 1, derniereLigne - debut + 1, 1).getValues()
-
-  // Comparaison à la SECONDE : le tableur et l'événement portent la même
-  // valeur, mais les millisecondes ne survivent pas toujours à l'écriture
-  // dans une cellule.
-  const cible = Math.floor(horodateur.getTime() / 1000)
-
-  // Du bas vers le haut — la ligne cherchée vient d'être ajoutée.
-  for (let i = colonneA.length - 1; i >= 0; i -= 1) {
-    const valeur = colonneA[i][0]
-    if (valeur instanceof Date && Math.floor(valeur.getTime() / 1000) === cible) {
-      feuille.getRange(debut + i, suivi.indice).setValue(marque)
-      return true
-    }
-  }
-
-  return false
-}
-
-/**
- * Marque la ligne d'un envoi direct réussi. Appelée par `onFormSubmit`
- * UNIQUEMENT après un 2xx — un échec reste sans marque exprès, pour que le
- * rattrapage le reprenne.
+ * Diagnostic — n'écrit rien, n'envoie rien. Ligne d'en-tête complète, puis
+ * les cellules non vides des 3 dernières lignes.
  *
- * Trois essais espacés : Google Forms écrit la ligne du tableur et déclenche
- * le script en parallèle, sans garantir l'ordre. La ligne peut donc ne pas
- * encore exister à la première recherche.
- *
- * Ne lève JAMAIS : l'envoi a déjà réussi à ce stade, un problème de marquage
- * ne doit pas transformer une soumission enregistrée en exception. Le pire
- * cas est un doublon, journalisé bruyamment pour être retrouvable.
- */
-function marquerApresEnvoiDirect(e, code) {
-  if (!e || !e.response || typeof e.response.getTimestamp !== 'function') {
-    Logger.log(
-      'AVERTISSEMENT : pas d\'horodateur dans l\'evenement (declencheur ' +
-        '« tableur » ?) — ligne non marquee, le rattrapage risque un doublon.',
-    )
-    return
-  }
-
-  const marque = 'OK direct ' + new Date().toISOString() + ' (' + code + ')'
-
-  for (let essai = 1; essai <= 3; essai += 1) {
-    try {
-      if (marquerLigneParHorodateur(e.response.getTimestamp(), marque)) {
-        Logger.log('Ligne du tableur marquee : ' + marque + ' (essai ' + essai + ').')
-        return
-      }
-    } catch (err) {
-      Logger.log('Marquage — echec de l\'essai ' + essai + ' : ' + err)
-    }
-    Utilities.sleep(2000)
-  }
-
-  Logger.log(
-    'AVERTISSEMENT : ligne introuvable dans le tableur apres 3 essais. ' +
-      'L\'inscription EST enregistree en base, mais le rattrapage pourrait ' +
-      'la renvoyer en double dans 5 minutes — surveiller la liste du staff.',
-  )
-}
-
-/* ===========================================================================
- * RACCOURCIS D'EXÉCUTION — 5 septembre 2026
- * ===========================================================================
- *
- * ⚠️ Pourquoi ces fonctions existent, alors qu'elles ne font qu'appeler une
- * autre fonction avec deux nombres : le bouton ▶ Exécuter de l'éditeur Apps
- * Script lance la fonction choisie SANS AUCUN ARGUMENT. Impossible d'y
- * taper `preparerRattrapage(130, 358)` — la fonction partirait avec des
- * paramètres `undefined`.
- *
- * Un raccourci nommé, avec ses bornes écrites en clair, est donc la seule
- * façon de déclencher une plage précise depuis l'éditeur. Il a un avantage
- * de plus : les numéros restent lisibles et vérifiables dans le dépôt,
- * plutôt que tapés à la volée un soir d'événement.
- *
- * Ces deux-là sont DATÉS et à USAGE UNIQUE. Une fois la journée du
- * 5 septembre rattrapée, elles ne servent plus à rien : les relancer ne
- * ferait que remettre en file des lignes déjà envoyées, donc les renvoyer
- * en double. À supprimer une fois le rattrapage confirmé.
- */
-
-/**
- * ⚠️ USAGE UNIQUE — mesuré le 5 septembre 2026 à 18 h 30.
- *
- * Les lignes 130 à 358 sont ABSENTES de la base, sans ambiguïté : la
- * journée du 5 septembre commence à la ligne 130 (fonction resumerTableur),
- * et la toute première inscription réellement enregistrée ce jour-là porte
- * l'heure 17:55:22 — soit la ligne 359, horodatée 17:55:18 dans le
- * formulaire, quatre secondes plus tôt, le temps de l'appel API.
- *
- * 229 familles. Ne rien envoyer ici : le déclencheur horaire les drainera
- * par paquets d'une centaine, en marquant chacune au passage.
- */
-function mettreEnFileLes229ManquantesDu5Septembre() {
-  preparerRattrapage(130, 358)
-}
-
-/**
- * ⚠️ DIAGNOSTIC — n'écrit rien, n'envoie rien.
- *
- * Les lignes 359 à 383 sont PANACHÉES : 25 réponses, dont 15 sont bien
- * arrivées en base et 10 se sont perdues. L'heure seule ne permet pas de
- * les départager (l'écart entre l'horodateur du formulaire et l'heure
- * d'insertion va de 3 à 13 secondes selon la charge), il faut comparer les
- * NOMS. Cette fonction les affiche.
- */
-function listerLaZoneAmbigueDu5Septembre() {
-  listerLignes(359, 383)
-}
-
-/**
- * ⚠️ DIAGNOSTIC BRUT — n'écrit rien, n'envoie rien.
- *
- * Affiche la LIGNE D'EN-TÊTE complète du tableur, colonne par colonne, puis
- * le contenu non vide des 3 dernières lignes.
- *
- * Écrit le 5 septembre 2026 devant un symptôme précis : 110 décharges
- * rattrapées, 110 participants — pas une seule fratrie, alors que les
- * journées précédentes tournaient à 1,8-2,0 enfants par décharge. Deux
- * explications possibles, et aucune ne se devine :
- *
- *   a) le formulaire refait ne prend qu'un enfant par soumission ;
- *   b) le script perd les blocs 2 à 5 parce que les colonnes répétées ne
- *      portent PAS le titre que `namedValuesDeLigne` attend.
- *
- * Le (b) est plausible : rien ne garantit que Google Sheets recopie un
- * titre de question à l'identique quand deux questions portent le même. Il
- * peut le suffixer, l'espacer, le numéroter. Cette fonction montre ce qui
- * est réellement écrit, plutôt que ce qu'on suppose.
+ * C'est cette fonction qui a révélé, le 5 septembre 2026, l'espace double
+ * dans « Participant  #1 - Prénom, Nom » et les « PRÉNOM, NOM » en
+ * majuscules des blocs 3 à 5. À relancer au moindre doute sur la structure
+ * du formulaire : elle montre ce qui EST écrit, pas ce qu'on suppose.
  */
 function inspecterEntetes() {
   const feuille = feuilleReponses()
@@ -1085,6 +813,16 @@ function inspecterEntetes() {
     Logger.log('col ' + (i + 1) + ' : [' + entetes[i] + ']')
   }
 
+  Logger.log('=== REPERES TROUVES ===')
+  const reperes = reperesParticipants(entetes)
+  for (let i = 0; i < reperes.length; i += 1) {
+    const r = reperes[i]
+    Logger.log(
+      'bloc ' + r.numero + ' : prenom col ' + (r.prenom + 1) +
+        ', nom col ' + (r.nom + 1) + ', age col ' + (r.age + 1),
+    )
+  }
+
   const debut = Math.max(2, derniereLigne - 2)
   Logger.log('=== CELLULES NON VIDES, lignes ' + debut + ' a ' + derniereLigne + ' ===')
   const donnees = feuille.getRange(debut, 1, derniereLigne - debut + 1, largeur).getValues()
@@ -1092,9 +830,37 @@ function inspecterEntetes() {
     Logger.log('--- ligne ' + (debut + i) + ' ---')
     for (let c = 0; c < largeur; c += 1) {
       const v = donnees[i][c]
-      if (v !== '' && v !== null && v !== undefined) {
-        Logger.log('  col ' + (c + 1) + ' = ' + v)
-      }
+      if (v !== '' && v !== null && v !== undefined) Logger.log('  col ' + (c + 1) + ' = ' + v)
     }
   }
+}
+
+/* ===========================================================================
+ * TESTS MANUELS
+ * =========================================================================== */
+
+/**
+ * Teste UNIQUEMENT jeton + URL + route. Crée une vraie ligne en base, à
+ * supprimer après vérification (prénom 'TEST_APPS_SCRIPT').
+ */
+function testerEnvoi() {
+  envoyer([{ prenom: 'TEST_APPS_SCRIPT', nom: 'TEST', age: '10' }])
+}
+
+/**
+ * Teste UNIQUEMENT la lecture, SANS appel réseau et SANS écriture.
+ *
+ * Relit les 3 dernières lignes réelles du tableur et affiche ce que le
+ * script en tirerait. C'est le test à lancer après toute modification du
+ * formulaire : si une fratrie de 3 s'affiche comme 3 participants, la
+ * lecture est bonne.
+ */
+function testerAnalyse() {
+  const feuille = feuilleReponses()
+  const derniereLigne = feuille.getLastRow()
+  if (derniereLigne < 2) {
+    Logger.log('Tableur vide.')
+    return
+  }
+  listerLignes(Math.max(2, derniereLigne - 2), derniereLigne)
 }
