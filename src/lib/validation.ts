@@ -345,7 +345,17 @@ export const schemaDechargeNerf = z.object({
     .array(
       z.object({
         prenom: z.string().trim().min(1).max(100),
-        nom: z.string().trim().min(1).max(100),
+        // ⚠️ PAS de `.min(1)` sur le nom — assoupli le 5 septembre 2026, en
+        // pleine journée d'événement. Le formulaire a été refait : prénom et
+        // nom sont désormais saisis dans UN SEUL champ (« Prénom, Nom »), que
+        // l'Apps Script sépare. Un parent qui n'écrit qu'un prénom produit
+        // donc un nom vide — légitime, et la base l'accepte (colonne NOT NULL,
+        // mais la chaîne vide en est une valeur valide).
+        //
+        // Le refuser rejetait TOUTE la soumission, donc toute la fratrie, pour
+        // un nom de famille manquant sur un seul enfant. Perdre une famille
+        // entière coûte plus cher qu'un nom incomplet.
+        nom: z.string().trim().max(100),
         // z.coerce : le champ Google Form est un champ texte, l'âge arrive
         // donc en chaîne (« 10 ») depuis l'Apps Script, jamais en nombre.
         age: z.coerce.number().int().min(1).max(129),

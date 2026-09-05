@@ -146,22 +146,58 @@ const URL_SITE = 'https://ko-lab-center.ca/api/mission-nerf/decharges'
  * 1 à 5, vérifié) — incohérence de contenu à signaler à Christian, sans
  * lien avec ce script : les 5 blocs sont réels, la liste ci-dessous reste à
  * 5 volontairement.
+/**
+ * Titres EXACTS des questions du formulaire — RÉÉCRITS le 5 septembre 2026,
+ * en pleine journée d'événement, après lecture des journaux d'une vraie
+ * exécution.
  *
- * Volontairement ABSENTS de cette liste : « Autorisez-vous cet enfant à
- * participer? » et « Souhaitez-vous inscrire un autre enfant? » — ces deux
- * titres se RÉPÈTENT identiques pour chacun des 5 participants, ce qui rend
- * `e.namedValues` ambigu pour eux (une seule clé, plusieurs réponses
- * mélangées). Sans besoin de ces deux champs côté site, le problème ne se
- * pose jamais ici.
+ * ⚠️ LE FORMULAIRE A ÉTÉ REFAIT — l'ancienne liste ne correspondait plus à
+ * RIEN. Le script trouvait 0 participant et sortait sans jamais appeler
+ * l'API : exécutions « Terminée », aucune erreur, aucune donnée. 320 lignes
+ * dans le tableur, zéro en base.
+ *
+ * Titres réellement reçus (ligne « Clés réelles » du journal) :
+ *
+ *   "Participant #1 - Prénom, Nom"   "Participant #1 - ÂGE "
+ *   "Prénom, Nom"                    "ÂGE "
+ *
+ * Trois différences de fond avec l'ancien formulaire :
+ *   1. Prénom et nom sont FUSIONNÉS dans un seul champ.
+ *   2. Seul le participant 1 est numéroté. Les suivants réutilisent les
+ *      MÊMES titres, sans numéro — ils arrivent donc empilés dans un
+ *      tableau sous une seule clé (voir la boucle dans onFormSubmit).
+ *   3. « ÂGE » porte un ESPACE FINAL. Invisible à l'œil, fatal à la
+ *      comparaison : ne jamais retirer cet espace en « nettoyant » ce
+ *      fichier sans revérifier le journal.
  */
-const CHAMPS_PARTICIPANT = [1, 2, 3, 4, 5].map(function (n) {
-  return {
-    index: n,
-    prenom: 'Prénom du participant ' + n,
-    nom: 'Nom du participant ' + n,
-    age: 'Âge du participant ' + n,
+const TITRE_P1_NOM = 'Participant #1 - Prénom, Nom'
+const TITRE_P1_AGE = 'Participant #1 - ÂGE '
+const TITRE_SUITE_NOM = 'Prénom, Nom'
+const TITRE_SUITE_AGE = 'ÂGE '
+
+/**
+ * Sépare « Prénom, Nom » en deux champs — le formulaire ne les distingue
+ * plus, la base et l'API si.
+ *
+ * Accepte la virgule (format annoncé par le titre) comme l'espace simple,
+ * parce qu'un parent qui remplit à la main écrit « Jean Dupont » aussi
+ * souvent que « Jean, Dupont ». Sans séparateur, tout part dans le prénom
+ * et le nom reste vide — l'API l'accepte depuis le 5 septembre 2026, plutôt
+ * que de rejeter TOUTE la famille pour un nom manquant.
+ */
+function separerNomComplet(brut) {
+  const texte = (brut || '').trim()
+  if (texte === '') return { prenom: '', nom: '' }
+
+  const parVirgule = texte.split(',')
+  if (parVirgule.length > 1) {
+    return { prenom: parVirgule[0].trim(), nom: parVirgule.slice(1).join(',').trim() }
   }
-})
+
+  const morceaux = texte.split(/s+/)
+  if (morceaux.length === 1) return { prenom: morceaux[0], nom: '' }
+  return { prenom: morceaux[0], nom: morceaux.slice(1).join(' ') }
+}
 
 /**
  * Lit UN champ de e.namedValues, en distinguant deux cas très différents :
@@ -274,54 +310,67 @@ function onFormSubmit(e) {
 
     const participants = []
 
-    CHAMPS_PARTICIPANT.forEach(function (bloc) {
-      const prenom = champ(namedValues, bloc.prenom)
-      const nom = champ(namedValues, bloc.nom)
-      const age = champ(namedValues, bloc.age)
+    /**
+     * Empile un participant si son identité est exploitable.
+     * Un âge vide ou non numérique est envoyé tel quel : c'est l'API qui
+     * tranche (elle convertit et borne), pas ce script.
+     */
+    function ajouterParticipant(nomComplet, age, provenance) {
+      const identite = separerNomComplet(nomComplet)
+      if (identite.prenom === '') return
 
-      const manquants = [prenom.manquant, nom.manquant, age.manquant]
-      const tousManquants = manquants.every(function (m) { return m })
-      const aucunManquant = manquants.every(function (m) { return !m })
-
-      // Les 3 questions d'un même bloc sont TOUJOURS présentées ensemble par
-      // la logique conditionnelle du formulaire (« Souhaitez-vous inscrire
-      // un autre enfant? ») — soit les 3 existent dans namedValues, soit
-      // aucune. Les 3 manquantes à la fois = normal, ce bloc n'a jamais été
-      // proposé à ce répondant. Rien à journaliser bruyamment.
-      if (tousManquants) return
-
-      // Un état MIXTE (1 ou 2 titres manquants sur les 3) ne peut PAS venir
-      // du formulaire lui-même — seulement d'un titre mal recopié dans
-      // CHAMPS_PARTICIPANT. C'est ÇA, la vraie erreur à signaler, distincte
-      // d'un bloc simplement non rempli.
-      if (!aucunManquant) {
-        const titresManquants = []
-        if (prenom.manquant) titresManquants.push('"' + bloc.prenom + '"')
-        if (nom.manquant) titresManquants.push('"' + bloc.nom + '"')
-        if (age.manquant) titresManquants.push('"' + bloc.age + '"')
-
+      // ⚠️ Un âge inexploitable écarte CE participant, pas toute la fratrie.
+      // L'API valide le tableau entier : un seul âge vide ou non numérique la
+      // fait répondre 400 et TOUTE la soumission est perdue. Mieux vaut
+      // enregistrer les frères et sœurs valides et signaler celui-ci dans le
+      // journal, que tout perdre en silence.
+      const ageTexte = (age || '').trim()
+      if (!/^d{1,3}$/.test(ageTexte) || Number(ageTexte) < 1) {
         Logger.log(
-          'TITRE INTROUVABLE — participant ' + bloc.index + ' : ' +
-            titresManquants.join(', ') +
-            ' absent(s) de e.namedValues alors que d\'autres titres du même ' +
-            'bloc SONT présents (voir la liste des clés réelles ci-dessus). ' +
-            'Un accent, une majuscule ou un espace a changé sur le ' +
-            'formulaire — CHAMPS_PARTICIPANT doit être corrigé pour ' +
-            'correspondre EXACTEMENT. Ce participant est ignoré pour cette ' +
-            'soumission tant que ce n\'est pas corrigé.',
+          'PARTICIPANT ÉCARTÉ (' + provenance + ') : « ' + identite.prenom +
+            ' » a un âge inexploitable (« ' + ageTexte + '  »). Les autres ' +
+            'participants de cette soumission sont envoyés normalement.',
         )
         return
       }
 
-      if (prenom.valeur === '') {
-        // Les 3 titres existent mais le prénom est vide — improbable si la
-        // question est obligatoire côté formulaire, gardé par sécurité :
-        // jamais une ligne fantôme plutôt qu'une supposition.
-        return
-      }
+      participants.push({ prenom: identite.prenom, nom: identite.nom, age: ageTexte })
+      Logger.log(
+        'Participant retenu (' + provenance + ') : ' + identite.prenom +
+          ' / ' + (identite.nom || '(sans nom)') + ' / âge ' + ageTexte,
+      )
+    }
 
-      participants.push({ prenom: prenom.valeur, nom: nom.valeur, age: age.valeur })
-    })
+    // Participant 1 — seul à porter un titre numéroté.
+    const p1Nom = champ(namedValues, TITRE_P1_NOM)
+    const p1Age = champ(namedValues, TITRE_P1_AGE)
+    if (p1Nom.manquant) {
+      Logger.log(
+        'TITRE INTROUVABLE : "' + TITRE_P1_NOM + '" absent de cette soumission. ' +
+          'Le formulaire a probablement été modifié — comparer avec la ligne ' +
+          '« Clés réelles » ci-dessus et corriger les constantes TITRE_* en tête ' +
+          'de ce fichier.',
+      )
+    } else {
+      ajouterParticipant(p1Nom.valeur, p1Age.valeur, 'participant #1')
+    }
+
+    // Participants 2 et suivants — MÊMES titres répétés, donc plusieurs
+    // réponses empilées sous une seule clé, dans l'ordre du formulaire.
+    // Les deux tableaux sont parallèles : le nom d'indice i va avec l'âge
+    // d'indice i.
+    const nomsSuite = namedValues[TITRE_SUITE_NOM] || []
+    const agesSuite = namedValues[TITRE_SUITE_AGE] || []
+    if (nomsSuite.length !== agesSuite.length) {
+      Logger.log(
+        'ATTENTION : ' + nomsSuite.length + ' nom(s) pour ' + agesSuite.length +
+          ' âge(s) dans les blocs suivants — appariement par indice quand même, ' +
+          'les âges manquants partiront vides.',
+      )
+    }
+    for (let i = 0; i < nomsSuite.length; i += 1) {
+      ajouterParticipant(nomsSuite[i], agesSuite[i], 'bloc suivant #' + (i + 2))
+    }
 
     Logger.log('Participants retenus pour l\'envoi : ' + participants.length)
 
@@ -407,11 +456,15 @@ function testerEnvoi() {
 function testerAnalyse() {
   onFormSubmit({
     namedValues: {
-      'Prénom du participant 1': ['Test'],
-      'Nom du participant 1': ['Analyse'],
-      // Titre volontairement faux (mauvaise majuscule) — devrait être
-      // "Âge du participant 1" :
-      'age du participant 1': ['9'],
+      // Participant 1 — titre numéroté, nom complet en un seul champ.
+      'Participant #1 - Prénom, Nom': ['Test Analyse'],
+      'Participant #1 - ÂGE ': ['9'],
+      // Deux participants supplémentaires : MÊMES titres répétés, empilés
+      // dans un tableau — c'est la forme réelle du formulaire depuis sa
+      // refonte. Le second n'a qu'un prénom, pour vérifier que le nom vide
+      // ne fait plus tomber toute la soumission.
+      'Prénom, Nom': ['Alex, Tremblay', 'Sam'],
+      'ÂGE ': ['7', '11'],
     },
   })
 }
