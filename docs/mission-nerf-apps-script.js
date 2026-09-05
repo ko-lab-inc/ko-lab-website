@@ -194,7 +194,7 @@ function separerNomComplet(brut) {
     return { prenom: parVirgule[0].trim(), nom: parVirgule.slice(1).join(',').trim() }
   }
 
-  const morceaux = texte.split(/s+/)
+  const morceaux = texte.split(/\s+/)
   if (morceaux.length === 1) return { prenom: morceaux[0], nom: '' }
   return { prenom: morceaux[0], nom: morceaux.slice(1).join(' ') }
 }
@@ -325,10 +325,10 @@ function onFormSubmit(e) {
       // enregistrer les frères et sœurs valides et signaler celui-ci dans le
       // journal, que tout perdre en silence.
       const ageTexte = (age || '').trim()
-      if (!/^d{1,3}$/.test(ageTexte) || Number(ageTexte) < 1) {
+      if (!/^\d{1,3}$/.test(ageTexte) || Number(ageTexte) < 1) {
         Logger.log(
           'PARTICIPANT ÉCARTÉ (' + provenance + ') : « ' + identite.prenom +
-            ' » a un âge inexploitable (« ' + ageTexte + '  »). Les autres ' +
+            ' » a un âge inexploitable (« ' + ageTexte + ' »). Les autres ' +
             'participants de cette soumission sont envoyés normalement.',
         )
         return
