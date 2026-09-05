@@ -1053,3 +1053,48 @@ function mettreEnFileLes229ManquantesDu5Septembre() {
 function listerLaZoneAmbigueDu5Septembre() {
   listerLignes(359, 383)
 }
+
+/**
+ * ⚠️ DIAGNOSTIC BRUT — n'écrit rien, n'envoie rien.
+ *
+ * Affiche la LIGNE D'EN-TÊTE complète du tableur, colonne par colonne, puis
+ * le contenu non vide des 3 dernières lignes.
+ *
+ * Écrit le 5 septembre 2026 devant un symptôme précis : 110 décharges
+ * rattrapées, 110 participants — pas une seule fratrie, alors que les
+ * journées précédentes tournaient à 1,8-2,0 enfants par décharge. Deux
+ * explications possibles, et aucune ne se devine :
+ *
+ *   a) le formulaire refait ne prend qu'un enfant par soumission ;
+ *   b) le script perd les blocs 2 à 5 parce que les colonnes répétées ne
+ *      portent PAS le titre que `namedValuesDeLigne` attend.
+ *
+ * Le (b) est plausible : rien ne garantit que Google Sheets recopie un
+ * titre de question à l'identique quand deux questions portent le même. Il
+ * peut le suffixer, l'espacer, le numéroter. Cette fonction montre ce qui
+ * est réellement écrit, plutôt que ce qu'on suppose.
+ */
+function inspecterEntetes() {
+  const feuille = feuilleReponses()
+  const largeur = feuille.getLastColumn()
+  const derniereLigne = feuille.getLastRow()
+
+  const entetes = feuille.getRange(1, 1, 1, largeur).getValues()[0]
+  Logger.log('=== EN-TETES (' + largeur + ' colonnes) ===')
+  for (let i = 0; i < entetes.length; i += 1) {
+    Logger.log('col ' + (i + 1) + ' : [' + entetes[i] + ']')
+  }
+
+  const debut = Math.max(2, derniereLigne - 2)
+  Logger.log('=== CELLULES NON VIDES, lignes ' + debut + ' a ' + derniereLigne + ' ===')
+  const donnees = feuille.getRange(debut, 1, derniereLigne - debut + 1, largeur).getValues()
+  for (let i = 0; i < donnees.length; i += 1) {
+    Logger.log('--- ligne ' + (debut + i) + ' ---')
+    for (let c = 0; c < largeur; c += 1) {
+      const v = donnees[i][c]
+      if (v !== '' && v !== null && v !== undefined) {
+        Logger.log('  col ' + (c + 1) + ' = ' + v)
+      }
+    }
+  }
+}
