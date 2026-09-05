@@ -720,3 +720,75 @@ function initialiserSuivi() {
 function rattraperPlage(ligneDebut, ligneFin) {
   traiterLignes(ligneDebut, ligneFin, true)
 }
+
+/**
+ * Diagnostic — n'écrit RIEN, n'envoie RIEN. À exécuter avant
+ * `rattraperPlage` pour savoir quels numéros de ligne lui donner.
+ *
+ * Pourquoi cette fonction existe : `rattraperPlage` exige des numéros de
+ * ligne, et un tableur de 376 réponses ne se lit pas à l'œil. Pire, se
+ * tromper de borne coûte cher dans les deux sens — trop bas, on renvoie en
+ * double ce qui est déjà en base ; trop haut, des familles restent
+ * absentes le soir de l'événement.
+ *
+ * Journalise, pour chaque journée : la première et la dernière ligne, et
+ * combien de réponses elle contient. Ce nombre se compare directement au
+ * nombre de DÉCHARGES en base pour la même date (une ligne de tableur = une
+ * décharge = une famille), ce qui dit sans ambiguïté quelle journée est
+ * complète et laquelle ne l'est pas.
+ *
+ * Détaille ensuite les 25 dernières lignes avec leur heure : c'est là que
+ * se trouve la frontière entre « perdu » et « déjà envoyé » le jour où le
+ * script a été réparé en pleine journée.
+ */
+function resumerTableur() {
+  const feuille = feuilleReponses()
+  const derniereLigne = feuille.getLastRow()
+  if (derniereLigne < 2) {
+    Logger.log('Tableur vide.')
+    return
+  }
+
+  // Colonne A — l'horodateur, posé par Google Forms lui-même sur toute
+  // feuille de réponses. Lu par position et non par titre : c'est la seule
+  // colonne dont la place est garantie par Google, quel que soit le nom que
+  // porte l'en-tête dans la langue du compte.
+  const horodateurs = feuille.getRange(2, 1, derniereLigne - 1, 1).getValues()
+  const fuseau = Session.getScriptTimeZone()
+
+  const jours = {}
+  const ordre = []
+
+  for (let i = 0; i < horodateurs.length; i += 1) {
+    const ligne = i + 2
+    const brut = horodateurs[i][0]
+    const jour =
+      brut instanceof Date ? Utilities.formatDate(brut, fuseau, 'yyyy-MM-dd') : '(sans date)'
+
+    if (!jours[jour]) {
+      jours[jour] = { premiere: ligne, derniere: ligne, nombre: 0 }
+      ordre.push(jour)
+    }
+    jours[jour].derniere = ligne
+    jours[jour].nombre += 1
+  }
+
+  Logger.log('=== Réponses par journée (fuseau du script : ' + fuseau + ') ===')
+  ordre.forEach(function (jour) {
+    const j = jours[jour]
+    Logger.log(
+      jour + ' : lignes ' + j.premiere + ' a ' + j.derniere + '  (' + j.nombre + ' reponse(s))',
+    )
+  })
+
+  const debutDetail = Math.max(2, derniereLigne - 24)
+  Logger.log('=== Detail des dernieres lignes (' + debutDetail + ' a ' + derniereLigne + ') ===')
+  for (let ligne = debutDetail; ligne <= derniereLigne; ligne += 1) {
+    const brut = horodateurs[ligne - 2][0]
+    const affiche =
+      brut instanceof Date
+        ? Utilities.formatDate(brut, fuseau, 'yyyy-MM-dd HH:mm:ss')
+        : String(brut)
+    Logger.log('ligne ' + ligne + ' : ' + affiche)
+  }
+}
