@@ -262,6 +262,78 @@ function construireNamedValuesDepuisReponse(reponse) {
 }
 
 /**
+ * Age exploitable ? Test NUMERIQUE, volontairement SANS expression
+ * reguliere.
+ *
+ * La version precedente utilisait une regex dont l'antislash a ete perdu
+ * lors d'une reecriture (5 septembre 2026) : le motif cherchait alors la
+ * lettre d au lieu d'un chiffre, et TOUS les participants etaient ecartes.
+ * Un test arithmetique ne peut pas se casser de cette facon.
+ */
+function ageExploitable(texte) {
+  if (texte === '') return false
+  const n = Number(texte)
+  return isFinite(n) && Math.floor(n) === n && n >= 1 && n <= 129
+}
+
+/**
+ * Construit la liste des participants a envoyer, a partir d'une map
+ * titre -> reponses.
+ *
+ * Au niveau superieur (et non plus imbriquee dans onFormSubmit) pour etre
+ * partagee avec le rattrapage : les deux chemins doivent lire le formulaire
+ * EXACTEMENT de la meme facon, sinon un rattrapage produirait des donnees
+ * differentes d'un enregistrement en direct.
+ */
+function construireParticipants(namedValues) {
+  const participants = []
+
+  function ajouter(nomComplet, age, provenance) {
+    const identite = separerNomComplet(nomComplet)
+    if (identite.prenom === '') return
+
+    // Un age inexploitable ecarte CE participant, pas toute la fratrie :
+    // l'API valide le tableau entier, un seul age invalide la ferait
+    // repondre 400 et TOUTE la soumission serait perdue.
+    const ageTexte = (age || '').trim()
+    if (!ageExploitable(ageTexte)) {
+      Logger.log(
+        'PARTICIPANT ECARTE (' + provenance + ') : ' + identite.prenom +
+          ' a un age inexploitable (' + ageTexte + '). Les autres sont envoyes.',
+      )
+      return
+    }
+
+    participants.push({ prenom: identite.prenom, nom: identite.nom, age: ageTexte })
+    Logger.log(
+      'Participant retenu (' + provenance + ') : ' + identite.prenom +
+        ' / ' + (identite.nom || '(sans nom)') + ' / age ' + ageTexte,
+    )
+  }
+
+  const p1Nom = champ(namedValues, TITRE_P1_NOM)
+  const p1Age = champ(namedValues, TITRE_P1_AGE)
+  if (p1Nom.manquant) {
+    Logger.log(
+      'TITRE INTROUVABLE : ' + TITRE_P1_NOM + ' absent. Le formulaire a ' +
+        'probablement ete modifie : comparer avec la ligne Cles reelles et ' +
+        'corriger les constantes TITRE_* en tete de fichier.',
+    )
+  } else {
+    ajouter(p1Nom.valeur, p1Age.valeur, 'participant #1')
+  }
+
+  // Participants 2 et suivants : MEMES titres repetes, donc reponses
+  // empilees sous une seule cle. Tableaux paralleles, indice par indice.
+  const nomsSuite = namedValues[TITRE_SUITE_NOM] || []
+  const agesSuite = namedValues[TITRE_SUITE_AGE] || []
+  for (let i = 0; i < nomsSuite.length; i += 1) {
+    ajouter(nomsSuite[i], agesSuite[i], 'bloc suivant #' + (i + 2))
+  }
+
+  return participants
+}
+/**
  * Déclenchée automatiquement par le déclencheur INSTALLABLE (voir plus
  * haut) à chaque soumission du formulaire.
  *
@@ -308,69 +380,7 @@ function onFormSubmit(e) {
     Logger.log('Nombre de questions reçues dans cette soumission : ' + clesReelles.length)
     Logger.log('Clés réelles : ' + versJsonSur(clesReelles))
 
-    const participants = []
-
-    /**
-     * Empile un participant si son identité est exploitable.
-     * Un âge vide ou non numérique est envoyé tel quel : c'est l'API qui
-     * tranche (elle convertit et borne), pas ce script.
-     */
-    function ajouterParticipant(nomComplet, age, provenance) {
-      const identite = separerNomComplet(nomComplet)
-      if (identite.prenom === '') return
-
-      // ⚠️ Un âge inexploitable écarte CE participant, pas toute la fratrie.
-      // L'API valide le tableau entier : un seul âge vide ou non numérique la
-      // fait répondre 400 et TOUTE la soumission est perdue. Mieux vaut
-      // enregistrer les frères et sœurs valides et signaler celui-ci dans le
-      // journal, que tout perdre en silence.
-      const ageTexte = (age || '').trim()
-      if (!/^\d{1,3}$/.test(ageTexte) || Number(ageTexte) < 1) {
-        Logger.log(
-          'PARTICIPANT ÉCARTÉ (' + provenance + ') : « ' + identite.prenom +
-            ' » a un âge inexploitable (« ' + ageTexte + ' »). Les autres ' +
-            'participants de cette soumission sont envoyés normalement.',
-        )
-        return
-      }
-
-      participants.push({ prenom: identite.prenom, nom: identite.nom, age: ageTexte })
-      Logger.log(
-        'Participant retenu (' + provenance + ') : ' + identite.prenom +
-          ' / ' + (identite.nom || '(sans nom)') + ' / âge ' + ageTexte,
-      )
-    }
-
-    // Participant 1 — seul à porter un titre numéroté.
-    const p1Nom = champ(namedValues, TITRE_P1_NOM)
-    const p1Age = champ(namedValues, TITRE_P1_AGE)
-    if (p1Nom.manquant) {
-      Logger.log(
-        'TITRE INTROUVABLE : "' + TITRE_P1_NOM + '" absent de cette soumission. ' +
-          'Le formulaire a probablement été modifié — comparer avec la ligne ' +
-          '« Clés réelles » ci-dessus et corriger les constantes TITRE_* en tête ' +
-          'de ce fichier.',
-      )
-    } else {
-      ajouterParticipant(p1Nom.valeur, p1Age.valeur, 'participant #1')
-    }
-
-    // Participants 2 et suivants — MÊMES titres répétés, donc plusieurs
-    // réponses empilées sous une seule clé, dans l'ordre du formulaire.
-    // Les deux tableaux sont parallèles : le nom d'indice i va avec l'âge
-    // d'indice i.
-    const nomsSuite = namedValues[TITRE_SUITE_NOM] || []
-    const agesSuite = namedValues[TITRE_SUITE_AGE] || []
-    if (nomsSuite.length !== agesSuite.length) {
-      Logger.log(
-        'ATTENTION : ' + nomsSuite.length + ' nom(s) pour ' + agesSuite.length +
-          ' âge(s) dans les blocs suivants — appariement par indice quand même, ' +
-          'les âges manquants partiront vides.',
-      )
-    }
-    for (let i = 0; i < nomsSuite.length; i += 1) {
-      ajouterParticipant(nomsSuite[i], agesSuite[i], 'bloc suivant #' + (i + 2))
-    }
+    const participants = construireParticipants(namedValues)
 
     Logger.log('Participants retenus pour l\'envoi : ' + participants.length)
 
@@ -394,7 +404,9 @@ function envoyer(participants) {
       'MISSION_NERF_TOKEN absent des propriétés du script — voir la ' +
         'section CONFIGURATION en tête de fichier. Envoi annulé.',
     )
-    return
+    // 0 = « pas même tenté ». L'appelant le traite comme un échec, donc la
+    // ligne reste à retenter une fois le jeton configuré.
+    return 0
   }
 
   const reponse = UrlFetchApp.fetch(URL_SITE, {
@@ -408,11 +420,16 @@ function envoyer(participants) {
     muteHttpExceptions: true,
   })
 
-  Logger.log(
-    'Envoi Mission NERF — statut %s, réponse : %s',
-    reponse.getResponseCode(),
-    reponse.getContentText(),
-  )
+  const code = reponse.getResponseCode()
+
+  Logger.log('Envoi Mission NERF — statut %s, réponse : %s', code, reponse.getContentText())
+
+  // ⚠️ Le code HTTP est RENVOYÉ, pas seulement journalisé : c'est lui qui
+  // permet au rattrapage automatique de marquer la ligne « OK » ou
+  // « ERREUR » dans le tableur. Sans cette valeur de retour, il serait
+  // incapable de distinguer un envoi réussi d'un rejet, et remarquerait
+  // toutes les lignes comme traitées.
+  return code
 }
 
 /**
@@ -467,4 +484,239 @@ function testerAnalyse() {
       'ÂGE ': ['7', '11'],
     },
   })
+}
+
+/* ===========================================================================
+ * RATTRAPAGE AUTOMATIQUE
+ * ===========================================================================
+ *
+ * Pourquoi ce mécanisme existe : le 5 septembre 2026, le formulaire a été
+ * refait et le script ne reconnaissait plus aucun titre de question. Il
+ * sortait sans rien envoyer et sans erreur. 320 lignes se sont accumulées
+ * dans le tableur pendant qu'on croyait le système sain — et une fois le bug
+ * corrigé, elles ne sont PAS remontées toutes seules : `onFormSubmit` ne se
+ * déclenche qu'à une NOUVELLE soumission, jamais rétroactivement.
+ *
+ * Ce rattrapage supprime cette classe de panne : même si l'envoi en direct
+ * échoue (bug, coupure réseau, quota Google), la ligne finit par partir.
+ *
+ * ---------------------------------------------------------------------------
+ * COMMENT LES DOUBLONS SONT ÉVITÉS
+ * ---------------------------------------------------------------------------
+ * Une colonne de suivi est ajoutée à la FIN du tableur de réponses. Chaque
+ * ligne y porte son état : « OK » avec la date, ou « ERREUR » avec le code
+ * HTTP. Seules les lignes dont cette cellule est VIDE sont traitées.
+ *
+ * C'est la seule méthode fiable ici : un simple compteur de dernière ligne
+ * traitée sauterait définitivement toute ligne ayant échoué une fois. Écrite
+ * dans le tableur, la marque reste lisible par un humain, survit à une
+ * réinstallation du script, et se corrige à la main (vider la cellule
+ * suffit à forcer un réessai).
+ *
+ * ---------------------------------------------------------------------------
+ * ⚠️ À FAIRE UNE SEULE FOIS, AVANT D'ACTIVER LE DÉCLENCHEUR HORAIRE
+ * ---------------------------------------------------------------------------
+ * Les lignes déjà envoyées en direct n'ont évidemment aucune marque. Sans
+ * précaution, le premier rattrapage les renverrait TOUTES en double.
+ *
+ *   1. Exécuter `initialiserSuivi()` — marque toutes les lignes existantes
+ *      comme déjà traitées, SANS RIEN ENVOYER.
+ *   2. Puis `rattraperPlage(debut, fin)` sur les seules lignes réellement
+ *      absentes de la base (numéros lus dans le tableur, en-tête = ligne 1).
+ *   3. Enfin, poser le déclencheur horaire :
+ *        Déclencheurs > + Ajouter un déclencheur
+ *        Fonction : rattrapageAutomatique
+ *        Source   : Horaire > Minuteur > Toutes les 5 minutes
+ *
+ * ---------------------------------------------------------------------------
+ * LIMITES RESPECTÉES
+ * ---------------------------------------------------------------------------
+ * L'API plafonne à 30 requêtes par minute et par IP ; Apps Script coupe une
+ * exécution à 6 minutes. Chaque envoi est donc suivi d'une pause, et la
+ * boucle s'arrête d'elle-même avant la limite de temps. Ce qui n'a pas été
+ * traité repart au passage suivant, cinq minutes plus tard.
+ */
+
+/** Titre de la colonne de suivi, ajoutée au tableur si elle n'existe pas. */
+const COLONNE_SUIVI = 'Envoi KO-LAB'
+
+/** Pause entre deux envois — l'API plafonne à 30/min, on reste très en dessous. */
+const PAUSE_ENTRE_ENVOIS_MS = 2500
+
+/** Marge avant la coupure à 6 minutes imposée par Apps Script. */
+const DUREE_MAX_MS = 4 * 60 * 1000
+
+/**
+ * Ouvre la feuille de réponses liée au formulaire.
+ *
+ * L'identifiant du tableur est demandé au formulaire lui-même : rien à
+ * configurer à la main, et rien à corriger si le tableur est un jour recréé.
+ */
+function feuilleReponses() {
+  const idTableur = FormApp.getActiveForm().getDestinationId()
+  if (!idTableur) {
+    throw new Error(
+      "Ce formulaire n'a pas de tableur de réponses lié. Dans le formulaire : " +
+        'onglet Réponses > icône tableur > créer ou sélectionner une feuille.',
+    )
+  }
+  return SpreadsheetApp.openById(idTableur).getSheets()[0]
+}
+
+/**
+ * Indice (base 1) de la colonne de suivi, créée au besoin.
+ * Renvoie aussi les en-têtes, pour éviter une seconde lecture du tableur.
+ */
+function preparerSuivi(feuille) {
+  const derniereColonne = feuille.getLastColumn()
+  const entetes = feuille.getRange(1, 1, 1, derniereColonne).getValues()[0]
+
+  let indice = entetes.indexOf(COLONNE_SUIVI) + 1
+  if (indice === 0) {
+    indice = derniereColonne + 1
+    feuille.getRange(1, indice).setValue(COLONNE_SUIVI)
+    Logger.log('Colonne de suivi créée en position ' + indice)
+  }
+
+  return { indice: indice, entetes: entetes }
+}
+
+/**
+ * Reconstruit une map titre → tableau de réponses pour UNE ligne du tableur.
+ *
+ * Un titre répété (les blocs participants 2 à 5) occupe PLUSIEURS colonnes
+ * portant le même en-tête. Elles sont empilées dans le même tableau, dans
+ * l'ordre des colonnes — exactement la forme qu'attend
+ * `construireParticipants`, identique à celle d'un envoi en direct. C'est ce
+ * qui garantit qu'une ligne rattrapée produit les mêmes données qu'une ligne
+ * envoyée sur le moment.
+ */
+function namedValuesDeLigne(entetes, valeurs) {
+  const map = {}
+  for (let i = 0; i < entetes.length; i += 1) {
+    const titre = String(entetes[i])
+    if (titre === '' || titre === COLONNE_SUIVI) continue
+    const brut = valeurs[i]
+    const valeur = brut === null || brut === undefined ? '' : String(brut)
+    map[titre] = map[titre] ? map[titre].concat([valeur]) : [valeur]
+  }
+  return map
+}
+
+/**
+ * Moteur commun du rattrapage.
+ *
+ * `forcer` ignore la marque existante — réservé à `rattraperPlage`, jamais
+ * utilisé par le déclencheur automatique.
+ */
+function traiterLignes(ligneDebut, ligneFin, forcer) {
+  const debutMs = Date.now()
+  const feuille = feuilleReponses()
+  const suivi = preparerSuivi(feuille)
+  const derniereLigne = feuille.getLastRow()
+
+  const fin = Math.min(ligneFin || derniereLigne, derniereLigne)
+  const debut = Math.max(ligneDebut || 2, 2)
+  if (fin < debut) {
+    Logger.log('Aucune ligne à traiter.')
+    return
+  }
+
+  const largeur = feuille.getLastColumn()
+  const donnees = feuille.getRange(debut, 1, fin - debut + 1, largeur).getValues()
+
+  let envoyees = 0
+  let ignorees = 0
+  let echecs = 0
+
+  for (let i = 0; i < donnees.length; i += 1) {
+    if (Date.now() - debutMs > DUREE_MAX_MS) {
+      Logger.log(
+        'Limite de temps atteinte — arrêt volontaire à la ligne ' + (debut + i) +
+          '. Le reste partira au prochain passage.',
+      )
+      break
+    }
+
+    const ligne = debut + i
+    const marque = donnees[i][suivi.indice - 1]
+    const dejaTraitee = marque !== '' && marque !== null && marque !== undefined
+    if (!forcer && dejaTraitee) {
+      ignorees += 1
+      continue
+    }
+
+    const participants = construireParticipants(namedValuesDeLigne(suivi.entetes, donnees[i]))
+    if (participants.length === 0) {
+      feuille.getRange(ligne, suivi.indice).setValue('VIDE — aucun participant lisible')
+      ignorees += 1
+      continue
+    }
+
+    const code = envoyer(participants)
+    if (code >= 200 && code < 300) {
+      feuille.getRange(ligne, suivi.indice).setValue('OK ' + new Date().toISOString())
+      envoyees += 1
+    } else {
+      // Marque d'échec EXPLICITE : la ligne reste identifiable par un humain,
+      // mais ne sera pas retentée en boucle à chaque passage si la cause est
+      // permanente. Vider la cellule suffit à forcer un réessai.
+      feuille.getRange(ligne, suivi.indice).setValue('ERREUR ' + code)
+      echecs += 1
+    }
+
+    Utilities.sleep(PAUSE_ENTRE_ENVOIS_MS)
+  }
+
+  Logger.log(
+    'Rattrapage terminé — ' + envoyees + ' envoyée(s), ' + ignorees +
+      ' ignorée(s), ' + echecs + ' en échec.',
+  )
+}
+
+/**
+ * Point d'entrée du déclencheur horaire : traite tout ce qui n'est pas encore
+ * marqué, du haut vers le bas du tableur.
+ */
+function rattrapageAutomatique() {
+  traiterLignes(2, null, false)
+}
+
+/**
+ * ⚠️ À EXÉCUTER UNE SEULE FOIS, avant d'activer le déclencheur horaire.
+ *
+ * Marque toutes les lignes existantes comme déjà traitées SANS RIEN ENVOYER,
+ * pour que le rattrapage ne renvoie pas en double ce qui est déjà en base.
+ */
+function initialiserSuivi() {
+  const feuille = feuilleReponses()
+  const suivi = preparerSuivi(feuille)
+  const derniereLigne = feuille.getLastRow()
+  if (derniereLigne < 2) {
+    Logger.log('Tableur vide — rien à initialiser.')
+    return
+  }
+
+  const nombre = derniereLigne - 1
+  const marques = []
+  for (let i = 0; i < nombre; i += 1) marques.push(['INITIALISÉ — non envoyé'])
+  feuille.getRange(2, suivi.indice, nombre, 1).setValues(marques)
+
+  Logger.log(
+    nombre + ' ligne(s) marquée(s) comme déjà traitées. Utiliser ' +
+      'rattraperPlage(debut, fin) pour envoyer celles qui manquent vraiment.',
+  )
+}
+
+/**
+ * Force l'envoi d'une plage de lignes, marquées ou non.
+ * Numéros lus directement dans le tableur (l'en-tête est la ligne 1) :
+ *
+ *   rattraperPlage(150, 320)
+ *
+ * ⚠️ À n'utiliser que sur une plage dont on a VÉRIFIÉ qu'elle manque en base.
+ * Cette fonction ne sait pas ce qui a déjà été inséré — elle renvoie tout.
+ */
+function rattraperPlage(ligneDebut, ligneFin) {
+  traiterLignes(ligneDebut, ligneFin, true)
 }
