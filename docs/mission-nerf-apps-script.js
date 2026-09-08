@@ -504,6 +504,39 @@ function traiterUneLigne(feuille, suivi, ligne, valeurs, marqueSiEchec) {
  * qui porte déjà une marque — reprenable par construction.
  */
 function traiterLignes(ligneDebut, ligneFin) {
+  // ⚠️ VERROU EXCLUSIF — ajouté le 5 septembre 2026 après 83 lignes envoyées
+  // en double. Deux exécutions avaient tourné en parallèle (un passage lancé
+  // à la main pendant que le déclencheur horaire tournait) : chacune a lu le
+  // tableur AVANT que l'autre n'ait écrit ses marques, donc chacune a vu les
+  // mêmes lignes comme non traitées.
+  //
+  // La colonne de suivi ne protège que d'un RE-passage, jamais d'un passage
+  // SIMULTANÉ : entre la lecture d'une marque et son écriture, il s'écoule le
+  // temps d'un appel réseau. C'est une fenêtre de plusieurs secondes, par
+  // ligne. Seul un verrou ferme cette fenêtre.
+  //
+  // tryLock(2000) et non waitLock : si un rattrapage tourne déjà, il n'y a
+  // rien à gagner à attendre son tour — il traite justement les lignes que
+  // celui-ci allait traiter. On sort, et le passage suivant reprendra ce qui
+  // reste.
+  const verrou = LockService.getScriptLock()
+  if (!verrou.tryLock(2000)) {
+    Logger.log(
+      'Un autre rattrapage est deja en cours — sortie immediate pour ne pas ' +
+        'envoyer les memes lignes deux fois. Le reste partira au prochain passage.',
+    )
+    return
+  }
+
+  try {
+    traiterLignesVerrouille(ligneDebut, ligneFin)
+  } finally {
+    verrou.releaseLock()
+  }
+}
+
+/** Corps du rattrapage — appelé UNIQUEMENT sous verrou (voir traiterLignes). */
+function traiterLignesVerrouille(ligneDebut, ligneFin) {
   const debutMs = Date.now()
   const feuille = feuilleReponses()
   const suivi = preparerSuivi(feuille)
@@ -598,7 +631,33 @@ function onFormSubmit(e) {
       return
     }
 
-    const horodateur = e.response.getTimestamp()
+    // Meme verrou que le rattrapage : sans lui, une soumission qui arrive
+    // pendant un passage de rattrapage peut etre envoyee par les deux.
+    // tryLock(20000) et non 2000 : ici on PREFERE attendre, l'envoi direct est
+    // la seule voie rapide. Si le verrou ne vient pas, on ne force rien — la
+    // ligne reste sans marque et le rattrapage la prendra.
+    const verrou = LockService.getScriptLock()
+    if (!verrou.tryLock(20000)) {
+      Logger.log(
+        'Rattrapage en cours — envoi direct abandonne pour ne pas doubler. ' +
+          'La ligne reste sans marque, elle partira au prochain passage.',
+      )
+      return
+    }
+
+    try {
+      envoyerLigneDeSoumission(e.response.getTimestamp())
+    } finally {
+      verrou.releaseLock()
+    }
+  } catch (err) {
+    Logger.log('ERREUR NON ATTRAPEE dans onFormSubmit : ' + err + ' | ' + (err && err.stack))
+  }
+}
+
+/** Corps de l'envoi direct — appelé UNIQUEMENT sous verrou (voir onFormSubmit). */
+function envoyerLigneDeSoumission(horodateur) {
+  {
     const feuille = feuilleReponses()
     const suivi = preparerSuivi(feuille)
 
@@ -618,8 +677,6 @@ function onFormSubmit(e) {
       'Ligne introuvable dans le tableur apres 3 essais — rien envoye ici. ' +
         'Le rattrapage automatique la prendra au prochain passage.',
     )
-  } catch (err) {
-    Logger.log('ERREUR NON ATTRAPEE dans onFormSubmit : ' + err + ' | ' + (err && err.stack))
   }
 }
 
