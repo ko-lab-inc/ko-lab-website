@@ -184,20 +184,53 @@ export function Nav({
         scrolled ? 'border-ko-line' : 'border-transparent',
       )}
     >
-      <div className="mx-auto flex max-w-container items-center justify-between px-6 py-4 lg:px-12">
-        {/* Wordmark — pas d'animation au survol (skill 08). Le hover bleu
-            contredisait ce commentaire depuis le début ; retiré en même
-            temps que la règle Phase 2 (jamais de bleu sur texte courant
-            clair) plutôt que de le recolorer pour rien. */}
-        <Link
-          href={ROUTES.accueil}
-          className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-ko-ink"
-        >
-          KO-LAB
-        </Link>
+      {/*
+        Barre PLEINE LARGEUR — plus de `mx-auto max-w-container` (1280px),
+        retiré le 5 septembre 2026 à la demande de Christian.
 
-        {/* ------------------------------ Desktop ------------------------------ */}
-        <nav aria-label={t('menuPrincipal')} className="hidden items-center gap-8 lg:flex">
+        Le conteneur du skill 02 sert au CONTENU des pages, qui a besoin
+        d'une longueur de ligne lisible. Une barre de navigation n'a pas ce
+        besoin : sur un écran de 1900px, la contrainte à 1280px laissait
+        300px de vide de chaque côté et donnait un en-tête tassé au milieu,
+        logo compris. Une barre doit border l'écran, pas flotter dedans.
+
+        Trois zones plutôt que `justify-between` : gauche et droite prennent
+        chacune `flex-1`, le menu reste en largeur automatique entre les
+        deux. Comme les deux côtés valent exactement la même fraction, le
+        menu est VRAIMENT centré dans la fenêtre — un simple
+        `justify-between` le décalerait vers la droite, puisque le bloc de
+        droite (langue + connexion + CTA) est bien plus large que le logo.
+      */}
+      <div className="flex w-full items-center gap-4 px-6 py-4 lg:gap-6 lg:px-10 xl:px-12">
+        {/* -------------------------- Zone gauche : logo -------------------------- */}
+        <div className="flex flex-1 items-center">
+          {/* Wordmark — pas d'animation au survol (skill 08). Le hover bleu
+              contredisait ce commentaire depuis le début ; retiré en même
+              temps que la règle Phase 2 (jamais de bleu sur texte courant
+              clair) plutôt que de le recolorer pour rien. */}
+          <Link
+            href={ROUTES.accueil}
+            className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-ko-ink"
+          >
+            KO-LAB
+          </Link>
+        </div>
+
+        {/* --------------------- Zone centre : menu (desktop) --------------------- */}
+        {/* `gap-6` à lg puis `gap-8` à xl : à 1024px exactement, les cinq
+            entrées plus le bloc de droite dépassaient la largeur disponible
+            avec un écart de 32px partout. L'écart ne s'ouvre qu'une fois la
+            place réellement là. */}
+        {/* `whitespace-nowrap` : sans lui, à 1024px, flexbox comprimait ces
+            deux zones sous leur largeur naturelle et le texte se repliait sur
+            deux lignes (« Se connecter », « Démarrer un projet ») — constaté
+            en capture, pas supposé. Interdire le retour à la ligne fixe leur
+            largeur minimale ; le manque est alors rogné sur la zone du logo,
+            qui a de la marge, au lieu de casser les libellés. */}
+        <nav
+          aria-label={t('menuPrincipal')}
+          className="hidden items-center gap-6 whitespace-nowrap lg:flex xl:gap-8"
+        >
           <div
             className="relative"
             onMouseEnter={() => setCapacitesOuvert(true)}
@@ -251,7 +284,17 @@ export function Nav({
               {t(key)}
             </Link>
           ))}
+        </nav>
 
+        {/* ------------- Zone droite : panier, compte, langue, CTA ------------- */}
+        {/*
+          Sortis du <nav> et regroupés ici. Ce ne sont pas des entrées de
+          navigation du site : ce sont des actions (panier, session, langue,
+          contact). Les laisser dans le même `<nav aria-label="Menu
+          principal">` les annonçait comme telles à un lecteur d'écran, en
+          plus d'empêcher tout centrage du menu.
+        */}
+        <div className="hidden flex-1 items-center justify-end gap-4 whitespace-nowrap lg:flex xl:gap-5">
           {/* Piloté depuis Réglages › Parties du site. Décoché, le panier
               disparaît d'ici comme de la boutique. boutiqueActive aussi : la
               boutique désactivée n'a plus de panier à afficher, même si
@@ -324,7 +367,7 @@ export function Nav({
           <Link href={ROUTES.contact} className={buttonVariants({ variant: 'bleu', size: 'sm' })}>
             {t('cta')}
           </Link>
-        </nav>
+        </div>
 
         {/* ---------------------- Panier + hamburger (mobile) ---------------------- */}
         {/* Le panier est DANS la barre, pas dans le menu déroulant : enfermé
