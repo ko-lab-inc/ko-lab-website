@@ -204,15 +204,35 @@ export function Nav({
       <div className="flex w-full items-center gap-4 px-6 py-4 lg:gap-6 lg:px-10 xl:px-12">
         {/* -------------------------- Zone gauche : logo -------------------------- */}
         <div className="flex flex-1 items-center">
-          {/* Wordmark — pas d'animation au survol (skill 08). Le hover bleu
-              contredisait ce commentaire depuis le début ; retiré en même
-              temps que la règle Phase 2 (jamais de bleu sur texte courant
-              clair) plutôt que de le recolorer pour rien. */}
+          {/*
+            Wordmark sur deux lignes — « KO-LAB » noir, « INC. » bleu en
+            dessous, d'après le logo réel de l'entreprise (5 septembre 2026).
+            Pas d'animation au survol (skill 08).
+
+            ⚠️ BLEU SUR FOND CLAIR — exception assumée, pas un oubli.
+            CLAUDE.md l'interdit pour le petit texte : `--ko-blue` sur
+            `--ko-cream` ne fait que 2,13:1. La règle vise le texte à LIRE
+            (libellés, liens, corps) ; un logotype n'en est pas. WCAG le dit
+            explicitement — SC 1.4.3, exception « Logotypes » : le texte qui
+            fait partie d'un logo ou d'un nom de marque n'est soumis à aucune
+            exigence de contraste. Le nom reste par ailleurs lisible en entier
+            par un lecteur d'écran, et « KO-LAB », qui porte l'information,
+            est en `--ko-ink` à plein contraste juste au-dessus.
+
+            Ne pas généraliser : cette exception vaut pour CE bloc et pour lui
+            seul. Tout autre texte bleu sur fond clair reste interdit.
+
+            `leading-none` sur les deux lignes : à interligne normal, les deux
+            mots se seraient décollés et le bloc aurait dépassé les 44px des
+            liens voisins, ce qui aurait fait grandir la barre entière.
+          */}
           <Link
             href={ROUTES.accueil}
-            className="font-mono text-sm font-medium uppercase tracking-[0.18em] text-ko-ink"
+            aria-label="KO-LAB INC."
+            className="font-mono font-medium uppercase leading-none tracking-[0.18em] text-ko-ink"
           >
-            KO-LAB
+            <span className="block text-base">KO-LAB</span>
+            <span className="mt-1 block text-sm text-ko-blue">INC.</span>
           </Link>
         </div>
 
@@ -414,7 +434,13 @@ export function Nav({
         <nav
           id="menu-mobile"
           aria-label={t('menuPrincipal')}
-          className="max-h-[calc(100svh-73px)] overflow-y-auto border-t border-ko-line bg-ko-cream px-6 pb-10 pt-6 lg:hidden"
+          // 81px = hauteur MESURÉE de la barre (Playwright, 5 septembre 2026),
+          // pas une estimation : 48px de wordmark sur deux lignes + 2×16px de
+          // py-4 + 1px de bordure. C'était 73px quand le wordmark tenait sur
+          // une ligne. ⚠️ Cette valeur est couplée à la hauteur de la barre —
+          // toute retouche du wordmark ou du padding doit la faire remesurer,
+          // sinon le panneau déborde sous le bas de l'écran.
+          className="max-h-[calc(100svh-81px)] overflow-y-auto border-t border-ko-line bg-ko-cream px-6 pb-10 pt-6 lg:hidden"
         >
           <p className={cn('label-mono mb-3', capacitesActif && 'text-ko-ink')}>
             {t('capacites')}
