@@ -186,6 +186,26 @@ const nextConfig: NextConfig = {
   },
 
   images: {
+    /**
+     * ⚠️ CHARGEUR PERSONNALISÉ — ajouté le 5 septembre 2026, quota Vercel épuisé.
+     *
+     * Les photos de Supabase Storage ne passent plus par `/_next/image` : le
+     * quota d'optimisation du plan Hobby était consommé et l'optimiseur
+     * répondait 402 pour toute transformation pas déjà en cache (sonde en
+     * production : w=384 q=80 → 402, w=1920 q=85 → 402). Les vignettes déjà
+     * en cache s'affichaient, la même photo ouverte en grand était cassée.
+     *
+     * Supabase redimensionne désormais lui-même — voir la docstring de
+     * `src/lib/chargeur-image.ts` pour les tailles mesurées et pour ce que ce
+     * chargeur NE détourne PAS (images locales, Unsplash, YouTube).
+     *
+     * ⚠️ `formats` ci-dessous ne s'applique plus aux images ainsi détournées :
+     * c'est Supabase qui choisit, et il renvoie du WebP dès que le navigateur
+     * l'annonce dans `Accept`. La ligne reste utile pour tout ce qui continue
+     * de passer par l'optimiseur Vercel.
+     */
+    loader: 'custom',
+    loaderFile: './src/lib/chargeur-image.ts',
     formats: ['image/avif', 'image/webp'],
     // ⚠️ OBLIGATOIRE depuis Next 16 : `qualities` n'autorise que [75] par
     // défaut, et l'optimiseur répond 400 pour toute autre valeur — donc une
