@@ -1,0 +1,160 @@
+/* =============================================================================
+   THÈME SOMBRE — couche de migration, page par page
+   =============================================================================
+
+   Décision de design du 15 septembre 2026 (variante B du prototype
+   proto/theme-sombre-accueil, commit 8c9ec6d) : sombre uniforme, deux
+   niveaux de noir, les photos rythment la page à la place de l'alternance
+   clair/sombre. Première page migrée : l'accueil.
+
+   -----------------------------------------------------------------------------
+   COMMENT CETTE COUCHE S'APPLIQUE À UNE PAGE, ET À ELLE SEULE
+   -----------------------------------------------------------------------------
+   Deux protections indépendantes :
+
+   1. Ce fichier est importé par la `page.tsx` de la page migrée, jamais par
+      un layout. App Router ne charge le CSS d'une page que sur sa route.
+
+   2. Toutes les règles sont préfixées par `body:has([data-theme-sombre])`.
+      Le marqueur est un attribut rendu PAR LA PAGE ; il disparaît avec
+      elle. Même si le CSS survivait à une navigation côté client, ses
+      règles ne s'appliqueraient plus à la page suivante.
+
+   `:has()` est ce qui permet d'atteindre la nav et le pied de page — rendus
+   par le layout partagé, donc HORS de la page — sans modifier ce layout ni
+   lui faire lire la route (ce qui rendrait les 27 pages dynamiques).
+
+   -----------------------------------------------------------------------------
+   POURQUOI DES SURCHARGES PAR CLASSE, ET NON PAR VARIABLE
+   -----------------------------------------------------------------------------
+   Les tokens du site sont nommés par CONTEXTE (clair / sombre), pas par
+   rôle : --ko-white sert à la fois de fond de page (bg-ko-white) et de
+   texte sur section noire (text-ko-white). Redéfinir la variable
+   inverserait les deux à la fois — du texte sombre sur fond sombre.
+
+   On surcharge donc les CLASSES utilitaires une à une. Les variables ne
+   sont redéfinies que pour les tokens à rôle unique (--ko-muted, --ko-line :
+   texte ou bordure seulement). Rien dans globals.css ni tailwind.config
+   n'est touché.
+
+   -----------------------------------------------------------------------------
+   MIGRER UNE PAGE DE PLUS
+   -----------------------------------------------------------------------------
+   Dans sa page.tsx : importer ce fichier, rendre `<div data-theme-sombre>`
+   autour du contenu, exporter `viewport` avec themeColor #111210. Puis
+   vérifier chaque classe de couleur de la page contre la liste ci-dessous
+   et compléter si un cas manque — JAMAIS en élargissant à une variable.
+
+   Quand la dernière page sera migrée, ces valeurs deviendront celles de
+   globals.css et ce fichier disparaîtra.
+
+   -----------------------------------------------------------------------------
+   PALETTE — rien d'autre que le noir, le blanc et le bleu de KO-LAB
+   -----------------------------------------------------------------------------
+     #111210   fond général                (--ko-black)
+     #0e1116   sections autrefois sombres  (--ko-black-2), séparées d'un filet
+     #ffffff   texte principal
+     #b3b2ae   texte secondaire            (--ko-muted-d, 8,85:1)
+     #61b4db   accent — INCHANGÉ, 8,16:1 sur ce fond, AA
+   Les surfaces intermédiaires sont du blanc translucide, jamais une teinte.
+   ========================================================================== */
+
+/* Contrôles natifs (select, date, barre de défilement) en sombre — sinon
+   ils restent blancs au milieu d'une page noire. */
+html:has([data-theme-sombre]) {
+  color-scheme: dark;
+}
+
+body:has([data-theme-sombre]) {
+  background-color: #111210;
+  color: #ffffff;
+
+  /* Tokens à rôle unique : sûrs par variable. --ko-muted alimente aussi
+     .label-mono (globals.css), qui suit donc sans règle dédiée. */
+  --ko-muted: #b3b2ae;
+  --ko-line: rgba(255, 255, 255, 0.12);
+}
+
+/* --------------------------------------------------------------------------
+   Surfaces claires → sombres
+   -------------------------------------------------------------------------- */
+body:has([data-theme-sombre]) .bg-ko-white {
+  background-color: #111210;
+}
+body:has([data-theme-sombre]) .bg-ko-cream {
+  background-color: #0e1116;
+}
+body:has([data-theme-sombre]) .bg-ko-cream2,
+body:has([data-theme-sombre]) .hover\:bg-ko-cream:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* --------------------------------------------------------------------------
+   Texte sur clair → texte sur sombre
+   -------------------------------------------------------------------------- */
+body:has([data-theme-sombre]) .text-ko-ink,
+body:has([data-theme-sombre]) .hover\:text-ko-ink:hover,
+body:has([data-theme-sombre]) .hover\:text-ko-black:hover {
+  color: #ffffff;
+}
+body:has([data-theme-sombre]) .hover\:border-ko-ink:hover {
+  border-color: #ffffff;
+}
+
+/* Filigranes (grands chiffres text-ko-cream2) : gris pâle sur blanc → blanc
+   très transparent sur noir, même discrétion. */
+body:has([data-theme-sombre]) .text-ko-cream2 {
+  color: rgba(255, 255, 255, 0.06);
+}
+
+/* bg-ko-ink : les filets du hamburger et le bouton primaire de fond clair.
+   Encre sur sombre = invisible → blanc. */
+body:has([data-theme-sombre]) .bg-ko-ink,
+body:has([data-theme-sombre]) .hover\:bg-ko-ink:hover {
+  background-color: #ffffff;
+  color: #111210;
+}
+
+/* Bouton primaire (bg-ko-black text-ko-white) : un bouton noir sur page
+   noire disparaît. Il devient blanc à texte noir — l'inverse exact de son
+   rôle d'origine. Ciblé sur <a>/<button> pour ne pas toucher les SECTIONS
+   bg-ko-black, traitées plus bas. */
+body:has([data-theme-sombre]) a.bg-ko-black,
+body:has([data-theme-sombre]) button.bg-ko-black {
+  background-color: #ffffff;
+  color: #111210;
+}
+body:has([data-theme-sombre]) a.bg-ko-black:hover,
+body:has([data-theme-sombre]) button.bg-ko-black:hover {
+  background-color: #e5e5e5;
+}
+
+/* --------------------------------------------------------------------------
+   Sections autrefois sombres : second niveau de noir, plus froid, avec un
+   filet en tête — la frontière reste lisible sans contraste de fond.
+   -------------------------------------------------------------------------- */
+body:has([data-theme-sombre]) section.bg-ko-black,
+body:has([data-theme-sombre]) footer.bg-ko-black {
+  background-color: #0e1116;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Hero : carte sombre sur page sombre. Même second niveau, et un liseré
+   blanc translucide à la place de l'ombre — une ombre noire sur fond noir
+   n'existe pas, et sans liseré la carte disparaît. */
+body:has([data-theme-sombre]) div.bg-ko-black.rounded-3xl {
+  background-color: #0e1116;
+}
+body:has([data-theme-sombre]) .shadow-\[0_8px_40px_rgba\(0\,0\,0\,0\.15\)\] {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* --------------------------------------------------------------------------
+   Photos : FILTRE_TERRAIN (images.ts) assombrit à 0.85 pour faire ressortir
+   la photo d'un fond clair. Sur fond sombre elle se fondrait dans la page.
+   Le style est inline (React) : seul !important le bat — assumé et limité
+   à cette valeur exacte. Contraste relevé pour compenser.
+   -------------------------------------------------------------------------- */
+body:has([data-theme-sombre]) img[style*='brightness(0.85)'] {
+  filter: grayscale(0.1) contrast(1.1) brightness(0.98) !important;
+}

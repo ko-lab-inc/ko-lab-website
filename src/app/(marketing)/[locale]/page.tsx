@@ -19,7 +19,19 @@ import { IntroAnimee } from '@/components/ui/IntroAnimee'
 import { routing } from '@/i18n/routing'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — première page migrée (15 septembre 2026, variante B du
+ * prototype, décision de design close).
+ *
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une
+ * page que sur sa route. Les 26 autres pages ne le reçoivent pas. Ses
+ * règles sont en outre toutes préfixées par `body:has([data-theme-sombre])`,
+ * le marqueur rendu plus bas — voir theme-sombre.css pour pourquoi ce
+ * double verrou, et comment migrer la page suivante.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -33,6 +45,16 @@ type Props = {
  * utiliser createStaticClient(), jamais createClient() de server.ts.
  */
 export const revalidate = 3600
+
+/**
+ * Barre du navigateur mobile assortie au fond sombre — sans theme-color
+ * elle resterait blanche au-dessus d'une page noire. Export statique : ne
+ * touche pas au rendu ISR ci-dessus. Le layout marketing n'exporte aucun
+ * viewport, donc aucun conflit : cette valeur ne vaut que pour l'accueil.
+ */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
@@ -98,7 +120,11 @@ export default async function AccueilPage({ params }: Props) {
    *   (Footer)                   ko-black
    */
   return (
-    <>
+    // Marqueur du thème sombre — voir theme-sombre.css. Un <div> sans style
+    // propre : il ne change rien au flux des sections, il existe pour que
+    // `body:has([data-theme-sombre])` soit vrai sur cette page et fausse
+    // partout ailleurs, nav et pied de page compris.
+    <div data-theme-sombre>
       {/* Overlay client, position: fixed — ne retarde ni ne remplace rien
           en dessous (voir IntroAnimee.tsx). Uniquement l'accueil : c'est le
           titre du hero, spécifique à cette page, qui clôt la séquence. */}
@@ -116,6 +142,6 @@ export default async function AccueilPage({ params }: Props) {
       <Location />
       <Boutique />
       <CtaFinal />
-    </>
+    </div>
   )
 }
