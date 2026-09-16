@@ -8,7 +8,15 @@ import { lireReglages } from '@/lib/reglages'
 import { lireFichesPanier } from '@/lib/produits'
 import { ROUTES } from '@/lib/routes'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -40,6 +48,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * atterrir sur le catalogue, pas sur une 404 qui donnerait l'impression d'un
  * site cassé.
  */
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function DemandePrixPage({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -58,7 +71,7 @@ export default async function DemandePrixPage({ params }: Props) {
   const fiches = await lireFichesPanier(locale)
 
   return (
-    <>
+    <div data-theme-sombre>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
         <div className="mx-auto max-w-container px-6 lg:px-12">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
@@ -74,6 +87,6 @@ export default async function DemandePrixPage({ params }: Props) {
           <PagePanier locale={locale} fiches={fiches} />
         </div>
       </section>
-    </>
+    </div>
   )
 }

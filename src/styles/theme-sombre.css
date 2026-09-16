@@ -102,6 +102,17 @@ body:has([data-theme-sombre]) .hover\:border-ko-ink:hover {
   border-color: #ffffff;
 }
 
+/* Variantes responsives : une surcharge hors media query s'appliquerait à
+   TOUTES les largeurs, alors que la classe d'origine ne vaut qu'au-dessus
+   du point de rupture. Ex. CatalogueBoutique : le filtre actif est une
+   pastille bleue à texte noir en mobile, et seulement en lg: du texte encre
+   sur fond transparent. Chaque variante reste donc dans SA media query. */
+@media (min-width: 1024px) {
+  body:has([data-theme-sombre]) .lg\:text-ko-ink {
+    color: #ffffff;
+  }
+}
+
 /* Filigranes (grands chiffres text-ko-cream2) : gris pâle sur blanc → blanc
    très transparent sur noir, même discrétion. */
 body:has([data-theme-sombre]) .text-ko-cream2 {
@@ -128,6 +139,35 @@ body:has([data-theme-sombre]) button.bg-ko-black {
 body:has([data-theme-sombre]) a.bg-ko-black:hover,
 body:has([data-theme-sombre]) button.bg-ko-black:hover {
   background-color: #e5e5e5;
+}
+
+/* --------------------------------------------------------------------------
+   Cadres photo blancs (bg-ko-photo) — restent blancs PAR DÉCISION : les
+   packshots de la boutique sont sur fond blanc et ne sont pas détourés.
+   Mais tout ce qui vit DANS ce cadre (placeholder « Photo terrain KO-LAB »,
+   son carré, son fond cream-2) est de nouveau sur fond clair : on lui rend
+   les valeurs du thème clair. Sans ça, --ko-muted sombre donnait du gris
+   pâle sur blanc, 2,12:1, constaté sur les 7 produits sans image.
+   -------------------------------------------------------------------------- */
+body:has([data-theme-sombre]) .bg-ko-photo {
+  --ko-muted: #7a7b76;
+  --ko-line: #e5e5e5;
+}
+body:has([data-theme-sombre]) .bg-ko-photo .bg-ko-cream2 {
+  background-color: #ebebeb;
+}
+body:has([data-theme-sombre]) .bg-ko-photo .text-ko-ink {
+  color: #2a2b28;
+}
+
+/* --------------------------------------------------------------------------
+   Voile frost utilisé comme SURFACE (≥ 60 %) : un verre blanc sur page
+   claire devient un verre noir sur page sombre. Un seul cas sur le site, la
+   barre fixe prix + bouton de la fiche produit en mobile — les autres frost
+   (≤ 30 %) sont des reflets sur fond sombre, déjà justes.
+   -------------------------------------------------------------------------- */
+body:has([data-theme-sombre]) .bg-ko-frost\/95 {
+  background-color: rgb(17 18 16 / 0.95);
 }
 
 /* --------------------------------------------------------------------------

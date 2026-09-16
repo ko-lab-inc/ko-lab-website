@@ -14,7 +14,15 @@ import { alternatesLangues, ROUTES, routeProduit } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 import { origine } from '@/lib/utils/origine'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = { params: Promise<{ locale: string; slug: string }> }
 
@@ -79,6 +87,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function FicheProduitPage({ params }: Props) {
   const { locale, slug } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -141,7 +154,7 @@ export default async function FicheProduitPage({ params }: Props) {
   }
 
   return (
-    <>
+    <div data-theme-sombre>
       {/* Espace pour la barre d'achat collante (mobile) : sans lui, le dernier
           bloc de contenu se retrouve masqué au premier rendu.
           pb-28 (112 px) et non pb-24 : la barre mesure 97 px à 375 px, le
@@ -384,6 +397,6 @@ export default async function FicheProduitPage({ params }: Props) {
           )}
         </div>
       </div>
-    </>
+    </div>
   )
 }
