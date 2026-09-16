@@ -97,6 +97,7 @@ body:has([data-theme-sombre]) .hover\:text-ko-ink:hover,
 body:has([data-theme-sombre]) .hover\:text-ko-black:hover {
   color: #ffffff;
 }
+body:has([data-theme-sombre]) .border-ko-ink,
 body:has([data-theme-sombre]) .hover\:border-ko-ink:hover {
   border-color: #ffffff;
 }

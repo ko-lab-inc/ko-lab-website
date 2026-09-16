@@ -11,7 +11,15 @@ import { CADRAGES, FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD, IMAGES } from '@/lib/im
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -66,6 +74,11 @@ const ITEMS_7 = [
   'item_6',
   'item_7',
 ] as const
+
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
 
 export default async function CapacitesHubPage({ params }: Props) {
   const { locale } = await params
@@ -144,7 +157,7 @@ export default async function CapacitesHubPage({ params }: Props) {
   ]
 
   return (
-    <>
+    <div data-theme-sombre>
       {/* ------------------------------ En-tête ------------------------------ */}
       {/* Photo + voile, comme le hero de l'accueil, mais sans conteneur arrondi :
           la page intérieure démarre à ras bord pour se distinguer de l'accueil. */}
@@ -305,6 +318,6 @@ export default async function CapacitesHubPage({ params }: Props) {
           </section>
         )
       })}
-    </>
+    </div>
   )
 }
