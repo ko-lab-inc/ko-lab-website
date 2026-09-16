@@ -10,7 +10,15 @@ import { routing } from '@/i18n/routing'
 import { lireConcoursPublies } from '@/lib/concours'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -47,6 +55,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * concours/layout.tsx, Nav.tsx, Footer.tsx, sitemap.ts, robots.ts).
  * ---------------------------------------------------------------------------
  */
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function ConcoursPage({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -73,7 +86,7 @@ export default async function ConcoursPage({ params }: Props) {
   }
 
   return (
-    <>
+    <div data-theme-sombre>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
         <div className="mx-auto max-w-container px-6 lg:px-12">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
@@ -161,6 +174,6 @@ export default async function ConcoursPage({ params }: Props) {
           )}
         </div>
       </section>
-    </>
+    </div>
   )
 }

@@ -131,6 +131,22 @@ body:has([data-theme-sombre]) button.bg-ko-black:hover {
 }
 
 /* --------------------------------------------------------------------------
+   Champ fichier : le bouton natif « Choisir un fichier » est stylé par
+   Tailwind via ::file-selector-button (variante file:). Sans ces règles il
+   reste crème à texte encre — un rectangle clair au milieu d'un formulaire
+   sombre. color-scheme: dark ne suffit pas, les classes file:* le forcent.
+   -------------------------------------------------------------------------- */
+body:has([data-theme-sombre]) .file\:bg-ko-cream::file-selector-button {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+body:has([data-theme-sombre]) .file\:text-ko-ink::file-selector-button {
+  color: #ffffff;
+}
+body:has([data-theme-sombre]) .hover\:file\:border-ko-ink:hover::file-selector-button {
+  border-color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
    Sections autrefois sombres : second niveau de noir, plus froid, avec un
    filet en tête — la frontière reste lisible sans contraste de fond.
    -------------------------------------------------------------------------- */
