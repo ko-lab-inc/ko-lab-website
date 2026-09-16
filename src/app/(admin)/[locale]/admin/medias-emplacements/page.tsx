@@ -12,6 +12,16 @@ import { DOSSIERS_MEDIAS, listerFichiersDisponibles } from '@/lib/medias-disponi
 import { createClient } from '@/lib/supabase/server'
 import { cn } from '@/lib/utils/cn'
 
+import type { Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
+
 type Props = {
   params: Promise<{ locale: string }>
   searchParams: Promise<{ onglet?: string }>
@@ -42,6 +52,11 @@ type Props = {
  * n'est nécessaire pour ce choix : le contenu de l'onglet actif est déjà
  * décidé côté serveur, avant tout hydratation.
  */
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function MediasEmplacementsAdminPage({ params, searchParams }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -106,7 +121,7 @@ export default async function MediasEmplacementsAdminPage({ params, searchParams
   const erreur = erreurEmplacements || erreurGaleries
 
   return (
-    <>
+    <div data-theme-sombre>
       <EnteteAdmin
         titre={t('medias_emplacements_titre')}
         intro={
@@ -202,6 +217,6 @@ export default async function MediasEmplacementsAdminPage({ params, searchParams
           }}
         />
       )}
-    </>
+    </div>
   )
 }

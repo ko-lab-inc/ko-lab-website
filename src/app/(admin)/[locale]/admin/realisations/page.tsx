@@ -9,6 +9,16 @@ import { routing } from '@/i18n/routing'
 import { validerImagesBrutes } from '@/lib/realisations'
 import { createClient } from '@/lib/supabase/server'
 
+import type { Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
+
 type Props = { params: Promise<{ locale: string }> }
 
 /**
@@ -19,6 +29,11 @@ type Props = { params: Promise<{ locale: string }> }
  * choix (RLS fait foi, publication et suppression en Server Actions inline,
  * édition en composant client pour renvoyer les erreurs de validation).
  */
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function RealisationsAdminPage({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -100,7 +115,7 @@ export default async function RealisationsAdminPage({ params }: Props) {
   })
 
   return (
-    <>
+    <div data-theme-sombre>
       <EnteteAdmin titre={t('realisations_titre')} intro={t('realisations_admin_intro')} />
 
       <TableauRealisations
@@ -130,6 +145,6 @@ export default async function RealisationsAdminPage({ params }: Props) {
           badgeTraductionAide: t.raw('badge_traduction_realisation_en_aide'),
         }}
       />
-    </>
+    </div>
   )
 }

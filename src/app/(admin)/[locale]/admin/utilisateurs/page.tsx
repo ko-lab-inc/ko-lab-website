@@ -10,6 +10,16 @@ import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { cn } from '@/lib/utils/cn'
 import { ROLES, ROLES_EQUIPE, type Role } from '@/types'
 
+import type { Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
+
 type Props = {
   params: Promise<{ locale: string }>
   searchParams: Promise<{ role?: string }>
@@ -74,6 +84,11 @@ function rolesPourFiltre(filtre: Filtre): readonly Role[] {
   }
 }
 
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function Page({ params, searchParams }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -122,7 +137,7 @@ export default async function Page({ params, searchParams }: Props) {
   }
 
   return (
-    <>
+    <div data-theme-sombre>
       <nav aria-label={t('nav_filtre_utilisateurs')} className="mb-8 flex flex-wrap gap-2 border-b border-ko-line">
         {FILTRES.map((f) => (
           <Link
@@ -198,6 +213,6 @@ export default async function Page({ params, searchParams }: Props) {
           />
         }
       />
-    </>
+    </div>
   )
 }

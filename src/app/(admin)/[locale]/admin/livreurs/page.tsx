@@ -8,6 +8,16 @@ import { routing } from '@/i18n/routing'
 import { POSTE_LIVREUR } from '@/lib/constantes'
 import { createClient } from '@/lib/supabase/server'
 
+import type { Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
+
 type Props = { params: Promise<{ locale: string }> }
 
 /**
@@ -50,6 +60,11 @@ type Props = { params: Promise<{ locale: string }> }
  * sûre — voir RepertoireLivreurs.tsx.
  * ---------------------------------------------------------------------------
  */
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function Page({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -89,7 +104,7 @@ export default async function Page({ params }: Props) {
     }))
 
   return (
-    <>
+    <div data-theme-sombre>
       <ListeProfils
         locale={locale}
         titre={t('livreurs_titre')}
@@ -133,6 +148,6 @@ export default async function Page({ params }: Props) {
           erreurServeur: t('erreur_invitation_serveur'),
         }}
       />
-    </>
+    </div>
   )
 }

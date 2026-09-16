@@ -6,6 +6,13 @@ import { buttonVariants } from '@/components/ui/Button'
 import { cn } from '@/lib/utils/cn'
 
 /**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2). Cet écran se
+ * rend dans le layout admin, avec sa barre latérale : le marqueur les fait
+ * basculer avec lui. Pas d'export `viewport` possible sur error.tsx.
+ */
+import '@/styles/theme-sombre.css'
+
+/**
  * Filet d'erreur — TOUT l'espace admin, pas une route à la fois.
  *
  * ---------------------------------------------------------------------------
@@ -50,15 +57,17 @@ export default function ErreurAdmin({ error, reset }: { error: Error & { digest?
   }, [error])
 
   return (
-    <div className="border border-ko-line bg-ko-white p-8 text-center">
-      <p className="ko-h3 text-[20px] text-ko-ink">Quelque chose s&apos;est mal passé</p>
-      <p className="mt-3 text-sm leading-relaxed text-ko-muted">
-        L&apos;action n&apos;a pas pu aboutir. Si vous ajoutiez une photo trop lourde, essayez avec un
-        fichier plus léger — sinon, réessayez, ou prévenez Moussa si ça persiste.
-      </p>
-      <button type="button" onClick={reset} className={cn('mt-6', buttonVariants({ variant: 'primary', size: 'sm' }))}>
-        Réessayer
-      </button>
+    <div data-theme-sombre>
+      <div className="border border-ko-line bg-ko-white p-8 text-center">
+        <p className="ko-h3 text-[20px] text-ko-ink">Quelque chose s&apos;est mal passé</p>
+        <p className="mt-3 text-sm leading-relaxed text-ko-muted">
+          L&apos;action n&apos;a pas pu aboutir. Si vous ajoutiez une photo trop lourde, essayez avec un
+          fichier plus léger — sinon, réessayez, ou prévenez Moussa si ça persiste.
+        </p>
+        <button type="button" onClick={reset} className={cn('mt-6', buttonVariants({ variant: 'primary', size: 'sm' }))}>
+          Réessayer
+        </button>
+      </div>
     </div>
   )
 }

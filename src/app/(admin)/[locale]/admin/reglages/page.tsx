@@ -7,6 +7,16 @@ import { FormulaireReglages } from '@/components/sections/FormulaireReglages'
 import { routing } from '@/i18n/routing'
 import { lireReglages } from '@/lib/reglages'
 
+import type { Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
+
 type Props = { params: Promise<{ locale: string }> }
 
 /**
@@ -36,6 +46,11 @@ type Props = { params: Promise<{ locale: string }> }
  * pour les coordonnées de contact, tant que 0029 n'a pas tourné.
  * ---------------------------------------------------------------------------
  */
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function Page({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -44,7 +59,7 @@ export default async function Page({ params }: Props) {
   const reglages = await lireReglages()
 
   return (
-    <>
+    <div data-theme-sombre>
       <EnteteAdmin titre={t('reglages_titre')} />
 
       <p className="mb-8 max-w-[70ch] text-base leading-relaxed text-ko-muted">
@@ -89,6 +104,6 @@ export default async function Page({ params }: Props) {
         <h2 className="label-mono text-ko-muted">{t('reglages_textes_titre')}</h2>
         <p className="mt-2 text-sm leading-relaxed text-ko-muted">{t('reglages_textes')}</p>
       </section>
-    </>
+    </div>
   )
 }

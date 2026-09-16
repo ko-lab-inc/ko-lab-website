@@ -9,6 +9,16 @@ import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import { vignetteVideo } from '@/lib/utils/youtube'
 
+import type { Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
+
 type Props = { params: Promise<{ locale: string }> }
 
 /**
@@ -18,6 +28,11 @@ type Props = { params: Promise<{ locale: string }> }
  * autres écrans de gestion : RLS fait foi, Server Actions inline pour la
  * publication, le déplacement et la suppression.
  */
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function VideosAdminPage({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -84,7 +99,7 @@ export default async function VideosAdminPage({ params }: Props) {
   }))
 
   return (
-    <>
+    <div data-theme-sombre>
       <EnteteAdmin titre={t('videos_titre')} intro={t('videos_admin_intro')} />
 
       <TableauVideos
@@ -116,6 +131,6 @@ export default async function VideosAdminPage({ params }: Props) {
           pageSuivante: t('page_suivante'),
         }}
       />
-    </>
+    </div>
   )
 }

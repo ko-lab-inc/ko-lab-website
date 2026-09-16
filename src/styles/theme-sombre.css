@@ -214,6 +214,20 @@ body:has([data-theme-sombre]) footer.bg-ko-black {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Barre latérale de l'espace équipe (aside.bg-ko-black, NavAdmin) : même
+   second niveau, mais sans filet en tête — elle a déjà sa bordure droite
+   (lg:border-r border-ko-line-d). Sans cette règle elle resterait #111210,
+   la même valeur que le fond de page : plus de séparation visible. */
+body:has([data-theme-sombre]) aside.bg-ko-black {
+  background-color: #0e1116;
+}
+
+/* Anneau de sélection (ring-ko-ink, choix de photo dans l'admin) : Tailwind
+   passe par --tw-ring-color, c'est elle qu'il faut redéfinir. */
+body:has([data-theme-sombre]) .ring-ko-ink {
+  --tw-ring-color: #ffffff;
+}
+
 /* Hero : carte sombre sur page sombre. Même second niveau, et un liseré
    blanc translucide à la place de l'ombre — une ombre noire sur fond noir
    n'existe pas, et sans liseré la carte disparaît. */

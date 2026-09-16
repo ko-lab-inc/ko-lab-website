@@ -26,6 +26,16 @@ import { createClient } from '@/lib/supabase/server'
 import { stockEnAttention } from '@/lib/stock'
 import { TYPES_DEMANDE } from '@/types'
 
+import type { Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
+
 type Props = { params: Promise<{ locale: string }> }
 
 /** Fenêtre de la courbe, en jours. */
@@ -76,6 +86,11 @@ const JOURS = 30
  * est un Server Component, les graphiques aussi.
  * ---------------------------------------------------------------------------
  */
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function TableauDeBordPage({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -201,7 +216,7 @@ export default async function TableauDeBordPage({ params }: Props) {
   ].filter((a): a is string => a !== null)
 
   return (
-    <>
+    <div data-theme-sombre>
       <EnteteAdmin titre={t('titre')} intro={t('intro_tableau')} />
 
       {/*
@@ -373,6 +388,6 @@ export default async function TableauDeBordPage({ params }: Props) {
           )}
         </div>
       </div>
-    </>
+    </div>
   )
 }

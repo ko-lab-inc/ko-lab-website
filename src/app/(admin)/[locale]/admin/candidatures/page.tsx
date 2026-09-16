@@ -9,6 +9,16 @@ import { POSTE_LIVREUR } from '@/lib/constantes'
 import { createClient } from '@/lib/supabase/server'
 import { STATUTS_CANDIDATURE } from '@/types'
 
+import type { Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
+
 type Props = { params: Promise<{ locale: string }> }
 
 /**
@@ -19,6 +29,11 @@ type Props = { params: Promise<{ locale: string }> }
  * le téléphone, l'adresse courriel et le CV d'une personne réelle. Aucune
  * lecture par service role key, jamais.
  */
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function CandidaturesPage({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -86,7 +101,7 @@ export default async function CandidaturesPage({ params }: Props) {
   }))
 
   return (
-    <>
+    <div data-theme-sombre>
       <EnteteAdmin titre={t('candidatures_titre')} intro={t('candidatures_intro')} />
 
       <TableauCandidatures
@@ -149,6 +164,6 @@ export default async function CandidaturesPage({ params }: Props) {
           },
         }}
       />
-    </>
+    </div>
   )
 }
