@@ -6,6 +6,15 @@ import { useTranslations } from 'next-intl'
 import { buttonVariants } from '@/components/ui/Button'
 
 /**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Cet écran se rend DANS le layout marketing, avec sa nav et son pied : le
+ * marqueur ci-dessous les fait basculer avec lui. Pas d'export `viewport`
+ * ici, Next ne l'accepte que sur page.tsx et layout.tsx — pour la 404, c'est
+ * le fourre-tout [...rest]/page.tsx qui porte le theme-color.
+ */
+import '@/styles/theme-sombre.css'
+
+/**
  * Filet d'erreur — TOUT le site public, pas une route à la fois.
  *
  * ---------------------------------------------------------------------------
@@ -47,20 +56,22 @@ export default function ErreurPublique({ error, reset }: { error: Error & { dige
   }, [error])
 
   return (
-    <section className="border-b border-ko-line bg-ko-cream pb-20 pt-28 lg:pb-28 lg:pt-40">
-      <div className="mx-auto max-w-container px-6 text-center lg:px-12">
-        <span aria-hidden="true" className="mx-auto block h-px w-8 bg-ko-blue" />
+    <div data-theme-sombre>
+      <section className="border-b border-ko-line bg-ko-cream pb-20 pt-28 lg:pb-28 lg:pt-40">
+        <div className="mx-auto max-w-container px-6 text-center lg:px-12">
+          <span aria-hidden="true" className="mx-auto block h-px w-8 bg-ko-blue" />
 
-        <h1 className="ko-display mt-4 text-ko-ink">{t('erreur_titre')}</h1>
+          <h1 className="ko-display mt-4 text-ko-ink">{t('erreur_titre')}</h1>
 
-        <p className="mx-auto mt-7 max-w-[52ch] text-base leading-relaxed text-ko-muted lg:text-lg">
-          {t('erreur_texte')}
-        </p>
+          <p className="mx-auto mt-7 max-w-[52ch] text-base leading-relaxed text-ko-muted lg:text-lg">
+            {t('erreur_texte')}
+          </p>
 
-        <button type="button" onClick={reset} className={`mt-10 ${buttonVariants({ variant: 'primary' })}`}>
-          {t('erreur_reessayer')}
-        </button>
-      </div>
-    </section>
+          <button type="button" onClick={reset} className={`mt-10 ${buttonVariants({ variant: 'primary' })}`}>
+            {t('erreur_reessayer')}
+          </button>
+        </div>
+      </section>
+    </div>
   )
 }

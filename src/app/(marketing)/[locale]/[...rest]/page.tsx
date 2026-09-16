@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 
 import { routing } from '@/i18n/routing'
 
+import type { Viewport } from 'next'
+
 /**
  * Fourre-tout — n'existait pas avant ce fichier (Phase 10, étape 3).
  *
@@ -30,6 +32,15 @@ import { routing } from '@/i18n/routing'
  * ---------------------------------------------------------------------------
  */
 type Props = { params: Promise<{ locale: string }> }
+
+/**
+ * THÈME SOMBRE — theme-color des URL inconnues. La 404 (not-found.tsx) n'a
+ * pas le droit d'exporter `viewport` ; c'est ce fourre-tout, la page qui
+ * déclenche notFound(), qui le porte pour elle. Barre mobile assortie.
+ */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
 
 export default async function FourreTout({ params }: Props) {
   const { locale } = await params
