@@ -8,7 +8,15 @@ import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { ROUTES } from '@/lib/routes'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -43,6 +51,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t('titre'), description: t('intro'), robots: { index: false, follow: false } }
 }
 
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function ConnexionPage({ params, searchParams }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -52,59 +65,61 @@ export default async function ConnexionPage({ params, searchParams }: Props) {
   const tMdp = await getTranslations('MotDePasse')
 
   return (
-    <CadreAuth titre={t('titre')} intro={t('intro')}>
-      {/* Renvoi du proxy pour rôle insuffisant. La personne EST connectée :
-          sans ce message elle réessaierait ses identifiants en boucle. */}
-      {refus === 'role' && (
-        <EncartAuth titre={t('refus_role_titre')} texte={t('refus_role_texte')} />
-      )}
+    <div data-theme-sombre>
+      <CadreAuth titre={t('titre')} intro={t('intro')}>
+        {/* Renvoi du proxy pour rôle insuffisant. La personne EST connectée :
+            sans ce message elle réessaierait ses identifiants en boucle. */}
+        {refus === 'role' && (
+          <EncartAuth titre={t('refus_role_titre')} texte={t('refus_role_texte')} />
+        )}
 
-      {/* Retour de /api/auth/confirmer quand le code est expiré, déjà consommé,
-          ou ouvert dans un autre navigateur que celui de la demande. */}
-      {lien === 'invalide' && (
-        <EncartAuth titre={tMdp('lien_invalide_titre')} texte={tMdp('lien_invalide_texte')} />
-      )}
+        {/* Retour de /api/auth/confirmer quand le code est expiré, déjà consommé,
+            ou ouvert dans un autre navigateur que celui de la demande. */}
+        {lien === 'invalide' && (
+          <EncartAuth titre={tMdp('lien_invalide_titre')} texte={tMdp('lien_invalide_texte')} />
+        )}
 
-      {motdepasse === 'change' && (
-        <p className="mt-8 text-base leading-relaxed text-ko-ink">{t('mot_de_passe_change')}</p>
-      )}
+        {motdepasse === 'change' && (
+          <p className="mt-8 text-base leading-relaxed text-ko-ink">{t('mot_de_passe_change')}</p>
+        )}
 
-      <FormulaireConnexion
-        locale={locale}
-        suivant={suivant}
-        libelles={{
-          courriel: t('courriel'),
-          motDePasse: t('mot_de_passe'),
-            afficherMotDePasse: t('afficher_mot_de_passe'),
-            masquerMotDePasse: t('masquer_mot_de_passe'),
-          seConnecter: t('se_connecter'),
-          enCours: t('en_cours'),
-          erreurIdentifiants: t('erreur_identifiants'),
-          erreurTentatives: t('erreur_tentatives'),
-          erreurServeur: t('erreur_serveur'),
-        }}
-      />
+        <FormulaireConnexion
+          locale={locale}
+          suivant={suivant}
+          libelles={{
+            courriel: t('courriel'),
+            motDePasse: t('mot_de_passe'),
+              afficherMotDePasse: t('afficher_mot_de_passe'),
+              masquerMotDePasse: t('masquer_mot_de_passe'),
+            seConnecter: t('se_connecter'),
+            enCours: t('en_cours'),
+            erreurIdentifiants: t('erreur_identifiants'),
+            erreurTentatives: t('erreur_tentatives'),
+            erreurServeur: t('erreur_serveur'),
+          }}
+        />
 
-      <div className="mt-6 flex flex-col gap-2 text-sm">
-        <Link
-          href={ROUTES.motDePasseOublie}
-          className="text-ko-muted underline-offset-4 transition-colors duration-200 hover:text-ko-ink hover:underline"
-        >
-          {t('mot_de_passe_oublie')}
-        </Link>
-        <p className="text-ko-muted">
-          {t('pas_encore')}{' '}
+        <div className="mt-6 flex flex-col gap-2 text-sm">
           <Link
-            // Même report qu'en sens inverse (voir inscription/page.tsx) :
-            // quelqu'un venu commander qui n'a PAS encore de compte ne doit
-            // pas atterrir sur /compte une fois inscrit.
-            href={suivant ? `${ROUTES.inscription}?suivant=${encodeURIComponent(suivant)}` : ROUTES.inscription}
-            className="text-ko-ink underline-offset-4 transition-colors duration-200 hover:underline hover:decoration-ko-blue"
+            href={ROUTES.motDePasseOublie}
+            className="text-ko-muted underline-offset-4 transition-colors duration-200 hover:text-ko-ink hover:underline"
           >
-            {t('creer_compte')}
+            {t('mot_de_passe_oublie')}
           </Link>
-        </p>
-      </div>
-    </CadreAuth>
+          <p className="text-ko-muted">
+            {t('pas_encore')}{' '}
+            <Link
+              // Même report qu'en sens inverse (voir inscription/page.tsx) :
+              // quelqu'un venu commander qui n'a PAS encore de compte ne doit
+              // pas atterrir sur /compte une fois inscrit.
+              href={suivant ? `${ROUTES.inscription}?suivant=${encodeURIComponent(suivant)}` : ROUTES.inscription}
+              className="text-ko-ink underline-offset-4 transition-colors duration-200 hover:underline hover:decoration-ko-blue"
+            >
+              {t('creer_compte')}
+            </Link>
+          </p>
+        </div>
+      </CadreAuth>
+    </div>
   )
 }

@@ -15,7 +15,15 @@ import { createClient } from '@/lib/supabase/server'
 import { estUuid } from '@/lib/utils/identifiant'
 import { STATUTS_COMMANDE, STATUTS_MODIFIABLES, STATUTS_PAR_MODE, type StatutCommande } from '@/types'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = {
   params: Promise<{ locale: string; id: string }>
@@ -48,6 +56,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // en cache pourrait montrer un formulaire de modification après l'heure de
 // fermeture. `force-dynamic` la même raison que carrieres/postuler.
 export const dynamic = 'force-dynamic'
+
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
 
 export default async function DetailCommandePage({ params }: Props) {
   const { locale, id } = await params
@@ -106,7 +119,7 @@ export default async function DetailCommandePage({ params }: Props) {
   )
 
   return (
-    <>
+    <div data-theme-sombre>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
         <div className="mx-auto max-w-container px-6 lg:px-12">
           <Link
@@ -228,6 +241,6 @@ export default async function DetailCommandePage({ params }: Props) {
           )}
         </div>
       </section>
-    </>
+    </div>
   )
 }

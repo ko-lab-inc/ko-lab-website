@@ -9,7 +9,15 @@ import { routing } from '@/i18n/routing'
 import { ROUTES } from '@/lib/routes'
 import { createClient } from '@/lib/supabase/server'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -38,6 +46,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const t = await getTranslations({ locale, namespace: 'MotDePasse' })
   return { title: t('nouveau_titre'), robots: { index: false, follow: false } }
+}
+
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
 }
 
 export default async function NouveauMotDePassePage({ params }: Props) {
@@ -74,47 +87,49 @@ export default async function NouveauMotDePassePage({ params }: Props) {
   const demanderConsentement = !profil?.consentement_le
 
   return (
-    <CadreAuth titre={t('nouveau_titre')} intro={t('nouveau_intro')}>
-      <EncartAuth titre={t('courriel')} texte={user.email ?? ''} />
-      <FormulaireNouveauMotDePasse
-        locale={locale}
-        demanderConsentement={demanderConsentement}
-        libelles={{
-          motDePasse: t('mot_de_passe'),
-          aideMotDePasse: t('aide_mot_de_passe'),
-            afficher: t('afficher_mot_de_passe'),
-            masquer: t('masquer_mot_de_passe'),
-          confirmation: t('confirmation'),
-          consentement: (
-            <>
-              {tConsentement('consentement_avant')}
-              <Link
-                href={ROUTES.conditionsUtilisation}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
-              >
-                {tConsentement('consentement_lien_conditions')}
-              </Link>
-              {tConsentement('consentement_milieu')}
-              <Link
-                href={ROUTES.politiqueConfidentialite}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
-              >
-                {tConsentement('consentement_lien_politique')}
-              </Link>
-              {tConsentement('consentement_apres')}
-            </>
-          ),
-          enregistrer: t('enregistrer'),
-          enCours: t('enregistrement'),
-          erreurDonnees: t('erreur_donnees'),
-          erreurConsentement: tConsentement('erreur_consentement'),
-          erreurServeur: t('erreur_serveur'),
-        }}
-      />
-    </CadreAuth>
+    <div data-theme-sombre>
+      <CadreAuth titre={t('nouveau_titre')} intro={t('nouveau_intro')}>
+        <EncartAuth titre={t('courriel')} texte={user.email ?? ''} />
+        <FormulaireNouveauMotDePasse
+          locale={locale}
+          demanderConsentement={demanderConsentement}
+          libelles={{
+            motDePasse: t('mot_de_passe'),
+            aideMotDePasse: t('aide_mot_de_passe'),
+              afficher: t('afficher_mot_de_passe'),
+              masquer: t('masquer_mot_de_passe'),
+            confirmation: t('confirmation'),
+            consentement: (
+              <>
+                {tConsentement('consentement_avant')}
+                <Link
+                  href={ROUTES.conditionsUtilisation}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+                >
+                  {tConsentement('consentement_lien_conditions')}
+                </Link>
+                {tConsentement('consentement_milieu')}
+                <Link
+                  href={ROUTES.politiqueConfidentialite}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+                >
+                  {tConsentement('consentement_lien_politique')}
+                </Link>
+                {tConsentement('consentement_apres')}
+              </>
+            ),
+            enregistrer: t('enregistrer'),
+            enCours: t('enregistrement'),
+            erreurDonnees: t('erreur_donnees'),
+            erreurConsentement: tConsentement('erreur_consentement'),
+            erreurServeur: t('erreur_serveur'),
+          }}
+        />
+      </CadreAuth>
+    </div>
   )
 }

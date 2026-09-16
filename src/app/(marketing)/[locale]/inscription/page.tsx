@@ -8,7 +8,15 @@ import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { ROUTES } from '@/lib/routes'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -33,6 +41,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: t('titre'), description: t('intro'), robots: { index: false, follow: false } }
 }
 
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
+}
+
 export default async function InscriptionPage({ params, searchParams }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
@@ -41,68 +54,70 @@ export default async function InscriptionPage({ params, searchParams }: Props) {
   const t = await getTranslations('Inscription')
 
   return (
-    <CadreAuth titre={t('titre')} intro={t('intro')}>
-      <FormulaireInscription
-        locale={locale}
-        suivant={suivant}
-        libelles={{
-          nom: t('nom'),
-          courriel: t('courriel'),
-          motDePasse: t('mot_de_passe'),
-          aideMotDePasse: t('aide_mot_de_passe'),
-            afficher: t('afficher_mot_de_passe'),
-            masquer: t('masquer_mot_de_passe'),
-          confirmation: t('confirmation'),
-          consentement: (
-            <>
-              {t('consentement_avant')}
-              <Link
-                href={ROUTES.conditionsUtilisation}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
-              >
-                {t('consentement_lien_conditions')}
-              </Link>
-              {t('consentement_milieu')}
-              <Link
-                href={ROUTES.politiqueConfidentialite}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
-              >
-                {t('consentement_lien_politique')}
-              </Link>
-              {t('consentement_apres')}
-            </>
-          ),
-          creer: t('creer'),
-          enCours: t('en_cours'),
-          succesTitre: t('succes_titre'),
-          succesTexte: t('succes_texte'),
-          erreurDonnees: t('erreur_donnees'),
-          erreurConfirmation: t('erreur_confirmation'),
-          erreurFaible: t('erreur_faible'),
-          erreurTentatives: t('erreur_tentatives'),
-          erreurRefuse: t('erreur_refuse'),
-          erreurCourriel: t('erreur_courriel'),
-          erreurConsentement: t('erreur_consentement'),
-          erreurServeur: t('erreur_serveur'),
-        }}
-      />
+    <div data-theme-sombre>
+      <CadreAuth titre={t('titre')} intro={t('intro')}>
+        <FormulaireInscription
+          locale={locale}
+          suivant={suivant}
+          libelles={{
+            nom: t('nom'),
+            courriel: t('courriel'),
+            motDePasse: t('mot_de_passe'),
+            aideMotDePasse: t('aide_mot_de_passe'),
+              afficher: t('afficher_mot_de_passe'),
+              masquer: t('masquer_mot_de_passe'),
+            confirmation: t('confirmation'),
+            consentement: (
+              <>
+                {t('consentement_avant')}
+                <Link
+                  href={ROUTES.conditionsUtilisation}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+                >
+                  {t('consentement_lien_conditions')}
+                </Link>
+                {t('consentement_milieu')}
+                <Link
+                  href={ROUTES.politiqueConfidentialite}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
+                >
+                  {t('consentement_lien_politique')}
+                </Link>
+                {t('consentement_apres')}
+              </>
+            ),
+            creer: t('creer'),
+            enCours: t('en_cours'),
+            succesTitre: t('succes_titre'),
+            succesTexte: t('succes_texte'),
+            erreurDonnees: t('erreur_donnees'),
+            erreurConfirmation: t('erreur_confirmation'),
+            erreurFaible: t('erreur_faible'),
+            erreurTentatives: t('erreur_tentatives'),
+            erreurRefuse: t('erreur_refuse'),
+            erreurCourriel: t('erreur_courriel'),
+            erreurConsentement: t('erreur_consentement'),
+            erreurServeur: t('erreur_serveur'),
+          }}
+        />
 
-      <p className="mt-6 text-sm text-ko-muted">
-        {t('deja_compte')}{' '}
-        <Link
-          // `suivant` reporté sur ce lien : quelqu'un venu ici pour commander
-          // mais qui a DÉJÀ un compte ne doit pas perdre sa destination en
-          // choisissant de se connecter plutôt que de s'inscrire.
-          href={suivant ? `${ROUTES.connexion}?suivant=${encodeURIComponent(suivant)}` : ROUTES.connexion}
-          className="text-ko-ink underline-offset-4 transition-colors duration-200 hover:underline hover:decoration-ko-blue"
-        >
-          {t('se_connecter')}
-        </Link>
-      </p>
-    </CadreAuth>
+        <p className="mt-6 text-sm text-ko-muted">
+          {t('deja_compte')}{' '}
+          <Link
+            // `suivant` reporté sur ce lien : quelqu'un venu ici pour commander
+            // mais qui a DÉJÀ un compte ne doit pas perdre sa destination en
+            // choisissant de se connecter plutôt que de s'inscrire.
+            href={suivant ? `${ROUTES.connexion}?suivant=${encodeURIComponent(suivant)}` : ROUTES.connexion}
+            className="text-ko-ink underline-offset-4 transition-colors duration-200 hover:underline hover:decoration-ko-blue"
+          >
+            {t('se_connecter')}
+          </Link>
+        </p>
+      </CadreAuth>
+    </div>
   )
 }

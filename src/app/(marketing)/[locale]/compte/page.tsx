@@ -10,7 +10,15 @@ import { createClient } from '@/lib/supabase/server'
 import { ROUTES } from '@/lib/routes'
 import { ROLES_EQUIPE } from '@/types'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -28,6 +36,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const t = await getTranslations({ locale, namespace: 'Compte' })
   return { title: t('titre'), robots: { index: false, follow: false } }
+}
+
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
 }
 
 export default async function ComptePage({ params }: Props) {
@@ -52,45 +65,47 @@ export default async function ComptePage({ params }: Props) {
   const equipe = !!profil && ROLES_EQUIPE.some((r) => r === profil.role)
 
   return (
-    <CadreAuth titre={t('titre')} intro={t('intro')}>
-      <EncartAuth titre={t('courriel')} texte={user.email ?? ''} />
-      <EncartAuth
-        titre={t('statut')}
-        texte={equipe ? t('statut_equipe') : t('statut_invite')}
-      />
+    <div data-theme-sombre>
+      <CadreAuth titre={t('titre')} intro={t('intro')}>
+        <EncartAuth titre={t('courriel')} texte={user.email ?? ''} />
+        <EncartAuth
+          titre={t('statut')}
+          texte={equipe ? t('statut_equipe') : t('statut_invite')}
+        />
 
-      <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
-        {equipe ? (
-          <Link href="/admin" className={buttonVariants({ variant: 'primary' })}>
-            {t('aller_admin')}
-            <span aria-hidden="true">→</span>
-          </Link>
-        ) : (
-          // Un compte 'client' — le cas courant depuis l'ouverture de la
-          // boutique — n'a rien à faire dans /admin : sa destination utile
-          // d'ici, ce sont ses commandes, pas un lien vers l'espace équipe.
-          <Link href={ROUTES.compteCommandes} className={buttonVariants({ variant: 'primary' })}>
-            {t('voir_commandes')}
-            <span aria-hidden="true">→</span>
-          </Link>
-        )}
+        <div className="mt-8 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
+          {equipe ? (
+            <Link href="/admin" className={buttonVariants({ variant: 'primary' })}>
+              {t('aller_admin')}
+              <span aria-hidden="true">→</span>
+            </Link>
+          ) : (
+            // Un compte 'client' — le cas courant depuis l'ouverture de la
+            // boutique — n'a rien à faire dans /admin : sa destination utile
+            // d'ici, ce sont ses commandes, pas un lien vers l'espace équipe.
+            <Link href={ROUTES.compteCommandes} className={buttonVariants({ variant: 'primary' })}>
+              {t('voir_commandes')}
+              <span aria-hidden="true">→</span>
+            </Link>
+          )}
 
-        {/* Server Action en ligne : la déconnexion n'a besoin d'aucun état
-            client, un <form> suffit et fonctionne sans JavaScript. */}
-        <form
-          action={async () => {
-            'use server'
-            const client = await createClient()
-            await client.auth.signOut()
-            redirect(`/${locale}${ROUTES.connexion}`)
-          }}
-        >
-          <button type="submit" className={buttonVariants({ variant: 'text' })}>
-            {t('deconnexion')}
-            <span aria-hidden="true">→</span>
-          </button>
-        </form>
-      </div>
-    </CadreAuth>
+          {/* Server Action en ligne : la déconnexion n'a besoin d'aucun état
+              client, un <form> suffit et fonctionne sans JavaScript. */}
+          <form
+            action={async () => {
+              'use server'
+              const client = await createClient()
+              await client.auth.signOut()
+              redirect(`/${locale}${ROUTES.connexion}`)
+            }}
+          >
+            <button type="submit" className={buttonVariants({ variant: 'text' })}>
+              {t('deconnexion')}
+              <span aria-hidden="true">→</span>
+            </button>
+          </form>
+        </div>
+      </CadreAuth>
+    </div>
   )
 }

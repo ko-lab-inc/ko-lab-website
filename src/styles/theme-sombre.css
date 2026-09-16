@@ -171,6 +171,24 @@ body:has([data-theme-sombre]) .bg-ko-frost\/95 {
 }
 
 /* --------------------------------------------------------------------------
+   Autofill Chrome : globals.css force le fond d'un champ rempli par le
+   navigateur avec un box-shadow inset var(--ko-white) et son texte en
+   var(--ko-ink) — la seule astuce qui bat la teinte bleue native. Ces
+   variables ne sont PAS redéfinies par cette couche (elles cumulent deux
+   rôles), donc sans cette règle un courriel autocomplété sur /connexion
+   redevient un rectangle blanc à texte noir. Même astuce, valeurs sombres.
+   Non vérifiable par le harnais : :-webkit-autofill ne se déclenche que
+   par le vrai gestionnaire de mots de passe du navigateur.
+   -------------------------------------------------------------------------- */
+body:has([data-theme-sombre]) input:-webkit-autofill,
+body:has([data-theme-sombre]) input:-webkit-autofill:hover,
+body:has([data-theme-sombre]) input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #ffffff;
+  -webkit-box-shadow: 0 0 0 1000px #111210 inset;
+  box-shadow: 0 0 0 1000px #111210 inset;
+}
+
+/* --------------------------------------------------------------------------
    Champ fichier : le bouton natif « Choisir un fichier » est stylé par
    Tailwind via ::file-selector-button (variante file:). Sans ces règles il
    reste crème à texte encre — un rectangle clair au milieu d'un formulaire
