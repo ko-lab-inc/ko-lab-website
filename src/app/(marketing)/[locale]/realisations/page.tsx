@@ -11,7 +11,15 @@ import { routing } from '@/i18n/routing'
 import { lireRealisationsPubliees, type RealisationPubliee } from '@/lib/realisations'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -31,6 +39,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       languages: alternatesLangues(ROUTES.realisations),
     },
   }
+}
+
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
 }
 
 export default async function RealisationsPage({ params }: Props) {
@@ -80,7 +93,7 @@ export default async function RealisationsPage({ params }: Props) {
   ).filter(({ valeur }) => valeur === 'all' || categoriesPresentes.has(valeur))
 
   return (
-    <>
+    <div data-theme-sombre>
       {/* ------------------------------ En-tête ------------------------------ */}
       {/* Pas de photo ici, volontairement : la page EST une galerie. Un hero
           photographique entrerait en concurrence avec les visuels du contenu.
@@ -127,7 +140,7 @@ export default async function RealisationsPage({ params }: Props) {
           )}
         </div>
       </section>
-    </>
+    </div>
   )
 }
 

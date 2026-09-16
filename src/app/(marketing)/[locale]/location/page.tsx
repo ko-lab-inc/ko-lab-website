@@ -11,7 +11,15 @@ import { LIEN_RENTMAN } from '@/lib/constantes'
 import { lireGaleriePage } from '@/lib/galeries'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
+
+/**
+ * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
+ * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
+ * que sur sa route, et ses règles sont toutes préfixées par
+ * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
+ */
+import '@/styles/theme-sombre.css'
 
 type Props = { params: Promise<{ locale: string }> }
 
@@ -31,6 +39,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       languages: alternatesLangues(ROUTES.location),
     },
   }
+}
+
+/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
+export const viewport: Viewport = {
+  themeColor: '#111210',
 }
 
 export default async function LocationPage({ params }: Props) {
@@ -62,7 +75,7 @@ export default async function LocationPage({ params }: Props) {
   ]
 
   return (
-    <>
+    <div data-theme-sombre>
       {/* En-tête sobre, sans photo — le document de cadrage décrit une « page
           de transition élégante » vers Rentman, pas une vitrine. */}
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
@@ -184,6 +197,6 @@ export default async function LocationPage({ params }: Props) {
           </div>
         </section>
       )}
-    </>
+    </div>
   )
 }
