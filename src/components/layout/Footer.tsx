@@ -36,13 +36,20 @@ export async function Footer() {
   // n'aurait plus de sens de type une fois l'entrée retirée du tableau
   // (TS2367) — mais `reglages` continue de le porter pour tout le reste
   // (sitemap, robots, /admin/reglages).
+  // Location EN TÊTE DE LA COLONNE CAPACITÉS depuis le §16 (lot 3,
+  // 17 septembre 2026). Elle était en dernier de la colonne Entreprise, sous
+  // Carrières — l'endroit le plus enterré du pied pour la priorité
+  // commerciale numéro un, en contradiction avec la nav qui la remonte.
+  // Elle n'entre pas dans ROUTES_CAPACITES pour autant (voir routes.ts) :
+  // le sitemap y lirait une seconde fois /location.
+  const liensCapacites = [{ key: 'location', href: ROUTES.location }, ...ROUTES_CAPACITES] as const
+
   const liensEntreprise = (
     [
       { key: 'apropos', href: ROUTES.apropos },
       { key: 'realisations', href: ROUTES.realisations },
       { key: 'carrieres', href: ROUTES.carrieres },
       { key: 'boutique', href: ROUTES.boutique },
-      { key: 'location', href: ROUTES.location },
     ] as const
   ).filter(({ key }) => key !== 'boutique' || reglages.boutiqueActive)
 
@@ -67,7 +74,7 @@ export async function Footer() {
               {t('capacites_titre')}
             </p>
             <ul className="space-y-3">
-              {ROUTES_CAPACITES.map(({ key, href }) => (
+              {liensCapacites.map(({ key, href }) => (
                 <li key={key}>
                   <Link
                     href={href}

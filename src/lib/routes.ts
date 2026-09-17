@@ -75,11 +75,24 @@ export const routeProduit = (slug: string) => `${ROUTES.boutique}/${slug}`
 export const routeCommande = (id: string) => `${ROUTES.compteCommandes}/${id}`
 
 /** Les quatre pages de capacités, dans l'ordre du document de cadrage. */
+/**
+ * Ordre D'AFFICHAGE des quatre capacités — menu déroulant « Nos capacités »,
+ * panneau mobile et colonne Capacités du pied de page lisent ce tableau.
+ *
+ * Ordre fixé par la révision « Priorité Location » de Joe, §16 (lot 3,
+ * 17 septembre 2026) : Le LAB, Installations, Équipements & déploiement,
+ * Opérations terrain. Il remplace l'ordre d'origine (Opérations en tête).
+ * sitemap.ts lit aussi ce tableau, mais un sitemap n'a pas d'ordre.
+ *
+ * Location N'Y FIGURE PAS : elle a sa propre entrée de nav et son propre
+ * lien dans le pied. L'ajouter ici la ferait apparaître deux fois dans le
+ * sitemap, qui liste déjà ROUTES.location.
+ */
 export const ROUTES_CAPACITES = [
-  { key: 'operations', href: ROUTES.operations },
-  { key: 'installations', href: ROUTES.installations },
   { key: 'lab', href: ROUTES.lab },
+  { key: 'installations', href: ROUTES.installations },
   { key: 'equipements', href: ROUTES.equipements },
+  { key: 'operations', href: ROUTES.operations },
 ] as const
 
 /**

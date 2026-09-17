@@ -136,10 +136,15 @@ export function Nav({
   // disparaît avec elle (comparer `key` à 'concours' n'a plus de sens de
   // type une fois l'entrée retirée du tableau, TS2367) — voir la prop
   // plus haut pour pourquoi `concoursActif` reste quand même déclarée.
+  //
+  // Location AVANT Réalisations depuis le §16 (lot 3, 17 septembre 2026) :
+  // « rendre Location impossible à manquer ». Elle est la priorité
+  // commerciale, elle passe donc en tête des entrées simples, juste après le
+  // menu « Nos capacités ».
   const liensSecondaires = (
     [
-      { key: 'realisations', href: ROUTES.realisations },
       { key: 'location', href: ROUTES.location },
+      { key: 'realisations', href: ROUTES.realisations },
       { key: 'boutique', href: ROUTES.boutique },
       { key: 'apropos', href: ROUTES.apropos },
       { key: 'carrieres', href: ROUTES.carrieres },
