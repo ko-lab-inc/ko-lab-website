@@ -93,8 +93,8 @@
     },
     "hero": {
       "tag": "From idea to ground",
-      "title": "What are we putting on the <em>ground</em> today?",
-      "subtitle": "KO-LAB brings together the teams, expertise, equipment and partners needed to turn an idea into a concrete operation.",
+      "title": "One idea. The means to make it <em>real</em>.",
+      "subtitle": "KO-LAB brings together the design, fabrication, equipment, teams and partners needed to turn an idea into a concrete operation.",
       "cta_primary": "Discuss a Project",
       "cta_secondary": "See Our Capabilities",
       "carte_label": "Field Hours",
@@ -118,13 +118,13 @@
       "note": "One point of contact, from first plan to teardown.",
       "en_savoir_plus": "Learn more",
       "deployer_titre": "Deploy a Crew",
-      "deployer_texte": "Field labor, crew leaders, staffing and scheduling.",
+      "deployer_texte": "Field labor, crew leaders, coordination and operational support.",
       "installer_titre": "Install a Project",
-      "installer_texte": "Preparation, transport, installation, monitoring and removal — through to storage.",
-      "fabriquer_titre": "Build a Solution",
-      "fabriquer_texte": "Design, prototyping, 3D printing, laser and CNC at The LAB.",
+      "installer_texte": "Preparation, transport, installation, monitoring, removal and storage.",
+      "fabriquer_titre": "Create a Solution",
+      "fabriquer_texte": "Design, prototyping, 3D printing, laser, CNC and custom fabrication at The LAB.",
       "louer_titre": "Rent Equipment",
-      "louer_texte": "Furniture, staging, fencing, lighting, décor and field equipment."
+      "louer_texte": "Furniture, staging, fencing, lighting, décor, field equipment and infrastructure."
     },
     "credibilite": {
       "label": "Field Credibility",
@@ -213,8 +213,8 @@
     },
     "cta": {
       "label": "Next Step",
-      "title": "So, what are we putting on the ground?",
-      "texte": "Tell us about the project. We'll come back to you with the teams, resources and timeline.",
+      "title": "A project to move forward?",
+      "texte": "Tell us what you have in mind. We'll help you determine the teams, equipment and resources needed to make it happen.",
       "bouton": "Start a Project"
     }
   },

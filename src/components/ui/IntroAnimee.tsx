@@ -17,7 +17,7 @@ const CLE_SESSION = 'kolab-intro-vue'
  *
  * PHRASE FINALE — découplée du hero le 16 septembre 2026 (Joe, « Priorité
  * Location », §3). Jusque-là elle reprenait `Home.hero.title` tel quel, au
- * motif que le H1 ÉTAIT la question « qu'est-ce qu'on met sur le terrain »
+ * motif que le H1 ÉTAIT déjà l'ancienne question de la marque
  * — un raccourci qui ne tenait que tant que les deux disaient la même chose.
  * Le H1 est devenu « Une idée. Les moyens de la rendre réelle. » (§4) et
  * l'intro doit dire « Alors, on fait quoi aujourd'hui? » : deux textes, deux
