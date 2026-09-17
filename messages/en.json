@@ -128,9 +128,9 @@
     },
     "credibilite": {
       "label": "Field Credibility",
-      "title": "Trusted teams for organizations of scale.",
-      "chiffre_label": "Hours of Field Work",
-      "mentions": "From the Government of Canada to the region's biggest festivals, our teams are in the field.",
+      "title": "Concrete means for large-\u2060scale projects.",
+      "chiffre_label": "Hours of field work carried out by our crews",
+      "mentions": "Workshop\u00a0&\u00a0fabrication\u00a0· Inventory\u00a0&\u00a0equipment\u00a0· Multi-\u2060site\u00a0operations\u00a0· Government\u00a0contracts\u00a0· Large-\u2060scale\u00a0projects",
       "phrase": "From the Government of Canada to the region's biggest festivals, our teams are in the field.",
       "detail": "Over 20,000 hours of field work, multiple sites coordinated at once, and a complete capability: labor, coordination, transport, setup, teardown, logistics and operational support."
     },
@@ -139,8 +139,8 @@
     },
     "operations": {
       "label": "Field Operations",
-      "title": "Reliable teams, coordinated, across multiple sites",
-      "texte": "Labor, crew leaders, setup and teardown, logistics and transport. Our teams integrate with yours for the duration of the project.",
+      "title": "Crews ready when the field demands it.",
+      "texte": "Your organization keeps the vision. We add the resources needed to put it in the field.",
       "lien": "See Field Operations",
       "mention": "multi-site operations"
     },
@@ -188,7 +188,7 @@
     },
     "ecosysteme": {
       "label": "The KO-LAB Ecosystem",
-      "title": "You talk to one team. We mobilize the network behind it.",
+      "title": "One\u00a0network. Every\u00a0resource.",
       "soutien": "You talk to one team. We mobilize the network behind it.",
       "turbo_tag": "Printing",
       "spartan_tag": "Apparel",
