@@ -74,7 +74,12 @@ export async function CredibiliteTerrain() {
             {tStats('heures_valeur').replace('+', '')}
             <span className="text-ko-blue">+</span>
           </p>
-          <p className="label-mono label-mono-d mt-3">{t('chiffre_label')}</p>
+          {/* lg:mt-5 : le libellé du §10, plus long que l'ancien, passe sous
+              la virgule de « 20,000+ » (EN), dont la queue descend sous la
+              ligne du chiffre. Écart à l'encre mesuré : 0 px à 1280 et 1440
+              avec mt-3 seul, 7 à 12 px de 1024 à 1440 avec lg:mt-5. Mobile
+              inchangé (9 px EN, 21 px FR). */}
+          <p className="label-mono label-mono-d mt-3 lg:mt-5">{t('chiffre_label')}</p>
 
           <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-ko-frost/70">
             {t('mentions')}
