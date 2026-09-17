@@ -136,21 +136,21 @@
       "lien": "See All Capabilities"
     },
     "operations": {
-      "label": "01 — Field Operations",
+      "label": "Field Operations",
       "title": "Reliable teams, coordinated, across multiple sites",
       "texte": "Labor, crew leaders, setup and teardown, logistics and transport. Our teams integrate with yours for the duration of the project.",
       "lien": "See Field Operations",
       "mention": "multi-site operations"
     },
     "installations": {
-      "label": "02 — Installations",
+      "label": "Installations",
       "title": "Seasonal décor and commercial installations",
       "texte": "Christmas and winter, shopping centres, office towers, retail and public spaces. Night or after-hours work when it's needed.",
       "pastille": "Holiday Décor",
       "lien": "See Installations"
     },
     "lab": {
-      "label": "03 — The LAB",
+      "label": "The LAB",
       "title": "We can develop not only the product, but also the <em>way</em> to produce it.",
       "texte": "From first idea to production line, The LAB develops the products, parts and solutions your project actually needs.",
       "lien": "Discover The LAB",
@@ -164,7 +164,7 @@
       "etape4_detail": "Delivery and installation"
     },
     "equipements": {
-      "label": "04 — Equipment & Deployment",
+      "label": "Equipment & Deployment",
       "title": "The right resources make delivery possible",
       "texte": "Trucks, open and enclosed trailers, lifts, material handling equipment, temporary lighting and power distribution.",
       "lien": "See Equipment"

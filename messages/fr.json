@@ -136,21 +136,21 @@
       "lien": "Voir toutes les capacités"
     },
     "operations": {
-      "label": "01 — Opérations terrain",
+      "label": "Opérations terrain",
       "title": "Des équipes fiables, coordonnées, sur plusieurs sites",
       "texte": "Main-d'œuvre, chefs d'équipe, montage et démontage, logistique et transport. Nos équipes s'intègrent aux vôtres pour la durée du mandat.",
       "lien": "Voir les opérations terrain",
       "mention": "opérations multisites"
     },
     "installations": {
-      "label": "02 — Installations",
+      "label": "Installations",
       "title": "Décors saisonniers et installations commerciales",
       "texte": "Noël et hiver, centres commerciaux, tours à bureaux, commerces et espaces publics. Travail de nuit ou hors des heures d'ouverture quand il le faut.",
       "pastille": "Décor des Fêtes",
       "lien": "Voir les installations"
     },
     "lab": {
-      "label": "03 — Le LAB",
+      "label": "Le LAB",
       "title": "Nous pouvons développer non seulement le produit, mais également la <em>façon</em> de le produire.",
       "texte": "De la première idée jusqu'à la chaîne de production, Le LAB développe les produits, les pièces et les solutions dont votre projet a réellement besoin.",
       "lien": "Découvrir Le LAB",
@@ -164,7 +164,7 @@
       "etape4_detail": "Livraison et installation"
     },
     "equipements": {
-      "label": "04 — Équipements et déploiement",
+      "label": "Équipements et déploiement",
       "title": "Les bons moyens permettent de livrer",
       "texte": "Camions, remorques ouvertes et fermées, nacelles, équipements de manutention, éclairage temporaire et distribution électrique.",
       "lien": "Voir les équipements"
