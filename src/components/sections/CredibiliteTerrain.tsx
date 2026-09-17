@@ -74,12 +74,21 @@ export async function CredibiliteTerrain() {
             {tStats('heures_valeur').replace('+', '')}
             <span className="text-ko-blue">+</span>
           </p>
-          {/* lg:mt-5 : le libellé du §10, plus long que l'ancien, passe sous
-              la virgule de « 20,000+ » (EN), dont la queue descend sous la
-              ligne du chiffre. Écart à l'encre mesuré : 0 px à 1280 et 1440
-              avec mt-3 seul, 7 à 12 px de 1024 à 1440 avec lg:mt-5. Mobile
-              inchangé (9 px EN, 21 px FR). */}
-          <p className="label-mono label-mono-d mt-3 lg:mt-5">{t('chiffre_label')}</p>
+          {/* Libellé du chiffre, élargi par le §10 — deux corrections mesurées :
+              1. Pastille (bg-ko-scrim/60 + backdrop-blur), même règle que le
+                 label de OperationsTerrain.tsx. Plus large, le libellé en
+                 bleu-2 nu sur la photo voilée tombait à 4,17:1 à 1440 et
+                 3,27:1 à 390 (pire pixel, fond mesuré texte masqué ; 5,53 et
+                 3,97:1 avec l'ancien libellé, en production).
+              2. Marge : la queue de la virgule de « 20,000+ » descend sous
+                 la ligne du chiffre (leading-[0.85]) et touchait le libellé
+                 (0 px à 1280 et 1440 avec mt-3). Seul l'anglais a une
+                 virgule : [&:lang(en)] lui donne 8 px de plus que le
+                 français, qui garde mt-3 lg:mt-5 — le chiffre ne s'éloigne
+                 pas de son libellé là où rien ne l'exige. */}
+          <p className="label-mono label-mono-d mx-auto mt-3 w-fit rounded bg-ko-scrim/60 px-3 py-1.5 backdrop-blur-sm lg:mt-5 [&:lang(en)]:mt-5 lg:[&:lang(en)]:mt-7">
+            {t('chiffre_label')}
+          </p>
 
           <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-ko-frost/70">
             {t('mentions')}
