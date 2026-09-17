@@ -34,9 +34,18 @@ export async function Ecosysteme() {
     <section className="bg-ko-black py-16 lg:py-28">
       <div className="mx-auto max-w-container px-6 lg:px-12">
         <Reveal>
+          {/* Révision « Priorité Location » de Joe, §18 (lot 2, 17 septembre
+              2026) : le H2 et son texte de soutien tiennent dans les DEUX
+              champs existants, sans troisième bloc. Le <p> qui portait
+              l'étiquette « Écosystème KO-LAB » porte désormais le soutien,
+              sous le titre, au style du soutien de OperationsTerrain.tsx —
+              la clé `label` reste dans messages/*.json, masquée, jamais
+              supprimée (règle de Joe). Mots de chaque phrase du titre liés
+              par des espaces insécables : il ne se coupe qu'entre ses deux
+              phrases, jamais dans « Toutes les / ressources ». */}
           <header className="max-w-[46ch]">
-            <p className="label-mono label-mono-d">{t('label')}</p>
-            <h2 className="ko-h2 mt-5 text-ko-white">{t('title')}</h2>
+            <h2 className="ko-h2 text-ko-white">{t('title')}</h2>
+            <p className="mt-6 text-base leading-relaxed text-ko-frost/70 lg:text-lg">{t('soutien')}</p>
           </header>
         </Reveal>
 
