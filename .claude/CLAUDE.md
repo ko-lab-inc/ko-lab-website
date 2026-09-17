@@ -5,7 +5,9 @@ Site vitrine premium bilingue FR/EN pour KO-LAB Inc., entreprise de déploiement
 terrain, fabrication et logistique basée à Outaouais, Québec.
 
 Signature : **De l'idée au terrain.**
-Question principale : *Qu'est-ce qu'on met sur le terrain aujourd'hui ?*
+Promesse du hero : *Une idée. Les moyens de la rendre réelle.* (révision Joe
+« Priorité Location » §4, 16 septembre 2026 — l'ancienne question « Qu'est-ce
+qu'on met sur le terrain ? » est retirée de tout le site, CTA final compris.)
 
 ---
 

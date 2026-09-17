@@ -34,10 +34,14 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
   /**
    * Les quatre photos viennent maintenant de medias_emplacements (migration
    * 0031, route A de l'architecture média) plutôt que d'images.ts en dur —
-   * besoin_1..4 correspondent exactement aux quatre cartes ci-dessous, dans
-   * le même ordre (voir la note de la migration : le brief d'origine citait
-   * une clé « besoinCreer » inexistante, corrigée en se basant sur les
-   * quatre cartes réelles de ce fichier). `resoudreEmplacement` retombe sur
+   * besoin_1..4 sont nommés d'après l'ordre HISTORIQUE des cartes (1 Déployer,
+   * 2 Installer, 3 Créer, 4 Louer). Depuis la révision du 16 septembre 2026,
+   * l'ordre d'affichage est inversé (voir `besoins` plus bas) mais chaque
+   * emplacement reste lié à SA carte par contenu : besoin_1 est toujours la
+   * photo d'équipe, sous « Déployer », désormais en quatrième position (voir
+   * la note de la migration : le brief d'origine citait une clé
+   * « besoinCreer » inexistante, corrigée en se basant sur les quatre cartes
+   * réelles de ce fichier). `resoudreEmplacement` retombe sur
    * la même photo qu'avant (images.ts) si la base ne répond pas ou si la
    * ligne manque — jamais de blanc.
    *
@@ -58,41 +62,53 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
     resoudreEmplacement('besoin_4', locale),
   ])
 
+  /**
+   * ORDRE — révisé le 16 septembre 2026 (Joe, « Priorité Location », §5) :
+   * Louer, Créer, Installer, Déployer. La location passe en tête, le
+   * déploiement d'équipe ferme la marche.
+   *
+   * Seul l'ORDRE des objets et leur `numero` changent. Chaque carte garde son
+   * emplacement média (`besoin_1` reste la photo d'équipe, sous « Déployer » ;
+   * `besoin_4` reste le mobilier loué, sous « Louer ») et son lien : les
+   * photos et les destinations suivent le CONTENU, pas la position. Les
+   * libellés vivent dans Home.besoins.* (fr.json) — la clé `fabriquer_*`
+   * porte désormais « Créer une solution », le nom de clé n'a pas bougé.
+   */
   const besoins = [
     {
-      cle: 'deployer',
+      cle: 'louer',
       numero: '01',
-      href: ROUTES.operations,
-      photo: besoin1,
-      cadrage: CADRAGES.besoinDeployer,
-      style: FILTRE_TERRAIN,
-    },
-    {
-      cle: 'installer',
-      numero: '02',
-      href: ROUTES.installations,
-      photo: besoin2,
-      cadrage: CADRAGES.besoinInstaller,
-      // Photo réelle (Canada Day 2026) — jour nuageux, pas le contre-jour doré
-      // de l'ex-photo Unsplash. FILTRE_TERRAIN_CHAUD assombrissait et
-      // désaturait pour compenser un ciel ambré qui n'existe plus ici ; le
-      // socle FILTRE_TERRAIN suffit, comme 03 et 04.
+      href: ROUTES.location,
+      photo: besoin4,
+      cadrage: 'object-center',
       style: FILTRE_TERRAIN,
     },
     {
       cle: 'fabriquer',
-      numero: '03',
+      numero: '02',
       href: ROUTES.lab,
       photo: besoin3,
       cadrage: 'object-center',
       style: FILTRE_TERRAIN,
     },
     {
-      cle: 'louer',
+      cle: 'installer',
+      numero: '03',
+      href: ROUTES.installations,
+      photo: besoin2,
+      cadrage: CADRAGES.besoinInstaller,
+      // Photo réelle (Canada Day 2026) — jour nuageux, pas le contre-jour doré
+      // de l'ex-photo Unsplash. FILTRE_TERRAIN_CHAUD assombrissait et
+      // désaturait pour compenser un ciel ambré qui n'existe plus ici ; le
+      // socle FILTRE_TERRAIN suffit, comme les trois autres.
+      style: FILTRE_TERRAIN,
+    },
+    {
+      cle: 'deployer',
       numero: '04',
-      href: ROUTES.location,
-      photo: besoin4,
-      cadrage: 'object-center',
+      href: ROUTES.operations,
+      photo: besoin1,
+      cadrage: CADRAGES.besoinDeployer,
       style: FILTRE_TERRAIN,
     },
   ] as const

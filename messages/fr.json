@@ -92,8 +92,8 @@
     },
     "hero": {
       "tag": "De l'idée au terrain",
-      "title": "Qu'est-ce qu'on met sur le <em>terrain</em> aujourd'hui?",
-      "subtitle": "KO-LAB réunit les équipes, l'expertise, les équipements et les partenaires nécessaires pour transformer une idée en opération concrète.",
+      "title": "Une idée. Les moyens de la rendre <em>réelle</em>.",
+      "subtitle": "KO-LAB réunit la conception, la fabrication, les équipements, les équipes et les partenaires nécessaires pour transformer une idée en opération concrète.",
       "cta_primary": "Discuter d'un mandat",
       "cta_secondary": "Voir nos capacités",
       "carte_label": "Heures terrain",
@@ -117,13 +117,13 @@
       "note": "Un seul point de contact, de l'idée au déploiement.",
       "en_savoir_plus": "En savoir plus",
       "deployer_titre": "Déployer une équipe",
-      "deployer_texte": "Main-d'œuvre terrain, chefs d'équipe, planification des effectifs et des horaires.",
+      "deployer_texte": "Main-d'œuvre terrain, chefs d'équipe, coordination et soutien opérationnel.",
       "installer_titre": "Installer un projet",
-      "installer_texte": "Préparation, transport, installation, suivi et retrait — jusqu'à l'entreposage.",
-      "fabriquer_titre": "Fabriquer une solution",
-      "fabriquer_texte": "Conception, prototypage, impression 3D, laser et CNC au LAB.",
+      "installer_texte": "Préparation, transport, installation, suivi, retrait et entreposage.",
+      "fabriquer_titre": "Créer une solution",
+      "fabriquer_texte": "Conception, prototypage, impression 3D, laser, CNC et fabrication sur mesure au LAB.",
       "louer_titre": "Louer de l'équipement",
-      "louer_texte": "Mobilier, scène, clôtures, éclairage, décor et équipements terrain."
+      "louer_texte": "Mobilier, scènes, clôtures, éclairage, décor, équipements terrain et infrastructures."
     },
     "credibilite": {
       "label": "Crédibilité terrain",
@@ -212,8 +212,8 @@
     },
     "cta": {
       "label": "Prochaine étape",
-      "title": "Alors, qu'est-ce qu'on met sur le terrain?",
-      "texte": "Décrivez-nous le projet. On revient vers vous avec les équipes, les moyens et l'échéancier.",
+      "title": "Un projet à faire avancer?",
+      "texte": "Parlez-nous de ce que vous avez en tête. On vous aide à déterminer les équipes, les équipements et les moyens nécessaires pour le réaliser.",
       "bouton": "Démarrer un projet"
     }
   },

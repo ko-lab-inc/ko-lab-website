@@ -51,17 +51,28 @@ export async function Location() {
           <Reveal>
             <div className="grid grid-cols-2 gap-3">
               <div className="relative col-span-2 aspect-[16/9] overflow-hidden rounded-xl bg-ko-cream2">
-                // ⚠️ unoptimized : contournement de l'optimiseur Vercel, ajouté le
-                // 3 septembre 2026. L'optimisation d'images du compte est épuisée —
-                // /_next/image répond 402 pour toute transformation PAS DÉJÀ en cache,
-                // donc toute image nouvellement câblée s'affiche cassée en production
-                // (constaté sur cette photo, vérifié par requête directe : les anciennes
-                // largeurs répondent 200, les nouvelles 402). Le fichier source a été
-                // redimensionné et converti en WebP exprès pour pouvoir être servi tel
-                // quel sans coût de performance déraisonnable.
-                // À RETIRER dès que le quota Vercel est rétabli : cette prop prive
-                // l'image du srcset responsive, un téléphone télécharge la version
-                // pleine largeur.
+                {/*
+                  ⚠️ unoptimized : contournement de l'optimiseur Vercel, ajouté le
+                  3 septembre 2026. L'optimisation d'images du compte est épuisée —
+                  /_next/image répond 402 pour toute transformation PAS DÉJÀ en cache,
+                  donc toute image nouvellement câblée s'affiche cassée en production
+                  (constaté sur cette photo, vérifié par requête directe : les anciennes
+                  largeurs répondent 200, les nouvelles 402). Le fichier source a été
+                  redimensionné et converti en WebP exprès pour pouvoir être servi tel
+                  quel sans coût de performance déraisonnable.
+                  À RETIRER dès que le quota Vercel est rétabli : cette prop prive
+                  l'image du srcset responsive, un téléphone télécharge la version
+                  pleine largeur.
+
+                  ⚠️ BUG CORRIGÉ le 16 septembre 2026 (Joe, « Priorité Location »,
+                  §23) : ce bloc était écrit avec `//` en position d'ENFANT JSX,
+                  entre <div> et <Image>. En JSX, `//` n'est un commentaire qu'à
+                  l'intérieur d'une expression { } ; en enfant direct, c'est du
+                  TEXTE — React le rendait littéralement, et les onze lignes
+                  s'affichaient sur le site public au-dessus de la photo. Vu en
+                  production. La même note dans EquipementsDeploiement.tsx est
+                  dans `: ( … )`, une expression : elle ne fuyait pas.
+                */}
                 <Image
                   unoptimized
                   src={IMAGES.locationAmbiance}

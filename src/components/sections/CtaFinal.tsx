@@ -8,8 +8,10 @@ import { ROUTES } from '@/lib/routes'
 /**
  * Appel à l'action final — section 13 de l'accueil.
  *
- * Reprend mot pour mot la formule du document de cadrage :
- * « Alors, qu'est-ce qu'on met sur le terrain? »
+ * Titre et texte révisés le 16 septembre 2026 (Joe, « Priorité Location »,
+ * §15) : « Un projet à faire avancer? ». L'ancienne formule du document de
+ * cadrage (l'ancienne question sur le terrain) est retirée
+ * de tout le site par la même révision, hero compris (§4).
  *
  * Fond clair et beaucoup d'espace négatif : après l'écosystème sombre et les
  * deux cartes d'offres, la page doit se rouvrir avant le footer. Aucun visuel,
