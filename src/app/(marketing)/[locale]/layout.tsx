@@ -266,12 +266,13 @@ export default async function MarketingLayout({ children, params }: Props) {
     // Le modal bascule entre connexion et création sans naviguer : il lui faut
     // les deux jeux de libellés.
     Inscription: tousLesMessages.Inscription,
-    // Intro animée de l'accueil (Phase 4) — sous-ensemble : le titre du hero
-    // est repris tel quel (pas de copie séparée qui pourrait diverger), le
-    // reste de Home.hero (sous-titre, CTA…) n'a rien à faire côté client ici.
+    // Intro animée de l'accueil (Phase 4). Jusqu'au 16 septembre 2026 elle
+    // reprenait aussi Home.hero.title — découplée depuis (Joe, « Priorité
+    // Location », §3) : sa phrase finale vit dans Home.intro.phrase, rien de
+    // Home.hero n'a plus à passer côté client. Hero.tsx est un composant
+    // serveur, il lit ses textes lui-même.
     Home: {
       intro: tousLesMessages.Home.intro,
-      hero: { title: tousLesMessages.Home.hero.title },
     },
     // ⚠️ SOUS-ENSEMBLE, pas l'espace de noms entier. `Boutique` contient les
     // noms des produits « Solutions modulaires », que le drapeau masque et que

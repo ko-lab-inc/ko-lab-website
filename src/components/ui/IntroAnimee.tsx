@@ -13,12 +13,17 @@ const CLE_SESSION = 'kolab-intro-vue'
  * 4×500 + 1500 + 500 = 4000ms, en bas de la fourchette demandée plutôt que
  * de la dépasser. La séquence de mots (Créer/Fabriquer/Installer/Déployer)
  * et la phrase finale restent inchangées — seule leur tenue à l'écran
- * s'allonge. Le brief liste aussi une ligne-pont « Alors, on fait quoi
- * aujourd'hui? » entre les mots et la révélation : la phrase finale
- * (`Home.hero.title`) EST déjà cette question, au mot près la « question
- * principale » de la marque (CLAUDE.md) — dupliquer une variante paraphrasée
- * juste avant aurait fait bégayer la séquence sur la même idée deux fois de
- * suite. Rien à ajouter, seulement à ralentir.
+ * s'allonge.
+ *
+ * PHRASE FINALE — découplée du hero le 16 septembre 2026 (Joe, « Priorité
+ * Location », §3). Jusque-là elle reprenait `Home.hero.title` tel quel, au
+ * motif que le H1 ÉTAIT la question « qu'est-ce qu'on met sur le terrain »
+ * — un raccourci qui ne tenait que tant que les deux disaient la même chose.
+ * Le H1 est devenu « Une idée. Les moyens de la rendre réelle. » (§4) et
+ * l'intro doit dire « Alors, on fait quoi aujourd'hui? » : deux textes, deux
+ * clés. `Home.intro.phrase` appartient à l'espace `Home.intro`, déjà passé en
+ * entier au client par le layout marketing (liste blanche des messages).
+ * Le timing n'est pas touché ici — §3 (5 à 5,5 s) est un autre lot.
  */
 /** Par mot — inclut son temps d'entrée (200ms, voir globals.css) et sa tenue. */
 const DUREE_MOT = 500
@@ -57,7 +62,6 @@ type Etape = 'inactive' | 'mots' | 'phrase' | 'sortie'
  */
 export function IntroAnimee() {
   const t = useTranslations('Home.intro')
-  const tHero = useTranslations('Home.hero')
   const [etape, setEtape] = useState<Etape>('inactive')
   const [indexMot, setIndexMot] = useState(0)
   const minuteries = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -199,7 +203,7 @@ export function IntroAnimee() {
 
         {(etape === 'phrase' || etape === 'sortie') && (
           <p className="intro-phrase">
-            {tHero.rich('title', { em: (chunks) => <em className="italic text-ko-blue">{chunks}</em> })}
+            {t.rich('phrase', { em: (chunks) => <em className="italic text-ko-blue">{chunks}</em> })}
           </p>
         )}
 
