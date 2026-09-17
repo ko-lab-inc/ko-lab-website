@@ -129,6 +129,8 @@
     "credibilite": {
       "label": "Field Credibility",
       "title": "Trusted teams for organizations of scale.",
+      "chiffre_label": "Hours of Field Work",
+      "mentions": "From the Government of Canada to the region's biggest festivals, our teams are in the field.",
       "phrase": "From the Government of Canada to the region's biggest festivals, our teams are in the field.",
       "detail": "Over 20,000 hours of field work, multiple sites coordinated at once, and a complete capability: labor, coordination, transport, setup, teardown, logistics and operational support."
     },

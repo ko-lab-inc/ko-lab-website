@@ -17,6 +17,18 @@ import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
  *
  * Le chiffre est rendu tel quel, jamais animé : le skill 08 interdit
  * explicitement le compteur au chargement.
+ *
+ * Révision « Priorité Location » de Joe, §10 (lot 2, 17 septembre 2026) :
+ * nouveau titre, chiffre reformulé, et cinq mentions éditoriales SANS
+ * compteur ni chiffre (`mentions`, une seule ligne à points médians, dans le
+ * paragraphe qui portait `phrase` — aucun bloc ajouté). Le libellé du
+ * chiffre a sa propre clé, `chiffre_label` : Home.stats.heures_label est
+ * aussi lu par le hero et /a-propos, qui ne changent pas. La VALEUR reste
+ * lue dans Home.stats, source unique du « 20 000+ ». `phrase` et `detail`
+ * restent dans messages/*.json, inutilisées — masquer, jamais supprimer
+ * (règle de Joe). Les mentions séparent leurs mots par des espaces
+ * insécables : une ligne ne se coupe qu'après un point médian, jamais au
+ * milieu d'une mention.
  */
 export async function CredibiliteTerrain() {
   const t = await getTranslations('Home.credibilite')
@@ -62,10 +74,10 @@ export async function CredibiliteTerrain() {
             {tStats('heures_valeur').replace('+', '')}
             <span className="text-ko-blue">+</span>
           </p>
-          <p className="label-mono label-mono-d mt-3">{tStats('heures_label')}</p>
+          <p className="label-mono label-mono-d mt-3">{t('chiffre_label')}</p>
 
           <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-ko-frost/70">
-            {t('phrase')}
+            {t('mentions')}
           </p>
         </Reveal>
       </div>

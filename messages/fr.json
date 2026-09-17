@@ -128,7 +128,9 @@
     },
     "credibilite": {
       "label": "Crédibilité terrain",
-      "title": "Des équipes de confiance pour des organisations d'envergure.",
+      "title": "Des moyens concrets pour des projets d'envergure.",
+      "chiffre_label": "Heures de travail terrain réalisées par nos équipes",
+      "mentions": "Atelier\u00a0&\u00a0fabrication\u00a0· Inventaire\u00a0&\u00a0équipements\u00a0· Opérations\u00a0multisites\u00a0· Mandats\u00a0gouvernementaux\u00a0· Projets\u00a0d'envergure",
       "phrase": "Des équipes déployées sur des opérations multisites, des mandats gouvernementaux et des projets d'envergure.",
       "detail": "Plus de 20 000 heures de travail terrain, plusieurs sites coordonnés simultanément, et une capacité complète : main-d'œuvre, coordination, transport, montage, démontage, logistique et soutien opérationnel."
     },
