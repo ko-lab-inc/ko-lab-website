@@ -214,6 +214,22 @@ body:has([data-theme-sombre]) footer.bg-ko-black {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* Le MÊME filet, demandé explicitement par une section qui ne vient pas de
+   bg-ko-black. Les sections `bg-ko-cream` reçoivent bien le second niveau
+   (règle plus haut) mais pas le filet : quand l'une d'elles suit une section
+   déjà à #0e1116, les deux se touchent sans aucune limite. Mesuré le
+   17 septembre 2026 sur l'accueil, joint Équipements → GM Locations :
+   1,000:1 sur les 1440 colonnes, contre 1,200:1 aux joints qui ont le filet.
+
+   Posé par classe sur la section concernée plutôt qu'avec un combinateur
+   voisin : `section.bg-ko-black + section.bg-ko-cream` toucherait 8 joints
+   sur 7 autres pages (les quatre pages de capacités, /nos-capacites,
+   /a-propos), hors du périmètre. La classe ne fait rien hors thème sombre :
+   en thème clair, ce sont les fonds qui se séparent. */
+body:has([data-theme-sombre]) section.section-filet {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 /* Barre latérale de l'espace équipe (aside.bg-ko-black, NavAdmin) : même
    second niveau, mais sans filet en tête — elle a déjà sa bordure droite
    (lg:border-r border-ko-line-d). Sans cette règle elle resterait #111210,

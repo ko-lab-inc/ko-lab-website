@@ -29,12 +29,20 @@ import { Reveal } from '@/components/ui/Reveal'
  * d'appartenance à KO-LAB. Le chiffre « 08 » posé en filigrane suit le même
  * vocabulaire que les numéros de section ailleurs sur le site (Besoins.tsx,
  * hub /nos-capacites) — un repère, pas une décoration ajoutée.
+ *
+ * `section-filet` (17 septembre 2026) : en thème sombre, bg-ko-cream et
+ * bg-ko-black tombent tous deux sur #0e1116, mais seul bg-ko-black reçoit le
+ * filet de séparation. Cette section suit Équipements (bg-ko-black) : les
+ * deux se touchaient sans aucune limite visible — 1,000:1 mesuré sur les
+ * 1440 colonnes du joint, contre 1,200:1 aux trois autres joints de même
+ * niveau. La classe ne fait rien en thème clair, où les fonds se séparent
+ * d'eux-mêmes ; la règle vit dans theme-sombre.css.
  */
 export async function GmLocations() {
   const t = await getTranslations('Home.gmLocations')
 
   return (
-    <section className="bg-ko-cream py-20 lg:py-28">
+    <section className="section-filet bg-ko-cream py-20 lg:py-28">
       <div className="mx-auto max-w-container px-6 lg:px-12">
         <Reveal>
           <div className="flex flex-col gap-8 border-y border-ko-line py-14 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:py-20">
