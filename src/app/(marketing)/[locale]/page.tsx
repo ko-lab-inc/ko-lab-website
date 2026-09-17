@@ -99,25 +99,42 @@ export default async function AccueilPage({ params }: Props) {
   setRequestLocale(locale)
 
   /*
-   * Ordre du document de cadrage Phase 5 (13 sections), remplace l'ancien
-   * ordre du skill 19 — StatsBar et PreuveTerrain fusionnées en
-   * CredibiliteTerrain, Capacites dissoute dans Operations/Installations/
-   * Equipements (+ un lien de sortie vers le hub, posé en fin de la section
-   * 7), Offres séparée en Location/Boutique :
-   *   1  Hero                    photo sombre, encartée sur fond clair
-   *   2  Besoins                 ko-white
-   *   3  CredibiliteTerrain      photo + voile sombre
-   *   4  OperationsTerrain       photo + voile sombre
-   *   5  Installations           ko-white (pas de photo — voir le fichier)
-   *   6  Lab                     ko-black
-   *   7  EquipementsDeploiement  ko-black
-   *   8  GmLocations             ko-cream
-   *   9  Réalisations            ko-white
-   *   10 Écosystème              ko-black
-   *   11 Location                ko-cream
-   *   12 Boutique                ko-cream
-   *   13 CTA final               ko-white
-   *   (Footer)                   ko-black
+   * Ordre de la révision « Priorité Location » de Joe, §6 (lot 2,
+   * 17 septembre 2026) : sections repositionnées, aucune supprimée ni
+   * dupliquée — consigne de Joe. Remplace l'ordre du document de cadrage
+   * Phase 5 (lui-même issu du skill 19 : StatsBar et PreuveTerrain fusionnées
+   * en CredibiliteTerrain, Capacites dissoute dans Operations/Installations/
+   * Equipements, Offres séparée en Location/Boutique). Les « section N »
+   * citées en tête des composants suivent encore la numérotation Phase 5,
+   * rappelée entre parenthèses.
+   *
+   *   rang  composant               Phase 5  fond en thème sombre
+   *   1     Hero                    (1)      carte photo encartée
+   *   2     Besoins                 (2)      #111210
+   *   3     Location                (11)     #0e1116, sans filet
+   *   —     Boutique                (12)     #0e1116, sans filet — AUCUNE marge
+   *                                          intérieure haute : prolonge Location
+   *                                          et doit la suivre (rendue seulement
+   *                                          si boutique_active)
+   *   4     Lab                     (6)      #0e1116 + filet
+   *   5     CredibiliteTerrain      (3)      photo + voile, filet
+   *   6     Installations           (5)      #111210
+   *   7     EquipementsDeploiement  (7)      #0e1116 + filet
+   *   8     GmLocations             (8)      #0e1116, sans filet — absente de la
+   *                                          liste du §6 : laissée contre
+   *                                          Équipements, dont elle prolonge
+   *                                          l'inventaire
+   *   9     OperationsTerrain       (4)      photo + voile, filet
+   *   10    Realisations            (9)      #111210
+   *   11    Ecosysteme              (10)     #0e1116 + filet
+   *   12    CtaFinal                (13)     #111210
+   *   (Footer)                               #0e1116 + filet
+   *
+   * Jointures mesurées au pixel (1440 et 390 px) : deux zones #0e1116 se
+   * touchent sans aucun séparateur en Équipements → GmLocations (déjà le cas
+   * dans l'ordre Phase 5) ; Location → Lab n'est séparé que par le filet et,
+   * à 1440, par la photo du LAB sur la moitié de la largeur. Tout nouveau
+   * déplacement se revérifie de la même façon, bords de section compris.
    */
   return (
     // Marqueur du thème sombre — voir theme-sombre.css. Un <div> sans style
@@ -126,21 +143,22 @@ export default async function AccueilPage({ params }: Props) {
     // partout ailleurs, nav et pied de page compris.
     <div data-theme-sombre>
       {/* Overlay client, position: fixed — ne retarde ni ne remplace rien
-          en dessous (voir IntroAnimee.tsx). Uniquement l'accueil : c'est le
-          titre du hero, spécifique à cette page, qui clôt la séquence. */}
+          en dessous (voir IntroAnimee.tsx). Uniquement l'accueil : la séquence
+          se clôt sur sa propre phrase (Home.intro.phrase), juste au-dessus
+          du hero de cette page. */}
       <IntroAnimee />
       <Hero />
       <Besoins locale={locale} />
-      <CredibiliteTerrain />
-      <OperationsTerrain locale={locale} />
-      <Installations />
-      <Lab />
-      <EquipementsDeploiement locale={locale} />
-      <GmLocations />
-      <Realisations />
-      <Ecosysteme />
       <Location />
       <Boutique />
+      <Lab />
+      <CredibiliteTerrain />
+      <Installations />
+      <EquipementsDeploiement locale={locale} />
+      <GmLocations />
+      <OperationsTerrain locale={locale} />
+      <Realisations />
+      <Ecosysteme />
       <CtaFinal />
     </div>
   )
