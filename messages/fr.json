@@ -226,7 +226,7 @@
       "label": "Nos capacités",
       "title": "Planifier, fabriquer, installer, équiper, déployer",
       "phrase": "Votre organisation conserve la vision. Nous ajoutons les ressources nécessaires pour la mettre sur le terrain.",
-      "texte": "KO-LAB ne se présente pas uniquement comme une entreprise événementielle ou une agence de main-d'œuvre. KO-LAB ajoute les équipes, les moyens et les capacités nécessaires pour faire avancer le projet.",
+      "texte": "KO-LAB réunit des équipes terrain, des capacités de fabrication, des équipements et un réseau de partenaires pour transformer des idées en opérations concrètes.",
       "lien_page": "Voir la page",
       "ce_que_ca_couvre": "Ce que ça couvre",
       "regroupement_1_nom": "Main-d'œuvre & opérations terrain",
@@ -586,8 +586,8 @@
     "methode_1_texte": "Ce qui doit se retrouver sur le terrain détermine les équipes, les moyens et l'échéancier.",
     "methode_2_titre": "On mobilise ce qu'il faut",
     "methode_2_texte": "Main-d'œuvre, équipements, fabrication au LAB, partenaires du réseau — assemblés pour le mandat, pas imposés d'avance.",
-    "methode_3_titre": "On reste jusqu'au bout",
-    "methode_3_texte": "Montage, soutien pendant l'opération, démontage, retrait et entreposage. Le mandat se termine quand le site est remis.",
+    "methode_3_titre": "Le mandat se termine quand le site est remis",
+    "methode_3_texte": "Montage, soutien pendant l'opération, démontage, retrait et entreposage.",
     "chiffres_label": "En bref"
   },
   "PolitiqueConfidentialite": {
