@@ -59,6 +59,10 @@
     "conditionsUtilisation": {
       "title": "Conditions d'utilisation",
       "description": "Conditions d'utilisation du site KO-LAB Inc. : comptes, commandes, propriété intellectuelle et responsabilité."
+    },
+    "introuvable": {
+      "title": "Page introuvable",
+      "description": "Cette page n'existe pas ou a été déplacée. Retournez à l'accueil ou passez par la navigation."
     }
   },
   "Nav": {

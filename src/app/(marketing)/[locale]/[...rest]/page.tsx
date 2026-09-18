@@ -1,10 +1,10 @@
 import { hasLocale } from 'next-intl'
-import { setRequestLocale } from 'next-intl/server'
+import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
 import { routing } from '@/i18n/routing'
 
-import type { Viewport } from 'next'
+import type { Metadata, Viewport } from 'next'
 
 /**
  * Fourre-tout — n'existait pas avant ce fichier (Phase 10, étape 3).
@@ -40,6 +40,21 @@ type Props = { params: Promise<{ locale: string }> }
  */
 export const viewport: Viewport = {
   themeColor: '#111210',
+}
+
+/**
+ * Métadonnées de la 404, MOITIÉ CLIENT (17 septembre 2026). Les mêmes sont
+ * exportées par not-found.tsx, qui alimente le HTML serveur (ce que lisent
+ * Googlebot et curl). Mais après hydratation, Next réapplique les
+ * métadonnées de la PAGE — sans celles-ci, l'onglet retombait sur le titre
+ * par défaut du layout, « KO-LAB Inc. — De l'idée au terrain », 2 s après le
+ * chargement (mesuré). Les deux exports doivent dire la même chose.
+ */
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params
+  if (!hasLocale(routing.locales, locale)) return {}
+  const t = await getTranslations({ locale, namespace: 'Metadata.introuvable' })
+  return { title: t('title'), description: t('description'), robots: { index: false, follow: true } }
 }
 
 export default async function FourreTout({ params }: Props) {

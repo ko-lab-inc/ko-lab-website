@@ -59,6 +59,10 @@
     "conditionsUtilisation": {
       "title": "Terms of Use",
       "description": "Terms of use for the KO-LAB Inc. website: accounts, orders, intellectual property and liability."
+    },
+    "introuvable": {
+      "title": "Page Not Found",
+      "description": "This page doesn't exist or has been moved. Head back to the home page or use the navigation."
     }
   },
   "Nav": {

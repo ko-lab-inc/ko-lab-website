@@ -1,7 +1,9 @@
+import { hasLocale } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
 
 import { buttonVariants } from '@/components/ui/Button'
 import { Link } from '@/i18n/navigation'
+import { routing } from '@/i18n/routing'
 import { ROUTES } from '@/lib/routes'
 
 /**
@@ -12,6 +14,36 @@ import { ROUTES } from '@/lib/routes'
  * le fourre-tout [...rest]/page.tsx qui porte le theme-color.
  */
 import '@/styles/theme-sombre.css'
+
+import type { Metadata } from 'next'
+
+/**
+ * Métadonnées de la 404 (17 septembre 2026). Sans elles, la page introuvable
+ * héritait du title et de la description de l'ACCUEIL — constaté en
+ * production, FR et EN, jusque dans les résultats de recherche. Exportées
+ * ICI pour le HTML serveur : quand une page appelle notFound(), Next résout
+ * le <head> depuis ce fichier — c'est ce que lisent Googlebot et curl
+ * (vérifié avec son User-Agent : « Page introuvable — KO-LAB »). Après
+ * hydratation, le navigateur réapplique celles de la page : la page
+ * fourre-tout [...rest] exporte donc les MÊMES, sinon l'onglet retombe sur
+ * le titre du layout 2 s après le chargement (mesuré). Couvre toute URL
+ * inconnue et tout notFound() du site vitrine. `robots: noindex` : une page d'erreur n'a
+ * rien à faire dans l'index. Le gabarit « %s — KO-LAB » du layout s'applique.
+ *
+ * ⚠️ Locale passée EXPLICITEMENT à getTranslations : Next fournit `params` à
+ * cette fonction (vérifié, `locale` y est). Sans elle, next-intl lit la
+ * requête et rend DYNAMIQUES toutes les pages qui appellent notFound() — les
+ * trois pages boutique (inactives) étaient passées de ● à ƒ au build. Le
+ * repli sans locale ne sert qu'à une locale inconnue, cas où la page est
+ * déjà dynamique.
+ */
+export async function generateMetadata(props: { params?: Promise<{ locale?: string }> }): Promise<Metadata> {
+  const { locale } = (await props.params) ?? {}
+  const t = hasLocale(routing.locales, locale)
+    ? await getTranslations({ locale, namespace: 'Metadata.introuvable' })
+    : await getTranslations('Metadata.introuvable')
+  return { title: t('title'), description: t('description'), robots: { index: false, follow: true } }
+}
 
 /**
  * 404 — n'existait pas avant ce fichier (Phase 10, étape 3).
