@@ -82,7 +82,9 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
    * lien, mêmes espacements : seules sa taille et le cadre de son image
    * changent. Sous md, toutes les cartes sont empilées pleine largeur et la
    * carte 01 garde le 16/9 des autres — un 21/9 sur 342 px ferait une bande
-   * de 147 px, écrasée. La photo (portrait 1600×2133, mobilier sous
+   * de 147 px, écrasée. Dès md, trois colonnes (plus deux jusqu'à lg) :
+   * à 768, deux colonnes laissaient 04 seule sur sa rangée, un vide à sa
+   * droite — vu en vérification, corrigé le 17 septembre 2026. La photo (portrait 1600×2133, mobilier sous
    * chapiteau) supporte le 21/9 centré : tables, chaises, scène et structure
    * restent dans le cadre, vérifié sur le recadrage simulé avant de coder.
    */
@@ -141,12 +143,11 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
           </header>
         </Reveal>
 
-        {/* lg:grid-cols-3 : la carte 01 prend les trois colonnes, les trois
-            autres se partagent la rangée. À md (2 colonnes), 01 prend les
-            deux, puis 02-03 sur une rangée et 04 seule. */}
-        <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {/* md:grid-cols-3 : la carte 01 prend les trois colonnes, les trois
+            autres se partagent la rangée — même disposition de 768 à 1440+. */}
+        <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
           {besoins.map(({ cle, numero, href, photo, cadrage, style }) => (
-            <Reveal key={cle} className={cle === 'louer' ? 'md:col-span-2 lg:col-span-3' : undefined}>
+            <Reveal key={cle} className={cle === 'louer' ? 'md:col-span-3' : undefined}>
               {/* `-m-3 p-3` : marge négative compensée par un padding égal —
                   la mise en page ne bouge pas d'un pixel, mais le fond au
                   survol dispose de 12px de respiration autour de la carte.
@@ -194,11 +195,11 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
                       // est un seul média préchargé (le hero), voir CLAUDE.md.
                       quality={80}
                       // Carte 01 : pleine largeur du conteneur (1113 px mesurés
-                      // à 1440) ; les autres : moitié à md, tiers à lg.
+                      // à 1440) ; les autres : un tiers dès md.
                       sizes={
                         cle === 'louer'
                           ? '(max-width: 1280px) 100vw, 1120px'
-                          : '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
+                          : '(max-width: 767px) 100vw, 33vw'
                       }
                       style={style}
                       className={cn(
