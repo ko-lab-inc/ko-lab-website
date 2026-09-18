@@ -226,7 +226,7 @@
       "label": "Our Capabilities",
       "title": "Plan, Build, Install, Equip, Deploy",
       "phrase": "Your organization keeps the vision. We add the resources needed to put it in the field.",
-      "texte": "KO-LAB isn't just an events company or a staffing agency. We plan, build, install, equip and deploy complex projects — from the first plan through teardown.",
+      "texte": "KO-LAB brings together field crews, fabrication capabilities, equipment and a network of partners to turn ideas into concrete operations.",
       "lien_page": "See the Page",
       "ce_que_ca_couvre": "What this covers",
       "regroupement_1_nom": "Labor & Field Operations",
@@ -572,7 +572,7 @@
   "APropos": {
     "title": "About",
     "signature": "From idea to ground.",
-    "intro": "KO-LAB isn't just an events company or a staffing agency. We plan, build, install, equip and deploy complex projects.",
+    "intro": "KO-LAB brings together field crews, fabrication capabilities, equipment and a network of partners to turn ideas into concrete operations.",
     "ecosysteme_titre": "The Ecosystem",
     "ecosysteme_texte": "You talk to one team. We mobilize the network behind it.",
     "positionnement_label": "Positioning",
@@ -582,12 +582,12 @@
     "culture_titre": "What gets decided in the office plays out in the field",
     "culture_texte": "Our teams work nights, after hours, across multiple sites at once. Coordination isn't an add-on service — it's the job.",
     "methode_label": "How We Work",
-    "methode_1_titre": "We start from the need",
+    "methode_1_titre": "We start from the need, not a ready-made solution",
     "methode_1_texte": "Not from a catalogue. What needs to end up in the field determines the teams, the resources and the timeline.",
     "methode_2_titre": "We mobilize what it takes",
     "methode_2_texte": "Labor, equipment, fabrication at The LAB, network partners — assembled for the project, not decided in advance.",
-    "methode_3_titre": "We stay until it's done",
-    "methode_3_texte": "Setup, support during the operation, teardown, removal and storage. The project ends when the site is handed back.",
+    "methode_3_titre": "The project ends when the site is handed back",
+    "methode_3_texte": "Setup, support during the operation, teardown, removal and storage.",
     "chiffres_label": "At a Glance"
   },
   "PolitiqueConfidentialite": {
