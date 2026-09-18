@@ -73,6 +73,18 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
    * photos et les destinations suivent le CONTENU, pas la position. Les
    * libellés vivent dans Home.besoins.* (fr.json) — la clé `fabriquer_*`
    * porte désormais « Créer une solution », le nom de clé n'a pas bougé.
+   *
+   * GRANDE CARTE « LOUER » — révision de Joe, §22 (lot 5, 17 septembre
+   * 2026), seule intervention retenue contre la répétition de cartes
+   * identiques (4 × 582×539 sur 73 % de la section, mesuré). La carte 01
+   * occupe toute la largeur de la grille avec une image 21/9 ; les trois
+   * autres restent en rangée. Même numéro, même titre, même texte, même
+   * lien, mêmes espacements : seules sa taille et le cadre de son image
+   * changent. Sous md, toutes les cartes sont empilées pleine largeur et la
+   * carte 01 garde le 16/9 des autres — un 21/9 sur 342 px ferait une bande
+   * de 147 px, écrasée. La photo (portrait 1600×2133, mobilier sous
+   * chapiteau) supporte le 21/9 centré : tables, chaises, scène et structure
+   * restent dans le cadre, vérifié sur le recadrage simulé avant de coder.
    */
   const besoins = [
     {
@@ -129,9 +141,12 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
           </header>
         </Reveal>
 
-        <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2">
+        {/* lg:grid-cols-3 : la carte 01 prend les trois colonnes, les trois
+            autres se partagent la rangée. À md (2 colonnes), 01 prend les
+            deux, puis 02-03 sur une rangée et 04 seule. */}
+        <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {besoins.map(({ cle, numero, href, photo, cadrage, style }) => (
-            <Reveal key={cle}>
+            <Reveal key={cle} className={cle === 'louer' ? 'md:col-span-2 lg:col-span-3' : undefined}>
               {/* `-m-3 p-3` : marge négative compensée par un padding égal —
                   la mise en page ne bouge pas d'un pixel, mais le fond au
                   survol dispose de 12px de respiration autour de la carte.
@@ -143,7 +158,12 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
               >
                 {/* overflow-hidden sur le parent : c'est lui qui contient le
                     zoom de l'image, sinon le débordement casserait la grille. */}
-                <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-ko-cream2">
+                <div
+                  className={cn(
+                    'relative overflow-hidden rounded-xl bg-ko-cream2',
+                    cle === 'louer' ? 'aspect-[16/9] md:aspect-[21/9]' : 'aspect-[16/9]',
+                  )}
+                >
                   {/*
                     alt réel depuis medias_emplacements (route A) — plus un
                     alt="" décoratif : le numéro et le titre juste en dessous
@@ -173,7 +193,13 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
                       // bande passante mobile pour rien ; la cible du chantier
                       // est un seul média préchargé (le hero), voir CLAUDE.md.
                       quality={80}
-                      sizes="(max-width: 768px) 100vw, 50vw"
+                      // Carte 01 : pleine largeur du conteneur (1113 px mesurés
+                      // à 1440) ; les autres : moitié à md, tiers à lg.
+                      sizes={
+                        cle === 'louer'
+                          ? '(max-width: 1280px) 100vw, 1120px'
+                          : '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'
+                      }
                       style={style}
                       className={cn(
                         'object-cover transition-transform duration-[400ms] group-hover:scale-[1.05]',
