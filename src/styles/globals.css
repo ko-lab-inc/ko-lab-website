@@ -348,7 +348,9 @@
     justify-content: center;
     background: var(--ko-black);
     opacity: 1;
-    transition: opacity 450ms ease;
+    /* 900 ms = DUREE_SORTIE de IntroAnimee.tsx (§3, lot 4) — « fondu doux
+       vers le hero ». Les deux valeurs doivent rester égales. */
+    transition: opacity 900ms ease;
   }
 
   .intro-overlay-sortie {
@@ -370,22 +372,19 @@
     color: var(--ko-white);
     /* Un nouveau nœud à chaque mot (key={indexMot} côté React) : l'animation
        rejoue seule à chaque remplacement, pas de classe à retirer/reposer. */
-    animation: intro-mot-entree 200ms ease-out both;
+    animation: intro-mot-entree 350ms ease-in-out both;
   }
 
-  /* Reveal horizontal — un masque qui s'ouvre de gauche à droite, pas un
-     fondu : c'est la lecture demandée (« masque ou reveal horizontal »). */
+  /* Fondu doux, au même endroit — révision de Joe, §3 (lot 4, 17 septembre
+     2026) : « les mots se fondent presque les uns dans les autres ».
+     Remplace le balayage horizontal (clip-path) de la Phase 4, qui était un
+     masque, pas un fondu. Pas de zoom, pas de déplacement : l'opacité seule. */
   @keyframes intro-mot-entree {
     from {
       opacity: 0;
-      clip-path: inset(0 100% 0 0);
-    }
-    35% {
-      opacity: 1;
     }
     to {
       opacity: 1;
-      clip-path: inset(0 0 0 0);
     }
   }
 

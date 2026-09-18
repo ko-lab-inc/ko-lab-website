@@ -7,13 +7,28 @@ import { cn } from '@/lib/utils/cn'
 
 const CLE_SESSION = 'kolab-intro-vue'
 /**
- * Timing ralenti le 3 septembre 2026 (point 2 du prompt de corrections
- * finales) : l'animation totalisait 2,7s (4×350 + 850 + 450), jugée « trop
- * rapide » — cible du brief : environ 4 à 4,5s. Nouveau total :
- * 4×500 + 1500 + 500 = 4000ms, en bas de la fourchette demandée plutôt que
- * de la dépasser. La séquence de mots (Créer/Fabriquer/Installer/Déployer)
- * et la phrase finale restent inchangées — seule leur tenue à l'écran
- * s'allonge.
+ * TIMING — révision « Priorité Location » de Joe, §3 (lot 4, 17 septembre
+ * 2026). Séquence exacte du document :
+ *
+ *   CRÉER.        700 ms
+ *   FABRIQUER.    700 ms
+ *   INSTALLER.    700 ms
+ *   DÉPLOYER.     800 ms
+ *   respiration   200 ms   (rien que le filet — « petite respiration visuelle »)
+ *   phrase       1400 ms   (« ~1,3 à 1,5 s »)
+ *   fondu         900 ms   (« fondu doux vers le hero »)
+ *   total        5400 ms   programmés — 5 470 ms mesurés au chronomètre DOM
+ *                          (cible : 5 à 5,5 s ; les minuteries React ajoutent
+ *                          ≈ 70 ms, d'où la respiration à 200 et non 250)
+ *
+ * Remplace le timing du 3 septembre 2026 (4×500 + 1500 + 500 = 4000 ms),
+ * lui-même un premier ralentissement des 2,7 s d'origine. Les mots
+ * apparaissent au même endroit et se fondent l'un dans l'autre : l'entrée
+ * de chaque mot est un fondu doux (globals.css, .intro-mot), plus le
+ * balayage horizontal d'origine. Interdits respectés : pas de glitch, pas
+ * de lettre par lettre, pas de zoom, pas de son. La durée du fondu de
+ * sortie est posée ICI et dans .intro-overlay (globals.css) : les deux
+ * doivent rester égales, sinon le démontage coupe le fondu ou l'attend.
  *
  * PHRASE FINALE — découplée du hero le 16 septembre 2026 (Joe, « Priorité
  * Location », §3). Jusque-là elle reprenait `Home.hero.title` tel quel, au
@@ -25,15 +40,18 @@ const CLE_SESSION = 'kolab-intro-vue'
  * entier au client par le layout marketing (liste blanche des messages).
  * Le timing n'est pas touché ici — §3 (5 à 5,5 s) est un autre lot.
  */
-/** Par mot — inclut son temps d'entrée (200ms, voir globals.css) et sa tenue. */
-const DUREE_MOT = 500
-const DUREE_PHRASE = 1500
-const DUREE_SORTIE = 500
+/** Par mot — inclut son temps d'entrée (350ms, voir globals.css) et sa tenue. */
+const DUREES_MOTS = [700, 700, 700, 800] as const
+/** Écran vide (filet seul) entre le dernier mot et la phrase. */
+const DUREE_RESPIRATION = 200
+const DUREE_PHRASE = 1400
+/** Égale à la transition de .intro-overlay (globals.css). */
+const DUREE_SORTIE = 900
 /** Fondu écourté quand la personne saute volontairement — pas la peine de lui
  *  faire attendre la sortie « normale » une fois la décision prise. */
 const DUREE_SORTIE_RAPIDE = 200
 
-type Etape = 'inactive' | 'mots' | 'phrase' | 'sortie'
+type Etape = 'inactive' | 'mots' | 'respiration' | 'phrase' | 'sortie'
 
 /**
  * Intro animée — signature de marque au premier chargement de l'accueil.
@@ -108,17 +126,27 @@ export function IntroAnimee() {
     if (etape === 'mots') boutonPasserRef.current?.focus()
   }, [etape])
 
-  // Enchaînement des quatre mots, puis bascule vers la phrase.
+  // Enchaînement des quatre mots (chacun sa durée), puis la respiration.
   useEffect(() => {
     if (etape !== 'mots') return
 
-    if (indexMot < 3) {
-      programmer(() => setIndexMot((i) => i + 1), DUREE_MOT)
+    // Index de tuple connu (le 4e), pas `length - 1` : noUncheckedIndexedAccess
+    // typerait ce dernier `number | undefined`.
+    const duree = DUREES_MOTS[indexMot] ?? DUREES_MOTS[3]
+    if (indexMot < DUREES_MOTS.length - 1) {
+      programmer(() => setIndexMot((i) => i + 1), duree)
     } else {
-      programmer(() => setEtape('phrase'), DUREE_MOT)
+      programmer(() => setEtape('respiration'), duree)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [etape, indexMot])
+
+  // Respiration : plus aucun mot, seulement le filet, puis la phrase.
+  useEffect(() => {
+    if (etape !== 'respiration') return
+    programmer(() => setEtape('phrase'), DUREE_RESPIRATION)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [etape])
 
   // Tenue de la phrase, puis sortie.
   useEffect(() => {
