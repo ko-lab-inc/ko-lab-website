@@ -62,19 +62,27 @@ export default async function LeLabPage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <PageCapacite
-        numero="03"
+        // « 01 » depuis le lot 5 (17 septembre 2026) : le hub /nos-capacites
+        // numérote Le LAB en premier depuis le lot 4 ; la page suit.
+        numero="01"
         label={t('label')}
         titre={t('title')}
         phrase={t('phrase')}
         intro={t('intro')}
+        // item_9 et item_10 ajoutés au lot 5 (Joe, §9) : électronique et
+        // éclairage ; assemblage, contrôle qualité et préparation à la
+        // livraison. Ordre de lecture, pas ordre des clés : les capacités
+        // d'atelier d'abord, la livraison par KO-LAB en dernier.
         items={[
           t('item_1'),
           t('item_2'),
           t('item_3'),
           t('item_4'),
           t('item_5'),
+          t('item_9'),
           t('item_6'),
           t('item_7'),
+          t('item_10'),
           t('item_8'),
         ]}
         // Imprimante 3D en cours d'impression — item « Impression 3D ».
