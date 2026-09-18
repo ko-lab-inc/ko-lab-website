@@ -56,7 +56,11 @@ export default async function OperationsTerrainPage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <PageCapacite
-        numero="01"
+        // « 04 » depuis le 17 septembre 2026 : ordre du hub /nos-capacites
+        // depuis le lot 4 (Le LAB, Installations, Équipements, Opérations) —
+        // les trois autres pages avaient suivi au lot 5, celle-ci avait été
+        // oubliée.
+        numero="04"
         label={t('label')}
         titre={t('title')}
         phrase={t('phrase')}
