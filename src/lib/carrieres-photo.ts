@@ -39,7 +39,9 @@ export type ResolutionPhotoPoste =
  * plus stable si un titre est reformulé, et les postes d'un même département
  * partagent le même type de terrain.
  *
- * 'Opérations' et 'Logistique événementielle' ne renvoient plus
+ * 'Opérations' et 'Terrain et logistique' (ce dernier renommé en base le
+ * 17 septembre 2026 — §19 de Joe, langage plus large que l'événementiel ;
+ * la valeur ici doit rester celle de la colonne `departement`) ne renvoient plus
  * operationsCrew/operationsCrewVertical depuis le 20 août 2026 (revue
  * visuelle, point 1) : cette paire sert déjà OperationsTerrain.tsx (section 4
  * de l'accueil) en pleine largeur — la revoir en miniature sur /carrieres
@@ -70,7 +72,7 @@ export function photoPourDepartement(departement: string): ClePhotoRepli | null 
   switch (departement) {
     case 'Opérations':
       return 'chantierBalisage2026'
-    case 'Logistique événementielle':
+    case 'Terrain et logistique':
       return 'amenagementSite2025'
     case 'Lab créatif':
       return 'labImpression3d'

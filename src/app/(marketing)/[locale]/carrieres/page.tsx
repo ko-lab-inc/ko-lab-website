@@ -91,7 +91,12 @@ export default async function CarrieresPage({ params }: Props) {
     locale === 'en'
       ? {
           Opérations: 'Operations',
-          'Logistique événementielle': 'Event Logistics',
+          // « Terrain et logistique » depuis le 17 septembre 2026 (UPDATE en
+          // base par Christian, 2 postes, révision de Joe §19 : langage plus
+          // large que l'événementiel). Cette chaîne est la valeur BRUTE de la
+          // colonne `departement` : changer l'un sans l'autre laisse le
+          // département s'afficher en français sur /en.
+          'Terrain et logistique': 'Field & Logistics',
           Installation: 'Installation',
           'Transport & logistique': 'Transport & Logistics',
           Atelier: 'Workshop',
