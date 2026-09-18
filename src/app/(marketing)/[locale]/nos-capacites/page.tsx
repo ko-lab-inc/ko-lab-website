@@ -98,20 +98,24 @@ export default async function CapacitesHubPage({ params }: Props) {
     getTranslations('Capacites.equipements'),
   ])
 
+  // Ordre et numéros de la révision « Priorité Location » de Joe (lot 4,
+  // 17 septembre 2026) : Le LAB, Installations, Équipements & déploiement,
+  // Opérations terrain — celui du menu (ROUTES_CAPACITES) et de l'accueil.
+  // Opérations, qui ouvrait la page, descend en dernier. Les numéros sont
+  // en dur, un par objet, pas dérivés du rang : les quatre chaînes ont été
+  // renumérotées avec le déplacement, il faut le refaire à tout nouvel
+  // ordre.
   const capacites = [
     {
-      cle: 'operations',
+      cle: 'lab',
       numero: '01',
-      href: ROUTES.operations,
-      label: tOps('label'),
-      titre: tOps('title'),
-      intro: tOps('intro'),
-      items: ITEMS_8.map((k) => tOps(k)),
-      // Photo réelle depuis le 20 août 2026 (Feux sur glace 2024, jour
-      // couvert) — plus le contre-jour doré de l'ex-photo Unsplash que
-      // `desature` corrigeait. Voir Besoins.tsx pour le même correctif.
-      src: IMAGES.besoinDeployer,
-      cadrage: CADRAGES.besoinDeployer,
+      href: ROUTES.lab,
+      label: tLab('label'),
+      titre: tLab('title'),
+      intro: tLab('intro'),
+      items: ITEMS_8.map((k) => tLab(k)),
+      src: IMAGES.lab,
+      cadrage: 'object-center',
       desature: false,
     },
     {
@@ -131,20 +135,8 @@ export default async function CapacitesHubPage({ params }: Props) {
       desature: false,
     },
     {
-      cle: 'lab',
-      numero: '03',
-      href: ROUTES.lab,
-      label: tLab('label'),
-      titre: tLab('title'),
-      intro: tLab('intro'),
-      items: ITEMS_8.map((k) => tLab(k)),
-      src: IMAGES.lab,
-      cadrage: 'object-center',
-      desature: false,
-    },
-    {
       cle: 'equipements',
-      numero: '04',
+      numero: '03',
       href: ROUTES.equipements,
       label: tEquip('label'),
       titre: tEquip('title'),
@@ -152,6 +144,21 @@ export default async function CapacitesHubPage({ params }: Props) {
       items: ITEMS_8.map((k) => tEquip(k)),
       src: IMAGES.besoinLouer,
       cadrage: 'object-center',
+      desature: false,
+    },
+    {
+      cle: 'operations',
+      numero: '04',
+      href: ROUTES.operations,
+      label: tOps('label'),
+      titre: tOps('title'),
+      intro: tOps('intro'),
+      items: ITEMS_8.map((k) => tOps(k)),
+      // Photo réelle depuis le 20 août 2026 (Feux sur glace 2024, jour
+      // couvert) — plus le contre-jour doré de l'ex-photo Unsplash que
+      // `desature` corrigeait. Voir Besoins.tsx pour le même correctif.
+      src: IMAGES.besoinDeployer,
+      cadrage: CADRAGES.besoinDeployer,
       desature: false,
     },
   ]
