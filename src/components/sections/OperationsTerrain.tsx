@@ -139,7 +139,14 @@ export async function OperationsTerrain({ locale }: { locale: AppLocale }) {
             pseudo-compteur ci-dessus : une mention éditoriale n'a pas de
             grand chiffre à afficher au-dessus d'elle. */}
         <Reveal className="absolute right-6 top-16 hidden md:block lg:right-12 lg:top-24">
-          <div className="rounded-2xl border border-ko-frost/15 bg-ko-frost/10 px-6 py-5 backdrop-blur-md">
+          {/* bg-ko-scrim/60, plus bg-ko-frost/10 (lot 4, 17 septembre 2026) :
+              frost est un voile BLANC sur photo sombre, il éclaircissait la
+              carte sous la mention — mesurée à 3,25:1 sur 100 % de sa
+              surface (texte 10px, blanc à 55 %). Le scrim, vocabulaire des
+              pastilles du site, l'assombrit : 5,51:1 mesuré, texte inchangé.
+              Baisser l'opacité du texte aurait affaibli la lettre pour
+              survivre au fond, sans marge. */}
+          <div className="rounded-2xl border border-ko-frost/15 bg-ko-scrim/60 px-6 py-5 backdrop-blur-md">
             <p className="max-w-[18ch] font-mono text-[10px] uppercase leading-relaxed tracking-[0.14em] text-ko-frost/55">
               {t('mention')}
             </p>
