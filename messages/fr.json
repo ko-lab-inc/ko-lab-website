@@ -306,14 +306,15 @@
       "title": "Les moyens de livrer.",
       "phrase": "Les bonnes équipes font avancer le projet. Les bons moyens permettent de le livrer.",
       "intro": "Nous ne fournissons pas seulement les personnes. Nous pouvons aussi organiser les moyens nécessaires pour accomplir le travail.",
-      "item_1": "Camions et véhicules de travail",
+      "item_1": "Camions, véhicules de travail et transport",
       "item_2": "Remorques ouvertes, fermées et spécialisées",
       "item_3": "Nacelles et équipements d'élévation",
       "item_4": "Équipements de manutention",
       "item_5": "Outils d'installation et matériel de chargement",
       "item_6": "Éclairage temporaire et distribution électrique",
-      "item_7": "Mobilier et infrastructures événementielles",
-      "item_8": "Accès à davantage de machinerie grâce à GM Locations"
+      "item_7": "Mobilier et infrastructures temporaires",
+      "item_8": "Accès à davantage de machinerie grâce à GM Locations",
+      "item_9": "Équipements terrain et de sécurité"
     }
   },
   "Realisations": {

@@ -54,7 +54,9 @@ export default async function EquipementsPage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <PageCapacite
-        numero="04"
+        // « 03 » depuis le lot 5 (17 septembre 2026) : ordre du hub depuis le
+        // lot 4 (Le LAB, Installations, Équipements, Opérations).
+        numero="03"
         label={t('label')}
         titre={t('title')}
         phrase={t('phrase')}
@@ -67,6 +69,10 @@ export default async function EquipementsPage({ params }: Props) {
           t('item_5'),
           t('item_6'),
           t('item_7'),
+          // item_9 ajouté au lot 5 (Joe, §12) : équipements terrain et de
+          // sécurité. GM Locations (item_8) reste en dernier — partenaire
+          // externe, hors de l'inventaire propre.
+          t('item_9'),
           t('item_8'),
         ]}
         src={IMAGES.besoinLouer}
