@@ -267,13 +267,15 @@
       "title": "Nous donnons vie aux espaces.",
       "phrase": "Nous ne faisons pas qu'installer des éléments. Nous organisons tout ce qu'il faut pour qu'ils se retrouvent au bon endroit, au bon moment.",
       "intro": "Le bras opérationnel qui prend en charge la préparation, le transport, l'installation, le suivi et le retrait.",
-      "item_1": "Décors de Noël et d'hiver",
+      "item_1": "Installations saisonnières, décors de Noël et d'hiver",
       "item_2": "Centres commerciaux et tours à bureaux",
       "item_3": "Commerces, municipalités et espaces publics",
       "item_4": "Signalisation et éclairage décoratif",
       "item_5": "Décors, structures et présentoirs temporaires",
       "item_6": "Travail de nuit ou en dehors des heures d'ouverture",
-      "item_7": "Emballage et préparation pour l'entreposage"
+      "item_7": "Emballage et préparation pour l'entreposage",
+      "item_8": "Installation, retrait, transport et manutention",
+      "item_9": "Maintenance lorsque requis"
     },
     "lab": {
       "label": "Le LAB",

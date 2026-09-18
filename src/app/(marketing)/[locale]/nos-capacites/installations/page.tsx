@@ -67,8 +67,12 @@ export default async function InstallationsPage({ params }: Props) {
           t('item_3'),
           t('item_4'),
           t('item_5'),
+          // item_8 et item_9 ajoutés au lot 5 (Joe, §11) : installation,
+          // retrait, transport et manutention ; maintenance lorsque requis.
+          t('item_8'),
           t('item_6'),
           t('item_7'),
+          t('item_9'),
         ]}
         // Nacelle élévatrice sur façade — « Centres commerciaux et tours à
         // bureaux ». L'échafaudage précédent ne montrait aucune installation.
