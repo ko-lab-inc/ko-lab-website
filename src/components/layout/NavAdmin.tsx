@@ -166,22 +166,29 @@ export function NavAdmin({
           aria-label={ouvert ? labelFermer : labelMenu}
           className="flex h-11 w-11 shrink-0 items-center justify-center lg:hidden"
         >
+          {/* bg-ko-frost, PAS bg-ko-white (19 septembre 2026) : la couche
+              sombre (theme-sombre.css) remappe .bg-ko-white vers #111210 — c'est
+              une SURFACE claire devenue fond sombre. Depuis le passage de
+              l'espace équipe au thème sombre (d9e7073), les trois traits du
+              burger et la croix étaient donc #111210 sur une barre #111210 :
+              invisibles. ko-frost est le blanc « posé sur fond sombre » du
+              site, que la couche ne touche pas. */}
           <span aria-hidden="true" className="flex h-6 w-6 shrink-0 flex-col items-center justify-center gap-1.5">
             <span
               className={cn(
-                'block h-px w-5 bg-ko-white transition-transform duration-250',
+                'block h-px w-5 bg-ko-frost transition-transform duration-250',
                 ouvert && 'translate-y-[5px] rotate-45',
               )}
             />
             <span
               className={cn(
-                'block h-px w-5 bg-ko-white transition-opacity duration-250',
+                'block h-px w-5 bg-ko-frost transition-opacity duration-250',
                 ouvert && 'opacity-0',
               )}
             />
             <span
               className={cn(
-                'block h-px w-5 bg-ko-white transition-transform duration-250',
+                'block h-px w-5 bg-ko-frost transition-transform duration-250',
                 ouvert && '-translate-y-[5px] -rotate-45',
               )}
             />
