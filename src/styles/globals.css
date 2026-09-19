@@ -597,40 +597,36 @@
 }
 
 /* =============================================================================
-   Vague du bas de la section Le LAB — Lab.tsx (exception au skill 08
-   demandée par le propriétaire, voir la note en tête de Lab.tsx).
+   Vague du HAUT de « Crédibilité terrain » — CredibiliteTerrain.tsx
+   (exception au skill 08 demandée par le propriétaire, voir la note en tête
+   du composant).
    =============================================================================
-   Pend sous la section (top: 100 %) et recouvre le haut de la section
-   suivante. background-color: inherit — la couleur calculée de la section
-   parente, donc la même dans les deux thèmes (#0e1116 sous la couche
-   sombre, qui remappe section.bg-ko-black). La forme est un masque SVG
-   étiré sur toute la largeur (preserveAspectRatio none) : haut plat, bas
-   ondulé : 20 unités sur 160 au bord droit, 160 au bord gauche — profonde
-   à gauche (19 septembre 2026, « profonde en descendant vers le bas du
-   côté gauche »). 80 px de haut en mobile, 160 à partir de lg. */
-.vague-bas {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  height: 5rem;
-  background-color: inherit;
-  pointer-events: none;
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 160' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V20C1260 50 1100 30 920 45C720 62 520 70 360 95C220 118 100 150 0 160Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 160' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V20C1260 50 1100 30 920 45C720 62 520 70 360 95C220 118 100 150 0 160Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
-}
-.vague-bas-trait {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  height: 5rem;
-  overflow: visible;
-  pointer-events: none;
+   Refaite le 19 septembre 2026 sur la maquette de Christian (« regarde les
+   deux ondulations, crée la même chose ») : c'est la section du DESSOUS qui
+   monte dans celle du dessus en ondulant et coupe son image — ici la photo
+   de Le LAB. Pas de contour : la forme se lit par le contraste.
+   - La section remonte de --vague (marge négative) et rend cette hauteur en
+     padding-top : son contenu ne bouge pas, sa photo passe sous Le LAB.
+   - Masque à deux couches : la vague (SVG étiré, hauteur --vague) en haut,
+     un aplat plein pour le reste. Au-dessus de la courbe, la section est
+     transparente : on y voit Le LAB, peint dessous.
+   - Forme (viewBox 1440×160) : bosse à gauche, vallée profonde côté gauche
+     (x≈30 %), bosse douce, bord droit aux deux tiers — la coupe à droite reste sous le bouton.
+   - 80 px en mobile, 160 à partir de lg. Contrainte mesurée : à droite, la
+     coupe reste sous le bouton « Découvrir Le LAB » (voir Lab.tsx). */
+.vague-haut {
+  --vague: 5rem;
+  margin-top: calc(-1 * var(--vague));
+  padding-top: var(--vague);
+  -webkit-mask:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 160' preserveAspectRatio='none'%3E%3Cpath d='M0 24C60 12 110 4 170 10C280 22 330 160 440 158C560 156 640 110 760 100C880 90 960 86 1060 92C1200 100 1330 108 1440 106V160H0Z'/%3E%3C/svg%3E") top / 100% var(--vague) no-repeat,
+    linear-gradient(#000 0 0) bottom / 100% calc(100% - var(--vague) + 1px) no-repeat;
+  mask:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 160' preserveAspectRatio='none'%3E%3Cpath d='M0 24C60 12 110 4 170 10C280 22 330 160 440 158C560 156 640 110 760 100C880 90 960 86 1060 92C1200 100 1330 108 1440 106V160H0Z'/%3E%3C/svg%3E") top / 100% var(--vague) no-repeat,
+    linear-gradient(#000 0 0) bottom / 100% calc(100% - var(--vague) + 1px) no-repeat;
 }
 @media (min-width: 1024px) {
-  .vague-bas,
-  .vague-bas-trait {
-    height: 10rem;
+  .vague-haut {
+    --vague: 10rem;
   }
 }

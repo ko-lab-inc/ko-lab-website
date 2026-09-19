@@ -16,15 +16,10 @@ import { ROUTES } from '@/lib/routes'
  *
  * En mobile, la photo passe au-dessus en 4/3.
  *
- * VAGUE DU BAS (19 septembre 2026) — EXCEPTION ASSUMÉE au skill 08, qui
- * interdit les « ondulations / vagues SVG décoratives » : demandée
- * explicitement par le propriétaire (« fais la vague »), d'après une maquette,
- * après rappel de la règle. Une seule, ici ; ne pas l'étendre à d'autres
- * sections sans nouvelle demande. Elle pend sous la section et mord dans la
- * photo de « Crédibilité terrain », juste après — seule jonction de
- * l'accueil où une surface unie rencontre une photo pleine largeur : entre
- * deux sections unies du thème sombre (#0e1116 / #111210, 1,007:1), elle
- * serait invisible. Voir .vague-bas (globals.css).
+ * VAGUE : la section suivante (CredibiliteTerrain) monte en ondulant dans
+ * le bas de celle-ci et coupe sa photo (voir .vague-haut, globals.css).
+ * pb-24 en mobile (et non 16) : sous lg, le bouton « Découvrir Le LAB » est
+ * au bas de la section, et la vague y monte jusqu’à 78 px.
  */
 export async function Lab() {
   const t = await getTranslations('Home.lab')
@@ -32,9 +27,7 @@ export async function Lab() {
   const etapes = ['etape1', 'etape2', 'etape3', 'etape4'] as const
 
   return (
-    // relative z-10 : la vague (.vague-bas) déborde sous la section et doit
-    // passer au-dessus de la photo de la section suivante.
-    <section className="relative z-10 bg-ko-black">
+    <section className="bg-ko-black">
       <div className="grid grid-cols-1 items-stretch lg:grid-cols-2">
         <Reveal className="relative aspect-[4/3] overflow-hidden rounded-b-2xl lg:aspect-auto lg:min-h-[640px] lg:rounded-b-none lg:rounded-r-2xl">
           {/*
@@ -67,7 +60,7 @@ export async function Lab() {
           />
         </Reveal>
 
-        <Reveal className="flex items-center px-6 py-16 lg:px-16 lg:py-28">
+        <Reveal className="flex items-center px-6 pb-24 pt-16 lg:px-16 lg:py-28">
           <div className="w-full max-w-[46ch]">
             <p className="label-mono label-mono-d">{t('label')}</p>
 
@@ -106,21 +99,6 @@ export async function Lab() {
         </Reveal>
       </div>
 
-      <div aria-hidden="true" className="vague-bas" />
-      {/* Contour de la vague — blanc à 15 %, même trait que la pointe du
-          hero : sur le haut très sombre de la photo suivante, la seule
-          différence de teinte ne suffisait pas à lire la forme (capture du
-          19 septembre 2026). non-scaling-stroke : 1 px quelle que soit la
-          largeur, malgré l'étirement du viewBox. */}
-      <svg aria-hidden="true" className="vague-bas-trait" viewBox="0 0 1440 160" preserveAspectRatio="none">
-        <path
-          d="M1440 20C1260 50 1100 30 920 45C720 62 520 70 360 95C220 118 100 150 0 160"
-          fill="none"
-          stroke="rgba(255,255,255,0.15)"
-          strokeWidth="1"
-          vectorEffect="non-scaling-stroke"
-        />
-      </svg>
     </section>
   )
 }

@@ -35,7 +35,12 @@ export async function CredibiliteTerrain() {
   const tStats = await getTranslations('Home.stats')
 
   return (
-    <section className="relative overflow-hidden bg-ko-black">
+    // vague-haut : le haut de la section ondule et monte dans Le LAB
+    // (globals.css). EXCEPTION ASSUMÉE au skill 08 (« ondulations / vagues
+    // SVG décoratives » interdites) : demandée explicitement par le
+    // propriétaire, maquette à l'appui, après rappel de la règle. Une seule
+    // sur le site ; ne pas l'étendre sans nouvelle demande.
+    <section className="vague-haut relative overflow-hidden bg-ko-black">
       {/*
         Photo réelle depuis le 20 août 2026 (structureEclairee2024, dôme
         gonflable éclairé de nuit) — ne reprend plus l'image du hero : elle y
@@ -56,8 +61,7 @@ export async function CredibiliteTerrain() {
       </Parallax>
 
       {/* Voile dégradé (19 septembre 2026, « réduis l'assombrissement ») :
-          30 % en haut, où mord la vague de Le LAB (Lab.tsx) — la photo s'y
-          voit —, 60 % dès 30 % de la hauteur, 70 % en bas, où sont les
+          30 % en haut, sous la vague — la photo s'y voit —, 60 % dès 30 % de la hauteur, 70 % en bas, où sont les
           textes. Mesuré autour des lettres, FR/EN, 1440/390 : tous au-dessus
           du seuil ; un voile uniforme à 55 % faisait déjà tomber le libellé
           du chiffre à 4,48:1 en mobile. */}
