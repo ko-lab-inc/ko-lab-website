@@ -33,10 +33,12 @@ export async function Hero() {
   // part (même lot, description avant code, voir le rapport).
   const stat = { valeur: tStats('heures_valeur'), label: tStats('heures_label') }
 
-  // mx-4 / lg:mx-8 (était mx-3 / lg:mx-4) : « un peu plus d'espace des
-  // deux côtés », 19 septembre 2026.
+  // Marges latérales ALIGNÉES SUR LA NAV (logo à gauche, bouton à droite) :
+  // mx-6 / lg:mx-10 / xl:mx-16, les mêmes valeurs que son px-6 / lg:px-10 /
+  // xl:px-16 (Nav.tsx) — « de l'espace de gauche à droite », 19 septembre
+  // 2026. Changer l'un sans l'autre casse l'alignement.
   return (
-    <section className="mx-4 mt-3 lg:mx-8 lg:mt-4">
+    <section className="mx-6 mt-3 lg:mx-10 lg:mt-4 xl:mx-16">
       <HeroScrollEffets>
       {/* Silhouette (19 septembre 2026, maquette de Christian) : haut plus
           arrondi, bas SANS rayon — le coin bas-droit reste droit, le coin
@@ -80,11 +82,21 @@ export async function Hero() {
           2026 : ko-scrim est la couleur exacte du fond de page, les bords
           gauche et bas de la photo s'y fondent sans limite visible
           (demande de Christian, maquette à l'appui). Le bord droit, lui,
-          reste net — voir le liseré plus bas.
+          reste net — voir le liseré plus bas. Voile horizontal allégé à
+          droite le même jour (« photo plus visible côté droit ») : 55 % à
+          40 % de la largeur, nul dès 75 % (était 45 % au milieu, 10 % au
+          bord droit) — tiers droit de la photo +48 % de luminance
+          moyenne à 1440. À PARTIR DE lg SEULEMENT : sous 1024 px le texte
+          couvre toute la largeur de la photo, alléger la droite l'allégeait
+          aussi (« réelle » 3,36 → 2,54:1 à 390, mesuré) — le mobile garde
+          l'ancien voile. Choisi parmi trois réglages mesurés : le plus clair
+          où le titre garde un pire pixel ≥ 3:1 ; plus clair, il tombe à
+          2,5:1. Ne pas alléger davantage sans remesurer le titre (contraste
+          réel, photo chargée).
         */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-ko-scrim via-ko-scrim/[0.45] to-ko-scrim/10"
+          className="absolute inset-0 bg-gradient-to-r from-ko-scrim via-ko-scrim/[0.45] to-ko-scrim/10 lg:via-ko-scrim/[0.55] lg:via-40% lg:to-transparent lg:to-75%"
         />
         <div
           aria-hidden="true"
@@ -114,8 +126,8 @@ export async function Hero() {
         />
 
         {/*
-          Contour de la POINTE bas-gauche — blanc fin, presque invisible
-          (15 %), demandé le 19 septembre 2026 : le bord gauche se fond dans
+          Contour de la POINTE bas-gauche — blanc fin, discret (25 %,
+          relevé de 15 % à la demande : « un peu plus visible »), demandé le 19 septembre 2026 : le bord gauche se fond dans
           le fond de page, la pointe s'y perdait. Deux traits :
           - la courbe : une boîte de la taille exacte du coin arrondi de
             l'échancrure (64×40 / lg 112×80), même rayon, bordure haute et
@@ -124,11 +136,11 @@ export async function Hero() {
         */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-0 left-0 z-[6] h-10 w-16 rounded-tl-[4rem_2.5rem] border-l border-t border-ko-frost/15 lg:h-20 lg:w-28 lg:rounded-tl-[7rem_5rem]"
+          className="pointer-events-none absolute bottom-0 left-0 z-[6] h-10 w-16 rounded-tl-[4rem_2.5rem] border-l border-t border-ko-frost/25 lg:h-20 lg:w-28 lg:rounded-tl-[7rem_5rem]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute bottom-0 left-0 z-[6] h-40 w-px bg-gradient-to-t from-ko-frost/15 to-transparent lg:h-64"
+          className="pointer-events-none absolute bottom-0 left-0 z-[6] h-40 w-px bg-gradient-to-t from-ko-frost/25 to-transparent lg:h-64"
         />
 
         {/*
@@ -149,7 +161,12 @@ export async function Hero() {
             data-hero-texte : le bloc monte plus vite que la photo au scroll
             — le texte « décolle » de l'image (voir HeroScrollEffets). */}
         <div data-hero-texte className="absolute bottom-10 left-0 z-10 max-w-3xl p-6 lg:bottom-20 lg:p-10">
-          <p className="flex items-center gap-3">
+          {/* Pastille sombre (même motif que le label de CredibiliteTerrain) :
+              petit texte bleu posé sur la photo — sur le ciel, en mobile, il
+              tombait à 2,09:1 en production (mesuré le 19 septembre 2026,
+              55 % de sa boîte sous 4,5:1). La pastille le rend indépendant
+              de la photo. */}
+          <p className="flex w-fit items-center gap-3 rounded bg-ko-scrim/60 px-3 py-1.5 backdrop-blur-sm">
             <span aria-hidden="true" className="h-px w-8 bg-ko-blue" />
             <span className="label-mono label-mono-d">{t('tag')}</span>
           </p>
