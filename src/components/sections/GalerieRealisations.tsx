@@ -257,10 +257,11 @@ function photosStylees(r: RealisationCarte): readonly ImageSlide[] {
 }
 
 /** Foyer : échelle perdue par une vignette à une largeur (ou plus) du
- *  centre — 0,2 → 0,8. Estompage : 0,25 → 0,75 d'opacité. Sur le cadre
+ *  centre — 0,3 → 0,7 (maquette verticale du 19 septembre : voisines
+ *  nettement plus petites que la photo centrale). Estompage : 0,25 → 0,75 d'opacité. Sur le cadre
  *  BLANC, l'opacité éclaircit : gardée légère pour que les voisines restent
  *  des photos, pas des fantômes. */
-const ECART_ECHELLE = 0.2
+const ECART_ECHELLE = 0.3
 const ECART_OPACITE = 0.25
 
 /**
@@ -287,8 +288,8 @@ const ECART_OPACITE = 0.25
  *
  * - Toutes les vignettes ont la même largeur de BASE (`.carrousel-photo`,
  *   globals.css). Celle dont le centre coïncide avec le centre de la rangée
- *   est à l'échelle 1 ; ses voisines rétrécissent (jusqu'à 0,8) et
- *   s'estompent (jusqu'à 0,55) avec la distance — `appliquerFoyer`, à chaque
+ *   est à l'échelle 1 ; ses voisines rétrécissent (jusqu'à 0,7) et
+ *   s'estompent (jusqu'à 0,75) avec la distance — `appliquerFoyer`, à chaque
  *   image de défilement. TRANSFORM et OPACITÉ seulement : la mise en page ne
  *   bouge jamais, le calage (`snap-center`) reste stable.
  * - Les voisines rétrécissent VERS le centre (origine sur leur bord intérieur)
@@ -296,6 +297,12 @@ const ECART_OPACITE = 0.25
  * - Deux cales invisibles (`.carrousel-piste::before/::after`) permettent à
  *   la première et à la dernière photo d'atteindre le centre.
  * - `prefers-reduced-motion` : pas d'échelle, l'estompage seul.
+ * - Photos VERTICALES 2:3, angles droits, cadre sans arrondi (seconde
+ *   maquette de Christian, même jour : « plus verticales, sans bordure
+ *   arrondie, plus de hauteur de cadre »). Les originaux sont surtout des
+ *   paysages : `object-cover` en garde le centre.
+ * - Au chargement, la DEUXIÈME photo est au centre, la première visible à
+ *   sa gauche (même demande) — `scrollTo` instantané au montage.
  * ---------------------------------------------------------------------------
  */
 function RangeePhotos({
@@ -368,6 +375,15 @@ function RangeePhotos({
         image = 0
         actualiserFleches()
         appliquerFoyer()
+      })
+    }
+    // Départ sur la 2e photo : une voisine de chaque côté dès l'arrivée.
+    // `instant` l'emporte sur `scroll-smooth` — pas d'animation au chargement.
+    const deuxieme = vignettes.current[1]
+    if (deuxieme) {
+      el.scrollTo({
+        left: deuxieme.offsetLeft + deuxieme.offsetWidth / 2 - el.clientWidth / 2,
+        behavior: 'instant',
       })
     }
     actualiserFleches()
@@ -444,8 +460,9 @@ function RangeePhotos({
           (theme-sombre.css). Le titre et le compteur restent AU-DESSUS, sur
           le fond sombre : dans le cadre, le gris des compteurs tomberait à
           4,27:1. Marges latérales larges à partir de lg : elles portent les
-          flèches, comme sur la maquette. */}
-      <div className="relative rounded-2xl bg-ko-photo px-3 py-4 sm:px-8 sm:py-8 lg:px-14 lg:py-12">
+          flèches, comme sur la maquette. Angles droits, marges verticales
+          plus hautes (seconde maquette : « plus de hauteur de cadre »). */}
+      <div className="relative bg-ko-photo px-3 py-6 sm:px-8 sm:py-10 lg:px-14 lg:py-16">
         <div
           ref={piste}
           role="group"
@@ -470,24 +487,20 @@ function RangeePhotos({
               // générique répété identique sur les huit boutons de la
               // rangée, qui empêcherait de les distinguer au clavier.
               aria-label={photo.alt || `${titre} — ${i + 1}/${photos.length}`}
-              // `rounded-lg`, pas `rounded-xl` (27 août 2026) : sur une
-              // vignette de cette taille (~1/3 de la largeur d'un
-              // téléphone), le même rayon que sur les grandes photos du
-              // reste du site (Besoins, Boutique, Location…) se voit
-              // proportionnellement bien plus arrondi — resserré pour CETTE
-              // rangée dense de petites vignettes uniquement, les autres
-              // composants du site gardent `rounded-xl` sans changement.
-              className="carrousel-photo group relative aspect-[4/3] shrink-0 snap-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ko-blue"
+              // Verticale 2:3 et angles droits (seconde maquette de
+              // Christian, 19 septembre 2026) — propre à CETTE rangée, les
+              // autres composants du site gardent leurs arrondis.
+              className="carrousel-photo group relative aspect-[2/3] shrink-0 snap-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ko-blue"
             >
               {/* Calque du foyer — c'est lui qui rétrécit et s'estompe
                   (appliquerFoyer), pas le bouton : voir la note sur le
                   calage dans appliquerFoyer. */}
-              <span className="absolute inset-0 overflow-hidden rounded-lg bg-ko-cream2 will-change-transform">
+              <span className="absolute inset-0 overflow-hidden bg-ko-cream2 will-change-transform">
                 <Image
                   src={photo.src}
                   alt={photo.alt}
                   fill
-                  sizes="(max-width: 639px) 72vw, (max-width: 1023px) 52vw, 440px"
+                  sizes="(max-width: 1023px) 100vw, 700px"
                   quality={80}
                   style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
                   className="object-cover object-center transition-transform duration-[400ms] group-hover:scale-[1.02]"

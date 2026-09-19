@@ -561,27 +561,28 @@
    celle qui arrive au centre grandit à son tour. Remplace les vignettes à
    largeur égale du 27 août.
 
-   - `--w` : largeur de BASE d'une vignette, en part de la rangée (mobile 72 %,
-     sm 52 %, lg 36 % — à 1440, une grande photo au centre et une voisine
-     entière de chaque côté). L'échelle au défilement se calcule dans
+   - `--w` : largeur de BASE d'une vignette verticale 2:3, en part de la
+     rangée. Mobile 64 % et sm 50 % : la voisine de chaque côté dépasse en
+     partie. lg : exactement un tiers, écarts déduits — trois photos, rien
+     de plus, pas d'éclat d'une quatrième au bord (maquette du 19 septembre). L'échelle au défilement se calcule dans
      GalerieRealisations.tsx (`appliquerFoyer`), en transform seulement.
    - Les cales ::before/::after mesurent (100 % − --w) / 2 − --gap : ainsi la
      PREMIÈRE et la DERNIÈRE photo peuvent atteindre le centre.
    - `--gap` doit rester EXACTEMENT l'écart réel du conteneur flex (`gap-2`,
      `lg:gap-4`), sinon le centrage des extrémités se décale d'autant. */
 .carrousel-piste {
-  --w: 72%;
+  --w: 64%;
   --gap: 0.5rem;
 }
 @media (min-width: 640px) {
   .carrousel-piste {
-    --w: 52%;
+    --w: 50%;
   }
 }
 @media (min-width: 1024px) {
   .carrousel-piste {
-    --w: 36%;
     --gap: 1rem;
+    --w: calc((100% - 2 * var(--gap)) / 3);
   }
 }
 .carrousel-piste::before,
