@@ -102,9 +102,11 @@ export default async function RealisationsPage({ params }: Props) {
           disproportionné au-dessus du titre et grignotaient sur la largeur
           disponible pour les photos plus bas — le desktop (`lg:`) n'est pas
           concerné, il n'était pas en cause. Même `px-4` sur le conteneur de
-          la galerie plus bas, pour que les deux sections s'alignent. */}
+          la galerie plus bas, pour que les deux sections s'alignent.
+          Revenu à `px-6` le 19 septembre 2026 (« trop collé au bord ») :
+          le texte s'aligne sur les autres pages, 24 px du bord. */}
       <section className="border-b border-ko-line bg-ko-cream pb-10 pt-20 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-4 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           {/* Pas de label mono ici : il aurait répété mot pour mot le h1.
               Le compteur vit dans la galerie, où il suit le filtre actif. */}
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
@@ -119,7 +121,7 @@ export default async function RealisationsPage({ params }: Props) {
 
       {/* ------------------------------ Galerie ------------------------------ */}
       <section className="bg-ko-white py-10 lg:py-24">
-        <div className="mx-auto max-w-container px-4 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           {publiees ? (
             <Reveal>
               <GalerieRealisations

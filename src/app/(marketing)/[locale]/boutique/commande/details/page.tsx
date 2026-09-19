@@ -76,7 +76,7 @@ export default async function DetailsCommandePage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
           <h1 className="ko-display mt-6 max-w-[20ch] text-ko-ink">{t('details_titre')}</h1>
           <p className="mt-7 max-w-[54ch] text-base leading-relaxed text-ko-muted lg:text-lg">
@@ -86,7 +86,7 @@ export default async function DetailsCommandePage({ params }: Props) {
       </section>
 
       <section className="bg-ko-white py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <FormulaireDetailsCommande locale={locale} />
         </div>
       </section>

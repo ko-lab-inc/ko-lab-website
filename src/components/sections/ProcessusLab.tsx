@@ -59,7 +59,7 @@ export async function ProcessusLab() {
 
   return (
     <section className="border-t border-ko-line-d bg-ko-black py-16 lg:py-24">
-      <div className="mx-auto max-w-container px-6 lg:px-12">
+      <div className="mx-auto max-w-container px-6 lg:px-16">
         <p className="label-mono label-mono-d">{t('label')}</p>
 
         <h2 className="mt-5 font-serif text-[clamp(28px,3.4vw,44px)] font-light leading-[1.08] tracking-[-0.02em] text-ko-white">

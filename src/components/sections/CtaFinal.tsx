@@ -30,7 +30,7 @@ export async function CtaFinal() {
         13
       </span>
 
-      <div className="relative z-10 mx-auto max-w-container px-6 lg:px-12">
+      <div className="relative z-10 mx-auto max-w-container px-6 lg:px-16">
         <Reveal>
           {/* Composition centrée : la question de clôture porte seule, sans
               colonne éditoriale. `ko-h1` et non `ko-display` — à 80px la phrase

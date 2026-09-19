@@ -25,7 +25,7 @@ export function DocumentLegal({
   return (
     <>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
           <p className="label-mono mt-6">{eyebrow}</p>
           <h1 className="ko-display mt-5 max-w-[20ch] text-ko-ink">{titre}</h1>
@@ -35,7 +35,7 @@ export function DocumentLegal({
       </section>
 
       <section className="bg-ko-white py-16 lg:py-28">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <div className="max-w-[70ch] space-y-14">
             {sections.map((s) => (
               <Reveal key={s.titre}>

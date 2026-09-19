@@ -64,7 +64,7 @@ export default async function ContactPage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
           <h1 className="ko-display mt-6 max-w-[16ch] text-ko-ink">{t('title')}</h1>
           <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-ko-muted lg:text-lg">
@@ -74,7 +74,7 @@ export default async function ContactPage({ params }: Props) {
       </section>
 
       <section className="bg-ko-white py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <div className="grid grid-cols-1 gap-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:gap-24">
             {/* --------------------------- Formulaire --------------------------- */}
             <Reveal>

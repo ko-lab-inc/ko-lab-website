@@ -145,7 +145,7 @@ export async function PageCapacite({
           className="absolute inset-0 bg-gradient-to-r from-ko-scrim/[0.92] via-ko-scrim/75 to-ko-scrim/45"
         />
 
-        <div className="relative z-10 mx-auto max-w-container px-6 pb-20 pt-28 lg:px-12 lg:pb-28 lg:pt-40">
+        <div className="relative z-10 mx-auto max-w-container px-6 pb-20 pt-28 lg:px-16 lg:pb-28 lg:pt-40">
           <p className="flex items-center gap-3">
             <span aria-hidden="true" className="h-px w-8 bg-ko-blue" />
             <span className="label-mono label-mono-d">{label}</span>
@@ -174,7 +174,7 @@ export async function PageCapacite({
 
       {/* --------------------------- Phrase de marque --------------------------- */}
       <section className="border-b border-ko-line bg-ko-cream py-14 lg:py-20">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           {/* B — apparition mot par mot, 80ms d'écart, 400ms par mot.
               Le découpage se fait au rendu serveur ; seul le conteneur est
               client. Envelopper chaque mot dans un composant client aurait
@@ -200,7 +200,7 @@ export async function PageCapacite({
 
       {/* ------------------------------ Contenu ------------------------------ */}
       <section className="bg-ko-white py-16 lg:py-28">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             {/* Deux colonnes éditoriales : l'intro pose le cadre à gauche, la
                 liste détaille à droite. Empilées sous lg. */}
@@ -248,7 +248,7 @@ export async function PageCapacite({
           absente ou vide (voir la note de la prop) : jamais de section vide. */}
       {images && images.length > 0 && (
         <section className="border-t border-ko-line bg-ko-cream py-16 lg:py-24">
-          <div className="mx-auto max-w-container px-6 lg:px-12">
+          <div className="mx-auto max-w-container px-6 lg:px-16">
             <Reveal>
               <p className="label-mono">{tCommun('en_photos')}</p>
               <div className="mt-6">
@@ -269,7 +269,7 @@ export async function PageCapacite({
           un projet. */}
       {videos !== undefined && (
         <section className="border-t border-ko-line bg-ko-white pb-16 lg:pb-24">
-          <div className="mx-auto max-w-container px-6 lg:px-12">
+          <div className="mx-auto max-w-container px-6 lg:px-16">
             <Reveal>
               <p className="label-mono pt-16 lg:pt-24">{t('videos_label')}</p>
               <h2 className="ko-h3 mt-5 max-w-[28ch] text-ko-ink">{t('videos_titre')}</h2>
@@ -294,7 +294,7 @@ export async function PageCapacite({
 
       {/* ------------------------------- CTA ------------------------------- */}
       <section className="bg-ko-cream py-20 lg:py-28">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
               <p className="label-mono">{t('label')}</p>

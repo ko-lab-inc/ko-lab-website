@@ -121,7 +121,7 @@ export default async function DetailCommandePage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Link
             href={ROUTES.compteCommandes}
             className="text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
@@ -158,7 +158,7 @@ export default async function DetailCommandePage({ params }: Props) {
       </section>
 
       <section className="bg-ko-white py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           {modifiable ? (
             <>
               <p className="mb-8 max-w-[60ch] text-sm leading-relaxed text-ko-muted">

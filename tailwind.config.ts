@@ -56,7 +56,8 @@ const config: Config = {
         mono: ['var(--font-mono)', 'JetBrains Mono', 'Courier New', 'monospace'],
       },
 
-      // Conteneur standard du skill 02 : max-w-container mx-auto px-6 lg:px-12
+      // Conteneur standard du skill 02 : max-w-container mx-auto px-6 lg:px-16
+      // (lg:px-12 → lg:px-16 le 19 septembre 2026 : « trop collé au bord »)
       maxWidth: {
         container: '1280px',
       },

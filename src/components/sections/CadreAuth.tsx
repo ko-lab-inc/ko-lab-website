@@ -19,7 +19,7 @@ export function CadreAuth({
 }) {
   return (
     <section className="flex min-h-[70svh] items-center bg-ko-cream py-24 lg:py-32">
-      <div className="mx-auto w-full max-w-container px-6 lg:px-12">
+      <div className="mx-auto w-full max-w-container px-6 lg:px-16">
         <div className="max-w-[42ch]">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
           <h1 className="ko-display mt-6 text-ko-ink">{titre}</h1>

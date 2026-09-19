@@ -79,7 +79,7 @@ export default async function LocationPage({ params }: Props) {
       {/* En-tête sobre, sans photo — le document de cadrage décrit une « page
           de transition élégante » vers Rentman, pas une vitrine. */}
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
           <h1 className="ko-display mt-6 max-w-[16ch] text-ko-ink">{t('title')}</h1>
           <p className="mt-7 max-w-[54ch] text-base leading-relaxed text-ko-muted lg:text-lg">
@@ -90,7 +90,7 @@ export default async function LocationPage({ params }: Props) {
 
       {/* ---------------------------- Vers Rentman ---------------------------- */}
       <section className="bg-ko-white py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <div className="border border-ko-line bg-ko-cream p-8 lg:p-12">
               <h2 className="ko-h2 max-w-[22ch] text-ko-ink">{t('inventaire_titre')}</h2>
@@ -153,7 +153,7 @@ export default async function LocationPage({ params }: Props) {
 
       {/* ----------------------------- Catégories ----------------------------- */}
       <section className="bg-ko-cream py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <p className="label-mono">{t('categories_label')}</p>
           </Reveal>
@@ -187,7 +187,7 @@ export default async function LocationPage({ params }: Props) {
           matériel réel. */}
       {images.length > 0 && (
         <section className="bg-ko-white py-16 lg:py-24">
-          <div className="mx-auto max-w-container px-6 lg:px-12">
+          <div className="mx-auto max-w-container px-6 lg:px-16">
             <Reveal>
               <p className="label-mono">{tCommun('en_photos')}</p>
               <div className="mt-6">

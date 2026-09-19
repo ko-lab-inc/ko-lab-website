@@ -32,7 +32,7 @@ export async function Ecosysteme() {
 
   return (
     <section className="bg-ko-black py-16 lg:py-28">
-      <div className="mx-auto max-w-container px-6 lg:px-12">
+      <div className="mx-auto max-w-container px-6 lg:px-16">
         <Reveal>
           {/* Révision « Priorité Location » de Joe, §18 (lot 2, 17 septembre
               2026) : le H2 et son texte de soutien tiennent dans les DEUX

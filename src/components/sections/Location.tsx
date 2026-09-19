@@ -25,7 +25,7 @@ export async function Location() {
 
   return (
     <section className="bg-ko-cream py-16 lg:py-28">
-      <div className="mx-auto max-w-container px-6 lg:px-12">
+      <div className="mx-auto max-w-container px-6 lg:px-16">
         <Reveal>
           <p className="label-mono">{t('label')}</p>
         </Reveal>

@@ -206,7 +206,7 @@ export function Nav({
         `justify-between` le décalerait vers la droite, puisque le bloc de
         droite (langue + connexion + CTA) est bien plus large que le logo.
       */}
-      <div className="flex w-full items-center gap-4 px-6 py-4 lg:gap-6 lg:px-10 xl:px-12">
+      <div className="flex w-full items-center gap-4 px-6 py-4 lg:gap-6 lg:px-10 xl:px-16">
         {/* -------------------------- Zone gauche : logo -------------------------- */}
         <div className="flex flex-1 items-center">
           {/*

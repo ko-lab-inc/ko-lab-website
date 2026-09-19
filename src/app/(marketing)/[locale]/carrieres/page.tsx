@@ -159,7 +159,7 @@ export default async function CarrieresPage({ params }: Props) {
           écran, avant même la liste des postes — quelqu'un déjà décidé n'a
           pas à faire défiler. */}
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           {/* Photo ajoutée le 20 août 2026 (revue visuelle, point 5) : la
               bannière n'avait aucun visuel, un vide remarqué sur une page de
               conversion. operationsCrew (équipe KO-LAB, gilets orange) —
@@ -219,7 +219,7 @@ export default async function CarrieresPage({ params }: Props) {
       </section>
 
       <section className="bg-ko-white py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           {/* Combien de rôles, et comment postuler — un seul formulaire pour
               tous, décision de Christian. Le compte vient de la liste réelle,
               jamais écrit en dur : fermer un poste depuis /admin/carrieres le
@@ -353,7 +353,7 @@ export default async function CarrieresPage({ params }: Props) {
           formulaire de contact — on écrit à quelqu'un, on ne dépose pas un
           dossier. */}
       <section className="bg-ko-cream py-20 lg:py-28">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <div className="mx-auto max-w-2xl text-center">
               <p className="label-mono">{t('rh_label')}</p>

@@ -27,7 +27,7 @@ export function GalerieLab({ photos }: { photos: readonly PhotoGalerieLab[] }) {
 
   return (
     <section className="border-t border-ko-line bg-ko-white py-16 lg:py-24">
-      <div className="mx-auto max-w-container px-6 lg:px-12">
+      <div className="mx-auto max-w-container px-6 lg:px-16">
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
           {photos.map((photo) => (
             <div

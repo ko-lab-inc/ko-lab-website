@@ -57,7 +57,7 @@ export async function CredibiliteTerrain() {
 
       <div aria-hidden="true" className="absolute inset-0 bg-ko-scrim/70" />
 
-      <div className="relative z-10 mx-auto max-w-container px-6 py-24 text-center lg:px-12 lg:py-36">
+      <div className="relative z-10 mx-auto max-w-container px-6 py-24 text-center lg:px-16 lg:py-36">
         <Reveal>
           <p className="label-mono label-mono-d">{t('label')}</p>
 

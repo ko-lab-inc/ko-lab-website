@@ -76,7 +76,7 @@ export default async function NotFound() {
   return (
     <div data-theme-sombre>
       <section className="border-b border-ko-line bg-ko-cream pb-20 pt-28 lg:pb-28 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 text-center lg:px-12">
+        <div className="mx-auto max-w-container px-6 text-center lg:px-16">
           <span aria-hidden="true" className="mx-auto block h-px w-8 bg-ko-blue" />
 
           <p className="label-mono mt-6 text-ko-muted">404</p>

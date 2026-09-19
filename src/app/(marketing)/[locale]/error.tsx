@@ -58,7 +58,7 @@ export default function ErreurPublique({ error, reset }: { error: Error & { dige
   return (
     <div data-theme-sombre>
       <section className="border-b border-ko-line bg-ko-cream pb-20 pt-28 lg:pb-28 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 text-center lg:px-12">
+        <div className="mx-auto max-w-container px-6 text-center lg:px-16">
           <span aria-hidden="true" className="mx-auto block h-px w-8 bg-ko-blue" />
 
           <h1 className="ko-display mt-4 text-ko-ink">{t('erreur_titre')}</h1>

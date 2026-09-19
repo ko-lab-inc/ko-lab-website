@@ -174,7 +174,7 @@ export default async function FicheProduitPage({ params }: Props) {
           aria-label={t('fil_ariane_accueil')}
           className="border-b border-ko-line bg-ko-cream py-6"
         >
-          <ol className="mx-auto flex max-w-container flex-wrap items-center gap-2 px-6 text-sm text-ko-muted lg:px-12">
+          <ol className="mx-auto flex max-w-container flex-wrap items-center gap-2 px-6 text-sm text-ko-muted lg:px-16">
             <li>
               <Link href={ROUTES.accueil} className="transition-colors duration-200 hover:text-ko-black">
                 {t('fil_ariane_accueil')}
@@ -196,7 +196,7 @@ export default async function FicheProduitPage({ params }: Props) {
         </nav>
 
         <section className="bg-ko-white py-14 lg:py-20">
-          <div className="mx-auto max-w-container px-6 lg:px-12">
+          <div className="mx-auto max-w-container px-6 lg:px-16">
             <Reveal>
               <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
                 {/* ------------------------------ Photo ------------------------------

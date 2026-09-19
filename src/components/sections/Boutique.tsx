@@ -31,7 +31,7 @@ export async function Boutique() {
 
   return (
     <section className="bg-ko-cream pb-16 lg:pb-28">
-      <div className="mx-auto max-w-container px-6 lg:px-12">
+      <div className="mx-auto max-w-container px-6 lg:px-16">
         <Reveal>
           <Link
             href={ROUTES.boutique}

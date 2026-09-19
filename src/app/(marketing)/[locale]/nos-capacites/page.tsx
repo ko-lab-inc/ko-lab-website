@@ -195,7 +195,7 @@ export default async function CapacitesHubPage({ params }: Props) {
           className="absolute inset-0 bg-gradient-to-r from-ko-scrim/[0.92] via-ko-scrim/70 to-ko-scrim/40"
         />
 
-        <div className="relative z-10 mx-auto max-w-container px-6 pb-20 pt-28 lg:px-12 lg:pb-28 lg:pt-40">
+        <div className="relative z-10 mx-auto max-w-container px-6 pb-20 pt-28 lg:px-16 lg:pb-28 lg:pt-40">
           <p className="flex items-center gap-3">
             <span aria-hidden="true" className="h-px w-8 bg-ko-blue" />
             <span className="label-mono label-mono-d">{t('hub.label')}</span>
@@ -215,7 +215,7 @@ export default async function CapacitesHubPage({ params }: Props) {
       {/* Bande claire courte : elle sépare l'en-tête sombre des quatre blocs et
           porte la phrase de marque du document de cadrage. */}
       <section className="border-b border-ko-line bg-ko-cream py-14 lg:py-20">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <p className="ko-h3 max-w-[38ch] text-ko-ink">{t('hub.phrase')}</p>
           </Reveal>
@@ -231,7 +231,7 @@ export default async function CapacitesHubPage({ params }: Props) {
           traverse plusieurs capacités à la fois : le premier recoupe surtout
           Opérations terrain, le second Installations et Équipements. */}
       <section className="border-b border-ko-line bg-ko-white py-14 lg:py-20">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 sm:gap-16">
             <Reveal>
               <p className="label-mono">{t('hub.regroupement_1_nom')}</p>
@@ -261,7 +261,7 @@ export default async function CapacitesHubPage({ params }: Props) {
             key={cle}
             className={cn('py-16 lg:py-28', pair ? 'bg-ko-cream' : 'bg-ko-white')}
           >
-            <div className="mx-auto max-w-container px-6 lg:px-12">
+            <div className="mx-auto max-w-container px-6 lg:px-16">
               <Reveal>
                 <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
                   {/* Photo — passe à droite un bloc sur deux en desktop */}

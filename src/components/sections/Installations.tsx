@@ -39,7 +39,7 @@ export async function Installations() {
 
   return (
     <section className="bg-ko-white py-16 lg:py-28">
-      <div className="mx-auto max-w-container px-6 lg:px-12">
+      <div className="mx-auto max-w-container px-6 lg:px-16">
         <div className="grid grid-cols-1 items-stretch gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20">
           <Reveal className="flex flex-col justify-center">
             <p className="label-mono">{t('label')}</p>

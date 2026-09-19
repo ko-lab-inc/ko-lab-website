@@ -43,7 +43,7 @@ export async function GmLocations() {
 
   return (
     <section className="section-filet bg-ko-cream py-20 lg:py-28">
-      <div className="mx-auto max-w-container px-6 lg:px-12">
+      <div className="mx-auto max-w-container px-6 lg:px-16">
         <Reveal>
           <div className="flex flex-col gap-8 border-y border-ko-line py-14 lg:flex-row lg:items-center lg:justify-between lg:gap-16 lg:py-20">
             <div className="flex items-baseline gap-5 lg:gap-6">

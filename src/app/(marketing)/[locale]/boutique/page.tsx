@@ -89,7 +89,7 @@ export default async function BoutiquePage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
           <h1 className="ko-display mt-6 max-w-[14ch] text-ko-ink">{t('title')}</h1>
 
@@ -101,7 +101,7 @@ export default async function BoutiquePage({ params }: Props) {
       </section>
 
       <section className="bg-ko-white py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <CatalogueBoutique
               panierActif={reglages.panierActif}
@@ -119,7 +119,7 @@ export default async function BoutiquePage({ params }: Props) {
 
       {/* ---------------------------- Services ---------------------------- */}
       <section className="bg-ko-black py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <p className="label-mono label-mono-d">{t('services_titre')}</p>
             <p className="ko-h3 mt-5 max-w-[34ch] text-ko-white">{t('services_texte')}</p>

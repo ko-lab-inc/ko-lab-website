@@ -60,7 +60,7 @@ export async function Footer() {
 
   return (
     <footer className="bg-ko-black text-ko-white">
-      <div className="mx-auto max-w-container px-6 py-16 lg:px-12 lg:py-24">
+      <div className="mx-auto max-w-container px-6 py-16 lg:px-16 lg:py-24">
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4 lg:gap-8">
           {/* Signature */}
           <div className="lg:col-span-1">

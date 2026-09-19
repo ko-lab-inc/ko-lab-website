@@ -80,7 +80,7 @@ export default async function AProposPage({ params }: Props) {
     <div data-theme-sombre>
       {/* ------------------------------ En-tête ------------------------------ */}
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
           <h1 className="ko-display mt-6 max-w-[14ch] text-ko-ink">{t('title')}</h1>
           <p className="mt-7 max-w-[56ch] text-base leading-relaxed text-ko-muted lg:text-lg">
@@ -91,7 +91,7 @@ export default async function AProposPage({ params }: Props) {
 
       {/* --------------------------- Positionnement --------------------------- */}
       <section className="bg-ko-white py-16 lg:py-28">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2 lg:gap-20">
               <div>
@@ -138,7 +138,7 @@ export default async function AProposPage({ params }: Props) {
 
       {/* ----------------------------- Culture ----------------------------- */}
       <section className="bg-ko-black py-16 lg:py-28">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <p className="label-mono label-mono-d">{t('culture_label')}</p>
             <h2 className="ko-h2 mt-5 max-w-[22ch] text-ko-white">{t('culture_titre')}</h2>
@@ -169,7 +169,7 @@ export default async function AProposPage({ params }: Props) {
 
       {/* ----------------------------- Méthode ----------------------------- */}
       <section className="bg-ko-cream py-16 lg:py-28">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <p className="label-mono">{t('methode_label')}</p>
           </Reveal>
@@ -192,7 +192,7 @@ export default async function AProposPage({ params }: Props) {
 
       {/* ---------------------------- Écosystème ---------------------------- */}
       <section className="bg-ko-white py-16 lg:py-28">
-        <div className="mx-auto max-w-container px-6 lg:px-12">
+        <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
             <p className="label-mono">{t('ecosysteme_titre')}</p>
             <h2 className="ko-h2 mt-5 max-w-[24ch] text-ko-ink">{t('ecosysteme_texte')}</h2>

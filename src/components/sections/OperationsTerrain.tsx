@@ -98,7 +98,7 @@ export async function OperationsTerrain({ locale }: { locale: AppLocale }) {
       */}
       <div aria-hidden="true" className="absolute inset-0 bg-ko-scrim/65" />
 
-      <div className="relative z-10 mx-auto flex min-h-[560px] max-w-container flex-col justify-end px-6 py-16 lg:min-h-[680px] lg:px-12 lg:py-24">
+      <div className="relative z-10 mx-auto flex min-h-[560px] max-w-container flex-col justify-end px-6 py-16 lg:min-h-[680px] lg:px-16 lg:py-24">
         <Reveal className="max-w-2xl">
           {/* Pastille propre plutôt que label-mono-d nu : le bleu-2 seul ne
               passe 4,5:1 que sur --ko-black (6,37:1, voir globals.css) — sur
