@@ -33,10 +33,15 @@ export async function Hero() {
   // part (même lot, description avant code, voir le rapport).
   const stat = { valeur: tStats('heures_valeur'), label: tStats('heures_label') }
 
+  // mx-4 / lg:mx-8 (était mx-3 / lg:mx-4) : « un peu plus d'espace des
+  // deux côtés », 19 septembre 2026.
   return (
-    <section className="mx-3 mt-3 lg:mx-4 lg:mt-4">
+    <section className="mx-4 mt-3 lg:mx-8 lg:mt-4">
       <HeroScrollEffets>
-      <div className="relative min-h-[90vh] overflow-hidden rounded-3xl bg-ko-black shadow-[0_8px_40px_rgba(0,0,0,0.15)]">
+      {/* Silhouette (19 septembre 2026, maquette de Christian) : haut plus
+          arrondi, bas SANS rayon — le coin bas-droit reste droit, le coin
+          bas-gauche descend en pointe grâce à l'échancrure plus bas. */}
+      <div data-hero-cadre className="relative min-h-[90vh] overflow-hidden rounded-t-[2.5rem] bg-ko-black lg:rounded-t-[4rem]">
         {/*
           ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
           Voir skill 22 pour les critères de remplacement.
@@ -71,14 +76,19 @@ export async function Hero() {
           jamais décoratifs (skill 08). Le premier dégage la colonne gauche,
           le second ancre le bas du cadre où se pose le contenu.
           ko-scrim est le seul token acceptant un modificateur d'opacité.
+          Les deux partent à 100 % (et non 88 / 75 %) depuis le 19 septembre
+          2026 : ko-scrim est la couleur exacte du fond de page, les bords
+          gauche et bas de la photo s'y fondent sans limite visible
+          (demande de Christian, maquette à l'appui). Le bord droit, lui,
+          reste net — voir le liseré plus bas.
         */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-ko-scrim/[0.88] via-ko-scrim/[0.45] to-ko-scrim/10"
+          className="absolute inset-0 bg-gradient-to-r from-ko-scrim via-ko-scrim/[0.45] to-ko-scrim/10"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-ko-scrim/75 to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-ko-scrim to-transparent"
         />
 
         {/* Filigrane — blanc à 5 %, purement textural. */}
@@ -89,8 +99,38 @@ export async function Hero() {
           01
         </span>
 
+        {/*
+          Échancrure du bas — une bande de la couleur du FOND DE PAGE posée
+          sur le bas de la photo, coin haut-gauche très arrondi : la photo
+          ne descend jusqu'en bas qu'au bord gauche, en pointe, et le
+          bas-droit reste à angle droit (maquette du 19 septembre 2026).
+          bg-ko-white et non une couleur fixe : c'est le fond de page dans
+          les deux thèmes (#111210 sous la couche sombre). Sous le contenu
+          (z-10), au-dessus des voiles.
+        */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 z-[5] h-10 rounded-tl-[4rem_2.5rem] bg-ko-white lg:h-20 lg:rounded-tl-[7rem_5rem]"
+        />
+
+        {/*
+          Liseré du bord DROIT seulement — blanc à 10 %. Demande du
+          19 septembre 2026 : les bords de la photo se fondent dans le fond
+          de page, surtout à gauche, mais le droit reste distinguable. Posé
+          à l'intérieur, sous l'échancrure, qui l'arrête net à l'angle
+          droit du bas. (Remplace le box-shadow du thème sombre, qui cernait
+          tout le rectangle.)
+        */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-[4] rounded-t-[2.5rem] border-r border-ko-frost/10 lg:rounded-t-[4rem]"
+        />
+
         {/* ------------------------------ Contenu ------------------------------ */}
-        <div className="absolute bottom-0 left-0 z-10 max-w-3xl p-6 lg:p-10">
+        {/* bottom-10 / lg:bottom-20 : au-dessus de l'échancrure, sur la photo.
+            data-hero-texte : le bloc monte plus vite que la photo au scroll
+            — le texte « décolle » de l'image (voir HeroScrollEffets). */}
+        <div data-hero-texte className="absolute bottom-10 left-0 z-10 max-w-3xl p-6 lg:bottom-20 lg:p-10">
           <p className="flex items-center gap-3">
             <span aria-hidden="true" className="h-px w-8 bg-ko-blue" />
             <span className="label-mono label-mono-d">{t('tag')}</span>
@@ -101,7 +141,9 @@ export async function Hero() {
               n'est jamais retardé. */}
           <h1
             data-hero-titre
-            className="mt-5 font-serif text-[clamp(40px,5.5vw,76px)] font-light leading-[1.04] tracking-[-0.025em] text-ko-white"
+            // Ombre portée large et douce : le titre semble posé AU-DESSUS
+            // de la photo, pas imprimé dessus.
+            className="mt-5 font-serif text-[clamp(40px,5.5vw,76px)] font-light leading-[1.04] tracking-[-0.025em] text-ko-white [text-shadow:0_12px_32px_rgba(0,0,0,0.55)]"
           >
             {t.rich('title', { em: (chunks) => <em className="italic text-ko-blue">{chunks}</em> })}
           </h1>
@@ -144,7 +186,7 @@ export async function Hero() {
             Carte à une seule entrée depuis le 30 août 2026 (LOT C, §24) :
             `grid grid-cols-2` n'avait plus de sens à un seul chiffre, aurait
             laissé trois cases vides plutôt qu'une carte simple. */}
-        <Reveal className="absolute bottom-8 right-8 z-10 hidden md:block">
+        <Reveal className="absolute bottom-16 right-8 z-10 hidden md:block lg:bottom-28">
           {/* data-hero-carte : remonte de 30px à contre-sens du défilement. */}
           <div
             data-hero-carte

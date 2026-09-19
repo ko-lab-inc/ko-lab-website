@@ -244,14 +244,13 @@ body:has([data-theme-sombre]) .ring-ko-ink {
   --tw-ring-color: #ffffff;
 }
 
-/* Hero : carte sombre sur page sombre. Même second niveau, et un liseré
-   blanc translucide à la place de l'ombre — une ombre noire sur fond noir
-   n'existe pas, et sans liseré la carte disparaît. */
-body:has([data-theme-sombre]) div.bg-ko-black.rounded-3xl {
+/* Hero : carte sombre sur page sombre, même second niveau. Ciblée par
+   [data-hero-cadre] depuis le 19 septembre 2026 (le cadre a perdu
+   rounded-3xl pour sa nouvelle silhouette). Son liseré blanc translucide
+   n'est plus un box-shadow posé ici : il est dessiné dans Hero.tsx pour
+   suivre la silhouette (échancrure et pointe bas-gauche). */
+body:has([data-theme-sombre]) [data-hero-cadre] {
   background-color: #0e1116;
-}
-body:has([data-theme-sombre]) .shadow-\[0_8px_40px_rgba\(0\,0\,0\,0\.15\)\] {
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 /* --------------------------------------------------------------------------

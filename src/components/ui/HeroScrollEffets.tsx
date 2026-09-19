@@ -7,8 +7,9 @@ import type { ReactNode } from 'react'
 /**
  * Effets de scroll du hero d'accueil.
  *
- * Le titre s'efface et rétrécit, la photo prend de la profondeur, la carte de
- * stats remonte — le tout indexé sur la progression du scroll, pas sur un
+ * Le titre s'efface et rétrécit, la photo se rapproche, le bloc de texte
+ * monte plus vite qu'elle (il « décolle » de l'image), la carte de stats
+ * remonte — le tout indexé sur la progression du scroll, pas sur un
  * déclencheur. C'est ce qui donne l'impression que la page « répond » plutôt
  * qu'elle ne s'anime.
  *
@@ -38,6 +39,7 @@ export function HeroScrollEffets({ children }: { children: ReactNode }) {
     const titre = racine.querySelector<HTMLElement>('[data-hero-titre]')
     const photo = racine.querySelector<HTMLElement>('[data-hero-photo]')
     const carte = racine.querySelector<HTMLElement>('[data-hero-carte]')
+    const texte = racine.querySelector<HTMLElement>('[data-hero-texte]')
 
     let framePrevue = false
 
@@ -57,9 +59,18 @@ export function HeroScrollEffets({ children }: { children: ReactNode }) {
         titre.style.opacity = `${(1 - p).toFixed(3)}`
       }
 
-      // Photo : léger zoom, sensation de profondeur.
+      // Photo : part « de loin » et se rapproche — zoom porté de 8 à 18 %
+      // le 19 septembre 2026 (demande de Christian : « comme si l'image
+      // était un peu loin puis se rapproche au scroll »).
       if (photo) {
-        photo.style.transform = `scale(${(1 + p * 0.08).toFixed(4)})`
+        photo.style.transform = `scale(${(1 + p * 0.18).toFixed(4)})`
+      }
+
+      // Bloc de texte : monte plus vite que la photo, qui défile avec la
+      // page — le texte se détache de l'image (même demande). 120 px au
+      // plus, atteints quand le hero a entièrement quitté l'écran.
+      if (texte) {
+        texte.style.transform = `translate3d(0, ${(-p * 120).toFixed(2)}px, 0)`
       }
 
       // Carte de stats : remonte à contre-sens du défilement.
