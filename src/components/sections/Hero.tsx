@@ -114,6 +114,24 @@ export async function Hero() {
         />
 
         {/*
+          Contour de la POINTE bas-gauche — blanc fin, presque invisible
+          (15 %), demandé le 19 septembre 2026 : le bord gauche se fond dans
+          le fond de page, la pointe s'y perdait. Deux traits :
+          - la courbe : une boîte de la taille exacte du coin arrondi de
+            l'échancrure (64×40 / lg 112×80), même rayon, bordure haute et
+            gauche — le rayon consomme toute la boîte, seul l'arc est tracé ;
+          - le bord gauche au-dessus de la pointe, qui s'efface en montant.
+        */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-0 left-0 z-[6] h-10 w-16 rounded-tl-[4rem_2.5rem] border-l border-t border-ko-frost/15 lg:h-20 lg:w-28 lg:rounded-tl-[7rem_5rem]"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute bottom-0 left-0 z-[6] h-40 w-px bg-gradient-to-t from-ko-frost/15 to-transparent lg:h-64"
+        />
+
+        {/*
           Liseré du bord DROIT seulement — blanc à 10 %. Demande du
           19 septembre 2026 : les bords de la photo se fondent dans le fond
           de page, surtout à gauche, mais le droit reste distinguable. Posé
