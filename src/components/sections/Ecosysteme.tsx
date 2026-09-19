@@ -54,7 +54,12 @@ export async function Ecosysteme() {
             <Reveal key={cle} className="bg-ko-black">
               {/* min-h + flex-col : les noms s'alignent en bas quelle que soit
                   la longueur de la description au-dessus. */}
-              <div className="flex min-h-[200px] flex-col p-8 transition-colors duration-250 hover:bg-ko-ink">
+              {/* Survol : voile blanc à 5 %, et non hover:bg-ko-ink — la couche
+                  sombre passe .hover:bg-ko-ink:hover en BLANC (règle des boutons),
+                  et le titre et la description, blancs, disparaissaient au survol
+                  (et au défilement, le curseur restant sur une carte). ko-frost/5
+                  n’est pas remappé : même relief discret dans les deux thèmes. */}
+              <div className="flex min-h-[200px] flex-col p-8 transition-colors duration-250 hover:bg-ko-frost/5">
                 {/* Tag propre à chaque partenaire. Répéter « Écosystème KO-LAB »
                     sur les quatre cellules n'apportait aucune information et
                     faisait de la ligne un simple motif décoratif — ce que le
