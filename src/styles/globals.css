@@ -595,3 +595,40 @@
 .carrousel-photo {
   width: var(--w);
 }
+
+/* =============================================================================
+   Vague du bas de la section Le LAB — Lab.tsx (exception au skill 08
+   demandée par le propriétaire, voir la note en tête de Lab.tsx).
+   =============================================================================
+   Pend sous la section (top: 100 %) et recouvre le haut de la section
+   suivante. background-color: inherit — la couleur calculée de la section
+   parente, donc la même dans les deux thèmes (#0e1116 sous la couche
+   sombre, qui remappe section.bg-ko-black). La forme est un masque SVG
+   étiré sur toute la largeur (preserveAspectRatio none) : haut plat, bas
+   ondulé, 28 à 78 unités sur 80. */
+.vague-bas {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 2.5rem;
+  background-color: inherit;
+  pointer-events: none;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 80' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V28C1260 70 1080 78 900 52C720 26 560 8 380 30C230 48 110 72 0 56Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 80' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V28C1260 70 1080 78 900 52C720 26 560 8 380 30C230 48 110 72 0 56Z'/%3E%3C/svg%3E") 0 0 / 100% 100% no-repeat;
+}
+.vague-bas-trait {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 2.5rem;
+  overflow: visible;
+  pointer-events: none;
+}
+@media (min-width: 1024px) {
+  .vague-bas,
+  .vague-bas-trait {
+    height: 5rem;
+  }
+}

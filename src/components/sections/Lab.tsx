@@ -15,6 +15,16 @@ import { ROUTES } from '@/lib/routes'
  * lisent comme un seul bloc.
  *
  * En mobile, la photo passe au-dessus en 4/3.
+ *
+ * VAGUE DU BAS (19 septembre 2026) — EXCEPTION ASSUMÉE au skill 08, qui
+ * interdit les « ondulations / vagues SVG décoratives » : demandée
+ * explicitement par le propriétaire (« fais la vague »), d'après une maquette,
+ * après rappel de la règle. Une seule, ici ; ne pas l'étendre à d'autres
+ * sections sans nouvelle demande. Elle pend sous la section et mord dans la
+ * photo de « Crédibilité terrain », juste après — seule jonction de
+ * l'accueil où une surface unie rencontre une photo pleine largeur : entre
+ * deux sections unies du thème sombre (#0e1116 / #111210, 1,007:1), elle
+ * serait invisible. Voir .vague-bas (globals.css).
  */
 export async function Lab() {
   const t = await getTranslations('Home.lab')
@@ -22,7 +32,9 @@ export async function Lab() {
   const etapes = ['etape1', 'etape2', 'etape3', 'etape4'] as const
 
   return (
-    <section className="bg-ko-black">
+    // relative z-10 : la vague (.vague-bas) déborde sous la section et doit
+    // passer au-dessus de la photo de la section suivante.
+    <section className="relative z-10 bg-ko-black">
       <div className="grid grid-cols-1 items-stretch lg:grid-cols-2">
         <Reveal className="relative aspect-[4/3] overflow-hidden rounded-b-2xl lg:aspect-auto lg:min-h-[640px] lg:rounded-b-none lg:rounded-r-2xl">
           {/*
@@ -93,6 +105,22 @@ export async function Lab() {
           </div>
         </Reveal>
       </div>
+
+      <div aria-hidden="true" className="vague-bas" />
+      {/* Contour de la vague — blanc à 15 %, même trait que la pointe du
+          hero : sur le haut très sombre de la photo suivante, la seule
+          différence de teinte ne suffisait pas à lire la forme (capture du
+          19 septembre 2026). non-scaling-stroke : 1 px quelle que soit la
+          largeur, malgré l'étirement du viewBox. */}
+      <svg aria-hidden="true" className="vague-bas-trait" viewBox="0 0 1440 80" preserveAspectRatio="none">
+        <path
+          d="M1440 28C1260 70 1080 78 900 52C720 26 560 8 380 30C230 48 110 72 0 56"
+          fill="none"
+          stroke="rgba(255,255,255,0.15)"
+          strokeWidth="1"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
     </section>
   )
 }
