@@ -562,27 +562,28 @@
    largeur égale du 27 août.
 
    - `--w` : largeur de BASE d'une vignette verticale 2:3, en part de la
-     rangée. Mobile 64 % et sm 50 % : la voisine de chaque côté dépasse en
-     partie. lg : exactement un tiers, écarts déduits — trois photos, rien
-     de plus, pas d'éclat d'une quatrième au bord (maquette du 19 septembre). L'échelle au défilement se calcule dans
+     rangée. Mobile 72 %, sm 56 %, lg 38 % (agrandies le 19 septembre, à la
+     demande de Christian). À 38 %, la voisine réduite (0,7 → 26,6 %) tient
+     entière dans le reste de la rangée (31 %) et la photo suivante ne
+     montre aucun éclat au bord. L'échelle au défilement se calcule dans
      GalerieRealisations.tsx (`appliquerFoyer`), en transform seulement.
    - Les cales ::before/::after mesurent (100 % − --w) / 2 − --gap : ainsi la
      PREMIÈRE et la DERNIÈRE photo peuvent atteindre le centre.
    - `--gap` doit rester EXACTEMENT l'écart réel du conteneur flex (`gap-2`,
      `lg:gap-4`), sinon le centrage des extrémités se décale d'autant. */
 .carrousel-piste {
-  --w: 64%;
+  --w: 72%;
   --gap: 0.5rem;
 }
 @media (min-width: 640px) {
   .carrousel-piste {
-    --w: 50%;
+    --w: 56%;
   }
 }
 @media (min-width: 1024px) {
   .carrousel-piste {
+    --w: 38%;
     --gap: 1rem;
-    --w: calc((100% - 2 * var(--gap)) / 3);
   }
 }
 .carrousel-piste::before,

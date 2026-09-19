@@ -452,17 +452,13 @@ function RangeePhotos({
         </div>
       )}
 
-      {/* Cadre BLANC autour des photos (19 septembre 2026, maquette de
-          Christian : « le cadre doit être blanc aussi, pour aérer la couleur
-          et les images »). bg-ko-photo et non bg-ko-white : la couche sombre
-          remappe .bg-ko-white vers #111210, alors que .bg-ko-photo reste
-          blanc et rétablit les couleurs du thème clair à l'intérieur
-          (theme-sombre.css). Le titre et le compteur restent AU-DESSUS, sur
-          le fond sombre : dans le cadre, le gris des compteurs tomberait à
-          4,27:1. Marges latérales larges à partir de lg : elles portent les
-          flèches, comme sur la maquette. Angles droits, marges verticales
-          plus hautes (seconde maquette : « plus de hauteur de cadre »). */}
-      <div className="relative bg-ko-photo px-3 py-6 sm:px-8 sm:py-10 lg:px-14 lg:py-16">
+      {/* Cadre NOIR (19 septembre 2026, Christian : « enlève le cadre blanc,
+          mets-le en noir ») — le cadre blanc essayé le même jour est retiré.
+          bg-ko-black sur un <div> : la couche sombre ne le remappe pas (seuls
+          a/button/section/footer le sont), il reste #111210 dans les deux
+          thèmes. Marges latérales à partir de lg : elles portent les
+          flèches. Angles droits. */}
+      <div className="relative bg-ko-black px-3 py-4 sm:px-8 sm:py-6 lg:px-14 lg:py-8">
         <div
           ref={piste}
           role="group"
@@ -565,11 +561,10 @@ function BoutonCarrousel({
       aria-label={libelle}
       title={libelle}
       className={cn(
-        // Chevron noir SANS pastille, posé dans la marge du cadre blanc
-        // (19 septembre 2026, comme la maquette). L'ancienne pastille
-        // bg-ko-white devenait #111210 sous la couche sombre — bouton et
-        // chevron noirs, invisibles sur la page sombre. border-ko-black
-        // n'est pas remappé : le chevron reste #111210 sur le blanc.
+        // Chevron BLANC sans pastille, posé dans la marge du cadre noir
+        // (19 septembre 2026). border-ko-frost n'est pas remappé par la
+        // couche sombre : le chevron reste blanc sur le #111210 du cadre.
+        // (Jamais bg-ko-white ici : la couche le remappe vers #111210.)
         'absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full transition-opacity duration-200 lg:flex',
         precedent ? 'left-2' : 'right-2',
         desactive ? 'pointer-events-none opacity-0' : 'opacity-100 hover:opacity-60',
@@ -578,7 +573,7 @@ function BoutonCarrousel({
       <span
         aria-hidden="true"
         className={cn(
-          'h-2.5 w-2.5 rotate-45 border-ko-black',
+          'h-2.5 w-2.5 rotate-45 border-ko-frost',
           precedent ? 'ml-0.5 border-b-2 border-l-2' : '-ml-0.5 border-r-2 border-t-2',
         )}
       />
