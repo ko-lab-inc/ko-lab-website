@@ -74,19 +74,14 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
    * libellés vivent dans Home.besoins.* (fr.json) — la clé `fabriquer_*`
    * porte désormais « Créer une solution », le nom de clé n'a pas bougé.
    *
-   * GRANDE CARTE « LOUER » — révision de Joe, §22 (lot 5, 17 septembre
-   * 2026), seule intervention retenue contre la répétition de cartes
-   * identiques (4 × 582×539 sur 73 % de la section, mesuré). La carte 01
-   * occupe toute la largeur de la grille avec une image 21/9 ; les trois
-   * autres restent en rangée. Même numéro, même titre, même texte, même
-   * lien, mêmes espacements : seules sa taille et le cadre de son image
-   * changent. Sous md, toutes les cartes sont empilées pleine largeur et la
-   * carte 01 garde le 16/9 des autres — un 21/9 sur 342 px ferait une bande
-   * de 147 px, écrasée. Dès md, trois colonnes (plus deux jusqu'à lg) :
-   * à 768, deux colonnes laissaient 04 seule sur sa rangée, un vide à sa
-   * droite — vu en vérification, corrigé le 17 septembre 2026. La photo (portrait 1600×2133, mobilier sous
-   * chapiteau) supporte le 21/9 centré : tables, chaises, scène et structure
-   * restent dans le cadre, vérifié sur le recadrage simulé avant de coder.
+   * GRILLE 2 × 2 — DÉCISION DÉFINITIVE (19 septembre 2026). Quatre cartes
+   * de même taille, deux par rangée, deux rangées, dès md ; empilées sous md.
+   * La grande carte « Louer » pleine largeur en 21/9 (révision de Joe §22,
+   * lot 5) a été retirée à la demande explicite du propriétaire : « deux
+   * images sur la même ligne pour former deux lignes […] définitivement ».
+   * Ne pas réintroduire de carte élargie ni de grille à trois colonnes ici
+   * sans nouvelle demande écrite. 4 cartes = 2 × 2 : aucune rangée
+   * incomplète, aucun vide à droite, à toutes les largeurs.
    */
   const besoins = [
     {
@@ -143,11 +138,10 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
           </header>
         </Reveal>
 
-        {/* md:grid-cols-3 : la carte 01 prend les trois colonnes, les trois
-            autres se partagent la rangée — même disposition de 768 à 1440+. */}
-        <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-3">
+        {/* Grille 2 × 2 dès md — décision définitive, voir la note plus haut. */}
+        <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2">
           {besoins.map(({ cle, numero, href, photo, cadrage, style }) => (
-            <Reveal key={cle} className={cle === 'louer' ? 'md:col-span-3' : undefined}>
+            <Reveal key={cle}>
               {/* `-m-3 p-3` : marge négative compensée par un padding égal —
                   la mise en page ne bouge pas d'un pixel, mais le fond au
                   survol dispose de 12px de respiration autour de la carte.
@@ -161,8 +155,7 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
                     zoom de l'image, sinon le débordement casserait la grille. */}
                 <div
                   className={cn(
-                    'relative overflow-hidden rounded-xl bg-ko-cream2',
-                    cle === 'louer' ? 'aspect-[16/9] md:aspect-[21/9]' : 'aspect-[16/9]',
+                    'relative aspect-[16/9] overflow-hidden rounded-xl bg-ko-cream2',
                   )}
                 >
                   {/*
@@ -194,13 +187,8 @@ export async function Besoins({ locale }: { locale: AppLocale }) {
                       // bande passante mobile pour rien ; la cible du chantier
                       // est un seul média préchargé (le hero), voir CLAUDE.md.
                       quality={80}
-                      // Carte 01 : pleine largeur du conteneur (1113 px mesurés
-                      // à 1440) ; les autres : un tiers dès md.
-                      sizes={
-                        cle === 'louer'
-                          ? '(max-width: 1280px) 100vw, 1120px'
-                          : '(max-width: 767px) 100vw, 33vw'
-                      }
+                      // Une demi-largeur dès md (grille 2 × 2).
+                      sizes="(max-width: 767px) 100vw, (max-width: 1280px) 50vw, 560px"
                       style={style}
                       className={cn(
                         'object-cover transition-transform duration-[400ms] group-hover:scale-[1.05]',
