@@ -256,6 +256,13 @@ function photosStylees(r: RealisationCarte): readonly ImageSlide[] {
   return [{ ...couverture, style: r.desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN }, ...suite]
 }
 
+/** Foyer : échelle perdue par une vignette à une largeur (ou plus) du
+ *  centre — 0,2 → 0,8. Estompage : 0,25 → 0,75 d'opacité. Sur le cadre
+ *  BLANC, l'opacité éclaircit : gardée légère pour que les voisines restent
+ *  des photos, pas des fantômes. */
+const ECART_ECHELLE = 0.2
+const ECART_OPACITE = 0.25
+
 /**
  * Rangée horizontale des photos d'UNE réalisation — défilement natif, pas de
  * librairie. Remplace l'ancienne RangeeCarrousel (qui faisait défiler des
@@ -274,16 +281,21 @@ function photosStylees(r: RealisationCarte): readonly ImageSlide[] {
  * flèches restent les deux seules façons de faire avancer la rangée.
  *
  * ---------------------------------------------------------------------------
- * LARGEUR EN `max()` DE DEUX FORMULES, PAS UNE SEULE
+ * CARROUSEL À FOYER (19 septembre 2026, d'après une maquette de Christian :
+ * « un plus grand au milieu toujours, et le suivant devient grand quand il
+ * est au milieu »)
  *
- * La classe `.carrousel-photo` (globals.css) choisit la plus GRANDE de deux
- * largeurs : une largeur FIXE (3 photos pleines + un aperçu de la 4ᵉ en
- * mobile, 4 + un aperçu de la 5ᵉ à partir de lg), et une largeur en PARTAGE
- * ÉGAL du conteneur entre `--n` photos. Une réalisation avec peu de photos
- * (2, 3) obtient le partage égal — plus large, il remplit toute la rangée
- * sans vide à droite ni défilement. Une réalisation qui déborde du nombre
- * visible obtient la largeur fixe, qui la fait déborder et active le
- * défilement. Voir le commentaire de `.carrousel-photo` pour le détail.
+ * - Toutes les vignettes ont la même largeur de BASE (`.carrousel-photo`,
+ *   globals.css). Celle dont le centre coïncide avec le centre de la rangée
+ *   est à l'échelle 1 ; ses voisines rétrécissent (jusqu'à 0,8) et
+ *   s'estompent (jusqu'à 0,55) avec la distance — `appliquerFoyer`, à chaque
+ *   image de défilement. TRANSFORM et OPACITÉ seulement : la mise en page ne
+ *   bouge jamais, le calage (`snap-center`) reste stable.
+ * - Les voisines rétrécissent VERS le centre (origine sur leur bord intérieur)
+ *   pour rester serrées contre la photo principale, comme sur la maquette.
+ * - Deux cales invisibles (`.carrousel-piste::before/::after`) permettent à
+ *   la première et à la dernière photo d'atteindre le centre.
+ * - `prefers-reduced-motion` : pas d'échelle, l'estompage seul.
  * ---------------------------------------------------------------------------
  */
 function RangeePhotos({
@@ -304,6 +316,7 @@ function RangeePhotos({
   libelles: LibellesCarrousel
 }) {
   const piste = useRef<HTMLDivElement>(null)
+  const vignettes = useRef<(HTMLButtonElement | null)[]>([])
   const [peutReculer, setPeutReculer] = useState(false)
   const [peutAvancer, setPeutAvancer] = useState(photos.length > 1)
 
@@ -317,17 +330,56 @@ function RangeePhotos({
     setPeutAvancer(el.scrollLeft < el.scrollWidth - el.clientWidth - 2)
   }, [])
 
-  useEffect(() => {
-    actualiserFleches()
+  /** Foyer — voir la note d'en-tête. `offsetLeft` (position de mise en page,
+   *  la piste étant `relative`) et non `getBoundingClientRect`, qui inclurait
+   *  l'échelle déjà appliquée. Toutes les lectures d'abord, les écritures
+   *  ensuite : aucune mise en page forcée entre deux vignettes. */
+  const appliquerFoyer = useCallback(() => {
     const el = piste.current
     if (!el) return
-    el.addEventListener('scroll', actualiserFleches, { passive: true })
-    window.addEventListener('resize', actualiserFleches)
-    return () => {
-      el.removeEventListener('scroll', actualiserFleches)
-      window.removeEventListener('resize', actualiserFleches)
+    const gap = parseFloat(getComputedStyle(el).columnGap) || 0
+    const centre = el.scrollLeft + el.clientWidth / 2
+    const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const mesures = vignettes.current.map((v) =>
+      v ? { v, d: (v.offsetLeft + v.offsetWidth / 2 - centre) / (v.offsetWidth + gap) } : null,
+    )
+    for (const m of mesures) {
+      // Le CALQUE intérieur, jamais le bouton : le calage (`snap-center`) se
+      // fait sur la boîte TRANSFORMÉE de la cible — réduire le bouton
+      // déplaçait sa cible et la photo suivante se calait à ~39 px du centre
+      // (échelle 0,98 au lieu de 1, mesuré). Le bouton garde sa boîte.
+      const calque = m?.v.firstElementChild as HTMLElement | null | undefined
+      if (!m || !calque) continue
+      const t = Math.min(Math.abs(m.d), 1)
+      calque.style.transform = reduit ? '' : `scale(${(1 - ECART_ECHELLE * t).toFixed(3)})`
+      calque.style.transformOrigin = m.d < -0.01 ? 'right center' : m.d > 0.01 ? 'left center' : 'center'
+      calque.style.opacity = (1 - ECART_OPACITE * t).toFixed(3)
     }
-  }, [actualiserFleches, photos.length])
+  }, [])
+
+  useEffect(() => {
+    const el = piste.current
+    if (!el) return
+    // Une mise à jour par image, pas par événement de défilement.
+    let image = 0
+    const actualiser = () => {
+      if (image) return
+      image = requestAnimationFrame(() => {
+        image = 0
+        actualiserFleches()
+        appliquerFoyer()
+      })
+    }
+    actualiserFleches()
+    appliquerFoyer()
+    el.addEventListener('scroll', actualiser, { passive: true })
+    window.addEventListener('resize', actualiser)
+    return () => {
+      el.removeEventListener('scroll', actualiser)
+      window.removeEventListener('resize', actualiser)
+      if (image) cancelAnimationFrame(image)
+    }
+  }, [actualiserFleches, appliquerFoyer, photos.length])
 
   /** `prefers-reduced-motion` : défilement instantané. Même vérification que
    *  BoutonRetourHaut.tsx — passer `behavior` explicitement dans l'appel JS
@@ -338,17 +390,21 @@ function RangeePhotos({
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches
   }
 
+  /** Une photo à la fois : la suivante vient se caler au centre. */
   function defiler(sens: 1 | -1) {
     const el = piste.current
-    if (!el) return
-    el.scrollBy({ left: sens * el.clientWidth * 0.9, behavior: mouvementReduit() ? 'auto' : 'smooth' })
+    const v = vignettes.current.find(Boolean)
+    if (!el || !v) return
+    const pas = v.offsetWidth + (parseFloat(getComputedStyle(el).columnGap) || 0)
+    el.scrollBy({ left: sens * pas, behavior: mouvementReduit() ? 'auto' : 'smooth' })
   }
 
   function surFocus(e: React.FocusEvent<HTMLButtonElement>) {
     e.currentTarget.scrollIntoView({
       behavior: mouvementReduit() ? 'auto' : 'smooth',
       block: 'nearest',
-      inline: 'nearest',
+      // Au clavier aussi, la photo qui reçoit le focus vient au foyer.
+      inline: 'center',
     })
   }
 
@@ -380,26 +436,32 @@ function RangeePhotos({
         </div>
       )}
 
-      <div className="relative">
+      {/* Cadre BLANC autour des photos (19 septembre 2026, maquette de
+          Christian : « le cadre doit être blanc aussi, pour aérer la couleur
+          et les images »). bg-ko-photo et non bg-ko-white : la couche sombre
+          remappe .bg-ko-white vers #111210, alors que .bg-ko-photo reste
+          blanc et rétablit les couleurs du thème clair à l'intérieur
+          (theme-sombre.css). Le titre et le compteur restent AU-DESSUS, sur
+          le fond sombre : dans le cadre, le gris des compteurs tomberait à
+          4,27:1. Marges latérales larges à partir de lg : elles portent les
+          flèches, comme sur la maquette. */}
+      <div className="relative rounded-2xl bg-ko-photo px-3 py-4 sm:px-8 sm:py-8 lg:px-14 lg:py-12">
         <div
           ref={piste}
           role="group"
           aria-label={`${libelles.groupe} — ${titre}`}
-          // `--n` : nombre de photos de CETTE rangée, lu par `.carrousel-photo`
-          // (globals.css). Posé ici plutôt que sur chaque vignette : la
-          // variable CSS hérite jusqu'aux boutons enfants.
-          style={{ '--n': String(photos.length) } as React.CSSProperties}
-          // `gap-2` en mobile, pas `gap-3` (27 août 2026, retour visuel sur
-          // téléphone réel) : resserre l'écart entre vignettes ET les
-          // agrandit un peu, `.carrousel-photo` (globals.css) partageant la
-          // largeur restante entre les photos — `--gap` y est ajusté en
-          // miroir, sinon la formule de largeur reste calée sur l'ancien
-          // écart. Desktop (`lg:gap-4`) inchangé.
-          className="scrollbar-none flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth lg:gap-4"
+          // `relative` : la piste devient l'offsetParent des vignettes, dont
+          // `appliquerFoyer` lit `offsetLeft`. `gap-2` / `lg:gap-4` doivent
+          // rester égaux à `--gap` de `.carrousel-piste` (globals.css), qui
+          // dimensionne les cales de début et de fin.
+          className="carrousel-piste scrollbar-none relative flex snap-x snap-mandatory gap-2 overflow-x-auto scroll-smooth py-2 lg:gap-4"
         >
           {photos.map((photo, i) => (
             <button
               key={photo.src}
+              ref={(n) => {
+                vignettes.current[i] = n
+              }}
               type="button"
               onClick={() => onOuvrir(i)}
               onFocus={surFocus}
@@ -415,17 +477,22 @@ function RangeePhotos({
               // proportionnellement bien plus arrondi — resserré pour CETTE
               // rangée dense de petites vignettes uniquement, les autres
               // composants du site gardent `rounded-xl` sans changement.
-              className="carrousel-photo group relative aspect-[4/3] shrink-0 snap-start overflow-hidden rounded-lg bg-ko-cream2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ko-blue"
+              className="carrousel-photo group relative aspect-[4/3] shrink-0 snap-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ko-blue"
             >
-              <Image
-                src={photo.src}
-                alt={photo.alt}
-                fill
-                sizes="(max-width: 1024px) 30vw, 300px"
-                quality={80}
-                style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
-                className="object-cover object-center transition-transform duration-[400ms] group-hover:scale-[1.02]"
-              />
+              {/* Calque du foyer — c'est lui qui rétrécit et s'estompe
+                  (appliquerFoyer), pas le bouton : voir la note sur le
+                  calage dans appliquerFoyer. */}
+              <span className="absolute inset-0 overflow-hidden rounded-lg bg-ko-cream2 will-change-transform">
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  fill
+                  sizes="(max-width: 639px) 72vw, (max-width: 1023px) 52vw, 440px"
+                  quality={80}
+                  style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
+                  className="object-cover object-center transition-transform duration-[400ms] group-hover:scale-[1.02]"
+                />
+              </span>
             </button>
           ))}
         </div>
@@ -485,9 +552,14 @@ function BoutonCarrousel({
       aria-label={libelle}
       title={libelle}
       className={cn(
-        'absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-ko-white shadow-card transition-opacity duration-200 lg:flex',
+        // Chevron noir SANS pastille, posé dans la marge du cadre blanc
+        // (19 septembre 2026, comme la maquette). L'ancienne pastille
+        // bg-ko-white devenait #111210 sous la couche sombre — bouton et
+        // chevron noirs, invisibles sur la page sombre. border-ko-black
+        // n'est pas remappé : le chevron reste #111210 sur le blanc.
+        'absolute top-1/2 z-10 hidden h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full transition-opacity duration-200 lg:flex',
         precedent ? 'left-2' : 'right-2',
-        desactive ? 'pointer-events-none opacity-0' : 'opacity-100 hover:bg-ko-cream',
+        desactive ? 'pointer-events-none opacity-0' : 'opacity-100 hover:opacity-60',
       )}
     >
       <span

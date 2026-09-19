@@ -554,40 +554,42 @@
 }
 
 /* =============================================================================
-   Largeur des vignettes d'une rangée réalisation — GalerieRealisations.
+   Carrousel à foyer des rangées réalisation — GalerieRealisations.
    =============================================================================
-   `max()` entre deux largeurs :
-     - une largeur FIXE (mobile : 3 photos pleines + un aperçu de la 4ᵉ ;
-       desktop, à partir de lg : 4 pleines + un aperçu de la 5ᵉ) — elle
-       l'emporte dès qu'une réalisation a plus de photos que ce qui tient à
-       l'écran, ce qui fait déborder la rangée et active le défilement ;
-     - une largeur en PARTAGE ÉGAL du conteneur entre `--n` photos — elle
-       l'emporte quand la réalisation a PEU de photos : plus large que la
-       largeur fixe, elle remplit toute la rangée sans vide à droite, sans
-       défilement.
-   `--n` est posé en variable CSS inline sur le conteneur de la rangée (elle
-   hérite jusqu'aux vignettes) plutôt qu'en classe Tailwind arbitraire : une
-   classe du type `w-[...${n}...]` ne figure dans aucun fichier source scanné
-   par Tailwind, le JIT ne générerait donc aucune règle pour elle. */
-.carrousel-photo {
-  /* 0.5rem, pas 0.75rem (27 août 2026) : doit rester EXACTEMENT le gap réel
-     entre vignettes (`gap-2` sur le conteneur flex, GalerieRealisations.tsx)
-     — cette variable ne fixe pas l'écart elle-même, elle sert seulement à
-     calculer la largeur de chaque vignette compte tenu de l'écart réel ;
-     un désaccord entre les deux laisserait un résidu de quelques pixels,
-     débordement ou espace en trop, selon le sens de l'écart. */
+   19 septembre 2026, d'après une maquette de Christian : la photo au centre
+   de la rangée est la plus grande, ses voisines plus petites ; en défilant,
+   celle qui arrive au centre grandit à son tour. Remplace les vignettes à
+   largeur égale du 27 août.
+
+   - `--w` : largeur de BASE d'une vignette, en part de la rangée (mobile 72 %,
+     sm 52 %, lg 36 % — à 1440, une grande photo au centre et une voisine
+     entière de chaque côté). L'échelle au défilement se calcule dans
+     GalerieRealisations.tsx (`appliquerFoyer`), en transform seulement.
+   - Les cales ::before/::after mesurent (100 % − --w) / 2 − --gap : ainsi la
+     PREMIÈRE et la DERNIÈRE photo peuvent atteindre le centre.
+   - `--gap` doit rester EXACTEMENT l'écart réel du conteneur flex (`gap-2`,
+     `lg:gap-4`), sinon le centrage des extrémités se décale d'autant. */
+.carrousel-piste {
+  --w: 72%;
   --gap: 0.5rem;
-  --gaps-visibles: 2;
-  --apercu: 3.3;
-  width: max(
-    calc((100% - var(--gap) * var(--gaps-visibles)) / var(--apercu)),
-    calc((100% - var(--gap) * (var(--n) - 1)) / var(--n))
-  );
+}
+@media (min-width: 640px) {
+  .carrousel-piste {
+    --w: 52%;
+  }
 }
 @media (min-width: 1024px) {
-  .carrousel-photo {
+  .carrousel-piste {
+    --w: 36%;
     --gap: 1rem;
-    --gaps-visibles: 3;
-    --apercu: 4.3;
   }
+}
+.carrousel-piste::before,
+.carrousel-piste::after {
+  content: '';
+  flex: none;
+  width: calc((100% - var(--w)) / 2 - var(--gap));
+}
+.carrousel-photo {
+  width: var(--w);
 }
