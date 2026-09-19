@@ -74,33 +74,35 @@ export async function Hero() {
         />
 
         {/*
-          Deux voiles superposés, uniquement pour la lisibilité du texte —
-          jamais décoratifs (skill 08). Le premier dégage la colonne gauche,
-          le second ancre le bas du cadre où se pose le contenu.
-          ko-scrim est le seul token acceptant un modificateur d'opacité.
-          Les deux partent à 100 % (et non 88 / 75 %) depuis le 19 septembre
-          2026 : ko-scrim est la couleur exacte du fond de page, les bords
-          gauche et bas de la photo s'y fondent sans limite visible
-          (demande de Christian, maquette à l'appui). Le bord droit, lui,
-          reste net — voir le liseré plus bas. Voile horizontal allégé à
-          droite le même jour (« photo plus visible côté droit ») : 55 % à
-          40 % de la largeur, nul dès 75 % (était 45 % au milieu, 10 % au
-          bord droit) — tiers droit de la photo +48 % de luminance
-          moyenne à 1440. À PARTIR DE lg SEULEMENT : sous 1024 px le texte
-          couvre toute la largeur de la photo, alléger la droite l'allégeait
-          aussi (« réelle » 3,36 → 2,54:1 à 390, mesuré) — le mobile garde
-          l'ancien voile. Choisi parmi trois réglages mesurés : le plus clair
-          où le titre garde un pire pixel ≥ 3:1 ; plus clair, il tombe à
-          2,5:1. Ne pas alléger davantage sans remesurer le titre (contraste
-          réel, photo chargée).
+          Deux voiles, couleur --ko-black-rgb (exactement le fond de page :
+          à 100 % au ras des bords gauche et bas, la photo s'y fond).
+
+          À PARTIR DE xl (≥ 1280 px) — Christian, 19 septembre 2026 :
+          « réduire deux fois l'assombrissement, juste un peu sur les côtés
+          et le bas ». Le voile ne couvre plus que la COLONNE DE TEXTE (côté
+          gauche) : 100 % au bord, 72 % à 22 %, 55 % à 48 %, nul de 70 à
+          85 %, 25 % au bord droit ; bas : 100 % au bord, 40 % à 12 %, nul
+          dès 45 %. Moitié droite de la photo entièrement dégagée.
+          Luminance moyenne à 1440 : centre 0,029 → 0,046, tiers droit
+          0,089 → 0,153.
+
+          lg (1024-1279) : 100 → 55 % à 40 % → nul dès 75 % ; mobile et
+          tablette : 100 → 45 → 10 % ; bas linéaire dans les deux. Mesuré :
+          une vignette sur les seuls bords y fait tomber le titre à 1,4-2,4:1
+          autour des lettres (le texte couvre alors la moitié ou la totalité
+          de la photo, gilets blancs juste derrière) ; la variante xl, à
+          1024, à 2,15:1.
+
+          Plus clair que ceci : le titre casse. Toute retouche → remesurer
+          le contraste AUTOUR DES LETTRES, photo chargée, halo compris.
         */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-ko-scrim via-ko-scrim/[0.45] to-ko-scrim/10 lg:via-ko-scrim/[0.55] lg:via-40% lg:to-transparent lg:to-75%"
+          className="absolute inset-0 bg-gradient-to-r from-ko-scrim via-ko-scrim/[0.45] to-ko-scrim/10 lg:via-ko-scrim/[0.55] lg:via-40% lg:to-transparent lg:to-75% xl:bg-[linear-gradient(to_right,rgb(var(--ko-black-rgb))_0%,rgb(var(--ko-black-rgb)/0.72)_22%,rgb(var(--ko-black-rgb)/0.55)_48%,transparent_70%,transparent_85%,rgb(var(--ko-black-rgb)/0.25)_100%)]"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-ko-scrim to-transparent"
+          className="absolute inset-0 bg-gradient-to-t from-ko-scrim to-transparent xl:bg-[linear-gradient(to_top,rgb(var(--ko-black-rgb))_0%,rgb(var(--ko-black-rgb)/0.4)_12%,transparent_45%)]"
         />
 
         {/* Filigrane — blanc à 5 %, purement textural. */}
@@ -176,14 +178,16 @@ export async function Hero() {
               n'est jamais retardé. */}
           <h1
             data-hero-titre
-            // Ombre portée large et douce : le titre semble posé AU-DESSUS
-            // de la photo, pas imprimé dessus.
-            className="mt-5 font-serif text-[clamp(40px,5.5vw,76px)] font-light leading-[1.04] tracking-[-0.025em] text-ko-white [text-shadow:0_12px_32px_rgba(0,0,0,0.55)]"
+            // Halo sombre centré, large et doux : depuis que les voiles ne
+            // couvrent plus que les bords (19 septembre 2026), c'est lui qui
+            // porte la lisibilité du titre sur la photo — le détacher de
+            // l'image sans l'assombrir. Mesuré avec lui (contraste-texte).
+            className="mt-5 font-serif text-[clamp(40px,5.5vw,76px)] font-light leading-[1.04] tracking-[-0.025em] text-ko-white [text-shadow:0_0_3px_rgba(0,0,0,0.95),0_0_18px_rgba(0,0,0,0.85),0_0_48px_rgba(0,0,0,0.8)]"
           >
             {t.rich('title', { em: (chunks) => <em className="italic text-ko-blue">{chunks}</em> })}
           </h1>
 
-          <p className="mt-4 max-w-md text-base leading-relaxed text-ko-frost/70">
+          <p className="mt-4 max-w-md text-base leading-relaxed text-ko-frost/70 [text-shadow:0_0_3px_rgba(0,0,0,0.95),0_0_12px_rgba(0,0,0,0.9),0_0_30px_rgba(0,0,0,0.85)]">
             {t('subtitle')}
           </p>
 

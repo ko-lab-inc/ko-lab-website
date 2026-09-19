@@ -59,11 +59,12 @@ export function HeroScrollEffets({ children }: { children: ReactNode }) {
         titre.style.opacity = `${(1 - p).toFixed(3)}`
       }
 
-      // Photo : part « de loin » et se rapproche — zoom porté de 8 à 18 %
-      // le 19 septembre 2026 (demande de Christian : « comme si l'image
-      // était un peu loin puis se rapproche au scroll »).
+      // Photo : part « de loin » et se rapproche (demande du 19 septembre
+      // 2026). 10 %, pas plus : la photo du hero est un portrait
+      // 1600×2133 déjà agrandi ×1,14 sur un écran de 1830 px — à 18 %, le
+      // zoom la montait à ×1,35 et le flou se voyait (retour du même jour).
       if (photo) {
-        photo.style.transform = `scale(${(1 + p * 0.18).toFixed(4)})`
+        photo.style.transform = `scale(${(1 + p * 0.1).toFixed(4)})`
       }
 
       // Bloc de texte : monte plus vite que la photo, qui défile avec la
