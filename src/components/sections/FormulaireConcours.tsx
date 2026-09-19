@@ -111,7 +111,10 @@ function InterrupteurPublie({ libelle, defaut }: { libelle: string; defaut: bool
         aria-hidden="true"
         className="relative h-6 w-11 shrink-0 rounded-full bg-ko-line transition-colors duration-200 peer-checked:bg-ko-blue peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ko-blue"
       >
-        <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-ko-white shadow-sm transition-transform duration-200 group-has-[:checked]:translate-x-5" />
+        {/* Bouton : bg-ko-frost, PAS bg-ko-white — la couche sombre remappe
+            .bg-ko-white vers #111210 : bouton presque noir, invisible sur la
+            piste éteinte (19 septembre 2026, même défaut que le burger admin). */}
+        <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-ko-frost shadow-sm transition-transform duration-200 group-has-[:checked]:translate-x-5" />
       </span>
       <span className="text-sm text-ko-ink">{libelle}</span>
     </label>
