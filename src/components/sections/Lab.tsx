@@ -112,9 +112,9 @@ export async function Lab() {
           différence de teinte ne suffisait pas à lire la forme (capture du
           19 septembre 2026). non-scaling-stroke : 1 px quelle que soit la
           largeur, malgré l'étirement du viewBox. */}
-      <svg aria-hidden="true" className="vague-bas-trait" viewBox="0 0 1440 80" preserveAspectRatio="none">
+      <svg aria-hidden="true" className="vague-bas-trait" viewBox="0 0 1440 160" preserveAspectRatio="none">
         <path
-          d="M1440 28C1260 70 1080 78 900 52C720 26 560 8 380 30C230 48 110 72 0 56"
+          d="M1440 20C1260 50 1100 30 920 45C720 62 520 70 360 95C220 118 100 150 0 160"
           fill="none"
           stroke="rgba(255,255,255,0.15)"
           strokeWidth="1"

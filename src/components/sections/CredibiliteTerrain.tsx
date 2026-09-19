@@ -55,7 +55,13 @@ export async function CredibiliteTerrain() {
         />
       </Parallax>
 
-      <div aria-hidden="true" className="absolute inset-0 bg-ko-scrim/70" />
+      {/* Voile dégradé (19 septembre 2026, « réduis l'assombrissement ») :
+          30 % en haut, où mord la vague de Le LAB (Lab.tsx) — la photo s'y
+          voit —, 60 % dès 30 % de la hauteur, 70 % en bas, où sont les
+          textes. Mesuré autour des lettres, FR/EN, 1440/390 : tous au-dessus
+          du seuil ; un voile uniforme à 55 % faisait déjà tomber le libellé
+          du chiffre à 4,48:1 en mobile. */}
+      <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-b from-ko-scrim/30 via-ko-scrim/60 via-30% to-ko-scrim/70" />
 
       <div className="relative z-10 mx-auto max-w-container px-6 py-24 text-center lg:px-16 lg:py-36">
         <Reveal>
