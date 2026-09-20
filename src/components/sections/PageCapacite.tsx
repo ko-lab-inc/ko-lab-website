@@ -35,7 +35,10 @@ type PageCapaciteProps = {
   /** Phrase de marque du document de cadrage — affichée en grand sur la photo. */
   phrase: string
   intro: string
-  items: readonly string[]
+  /** Liste du bloc d’intro. Absente pour Le LAB : ses capacites et ses
+   *  technologies vivent dans leurs propres sections (revision du
+   *  20 septembre 2026, §8.5 — les technologies passent en bas de page). */
+  items?: readonly string[]
   /**
    * `null` = vide assumé (migration 0037) : seule le-lab passe aujourd'hui
    * une valeur qui peut être `null` (photoHero, résolue par
@@ -209,12 +212,22 @@ export async function PageCapacite({
           <Reveal>
             {/* Deux colonnes éditoriales : l'intro pose le cadre à gauche, la
                 liste détaille à droite. Empilées sous lg. */}
-            <div className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20">
+            <div
+              className={cn(
+                "grid grid-cols-1 gap-12 lg:gap-20",
+                items && "lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]",
+              )}
+            >
               <div>
                 <p className="label-mono">{label}</p>
-                <p className="ko-h3 mt-5 max-w-[30ch] text-ko-ink">{intro}</p>
+                {/* Sans liste a cote, l’intro tient toute la largeur : a 30ch
+                    dans une demi-colonne vide, elle flottait. */}
+                <p className={cn("ko-h3 mt-5 text-ko-ink", items ? "max-w-[30ch]" : "max-w-[46ch]")}>
+                  {intro}
+                </p>
               </div>
 
+              {items && (
               <div>
                 {numero && <p className="label-mono">{numero}</p>}
 
@@ -241,6 +254,7 @@ export async function PageCapacite({
                   </ul>
                 </Reveal>
               </div>
+              )}
             </div>
           </Reveal>
         </div>

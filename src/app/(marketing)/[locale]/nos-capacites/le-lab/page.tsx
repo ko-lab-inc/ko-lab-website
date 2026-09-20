@@ -2,9 +2,13 @@ import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
+import { CapacitesLab } from '@/components/sections/CapacitesLab'
 import { GalerieLab } from '@/components/sections/GalerieLab'
 import { PageCapacite } from '@/components/sections/PageCapacite'
 import { ProcessusLab } from '@/components/sections/ProcessusLab'
+import { ProjetsLab } from '@/components/sections/ProjetsLab'
+import { SignalisationLab } from '@/components/sections/SignalisationLab'
+import { TechnologiesLab } from '@/components/sections/TechnologiesLab'
 import { routing } from '@/i18n/routing'
 import { lireGaleriePage } from '@/lib/galeries'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
@@ -68,22 +72,10 @@ export default async function LeLabPage({ params }: Props) {
         titre={t('title')}
         phrase={t('phrase')}
         intro={t('intro')}
-        // item_9 et item_10 ajoutés au lot 5 (Joe, §9) : électronique et
-        // éclairage ; assemblage, contrôle qualité et préparation à la
-        // livraison. Ordre de lecture, pas ordre des clés : les capacités
-        // d'atelier d'abord, la livraison par KO-LAB en dernier.
-        items={[
-          t('item_1'),
-          t('item_2'),
-          t('item_3'),
-          t('item_4'),
-          t('item_5'),
-          t('item_9'),
-          t('item_6'),
-          t('item_7'),
-          t('item_10'),
-          t('item_8'),
-        ]}
+        // Plus de liste ici depuis le 20 septembre 2026 (§8.5) : les
+        // technologies ne doivent plus ouvrir la page, elles arrivent apres
+        // les capacites et les projets (TechnologiesLab). Les cles item_1 a
+        // item_10 de Capacites.lab restent dans messages/*.json, inutilisees.
         // Imprimante 3D en cours d'impression — item « Impression 3D ».
         // La découpe laser sert la section LAB de l'accueil : deux visuels
         // distincts plutôt que la même image deux fois dans le parcours.
@@ -95,9 +87,17 @@ export default async function LeLabPage({ params }: Props) {
         // prop. PageCapacite ne rend la bande QUE si `videos` est passée
         // (voir sa propre docstring) : l'omettre suffit, pas besoin d'un
         // tableau vide.
+        // Ordre de la revision du 20 septembre 2026 (§8) : ce que le LAB
+        // resout, puis la signalisation, puis les projets, puis les preuves
+        // en photos, et SEULEMENT ensuite les technologies, puis le
+        // processus.
         contenuSupplementaire={
           <>
+            <CapacitesLab />
+            <SignalisationLab />
+            <ProjetsLab />
             <GalerieLab photos={photosLab.map((p) => ({ url: p.src, alt: p.alt }))} />
+            <TechnologiesLab />
             <ProcessusLab />
           </>
         }
