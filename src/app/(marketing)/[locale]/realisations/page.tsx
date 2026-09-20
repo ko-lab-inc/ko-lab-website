@@ -7,6 +7,7 @@ import {
   type RealisationCarte,
 } from '@/components/sections/GalerieRealisations'
 import { Reveal } from '@/components/ui/Reveal'
+import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireRealisationsPubliees, type RealisationPubliee } from '@/lib/realisations'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
@@ -66,6 +67,13 @@ export default async function RealisationsPage({ params }: Props) {
    */
   const publiees = await lireRealisationsPubliees(locale)
 
+  // §14 : « Ne pas forcer chaque album à devenir une réalisation. » Les
+  // fiches (marquées dans l'admin, migration 0047) sont racontées en haut de
+  // page, une par une, et ont chacune leur propre page. Le reste vit dans la
+  // galerie, sans fiche ni récit.
+  const fiches = publiees?.filter((r) => r.fiche) ?? []
+  const galerie = publiees?.filter((r) => !r.fiche) ?? []
+
   const libellesCategories = {
     terrain: t('filtre_terrain'),
     installation: t('filtre_installation'),
@@ -119,13 +127,66 @@ export default async function RealisationsPage({ params }: Props) {
         </div>
       </section>
 
+      {/* ------------------------------ Fiches ------------------------------ */}
+      {fiches.length > 0 && (
+        <section className="border-b border-ko-line bg-ko-white py-10 lg:py-24">
+          <div className="mx-auto max-w-container px-6 lg:px-16">
+            <Reveal>
+              <p className="label-mono">{t('fiches_label')}</p>
+              <h2 className="ko-h2 mt-5 max-w-[24ch] text-ko-ink">{t('fiches_titre')}</h2>
+            </Reveal>
+
+            <div className="mt-10 lg:mt-14">
+              {fiches.map((r, i) => (
+                <Reveal key={r.slug}>
+                  <article className="grid grid-cols-1 gap-6 border-t border-ko-line py-8 lg:grid-cols-[4rem_minmax(0,1fr)] lg:gap-8 lg:py-10">
+                    <p aria-hidden="true" className="label-mono text-ko-muted">
+                      {String(i + 1).padStart(2, '0')}
+                    </p>
+
+                    <div>
+                      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                        <h3 className="font-serif text-[24px] leading-tight text-ko-ink lg:text-[30px]">
+                          {r.titre}
+                        </h3>
+                        {/* §15, même règle que dans la galerie : une série
+                            qui n'est pas une réalisation KO-LAB le dit. */}
+                        {r.origine === 'experience_passee' && (
+                          <p className="label-mono border border-ko-line px-2.5 py-1 text-ko-muted">
+                            {t('experience_passee')}
+                          </p>
+                        )}
+                      </div>
+
+                      {r.description && (
+                        <p className="mt-5 max-w-[62ch] text-base leading-relaxed text-ko-muted lg:text-lg">
+                          {r.description}
+                        </p>
+                      )}
+
+                      <Link
+                        href={`${ROUTES.realisations}/${r.slug}`}
+                        className="mt-6 inline-flex items-center gap-2.5 border-b border-ko-accent/30 pb-0.5 text-sm text-ko-ink transition-[gap,border-color] duration-200 hover:gap-3.5 hover:border-ko-accent"
+                      >
+                        {t('voir_projet')}
+                        <span aria-hidden="true">→</span>
+                      </Link>
+                    </div>
+                  </article>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ------------------------------ Galerie ------------------------------ */}
       <section className="bg-ko-white py-10 lg:py-24">
         <div className="mx-auto max-w-container px-6 lg:px-16">
-          {publiees ? (
+          {galerie.length > 0 ? (
             <Reveal>
               <GalerieRealisations
-                realisations={publiees.map((r) => versCarte(r))}
+                realisations={galerie.map((r) => versCarte(r, t('experience_passee')))}
                 filtres={filtres}
                 labelFiltres={t('filtres_label')}
                 aucunResultat={t('aucun_resultat')}
@@ -164,13 +225,16 @@ export default async function RealisationsPage({ params }: Props) {
  * recentrage par carte. Toutes les cartes du carrousel partagent maintenant
  * le même ratio — `object-center` partout, sans variable à porter.
  */
-function versCarte(r: RealisationPubliee): RealisationCarte {
+function versCarte(r: RealisationPubliee, libelleExperience: string): RealisationCarte {
   const [premiere] = r.images
 
   return {
     cle: r.slug,
     categorie: r.categorie,
     titre: r.titre,
+    // §15 : « Expérience passée » quand la série ne documente pas une
+    // réalisation KO-LAB. Rien du tout sinon — pas de libellé vide.
+    mention: r.origine === 'experience_passee' ? libelleExperience : undefined,
     description: r.description ?? '',
     tags: r.tags,
     // `premiere` est garantie par `lireRealisationsPubliees()`, qui écarte

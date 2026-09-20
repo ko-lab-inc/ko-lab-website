@@ -6,6 +6,7 @@ import { DOMAINE } from '@/lib/constantes'
 import { ETIQUETTE_GALERIES } from '@/lib/galeries-photos'
 import { ETIQUETTE_EMPLACEMENTS_MEDIAS } from '@/lib/medias-emplacements'
 import { ETIQUETTE_PRODUITS, lireProduitsPublies } from '@/lib/produits'
+import { lireRealisationsPubliees } from '@/lib/realisations'
 import { lireReglages } from '@/lib/reglages'
 import { ETIQUETTE_REALISATIONS } from '@/lib/realisations'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
@@ -343,5 +344,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   }))
 
-  return [...pagesStatiques, ...pagesProduits]
+  // Fiches projet (§14.1 et §19 de la revision du 20 septembre 2026) : une
+  // page par realisation marquee « fiche » dans l’admin. Les albums de
+  // galerie n’ont pas de page — les lister enverrait Google sur des 404.
+  // `updated_at` existe sur realisations : la vraie date de modification.
+  const fichesProjet: MetadataRoute.Sitemap = (await lireRealisationsPubliees("fr"))
+    ?.filter((r) => r.fiche)
+    .map((r) => ({
+      url: url(`${ROUTES.realisations}/${r.slug}`, "fr"),
+      lastModified: new Date(r.updated_at),
+      alternates: {
+        languages: {
+          fr: url(`${ROUTES.realisations}/${r.slug}`, "fr"),
+          en: url(`${ROUTES.realisations}/${r.slug}`, "en"),
+        },
+      },
+    })) ?? []
+
+  return [...pagesStatiques, ...pagesProduits, ...fichesProjet]
 }

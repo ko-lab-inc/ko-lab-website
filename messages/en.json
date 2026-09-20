@@ -397,7 +397,13 @@
     }
   },
   "Realisations": {
-    "title": "Projects",
+    "fiches_label": "Featured projects",
+    "fiches_titre": "A few mandates, told in full.",
+    "voir_projet": "See the project",
+    "experience_passee": "Past experience",
+    "experience_passee_note": "Team background: projects delivered before KO-LAB or under other structures. They show the know-how; they are not presented as KO-LAB projects.",
+    "projet_retour": "All projects",
+    "title": "A few delivered projects.",
     "intro": "Field operations, installations, fabrication and deployments.",
     "filtre_tout": "View All",
     "filtre_terrain": "Operations",
@@ -825,6 +831,11 @@
     "retour_haut": "Back to top"
   },
   "Admin": {
+    "champ_fiche": "Project page (dedicated)",
+    "champ_fiche_aide": "Checked, the project gets its own page, indexed by Google, and appears at the top of the Projects page. Unchecked, it stays in the gallery.",
+    "champ_origine": "Origin",
+    "origine_kolab": "KO-LAB project",
+    "origine_experience_passee": "Past experience (team background)",
     "espace": "Espace équipe",
     "voir_site": "Voir le site",
     "menu_ouvrir": "Menu",

@@ -45,6 +45,10 @@ export type Database = {
           tags: string[]
           images: Json
           publie: boolean
+          /** Migration 0047 — true : projet majeur, page /realisations/<slug>. */
+          fiche: boolean
+          /** Migration 0047 — CHECK : 'kolab' | 'experience_passee'. */
+          origine: string
           ordre: number
           created_at: string
           updated_at: string
@@ -60,6 +64,8 @@ export type Database = {
           tags?: string[]
           images?: Json
           publie?: boolean
+          fiche?: boolean
+          origine?: string
           ordre?: number
           created_at?: string
           updated_at?: string
@@ -75,6 +81,8 @@ export type Database = {
           tags?: string[]
           images?: Json
           publie?: boolean
+          fiche?: boolean
+          origine?: string
           ordre?: number
           created_at?: string
           updated_at?: string

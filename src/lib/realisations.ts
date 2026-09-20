@@ -3,7 +3,13 @@ import 'server-only'
 import { unstable_cache } from 'next/cache'
 
 import { createStaticClient } from '@/lib/supabase/static'
-import { CATEGORIES_REALISATION, type CategorieRealisation, type Realisation } from '@/types'
+import {
+  CATEGORIES_REALISATION,
+  ORIGINES_REALISATION,
+  type CategorieRealisation,
+  type OrigineRealisation,
+  type Realisation,
+} from '@/types'
 
 import type { AppLocale } from '@/i18n/routing'
 
@@ -59,9 +65,18 @@ export type ImageRealisationBrute = { url: string; alt_fr: string; alt_en: strin
 
 export type RealisationPubliee = Omit<
   Realisation,
-  'categorie' | 'images' | 'titre_fr' | 'titre_en' | 'description_fr' | 'description_en'
+  | 'categorie'
+  | 'images'
+  | 'titre_fr'
+  | 'titre_en'
+  | 'description_fr'
+  | 'description_en'
+  | 'origine'
 > & {
   categorie: CategorieRealisation
+  /** Migration 0047 : projet majeur, avec sa propre page. */
+  fiche: boolean
+  origine: OrigineRealisation
   images: ImageRealisation[]
   /** Déjà résolu dans la langue demandée — replie sur le français si
    *  titre_en/description_en sont vides pour cette réalisation (Phase 9,
@@ -125,9 +140,13 @@ async function lireDepuisBase(locale: AppLocale): Promise<RealisationPubliee[] |
     const supabase = createStaticClient()
     const { data, error } = await supabase
       .from('realisations')
-      .select(
-        'id, slug, titre_fr, titre_en, description_fr, description_en, categorie, tags, images, publie, ordre, created_at, updated_at',
-      )
+      // `*` et non la liste des colonnes : `fiche` et `origine` (migration
+      // 0047) n'existent pas tant qu'elle n'a pas été exécutée, et PostgREST
+      // renvoie une erreur 400 pour une colonne inconnue — la page entière
+      // tomberait sur son repli. Avec `*`, les colonnes absentes sont
+      // simplement `undefined` et les valeurs par défaut ci-dessous
+      // s'appliquent : le site tient avant ET après la migration.
+      .select('*')
       .eq('publie', true)
       .order('ordre')
 
@@ -140,6 +159,12 @@ async function lireDepuisBase(locale: AppLocale): Promise<RealisationPubliee[] |
         return {
           ...reste,
           categorie: r.categorie as CategorieRealisation,
+          // Défauts identiques à ceux de la migration 0047 : un album non
+          // trié reste un album de galerie, et une réalisation KO-LAB.
+          fiche: r.fiche === true,
+          origine: ORIGINES_REALISATION.some((x) => x === r.origine)
+            ? (r.origine as OrigineRealisation)
+            : 'kolab',
           images: resoudreImages(images, locale),
           titre: (locale === 'en' ? titre_en : null) ?? titre_fr,
           description: (locale === 'en' ? description_en : null) ?? description_fr,

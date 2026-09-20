@@ -37,6 +37,14 @@ export type LigneCommande = Tables<'lignes_commande'>
 export const CATEGORIES_REALISATION = ['terrain', 'installation', 'lab', 'equipement'] as const
 export type CategorieRealisation = (typeof CATEGORIES_REALISATION)[number]
 
+/**
+ * realisations.origine — migration 0047, §15 de la révision du 20 septembre
+ * 2026. `experience_passee` = parcours de l'équipe, affiché sous ce libellé
+ * et JAMAIS présenté comme une réalisation KO-LAB.
+ */
+export const ORIGINES_REALISATION = ['kolab', 'experience_passee'] as const
+export type OrigineRealisation = (typeof ORIGINES_REALISATION)[number]
+
 /** demandes_contact.type — skills 03 et 05 */
 export const TYPES_DEMANDE = ['mandat', 'location', 'boutique', 'carriere', 'autre'] as const
 export type TypeDemande = (typeof TYPES_DEMANDE)[number]

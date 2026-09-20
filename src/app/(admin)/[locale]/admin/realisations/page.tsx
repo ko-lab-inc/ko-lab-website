@@ -48,7 +48,11 @@ export default async function RealisationsAdminPage({ params }: Props) {
   const [{ data: realisations, error }, { data: moi }] = await Promise.all([
     supabase
       .from('realisations')
-      .select('id, slug, titre_fr, titre_en, description_fr, description_en, categorie, images, ordre, publie')
+      // `*` : `fiche` et `origine` (migration 0047) n’existent pas tant
+      // qu’elle n’a pas ete executee, et PostgREST refuse une colonne
+      // inconnue — l’ecran entier tomberait. Colonnes absentes = undefined,
+      // le formulaire retombe alors sur ses valeurs par defaut.
+      .select('*')
       .order('ordre'),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
   ])
@@ -69,6 +73,13 @@ export default async function RealisationsAdminPage({ params }: Props) {
       installation: t('rcat_installation'),
       lab: t('rcat_lab'),
       equipement: t('rcat_equipement'),
+    },
+    fiche: t('champ_fiche'),
+    ficheAide: t('champ_fiche_aide'),
+    origine: t('champ_origine'),
+    origines: {
+      kolab: t('origine_kolab'),
+      experience_passee: t('origine_experience_passee'),
     },
     ordre: t('champ_ordre'),
     photos: t('champ_photos_realisation'),

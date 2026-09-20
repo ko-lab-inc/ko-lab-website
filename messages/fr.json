@@ -397,7 +397,13 @@
     }
   },
   "Realisations": {
-    "title": "Réalisations",
+    "fiches_label": "Projets détaillés",
+    "fiches_titre": "Quelques mandats, racontés.",
+    "voir_projet": "Voir le projet",
+    "experience_passee": "Expérience passée",
+    "experience_passee_note": "Parcours de l’équipe : projets réalisés avant KO-LAB ou sous d’autres structures. Ils montrent le savoir-faire, ils ne sont pas présentés comme des réalisations KO-LAB.",
+    "projet_retour": "Toutes les réalisations",
+    "title": "Quelques projets livrés.",
     "intro": "Opérations terrain, installations, fabrications et déploiements.",
     "filtre_tout": "Tout voir",
     "filtre_terrain": "Opérations",
@@ -827,6 +833,11 @@
     "retour_haut": "Retour en haut de page"
   },
   "Admin": {
+    "champ_fiche": "Fiche projet (page dédiée)",
+    "champ_fiche_aide": "Cochée, la réalisation obtient sa propre page, référencée par Google, et apparaît en haut de la page Réalisations. Décochée, elle reste dans la galerie.",
+    "champ_origine": "Origine",
+    "origine_kolab": "Réalisation KO-LAB",
+    "origine_experience_passee": "Expérience passée (parcours de l’équipe)",
     "espace": "Espace équipe",
     "voir_site": "Voir le site",
     "menu_ouvrir": "Menu",

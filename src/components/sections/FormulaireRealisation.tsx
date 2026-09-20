@@ -53,6 +53,8 @@ export type RealisationAdmin = {
   description_fr: string | null
   description_en: string | null
   categorie: string
+  fiche: boolean
+  origine: string
   images: ImageRealisationBrute[]
   ordre: number
   publie: boolean
@@ -68,6 +70,10 @@ export type LibellesRealisation = {
   sectionEn: string
   categorie: string
   categories: Record<string, string>
+  fiche: string
+  ficheAide: string
+  origine: string
+  origines: Record<string, string>
   ordre: string
   photos: string
   photosAide: string
@@ -296,6 +302,25 @@ export function FormulaireRealisation({
           </select>
         </Champ>
 
+        <Champ id={`${prefixe}origine`} libelle={libelles.origine}>
+          {/* §15 : une photo d'un projet réalisé avant KO-LAB ou sous une
+              autre structure peut soutenir l'expérience, mais ne doit jamais
+              être présentée comme une réalisation KO-LAB. C'est ce choix qui
+              fait afficher le libellé « Expérience passée » côté public. */}
+          <select
+            id={`${prefixe}origine`}
+            name="origine"
+            defaultValue={realisation?.origine ?? 'kolab'}
+            className={CHAMP}
+          >
+            {Object.entries(libelles.origines).map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
+          </select>
+        </Champ>
+
         <Champ id={`${prefixe}ordre`} libelle={libelles.ordre}>
           <input
             id={`${prefixe}ordre`}
@@ -308,6 +333,23 @@ export function FormulaireRealisation({
           />
         </Champ>
       </div>
+
+      {/* Fiche projet — §14 : « ne pas forcer chaque album à devenir une
+          réalisation ». Cochée, la réalisation reçoit sa propre page
+          /realisations/<slug>, indexable, et apparaît en haut de la page
+          Réalisations. Décochée, elle reste dans la galerie générale. */}
+      <label className="flex items-start gap-3 border-t border-ko-line pt-4">
+        <input
+          type="checkbox"
+          name="fiche"
+          defaultChecked={realisation?.fiche ?? false}
+          className="mt-1 h-4 w-4 accent-ko-blue"
+        />
+        <span>
+          <span className="block text-sm text-ko-ink">{libelles.fiche}</span>
+          <span className="mt-1 block text-sm text-ko-muted">{libelles.ficheAide}</span>
+        </span>
+      </label>
 
       {/* Deux colonnes FR/EN, champ par champ sur la même ligne — même
           disposition que FormulaireConcours.tsx : un champ EN vide se repère

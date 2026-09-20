@@ -39,6 +39,12 @@ export type RealisationCarte = {
   cle: string
   categorie: CategorieRealisation
   titre: string
+  /**
+   * Libellé affiché à côté du titre quand la série ne documente PAS une
+   * réalisation KO-LAB — « Expérience passée » (§15 de la révision du
+   * 20 septembre 2026). Absent pour une réalisation KO-LAB.
+   */
+  mention?: string
   description: string
   src: string
   desature: boolean
@@ -210,6 +216,7 @@ export function GalerieRealisations({
                     titre={r.titre}
                     compte={t('serie_compte', { n: r.photos.length })}
                     tags={r.tags}
+                    mention={r.mention}
                     photos={r.photos}
                     desature={r.desature}
                     onOuvrir={(index) => setOuverte({ realisation: r, index })}
@@ -309,6 +316,7 @@ function RangeePhotos({
   titre,
   compte,
   tags,
+  mention,
   photos,
   desature,
   onOuvrir,
@@ -317,6 +325,8 @@ function RangeePhotos({
   titre: string
   compte: string
   tags: readonly string[]
+  /** « Expérience passée » — voir RealisationCarte.mention (§15). */
+  mention?: string
   photos: readonly ImageSlide[]
   desature: boolean
   onOuvrir: (index: number) => void
@@ -430,9 +440,20 @@ function RangeePhotos({
           compteur à droite) ; empilés en mobile, titre tronqué sur une
           seule ligne, compteur en dessous (demande explicite). */}
       <div className="mb-3 flex flex-col gap-0.5 lg:mb-4 lg:flex-row lg:items-baseline lg:justify-between lg:gap-4">
-        <h3 className="min-w-0 truncate font-serif text-[16px] font-normal text-ko-ink lg:text-[19px]">
-          {titre}
-        </h3>
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h3 className="min-w-0 truncate font-serif text-[16px] font-normal text-ko-ink lg:text-[19px]">
+            {titre}
+          </h3>
+          {/* §15 : une série qui vient d'avant KO-LAB, ou d'une autre
+              structure, le dit ici. Discret, mais jamais absent — c'est la
+              seule chose qui empêche de la lire comme une réalisation
+              KO-LAB. */}
+          {mention && (
+            <span className="label-mono shrink-0 border border-ko-line px-2 py-0.5 text-ko-muted">
+              {mention}
+            </span>
+          )}
+        </div>
         <p className="label-mono shrink-0 text-ko-muted">{compte}</p>
       </div>
 

@@ -11,7 +11,7 @@ import { estUuid } from '@/lib/utils/identifiant'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { slugifier } from '@/lib/utils/slug'
-import { CATEGORIES_REALISATION, ROLES_EQUIPE } from '@/types'
+import { CATEGORIES_REALISATION, ORIGINES_REALISATION, ROLES_EQUIPE } from '@/types'
 
 /**
  * CRUD des réalisations — table `realisations`.
@@ -54,6 +54,11 @@ const schemaRealisation = z.object({
   titre_en: z.string().trim().min(2).max(120).nullable(),
   description_en: z.string().trim().max(600).nullable(),
   categorie: z.enum(CATEGORIES_REALISATION),
+  // Migration 0047 (§14 et §15 de la révision du 20 septembre 2026).
+  // `fiche` vient d'une case à cocher : absente du FormData quand elle est
+  // décochée, d'où la coercition depuis `'on' | null` dans lireChamps.
+  fiche: z.boolean(),
+  origine: z.enum(ORIGINES_REALISATION),
   ordre: z.coerce.number().int().min(0).max(9999),
 })
 
@@ -64,6 +69,8 @@ function lireChamps(donnees: FormData) {
     titre_en: String(donnees.get('titre_en') ?? '').trim() || null,
     description_en: String(donnees.get('description_en') ?? '').trim() || null,
     categorie: donnees.get('categorie'),
+    fiche: donnees.get('fiche') === 'on',
+    origine: donnees.get('origine') ?? 'kolab',
     ordre: donnees.get('ordre') ?? 0,
   })
 }
