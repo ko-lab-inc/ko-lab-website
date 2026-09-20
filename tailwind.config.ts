@@ -51,7 +51,13 @@ const config: Config = {
       // qui auto-héberge les fichiers. Les fallbacks couvrent le rendu avant
       // chargement et les environnements de test sans next/font.
       fontFamily: {
-        serif: ['var(--font-serif)', 'Georgia', 'serif'],
+        // Depuis le 20 septembre 2026 (§18), `serif` lit --font-sans, donc
+        // Montserrat : le nom est historique (Fraunces), gardé pour ne pas
+        // toucher les centaines de classes `font-serif`. --font-serif n'est
+        // plus définie nulle part.
+        // Repli sans-serif dans les deux cas : un repli Georgia sous un titre
+        // Montserrat serait un autre site.
+        serif: ['var(--font-sans)', 'system-ui', 'sans-serif'],
         sans: ['var(--font-sans)', 'system-ui', 'sans-serif'],
         mono: ['var(--font-mono)', 'JetBrains Mono', 'Courier New', 'monospace'],
       },

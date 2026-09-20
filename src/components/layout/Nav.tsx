@@ -262,7 +262,11 @@ export function Nav({
             qui a de la marge, au lieu de casser les libellés. */}
         <nav
           aria-label={t('menuPrincipal')}
-          className="hidden items-center gap-6 whitespace-nowrap lg:flex xl:gap-8"
+          // gap-4 a lg, gap-8 a xl (etait gap-6 / gap-8) : en Montserrat, plus
+          // large que Instrument Sans, les six entrees + la zone droite
+          // debordaient de 12 a 14 px a 1024 px (mesure le 20 septembre 2026
+          // sur les 7 pages). A 1280 et plus, rien ne change.
+          className="hidden items-center gap-4 whitespace-nowrap lg:flex xl:gap-8"
         >
           {liensAvant.map(({ key, href }) => (
             <Link

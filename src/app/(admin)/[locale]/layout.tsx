@@ -1,6 +1,6 @@
 import { hasLocale } from 'next-intl'
 import { getTranslations } from 'next-intl/server'
-import { Fraunces, Instrument_Sans, JetBrains_Mono } from 'next/font/google'
+import { JetBrains_Mono, Montserrat } from 'next/font/google'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 
@@ -54,13 +54,15 @@ import '@/styles/globals.css'
  * offre la redirection propre ; ce layout offre la garantie.
  */
 
-const fraunces = Fraunces({
+// Montserrat, comme le site vitrine (révision du 20 septembre 2026, §18) —
+// voir la note du layout marketing : une seule déclaration, sur --font-sans,
+// que font-serif et font-sans lisent tous les deux.
+const montserrat = Montserrat({
   subsets: ['latin'],
-  axes: ['opsz'],
-  variable: '--font-serif',
+  style: ['normal', 'italic'],
+  variable: '--font-sans',
   display: 'swap',
 })
-const instrumentSans = Instrument_Sans({ subsets: ['latin'], variable: '--font-sans', display: 'swap' })
 const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono', display: 'swap' })
 
 type Props = { children: ReactNode; params: Promise<{ locale: string }> }
@@ -198,7 +200,7 @@ export default async function AdminLayout({ children, params }: Props) {
   return (
     <html
       lang={locale}
-      className={`${fraunces.variable} ${instrumentSans.variable} ${jetbrainsMono.variable}`}
+      className={`${montserrat.variable} ${jetbrainsMono.variable}`}
     >
       {/*
         Barre latérale COLLÉE au bord gauche, sur toute la hauteur, et en-tête

@@ -1,7 +1,7 @@
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
-import { Fraunces, Instrument_Sans, JetBrains_Mono } from 'next/font/google'
+import { JetBrains_Mono, Montserrat } from 'next/font/google'
 import { notFound } from 'next/navigation'
 
 import { Footer } from '@/components/layout/Footer'
@@ -49,15 +49,29 @@ import '@/styles/globals.css'
  * les noms de familles générés et l'auto-hébergement ne servirait à rien.
  */
 
-const fraunces = Fraunces({
+/**
+ * MONTSERRAT — révision du site du 20 septembre 2026, §18 : « La police du
+ * site reste Montserrat. » Elle remplace Fraunces (titres, serif) ET
+ * Instrument Sans (corps). Une seule famille, variable (graisse 100-900),
+ * en romain et en italique — l'italique sert aux accents des titres
+ * (« réelle », « façon »).
+ *
+ * UNE seule déclaration, sur `--font-sans` : une seconde instance pour
+ * `--font-serif` faisait télécharger la même police deux fois (mesuré :
+ * « Montserrat normal 100 900 » chargée en double). `font-serif` (Tailwind)
+ * et les anciens `var(--font-serif)` de globals.css lisent donc
+ * `--font-sans` — le nom `serif` est historique (Fraunces), gardé pour ne
+ * pas toucher des centaines de classes. Les titres gardent leurs graisses
+ * légères (300/400), le corps 400/500 — même hiérarchie qu'avant, une
+ * seule famille.
+ *
+ * JetBrains Mono est conservée pour les labels et les données (chiffres,
+ * compteurs, étiquettes) : c'est une police de DONNÉES du design system,
+ * pas « la police du site ».
+ */
+const montserrat = Montserrat({
   subsets: ['latin'],
-  axes: ['opsz'],
-  variable: '--font-serif',
-  display: 'swap',
-})
-
-const instrumentSans = Instrument_Sans({
-  subsets: ['latin'],
+  style: ['normal', 'italic'],
   variable: '--font-sans',
   display: 'swap',
 })
@@ -319,7 +333,7 @@ export default async function MarketingLayout({ children, params }: Props) {
   return (
     <html
       lang={locale}
-      className={`${fraunces.variable} ${instrumentSans.variable} ${jetbrainsMono.variable}`}
+      className={`${montserrat.variable} ${jetbrainsMono.variable}`}
     >
       <body className="font-sans antialiased">
         <script
