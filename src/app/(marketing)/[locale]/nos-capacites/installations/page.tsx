@@ -61,18 +61,25 @@ export default async function InstallationsPage({ params }: Props) {
         intro={t('intro')}
         // Sept éléments ici, contre huit pour les trois autres capacités —
         // conforme au document de cadrage.
+        // Les onze points du §9 (révision du 20 septembre 2026), dans
+        // l'ordre du brief : la catégorie ne se limite plus au décor
+        // saisonnier — parcs et espaces publics, signalisation, murales,
+        // présentoirs, aménagements commerciaux, location depuis l'inventaire
+        // et création sur mesure au LAB en font partie. Le travail de nuit,
+        // le transport et le retrait sont passés dans l'intro : ce sont des
+        // manières de faire, pas des types de mandats.
         items={[
           t('item_1'),
           t('item_2'),
           t('item_3'),
           t('item_4'),
           t('item_5'),
-          // item_8 et item_9 ajoutés au lot 5 (Joe, §11) : installation,
-          // retrait, transport et manutention ; maintenance lorsque requis.
-          t('item_8'),
           t('item_6'),
           t('item_7'),
+          t('item_8'),
           t('item_9'),
+          t('item_10'),
+          t('item_11'),
         ]}
         // Nacelle élévatrice sur façade — « Centres commerciaux et tours à
         // bureaux ». L'échafaudage précédent ne montrait aucune installation.
