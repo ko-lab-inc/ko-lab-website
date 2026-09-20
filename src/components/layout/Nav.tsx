@@ -141,9 +141,17 @@ export function Nav({
   // « rendre Location impossible à manquer ». Elle est la priorité
   // commerciale, elle passe donc en tête des entrées simples, juste après le
   // menu « Nos capacités ».
-  const liensSecondaires = (
+  // Ordre de la révision du 20 septembre 2026 (§4) : Le LAB et Location
+  // AVANT le menu « Nos capacités », le reste après. Le LAB sort du menu
+  // déroulant et devient une entrée à part entière — c'est la porte d'entrée
+  // de quiconque veut développer, fabriquer ou créer quelque chose.
+  const liensAvant = [
+    { key: 'lab', href: ROUTES.lab },
+    { key: 'location', href: ROUTES.location },
+  ] as const
+
+  const liensApres = (
     [
-      { key: 'location', href: ROUTES.location },
       { key: 'realisations', href: ROUTES.realisations },
       { key: 'boutique', href: ROUTES.boutique },
       { key: 'apropos', href: ROUTES.apropos },
@@ -256,6 +264,20 @@ export function Nav({
           aria-label={t('menuPrincipal')}
           className="hidden items-center gap-6 whitespace-nowrap lg:flex xl:gap-8"
         >
+          {liensAvant.map(({ key, href }) => (
+            <Link
+              key={key}
+              href={href}
+              aria-current={estActif(href) ? 'page' : undefined}
+              className={cn(
+                'flex min-h-[44px] items-center text-sm text-ko-ink transition-[text-decoration-color] duration-200 hover:underline hover:decoration-ko-blue hover:underline-offset-4',
+                estActif(href) && 'font-medium',
+              )}
+            >
+              {t(key)}
+            </Link>
+          ))}
+
           <div
             className="relative"
             onMouseEnter={() => setCapacitesOuvert(true)}
@@ -296,7 +318,7 @@ export function Nav({
             )}
           </div>
 
-          {liensSecondaires.map(({ key, href }) => (
+          {liensApres.map(({ key, href }) => (
             <Link
               key={key}
               href={href}
@@ -447,6 +469,24 @@ export function Nav({
           // sinon le panneau déborde sous le bas de l'écran.
           className="max-h-[calc(100svh-81px)] overflow-y-auto border-t border-ko-line bg-ko-cream px-6 pb-10 pt-6 lg:hidden"
         >
+          <ul className="mb-8 divide-y divide-ko-line border-y border-ko-line">
+            {liensAvant.map(({ key, href }) => (
+              <li key={key}>
+                <Link
+                  href={href}
+                  onClick={() => setMenuOuvert(false)}
+                  aria-current={estActif(href) ? 'page' : undefined}
+                  className={cn(
+                    'flex min-h-[52px] items-center text-base',
+                    estActif(href) ? 'font-medium text-ko-ink' : 'text-ko-ink',
+                  )}
+                >
+                  {t(key)}
+                </Link>
+              </li>
+            ))}
+          </ul>
+
           <p className={cn('label-mono mb-3', capacitesActif && 'text-ko-ink')}>
             {t('capacites')}
           </p>
@@ -469,7 +509,7 @@ export function Nav({
           </ul>
 
           <ul className="mb-8 divide-y divide-ko-line border-y border-ko-line">
-            {liensSecondaires.map(({ key, href }) => (
+            {liensApres.map(({ key, href }) => (
               <li key={key}>
                 <Link
                   href={href}

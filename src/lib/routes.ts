@@ -80,7 +80,11 @@ export const routeCommande = (id: string) => `${ROUTES.compteCommandes}/${id}`
  * panneau mobile et colonne Capacités du pied de page lisent ce tableau.
  *
  * Ordre fixé par la révision « Priorité Location » de Joe, §16 (lot 3,
- * 17 septembre 2026) : Le LAB, Installations, Équipements & déploiement,
+ * 20 septembre 2026) : Installations & aménagements, Équipements &
+ * déploiement, Opérations terrain. Le LAB N'Y EST PLUS — il a sa propre
+ * entrée de nav (révision du 20 septembre, §4) ; sa page reste à
+ * /nos-capacites/le-lab pour ne pas casser l'URL indexée.
+ * Ancien commentaire (lot 4, 17 septembre 2026) : Le LAB, Installations,
  * Opérations terrain. Il remplace l'ordre d'origine (Opérations en tête).
  * sitemap.ts lit aussi ce tableau, mais un sitemap n'a pas d'ordre.
  *
@@ -89,7 +93,6 @@ export const routeCommande = (id: string) => `${ROUTES.compteCommandes}/${id}`
  * sitemap, qui liste déjà ROUTES.location.
  */
 export const ROUTES_CAPACITES = [
-  { key: 'lab', href: ROUTES.lab },
   { key: 'installations', href: ROUTES.installations },
   { key: 'equipements', href: ROUTES.equipements },
   { key: 'operations', href: ROUTES.operations },

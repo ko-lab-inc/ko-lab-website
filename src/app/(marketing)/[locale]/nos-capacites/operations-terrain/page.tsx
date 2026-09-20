@@ -60,7 +60,7 @@ export default async function OperationsTerrainPage({ params }: Props) {
         // depuis le lot 4 (Le LAB, Installations, Équipements, Opérations) —
         // les trois autres pages avaient suivi au lot 5, celle-ci avait été
         // oubliée.
-        numero="04"
+        numero="03"
         label={t('label')}
         titre={t('title')}
         phrase={t('phrase')}

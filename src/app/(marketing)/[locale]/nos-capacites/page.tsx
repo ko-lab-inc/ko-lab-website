@@ -91,36 +91,26 @@ export default async function CapacitesHubPage({ params }: Props) {
   // `tOps('item_1')` est validé contre Capacites.operations seul, alors qu'un
   // `t(\`${cle}.item_1\`)` global produirait le produit croisé des quatre
   // espaces de noms — dont des combinaisons inexistantes.
-  const [tOps, tInst, tLab, tEquip] = await Promise.all([
+  // Capacites.lab n'est plus lu ici : Le LAB a quitté le hub le 20 septembre
+  // 2026 (§4). Ses clés restent dans messages/*.json — sa page les utilise.
+  const [tOps, tInst, tEquip] = await Promise.all([
     getTranslations('Capacites.operations'),
     getTranslations('Capacites.installations'),
-    getTranslations('Capacites.lab'),
     getTranslations('Capacites.equipements'),
   ])
 
-  // Ordre et numéros de la révision « Priorité Location » de Joe (lot 4,
-  // 17 septembre 2026) : Le LAB, Installations, Équipements & déploiement,
-  // Opérations terrain — celui du menu (ROUTES_CAPACITES) et de l'accueil.
-  // Opérations, qui ouvrait la page, descend en dernier. Les numéros sont
-  // en dur, un par objet, pas dérivés du rang : les quatre chaînes ont été
-  // renumérotées avec le déplacement, il faut le refaire à tout nouvel
-  // ordre.
+  // Ordre et numéros de la révision du 20 septembre 2026 (§4) :
+  // Installations & aménagements, Équipements & déploiement, Opérations
+  // terrain — celui du menu (ROUTES_CAPACITES) et de l'accueil. Le LAB a
+  // quitté cette liste : il a sa propre entrée de nav, sa page reste à
+  // /nos-capacites/le-lab. Production événementielle viendra s'insérer en
+  // 03 (lot 4), Opérations passera alors en 04. Les numéros sont en dur, un
+  // par objet, pas dérivés du rang : il faut les refaire à chaque
+  // changement d'ordre, ici ET sur la page de chaque capacité.
   const capacites = [
     {
-      cle: 'lab',
-      numero: '01',
-      href: ROUTES.lab,
-      label: tLab('label'),
-      titre: tLab('title'),
-      intro: tLab('intro'),
-      items: ITEMS_8.map((k) => tLab(k)),
-      src: IMAGES.lab,
-      cadrage: 'object-center',
-      desature: false,
-    },
-    {
       cle: 'installations',
-      numero: '02',
+      numero: '01',
       href: ROUTES.installations,
       label: tInst('label'),
       titre: tInst('title'),
@@ -136,7 +126,7 @@ export default async function CapacitesHubPage({ params }: Props) {
     },
     {
       cle: 'equipements',
-      numero: '03',
+      numero: '02',
       href: ROUTES.equipements,
       label: tEquip('label'),
       titre: tEquip('title'),
@@ -148,7 +138,7 @@ export default async function CapacitesHubPage({ params }: Props) {
     },
     {
       cle: 'operations',
-      numero: '04',
+      numero: '03',
       href: ROUTES.operations,
       label: tOps('label'),
       titre: tOps('title'),

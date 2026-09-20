@@ -62,9 +62,8 @@ export default async function LeLabPage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <PageCapacite
-        // « 01 » depuis le lot 5 (17 septembre 2026) : le hub /nos-capacites
-        // numérote Le LAB en premier depuis le lot 4 ; la page suit.
-        numero="01"
+        // Sans numéro depuis le 20 septembre 2026 : Le LAB a quitté la série
+        // numérotée du hub (§4) pour devenir une entrée de nav à part.
         label={t('label')}
         titre={t('title')}
         phrase={t('phrase')}

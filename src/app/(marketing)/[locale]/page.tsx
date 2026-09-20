@@ -148,17 +148,27 @@ export default async function AccueilPage({ params }: Props) {
           du hero de cette page. */}
       <IntroAnimee />
       <Hero />
+      {/* Ordre de la révision du 20 septembre 2026 (§5). Deux décisions
+          prises ici, hors de la liste de Joe :
+          - <Boutique /> descend après Réalisations. Elle est désactivée dans
+            les réglages (boutique_active = false) et ne rend donc rien
+            aujourd'hui ; placée là, elle ne coupera pas la suite
+            Location → Le LAB le jour où KO-LAB la rallume.
+          - <GmLocations /> passe après l'Écosystème. C'est un partenaire
+            EXTERNE (voir son composant), pas une capacité KO-LAB : sa place
+            est avec les partenaires, pas au milieu des capacités. Il n'est
+            pas retiré — rien ne le demande. */}
       <Besoins locale={locale} />
       <Location />
-      <Boutique />
       <Lab />
       <CredibiliteTerrain />
       <Installations />
       <EquipementsDeploiement locale={locale} />
-      <GmLocations />
       <OperationsTerrain locale={locale} />
       <Realisations />
+      <Boutique />
       <Ecosysteme />
+      <GmLocations />
       <CtaFinal />
     </div>
   )

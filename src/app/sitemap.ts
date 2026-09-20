@@ -240,6 +240,9 @@ async function dateDeLaRoute(chemin: string): Promise<Date> {
 const ROUTES_STATIQUES = [
   ROUTES.accueil,
   ROUTES.capacites,
+  // ROUTES.lab écrite à part depuis le 20 septembre 2026 : Le LAB a quitté
+  // ROUTES_CAPACITES (entrée de nav propre), sa page reste indexée.
+  ROUTES.lab,
   ...ROUTES_CAPACITES.map((r) => r.href),
   ROUTES.realisations,
   ROUTES.location,
@@ -265,6 +268,7 @@ const ROUTES_STATIQUES = [
 const ROUTES_BILINGUES = new Set<string>([
   ROUTES.accueil,
   ROUTES.capacites,
+  ROUTES.lab,
   ...ROUTES_CAPACITES.map((r) => r.href),
   // Phase 9, checkpoint 2 — priorité a) et b).
   ROUTES.carrieres,

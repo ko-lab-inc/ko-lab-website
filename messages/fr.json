@@ -6,15 +6,15 @@
     },
     "capacites": {
       "title": "Nos capacités",
-      "description": "Opérations terrain, installations saisonnières, fabrication au LAB et équipements de déploiement. Quatre capacités, une seule équipe."
+      "description": "Installations et aménagements, équipements et déploiement, opérations terrain. Les capacités de KO-LAB, une seule équipe."
     },
     "operations": {
       "title": "Opérations terrain",
       "description": "Main-d'œuvre, coordination, logistique, transport, montage et opérations multisites pour événements majeurs et mandats gouvernementaux."
     },
     "installations": {
-      "title": "Installations saisonnières et commerciales",
-      "description": "Décors de Noël, installations commerciales, signalisation et éclairage décoratif. Préparation, transport, installation, suivi et retrait."
+      "title": "Installations & aménagements",
+      "description": "Décors saisonniers, aménagements commerciaux, signalisation, éclairage et mobilier. Conception, fabrication, location, installation et retrait."
     },
     "lab": {
       "title": "Le LAB",
@@ -69,7 +69,7 @@
     "accueil": "Accueil",
     "capacites": "Nos capacités",
     "operations": "Opérations terrain",
-    "installations": "Installations saisonnières",
+    "installations": "Installations & aménagements",
     "lab": "Le LAB",
     "equipements": "Équipements et déploiement",
     "realisations": "Réalisations",
@@ -124,9 +124,9 @@
       "deployer_titre": "Déployer une équipe",
       "deployer_texte": "Main-d'œuvre terrain, chefs d'équipe, coordination et soutien opérationnel.",
       "installer_titre": "Installer un projet",
-      "installer_texte": "Préparation, transport, installation, suivi, retrait et entreposage.",
+      "installer_texte": "Préparation, transport, installation, aménagement, retrait et remise du site.",
       "fabriquer_titre": "Créer une solution",
-      "fabriquer_texte": "Conception, prototypage, impression 3D, laser, CNC et fabrication sur mesure au LAB.",
+      "fabriquer_texte": "Conception, développement, fabrication, signalisation, impression et production interne.",
       "louer_titre": "Louer de l'équipement",
       "louer_texte": "Mobilier, scènes, clôtures, éclairage, décor, équipements terrain et infrastructures."
     },
@@ -267,7 +267,7 @@
       "item_8": "Intégration aux équipes internes du client"
     },
     "installations": {
-      "label": "Installations saisonnières et commerciales",
+      "label": "Installations & aménagements",
       "title": "Nous donnons vie aux espaces.",
       "phrase": "Nous ne faisons pas qu'installer des éléments. Nous organisons tout ce qu'il faut pour qu'ils se retrouvent au bon endroit, au bon moment.",
       "intro": "Le bras opérationnel qui prend en charge la préparation, le transport, l'installation, le suivi et le retrait.",

@@ -56,7 +56,7 @@ export default async function EquipementsPage({ params }: Props) {
       <PageCapacite
         // « 03 » depuis le lot 5 (17 septembre 2026) : ordre du hub depuis le
         // lot 4 (Le LAB, Installations, Équipements, Opérations).
-        numero="03"
+        numero="02"
         label={t('label')}
         titre={t('title')}
         phrase={t('phrase')}

@@ -42,7 +42,14 @@ export async function Footer() {
   // commerciale numéro un, en contradiction avec la nav qui la remonte.
   // Elle n'entre pas dans ROUTES_CAPACITES pour autant (voir routes.ts) :
   // le sitemap y lirait une seconde fois /location.
-  const liensCapacites = [{ key: 'location', href: ROUTES.location }, ...ROUTES_CAPACITES] as const
+  // Le LAB écrit ici aussi : il a quitté ROUTES_CAPACITES le 20 septembre
+  // 2026 (entrée de nav à part), mais reste une capacité — il n'y a aucune
+  // raison de le retirer du pied de page.
+  const liensCapacites = [
+    { key: 'location', href: ROUTES.location },
+    { key: 'lab', href: ROUTES.lab },
+    ...ROUTES_CAPACITES,
+  ] as const
 
   const liensEntreprise = (
     [

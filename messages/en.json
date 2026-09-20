@@ -6,15 +6,15 @@
     },
     "capacites": {
       "title": "Our Capabilities",
-      "description": "Field operations, seasonal installations, fabrication at The LAB, and deployment equipment. Four capabilities, one team."
+      "description": "Installations and fit-out, equipment and deployment, field operations. KO-LAB capabilities, one team."
     },
     "operations": {
       "title": "Field Operations",
       "description": "Labor, coordination, logistics, transport, setup and multi-site operations for major events and government contracts."
     },
     "installations": {
-      "title": "Seasonal and Commercial Installations",
-      "description": "Christmas décor, commercial installations, signage and decorative lighting. Preparation, transport, installation, follow-up and removal."
+      "title": "Installations & Fit-Out",
+      "description": "Seasonal décor, commercial fit-outs, signage, lighting and furniture. Design, fabrication, rental, installation and removal."
     },
     "lab": {
       "title": "The LAB",
@@ -69,7 +69,7 @@
     "accueil": "Home",
     "capacites": "Capabilities",
     "operations": "Field Operations",
-    "installations": "Seasonal Installations",
+    "installations": "Installations & Fit-Out",
     "lab": "The LAB",
     "equipements": "Equipment & Deployment",
     "realisations": "Projects",
@@ -124,9 +124,9 @@
       "deployer_titre": "Deploy a Crew",
       "deployer_texte": "Field labor, crew leaders, coordination and operational support.",
       "installer_titre": "Install a Project",
-      "installer_texte": "Preparation, transport, installation, monitoring, removal and storage.",
+      "installer_texte": "Preparation, transport, installation, fit-out, removal and site handover.",
       "fabriquer_titre": "Create a Solution",
-      "fabriquer_texte": "Design, prototyping, 3D printing, laser, CNC and custom fabrication at The LAB.",
+      "fabriquer_texte": "Design, development, fabrication, signage, printing and in-house production.",
       "louer_titre": "Rent Equipment",
       "louer_texte": "Furniture, staging, fencing, lighting, décor, field equipment and infrastructure."
     },
@@ -267,7 +267,7 @@
       "item_8": "Integration with the client's internal teams"
     },
     "installations": {
-      "label": "Seasonal and Commercial Installations",
+      "label": "Installations & Fit-Out",
       "title": "We bring spaces to life.",
       "phrase": "We don't just install things. We organize everything it takes to get them in the right place, at the right time.",
       "intro": "The operational arm that handles preparation, transport, installation, follow-up and removal.",

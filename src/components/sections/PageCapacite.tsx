@@ -28,7 +28,8 @@ import type { CSSProperties, ReactNode } from 'react'
  * messages de vérifier les clés une à une (voir global.d.ts).
  */
 type PageCapaciteProps = {
-  numero: string
+  /** Rang dans le hub /nos-capacites. Absent pour Le LAB, hors série. */
+  numero?: string
   label: string
   titre: string
   /** Phrase de marque du document de cadrage — affichée en grand sur la photo. */
@@ -161,14 +162,18 @@ export async function PageCapacite({
           {/* Le positionnement absolu est porté par le CONTENEUR, pas par le
               span : un wrapper en `display: contents` n'aurait aucune boîte,
               donc l'IntersectionObserver ne l'aurait jamais vu entrer. */}
-          <Reveal groupe className="pointer-events-none absolute bottom-[-6%] right-[2%]">
-            <span
-              aria-hidden="true"
-              className="numero-slide block select-none font-serif text-[clamp(140px,20vw,340px)] font-light leading-none tracking-[-0.04em] text-ko-frost/[0.04]"
-            >
-              {numero}
-            </span>
-          </Reveal>
+          {/* Rien à poser si la page n’a pas de numéro (Le LAB depuis le
+              20 septembre 2026) : un span vide laisserait sa boîte. */}
+          {numero && (
+            <Reveal groupe className="pointer-events-none absolute bottom-[-6%] right-[2%]">
+              <span
+                aria-hidden="true"
+                className="numero-slide block select-none font-serif text-[clamp(140px,20vw,340px)] font-light leading-none tracking-[-0.04em] text-ko-frost/[0.04]"
+              >
+                {numero}
+              </span>
+            </Reveal>
+          )}
         </div>
       </section>
 
@@ -211,7 +216,7 @@ export async function PageCapacite({
               </div>
 
               <div>
-                <p className="label-mono">{numero}</p>
+                {numero && <p className="label-mono">{numero}</p>}
 
                 {/* Liste à tiret horizontal — forme validée par le skill 08.
                     Le tiret est décoratif : aria-hidden, sinon un lecteur
