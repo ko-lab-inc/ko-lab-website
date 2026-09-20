@@ -32,6 +32,7 @@ import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
  */
 export async function CredibiliteTerrain() {
   const t = await getTranslations('Home.credibilite')
+  const tAlt = await getTranslations('Alt')
   const tStats = await getTranslations('Home.stats')
 
   return (
@@ -51,7 +52,8 @@ export async function CredibiliteTerrain() {
       <Parallax distance={0} zoom={0.1} mode="traversee" className="absolute inset-0">
         <Image
           src={IMAGES.preuveTerrain}
-          alt=""
+          // alt descriptif : voir Hero.tsx (§19.2).
+          alt={tAlt('preuve_terrain')}
           fill
           quality={80}
           sizes="100vw"

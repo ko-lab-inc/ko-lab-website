@@ -34,6 +34,7 @@ import type { AppLocale } from '@/i18n/routing'
  */
 export async function EquipementsDeploiement({ locale }: { locale: AppLocale }) {
   const t = await getTranslations('Home.equipements')
+  const tAlt = await getTranslations('Alt')
   const tCapacites = await getTranslations('Home.capacites')
   const tCommun = await getTranslations('Commun')
 
@@ -100,7 +101,8 @@ export async function EquipementsDeploiement({ locale }: { locale: AppLocale }) 
             */}
             <Image
               src={IMAGES.transportRemorque2026}
-              alt=""
+              // alt descriptif : voir Hero.tsx (§19.2).
+              alt={tAlt('transport_remorque')}
               fill
               quality={80}
               sizes="(max-width: 1024px) 50vw, 25vw"

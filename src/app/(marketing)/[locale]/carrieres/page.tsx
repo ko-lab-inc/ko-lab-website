@@ -70,6 +70,7 @@ export default async function CarrieresPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Carrieres')
+  const tAlt = await getTranslations('Alt')
   const tCommun = await getTranslations('Commun')
   const publiees = await lireOffresPubliees(locale)
 
@@ -205,7 +206,9 @@ export default async function CarrieresPage({ params }: Props) {
               <div className="relative aspect-[4/3] overflow-hidden rounded-2xl">
                 <Image
                   src={IMAGES.operationsCrew}
-                  alt=""
+                  // alt descriptif (§19.2) ; les vignettes des postes, plus
+                  // bas, restent décoratives (220 px, texte du poste à côté).
+                  alt={tAlt('carrieres_intro')}
                   fill
                   quality={80}
                   sizes="(max-width: 1024px) 100vw, 45vw"

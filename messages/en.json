@@ -232,7 +232,7 @@
     "cta": {
       "label": "Next Step",
       "title": "A project to move forward?",
-      "texte": "Tell us what you have in mind. We'll help you determine the teams, equipment and resources needed to make it happen.",
+      "texte": "Tell us what you have in mind. We'll help you determine the capabilities, equipment and resources needed to make it happen.",
       "bouton": "Start a Project"
     }
   },
@@ -811,6 +811,23 @@
     "bandeau_texte": "You're adding products to order {numero}.",
     "bandeau_terminer": "Finish and return to my order",
     "bandeau_annuler": "Cancel"
+  },
+  "Alt": {
+    "hub_hero": "Large industrial hall set up for an event, with a walkway and timber trusses overhead",
+    "installations_alt": "Decorated Christmas tree beside a glass door, with a wreath on the door",
+    "operations_deployer": "Two KO-LAB pickup trucks parked on a grass field, buildings in the background",
+    "carrieres_intro": "KO-LAB crew in safety vests lined up in front of a scissor lift on an urban site",
+    "hero": "KO-LAB crew in safety vests in front of a scissor lift on an urban event site",
+    "location_ambiance": "Long tables set with black tablecloths, white chairs and candelabras in an industrial hall",
+    "location_structures": "Covered stage and patio furniture on a festival site",
+    "location_mobilier": "Wooden tables, benches and event furniture set up under a marquee",
+    "lab": "Gold statuette being printed inside a LAB 3D printer",
+    "installations_principale": "Decorated Christmas tree and garlands in a building lobby",
+    "transport_remorque": "Two KO-LAB crew members in hard hats and safety vests unloading equipment from a truck",
+    "operations_crew": "KO-LAB crew in safety vests on an urban site, scissor lift in the background",
+    "preuve_terrain": "Inflatable dome lit in pink at night, with visitors in front",
+    "installation_nacelle": "Technician in an aerial lift in front of a shop façade",
+    "chantier_balisage": "Aerial view of a work site: orange boom lift and vehicles alongside a building"
   },
   "Commun": {
     "chargement": "Loading…",

@@ -21,6 +21,7 @@ import { ROUTES } from '@/lib/routes'
 export async function Hero() {
   const t = await getTranslations('Home.hero')
   const tStats = await getTranslations('Home.stats')
+  const tAlt = await getTranslations('Alt')
 
   // Disciplines/sites/mandats retirés (LOT C, §24, révision Joe Himad, 30 août
   // 2026) : des pseudo-compteurs à l'apparence chiffrée pour des valeurs qui
@@ -52,7 +53,11 @@ export async function Hero() {
         */}
         <Image
           src={IMAGES.hero}
-          alt=""
+          // alt descriptif (révision du 20 septembre 2026, §19.2 : « alt text
+          // descriptif pour les images importantes ») — texte écrit d'après la photo,
+          // dans Alt.* de messages/*.json. Remplace le alt="" « décoratif » : une vraie
+          // photo KO-LAB qui illustre la section porte ce qu'elle montre.
+          alt={tAlt('hero')}
           fill
           priority
           // ⚠️ `priority` NE POSE PLUS `fetchpriority="high"` automatiquement

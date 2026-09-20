@@ -23,6 +23,7 @@ import { ROUTES } from '@/lib/routes'
  */
 export async function Lab() {
   const t = await getTranslations('Home.lab')
+  const tAlt = await getTranslations('Alt')
 
   const etapes = ['etape1', 'etape2', 'etape3', 'etape4'] as const
 
@@ -43,7 +44,8 @@ export async function Lab() {
           <Parallax distance={0} zoom={0.1} mode="traversee" className="absolute inset-0">
             <Image
               src={IMAGES.lab}
-              alt=""
+              // alt descriptif : voir Hero.tsx (§19.2).
+              alt={tAlt('lab')}
               fill
               quality={80}
               sizes="(max-width: 1024px) 100vw, 50vw"

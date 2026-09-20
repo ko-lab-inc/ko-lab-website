@@ -46,6 +46,8 @@ type PageCapaciteProps = {
    * toujours une clé `IMAGES.*` statique, jamais `null` en pratique.
    */
   src: string | null
+  /** Alt de la photo du hero — descriptif (§19.2). Vide si aucune photo. */
+  altPhoto?: string
   /** Classe object-position : deux photos sont verticales et se recadrent mal. */
   cadrage: string
   /** Désature les contre-jours ambrés, trop saturés pour la palette. */
@@ -88,6 +90,7 @@ export async function PageCapacite({
   intro,
   items,
   src,
+  altPhoto,
   cadrage,
   desature = false,
   videos,
@@ -127,7 +130,7 @@ export async function PageCapacite({
           ) : (
             <Image
               src={src}
-              alt=""
+              alt={altPhoto ?? ''}
               fill
               priority
               // Voir Hero.tsx : `priority` ne pose plus `fetchpriority="high"`

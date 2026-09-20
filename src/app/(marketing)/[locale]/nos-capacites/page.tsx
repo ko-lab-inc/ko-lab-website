@@ -90,6 +90,8 @@ export default async function CapacitesHubPage({ params }: Props) {
   // Libellé du PhotoPlaceholder des capacités sans photo (Production
   // événementielle tant que son emplacement est vide).
   const tCommun = await getTranslations('Commun')
+  // alt descriptifs des photos fixes (révision du 20 septembre 2026, §19.2).
+  const tAlt = await getTranslations('Alt')
 
   // Un traducteur CADRÉ par capacité. C'est ce qui rend les clés vérifiables :
   // `tOps('item_1')` est validé contre Capacites.operations seul, alors qu'un
@@ -126,6 +128,7 @@ export default async function CapacitesHubPage({ params }: Props) {
       // l'accueil (deux fois) et dans Realisations.tsx (revue visuelle,
       // point 1 : chaque emplacement reçoit sa propre photo).
       src: IMAGES.installationsAlternative,
+      alt: tAlt('installations_alt'),
       cadrage: 'object-center',
       desature: false,
     },
@@ -138,6 +141,7 @@ export default async function CapacitesHubPage({ params }: Props) {
       intro: tEquip('intro'),
       items: ITEMS_8.map((k) => tEquip(k)),
       src: IMAGES.besoinLouer,
+      alt: tAlt('location_mobilier'),
       cadrage: 'object-center',
       desature: false,
     },
@@ -153,6 +157,7 @@ export default async function CapacitesHubPage({ params }: Props) {
       // que KO-LAB n'en a pas choisi une dans l'admin. La carte rend alors
       // un PhotoPlaceholder, comme la page elle-même.
       src: null,
+      alt: '',
       cadrage: 'object-center',
       desature: false,
     },
@@ -168,6 +173,7 @@ export default async function CapacitesHubPage({ params }: Props) {
       // couvert) — plus le contre-jour doré de l'ex-photo Unsplash que
       // `desature` corrigeait. Voir Besoins.tsx pour le même correctif.
       src: IMAGES.besoinDeployer,
+      alt: tAlt('operations_deployer'),
       cadrage: CADRAGES.besoinDeployer,
       desature: false,
     },
@@ -191,7 +197,7 @@ export default async function CapacitesHubPage({ params }: Props) {
         */}
         <Image
           src={IMAGES.espaceAmenage2023}
-          alt=""
+          alt={tAlt('hub_hero')}
           fill
           priority
           quality={85}
@@ -261,7 +267,7 @@ export default async function CapacitesHubPage({ params }: Props) {
       </section>
 
       {/* ------------------------- Les quatre capacités ------------------------- */}
-      {capacites.map(({ cle, numero, href, label, titre, intro, items, src, cadrage, desature }, i) => {
+      {capacites.map(({ cle, numero, href, label, titre, intro, items, src, alt, cadrage, desature }, i) => {
         // Alternance des fonds ET du côté de la photo : sans ça, quatre blocs
         // identiques enfilés donneraient un catalogue, pas un parcours.
         const pair = i % 2 === 1
@@ -294,7 +300,7 @@ export default async function CapacitesHubPage({ params }: Props) {
                       ) : (
                         <Image
                           src={src}
-                          alt=""
+                          alt={alt}
                           fill
                           quality={80}
                           sizes="(max-width: 1024px) 100vw, 50vw"

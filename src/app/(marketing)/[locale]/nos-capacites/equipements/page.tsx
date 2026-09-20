@@ -49,6 +49,7 @@ export default async function EquipementsPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Capacites.equipements')
+  const tAlt = await getTranslations('Alt')
   const images = await lireGaleriePage('equipements', locale)
 
   return (
@@ -76,6 +77,7 @@ export default async function EquipementsPage({ params }: Props) {
           t('item_8'),
         ]}
         src={IMAGES.besoinLouer}
+        altPhoto={tAlt('location_mobilier')}
         cadrage="object-center"
         // Galerie branchée sur galeries_photos depuis l'étape 3/3 (migration 0043).
         images={images}

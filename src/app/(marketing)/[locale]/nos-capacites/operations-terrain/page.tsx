@@ -51,6 +51,7 @@ export default async function OperationsTerrainPage({ params }: Props) {
   // Traducteur cadré sur cet espace de noms : chaque clé est vérifiée à la
   // compilation, ce qu'un `t(`${cle}.item_1`)` générique ne permet pas.
   const t = await getTranslations('Capacites.operations')
+  const tAlt = await getTranslations('Alt')
   const images = await lireGaleriePage('operations-terrain', locale)
 
   return (
@@ -83,6 +84,7 @@ export default async function OperationsTerrainPage({ params }: Props) {
         // opération sur un chantier, vue aérienne) — retirée de la galerie
         // pour ne pas apparaître deux fois sur la même page.
         src={IMAGES.chantierBalisage2026}
+        altPhoto={tAlt('chantier_balisage')}
         cadrage="object-center"
         // Galerie branchée sur galeries_photos depuis l'étape 3/3 (migration
         // 0043) — le hero (Canada Day) reste en dur, IMAGES.terrasseStructure2021

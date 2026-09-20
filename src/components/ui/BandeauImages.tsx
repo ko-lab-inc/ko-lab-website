@@ -102,13 +102,15 @@ export function BandeauImages({
             que le bouton de fermeture de SlideImages, relevé par Christian.
             Bordure sombre et pleine dès le repos, pas seulement au survol :
             l'affordance doit se voir avant qu'on la cherche.
+            h-11 w-11 (44 px) et non h-9 : cible tactile minimale — mesurée à
+            36 px sur /location le 20 septembre 2026 (QA mobile, lot 7).
           */}
           <button
             type="button"
             onClick={() => defiler(-1)}
             aria-label={libelles.precedent}
             title={libelles.precedent}
-            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue"
+            className="group flex h-11 w-11 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue"
           >
             {/* `border-ko-ink` explicite : Tailwind ne colore pas les bordures
                 en `currentColor` par défaut, un `border-b-2` sans classe de
@@ -124,7 +126,7 @@ export function BandeauImages({
             onClick={() => defiler(1)}
             aria-label={libelles.suivant}
             title={libelles.suivant}
-            className="group flex h-9 w-9 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue"
+            className="group flex h-11 w-11 items-center justify-center rounded-full border-2 border-ko-ink text-ko-ink transition-colors duration-200 hover:border-ko-blue"
           >
             <span
               aria-hidden="true"

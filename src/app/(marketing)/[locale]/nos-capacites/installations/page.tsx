@@ -49,6 +49,7 @@ export default async function InstallationsPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Capacites.installations')
+  const tAlt = await getTranslations('Alt')
   const images = await lireGaleriePage('installations', locale)
 
   return (
@@ -84,6 +85,7 @@ export default async function InstallationsPage({ params }: Props) {
         // Nacelle élévatrice sur façade — « Centres commerciaux et tours à
         // bureaux ». L'échafaudage précédent ne montrait aucune installation.
         src={IMAGES.installationNacelle}
+        altPhoto={tAlt('installation_nacelle')}
         cadrage={CADRAGES.installationNacelle}
         // Galerie branchée sur galeries_photos depuis l'étape 3/3 (migration
         // 0043) — reprend les 4 photos d'origine, dont l'ancienne insertion

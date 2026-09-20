@@ -33,6 +33,7 @@ import type { AppLocale } from '@/i18n/routing'
  */
 export async function OperationsTerrain({ locale }: { locale: AppLocale }) {
   const t = await getTranslations('Home.operations')
+  const tAlt = await getTranslations('Alt')
   const tCommun = await getTranslations('Commun')
 
   // operations_terrain (migration 0031, route A) — pilote UNIQUEMENT la photo
@@ -77,7 +78,8 @@ export async function OperationsTerrain({ locale }: { locale: AppLocale }) {
             code. object-[50%_78%] + zoom recentrent sur l'équipe. */}
         <Image
           src={IMAGES.operationsCrewVertical}
-          alt=""
+          // alt descriptif : voir Hero.tsx (§19.2).
+          alt={tAlt('operations_crew')}
           fill
           quality={82}
           sizes="100vw"

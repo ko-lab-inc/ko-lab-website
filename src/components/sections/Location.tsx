@@ -22,6 +22,7 @@ import { ROUTES } from '@/lib/routes'
  */
 export async function Location() {
   const t = await getTranslations('Home.offres')
+  const tAlt = await getTranslations('Alt')
 
   return (
     <section className="bg-ko-cream py-16 lg:py-28">
@@ -76,7 +77,8 @@ export async function Location() {
                 <Image
                   unoptimized
                   src={IMAGES.locationAmbiance}
-                  alt=""
+                  // alt descriptifs : voir Hero.tsx (§19.2).
+                  alt={tAlt('location_ambiance')}
                   fill
                   quality={80}
                   sizes="(max-width: 1024px) 100vw, 55vw"
@@ -87,7 +89,7 @@ export async function Location() {
               <div className="relative aspect-square overflow-hidden rounded-xl bg-ko-cream2">
                 <Image
                   src={IMAGES.locationStructures}
-                  alt=""
+                  alt={tAlt('location_structures')}
                   fill
                   quality={80}
                   sizes="(max-width: 1024px) 50vw, 27vw"
@@ -100,7 +102,7 @@ export async function Location() {
               <div className="relative aspect-square overflow-hidden rounded-xl bg-ko-cream2">
                 <Image
                   src={IMAGES.besoinLouer}
-                  alt=""
+                  alt={tAlt('location_mobilier')}
                   fill
                   quality={80}
                   sizes="(max-width: 1024px) 50vw, 27vw"

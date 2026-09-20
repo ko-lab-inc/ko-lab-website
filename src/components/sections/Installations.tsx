@@ -36,6 +36,7 @@ import { ROUTES } from '@/lib/routes'
  */
 export async function Installations() {
   const t = await getTranslations('Home.installations')
+  const tAlt = await getTranslations('Alt')
 
   return (
     <section className="bg-ko-white py-16 lg:py-28">
@@ -62,7 +63,8 @@ export async function Installations() {
             <div className="relative aspect-[4/3] overflow-hidden rounded-2xl lg:aspect-auto lg:h-full lg:min-h-[420px]">
               <Image
                 src={IMAGES.installationsPrincipale}
-                alt=""
+                // alt descriptif : voir Hero.tsx (§19.2).
+                alt={tAlt('installations_principale')}
                 fill
                 quality={80}
                 sizes="(max-width: 1024px) 100vw, 55vw"

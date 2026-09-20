@@ -80,6 +80,7 @@ export default async function LeLabPage({ params }: Props) {
         // La découpe laser sert la section LAB de l'accueil : deux visuels
         // distincts plutôt que la même image deux fois dans le parcours.
         src={photoHero?.src ?? null}
+        altPhoto={photoHero?.alt}
         cadrage="object-center"
         // `videos` retirée (LOT E1, §11, 30 août 2026) : masquage, pas
         // suppression — BandeauVideos.tsx, la table `videos` et /admin/videos

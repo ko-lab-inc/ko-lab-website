@@ -232,7 +232,7 @@
     "cta": {
       "label": "Prochaine étape",
       "title": "Un projet à faire avancer?",
-      "texte": "Parlez-nous de ce que vous avez en tête. On vous aide à déterminer les équipes, les équipements et les moyens nécessaires pour le réaliser.",
+      "texte": "Parlez-nous de ce que vous avez en tête. On vous aide à déterminer les capacités, les équipements et les moyens nécessaires pour le réaliser.",
       "bouton": "Démarrer un projet"
     }
   },
@@ -813,6 +813,23 @@
     "bandeau_texte": "Vous ajoutez des produits à la commande {numero}.",
     "bandeau_terminer": "Terminer et revenir à ma commande",
     "bandeau_annuler": "Annuler"
+  },
+  "Alt": {
+    "hub_hero": "Grande salle industrielle aménagée pour un événement, passerelle et fermes de bois au plafond",
+    "installations_alt": "Sapin de Noël décoré près d’une porte vitrée, couronne accrochée à la porte",
+    "operations_deployer": "Deux pick-up KO-LAB stationnés sur un terrain gazonné, immeubles en arrière-plan",
+    "carrieres_intro": "Équipe KO-LAB en gilets de sécurité alignée devant une nacelle à ciseaux, sur un site en ville",
+    "hero": "Équipe KO-LAB en gilets de sécurité devant une nacelle à ciseaux, sur un site événementiel en ville",
+    "location_ambiance": "Longues tables dressées avec nappes noires, chaises blanches et chandeliers dans une salle industrielle",
+    "location_structures": "Scène couverte et mobilier de terrasse sur un site de festival",
+    "location_mobilier": "Tables en bois, bancs et mobilier de réception installés sous un chapiteau",
+    "lab": "Statuette dorée en cours d’impression dans une imprimante 3D du LAB",
+    "installations_principale": "Sapin de Noël décoré et guirlandes dans le hall d’un immeuble",
+    "transport_remorque": "Deux membres de l’équipe KO-LAB, casques et gilets de sécurité, déchargent un équipement d’un camion",
+    "operations_crew": "Équipe KO-LAB en gilets de sécurité sur un site en ville, nacelle à ciseaux en arrière-plan",
+    "preuve_terrain": "Dôme gonflable illuminé en rose la nuit, avec des visiteurs devant",
+    "installation_nacelle": "Technicien dans une nacelle articulée devant la façade d’un commerce",
+    "chantier_balisage": "Vue aérienne d’un chantier : nacelle articulée orange et véhicules le long d’un immeuble"
   },
   "Commun": {
     "chargement": "Chargement…",
