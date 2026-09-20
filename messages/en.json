@@ -24,6 +24,10 @@
       "title": "Equipment and Deployment",
       "description": "Trucks, trailers, lifts, material handling equipment and installation tools. The means to deliver the project."
     },
+    "production": {
+      "title": "Event Production",
+      "description": "Concept, site plan, décor, fabrication, equipment rental, logistics, installation and on-site coordination. Outaouais and Ottawa."
+    },
     "realisations": {
       "title": "Projects",
       "description": "Field operations, installations, fabrication and deployments carried out by the KO-LAB teams."
@@ -72,6 +76,7 @@
     "installations": "Installations & Fit-Out",
     "lab": "The LAB",
     "equipements": "Equipment & Deployment",
+    "production": "Event Production",
     "realisations": "Projects",
     "location": "Rentals",
     "boutique": "Shop",
@@ -174,6 +179,12 @@
       "title": "The right resources make delivery possible",
       "texte": "Trucks, open and enclosed trailers, lifts, material handling equipment, temporary lighting and power distribution.",
       "lien": "See Equipment"
+    },
+    "production": {
+      "label": "Event Production",
+      "title": "When the mandate becomes an event.",
+      "texte": "Concept, site plan, décor, fabrication, equipment, logistics, installation and on-site coordination — with KO-LAB’s own resources and crews.",
+      "lien": "See event production"
     },
     "gmLocations": {
       "label": "Partnership",
@@ -369,6 +380,20 @@
       "item_7": "Temporary furnishings and infrastructure",
       "item_8": "Access to additional machinery through GM Locations",
       "item_9": "Field and safety equipment"
+    },
+    "production": {
+      "label": "Event Production",
+      "title": "Designing and producing the event, when the mandate calls for it.",
+      "phrase": "From site plan to tear-down, with our own equipment and our own crews.",
+      "intro": "Corporate events, launches, fundraisers, press conferences, activations, special evenings, VIP areas, brand experiences and unconventional venues.",
+      "item_1": "Concept and production direction",
+      "item_2": "Site plan and layout",
+      "item_3": "Décor and atmosphere",
+      "item_4": "Element fabrication",
+      "item_5": "Equipment rental",
+      "item_6": "Logistics",
+      "item_7": "Installation and tear-down",
+      "item_8": "On-site coordination"
     }
   },
   "Realisations": {

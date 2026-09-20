@@ -4,8 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { PageCapacite } from '@/components/sections/PageCapacite'
 import { routing } from '@/i18n/routing'
-import { lireGaleriePage } from '@/lib/galeries'
-import { IMAGES } from '@/lib/images'
+import { obtenirEmplacement } from '@/lib/medias-emplacements'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata, Viewport } from 'next'
@@ -26,14 +25,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
 
-  const t = await getTranslations({ locale, namespace: 'Metadata.operations' })
+  const t = await getTranslations({ locale, namespace: 'Metadata.production' })
 
   return {
     title: t('title'),
     description: t('description'),
     alternates: {
-      canonical: `/${locale}${ROUTES.operations}`,
-      languages: alternatesLangues(ROUTES.operations),
+      canonical: `/${locale}${ROUTES.production}`,
+      languages: alternatesLangues(ROUTES.production),
     },
   }
 }
@@ -43,24 +42,38 @@ export const viewport: Viewport = {
   themeColor: '#111210',
 }
 
-export default async function OperationsTerrainPage({ params }: Props) {
+/**
+ * Production événementielle — capacité AJOUTÉE par la révision du
+ * 20 septembre 2026 (§11).
+ *
+ * Ce que cette page doit dire, et surtout ne pas dire : « l'objectif n'est
+ * pas de repositionner KO-LAB comme agence événementielle, mais de montrer
+ * que l'équipe peut concevoir et produire des événements corporatifs et
+ * spéciaux lorsque le mandat le demande ». Le titre pose donc la condition,
+ * et les huit points restent des moyens — aucun client, aucun chiffre,
+ * aucun rôle inventé.
+ *
+ * Photo : emplacement `production_evenementielle`, vide tant qu'une photo
+ * n'a pas été choisie dans /admin/medias-emplacements. `src={null}` fait
+ * rendre PhotoPlaceholder à PageCapacite, dans la même boîte. Le §11 prévoit
+ * d'utiliser plus tard des expériences passées comme preuves visuelles —
+ * mais le §15 interdit de les présenter comme des réalisations KO-LAB : ce
+ * tri se fera au lot 6, avec les albums.
+ */
+export default async function ProductionEvenementiellePage({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
-  // Traducteur cadré sur cet espace de noms : chaque clé est vérifiée à la
-  // compilation, ce qu'un `t(`${cle}.item_1`)` générique ne permet pas.
-  const t = await getTranslations('Capacites.operations')
-  const images = await lireGaleriePage('operations-terrain', locale)
+  const t = await getTranslations('Capacites.production')
+  // Voir la note de ProductionEvenementielle.tsx : resoudreEmplacement
+  // renverrait une image de repli inexistante tant qu'aucune ligne n'existe.
+  const ligne = await obtenirEmplacement('production_evenementielle')
 
   return (
     <div data-theme-sombre>
       <PageCapacite
-        // « 04 » depuis le 17 septembre 2026 : ordre du hub /nos-capacites
-        // depuis le lot 4 (Le LAB, Installations, Équipements, Opérations) —
-        // les trois autres pages avaient suivi au lot 5, celle-ci avait été
-        // oubliée.
-        numero="04"
+        numero="03"
         label={t('label')}
         titre={t('title')}
         phrase={t('phrase')}
@@ -75,19 +88,8 @@ export default async function OperationsTerrainPage({ params }: Props) {
           t('item_7'),
           t('item_8'),
         ]}
-        // chantierBalisage2026 depuis le 3 septembre 2026 (point 7 des
-        // corrections finales) — remplace terrasseStructure2021, qui montrait
-        // une construction de pergola (charpente) plutôt qu'une opération
-        // terrain ; voir la note dans lib/images.ts pour l'historique complet
-        // de cet emplacement hero. Reprise de la galerie (nacelle en
-        // opération sur un chantier, vue aérienne) — retirée de la galerie
-        // pour ne pas apparaître deux fois sur la même page.
-        src={IMAGES.chantierBalisage2026}
+        src={ligne?.url ?? null}
         cadrage="object-center"
-        // Galerie branchée sur galeries_photos depuis l'étape 3/3 (migration
-        // 0043) — le hero (Canada Day) reste en dur, IMAGES.terrasseStructure2021
-        // ci-dessus, inchangé.
-        images={images}
       />
     </div>
   )

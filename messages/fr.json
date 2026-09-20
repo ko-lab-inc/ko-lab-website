@@ -24,6 +24,10 @@
       "title": "Équipements et déploiement",
       "description": "Camions, remorques, nacelles, équipements de manutention et outils d'installation. Les moyens de livrer le projet."
     },
+    "production": {
+      "title": "Production événementielle",
+      "description": "Concept, plan de site, décor, fabrication, location d'équipements, logistique, installation et coordination terrain. Outaouais et Ottawa."
+    },
     "realisations": {
       "title": "Réalisations",
       "description": "Opérations terrain, installations, fabrications et déploiements réalisés par les équipes KO-LAB."
@@ -72,6 +76,7 @@
     "installations": "Installations & aménagements",
     "lab": "Le LAB",
     "equipements": "Équipements et déploiement",
+    "production": "Production événementielle",
     "realisations": "Réalisations",
     "location": "Location",
     "boutique": "Boutique",
@@ -174,6 +179,12 @@
       "title": "Les bons moyens permettent de livrer",
       "texte": "Camions, remorques ouvertes et fermées, nacelles, équipements de manutention, éclairage temporaire et distribution électrique.",
       "lien": "Voir les équipements"
+    },
+    "production": {
+      "label": "Production événementielle",
+      "title": "Quand le mandat devient un événement.",
+      "texte": "Concept, plan de site, décor, fabrication, équipements, logistique, installation et coordination terrain — avec les moyens et les équipes de KO-LAB.",
+      "lien": "Voir la production événementielle"
     },
     "gmLocations": {
       "label": "Partenariat",
@@ -369,6 +380,20 @@
       "item_7": "Mobilier et infrastructures temporaires",
       "item_8": "Accès à davantage de machinerie grâce à GM Locations",
       "item_9": "Équipements terrain et de sécurité"
+    },
+    "production": {
+      "label": "Production événementielle",
+      "title": "Concevoir et produire l’événement, quand le mandat le demande.",
+      "phrase": "Du plan de site au démontage, avec nos propres équipements et nos propres équipes.",
+      "intro": "Événements corporatifs, lancements, levées de fonds, conférences de presse, activations, soirées spéciales, aménagements VIP, expériences de marque et lieux atypiques.",
+      "item_1": "Concept et direction de production",
+      "item_2": "Plan de site et aménagement",
+      "item_3": "Décor et ambiance",
+      "item_4": "Fabrication d’éléments",
+      "item_5": "Location d’équipements",
+      "item_6": "Logistique",
+      "item_7": "Installation et démontage",
+      "item_8": "Coordination terrain"
     }
   },
   "Realisations": {

@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
 import { buttonVariants } from '@/components/ui/Button'
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
@@ -86,6 +87,9 @@ export default async function CapacitesHubPage({ params }: Props) {
   setRequestLocale(locale)
 
   const t = await getTranslations('Capacites')
+  // Libellé du PhotoPlaceholder des capacités sans photo (Production
+  // événementielle tant que son emplacement est vide).
+  const tCommun = await getTranslations('Commun')
 
   // Un traducteur CADRÉ par capacité. C'est ce qui rend les clés vérifiables :
   // `tOps('item_1')` est validé contre Capacites.operations seul, alors qu'un
@@ -93,18 +97,19 @@ export default async function CapacitesHubPage({ params }: Props) {
   // espaces de noms — dont des combinaisons inexistantes.
   // Capacites.lab n'est plus lu ici : Le LAB a quitté le hub le 20 septembre
   // 2026 (§4). Ses clés restent dans messages/*.json — sa page les utilise.
-  const [tOps, tInst, tEquip] = await Promise.all([
+  const [tOps, tInst, tEquip, tProd] = await Promise.all([
     getTranslations('Capacites.operations'),
     getTranslations('Capacites.installations'),
     getTranslations('Capacites.equipements'),
+    getTranslations('Capacites.production'),
   ])
 
   // Ordre et numéros de la révision du 20 septembre 2026 (§4) :
   // Installations & aménagements, Équipements & déploiement, Opérations
   // terrain — celui du menu (ROUTES_CAPACITES) et de l'accueil. Le LAB a
   // quitté cette liste : il a sa propre entrée de nav, sa page reste à
-  // /nos-capacites/le-lab. Production événementielle viendra s'insérer en
-  // 03 (lot 4), Opérations passera alors en 04. Les numéros sont en dur, un
+  // /nos-capacites/le-lab. Production événementielle est en 03 depuis le lot 4
+  // et Opérations terrain en 04. Les numéros sont en dur, un
   // par objet, pas dérivés du rang : il faut les refaire à chaque
   // changement d'ordre, ici ET sur la page de chaque capacité.
   const capacites = [
@@ -137,8 +142,23 @@ export default async function CapacitesHubPage({ params }: Props) {
       desature: false,
     },
     {
-      cle: 'operations',
+      cle: 'production',
       numero: '03',
+      href: ROUTES.production,
+      label: tProd('label'),
+      titre: tProd('title'),
+      intro: tProd('intro'),
+      items: ITEMS_8.map((k) => tProd(k)),
+      // Pas de photo : l'emplacement production_evenementielle est vide tant
+      // que KO-LAB n'en a pas choisi une dans l'admin. La carte rend alors
+      // un PhotoPlaceholder, comme la page elle-même.
+      src: null,
+      cadrage: 'object-center',
+      desature: false,
+    },
+    {
+      cle: 'operations',
+      numero: '04',
       href: ROUTES.operations,
       label: tOps('label'),
       titre: tOps('title'),
@@ -261,15 +281,27 @@ export default async function CapacitesHubPage({ params }: Props) {
                         ⚠️ TEMPORAIRE — remplacer par photo KO-LAB 2025-2026
                         Voir skill 22 pour les critères de remplacement.
                       */}
-                      <Image
-                        src={src}
-                        alt=""
-                        fill
-                        quality={80}
-                        sizes="(max-width: 1024px) 100vw, 50vw"
-                        style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
-                        className={cn('object-cover', cadrage)}
-                      />
+                      {/* src null : Production événementielle n’a pas encore de
+                          photo (emplacement vide dans l’admin). Même repli que
+                          PageCapacite — jamais la photo d’un autre mandat à la
+                          place (§15, §18 de la révision du 20 septembre 2026). */}
+                      {src === null ? (
+                        <PhotoPlaceholder
+                          ratio=""
+                          label={tCommun('photo_placeholder')}
+                          className="absolute inset-0 h-full w-full"
+                        />
+                      ) : (
+                        <Image
+                          src={src}
+                          alt=""
+                          fill
+                          quality={80}
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                          style={desature ? FILTRE_TERRAIN_CHAUD : FILTRE_TERRAIN}
+                          className={cn('object-cover', cadrage)}
+                        />
+                      )}
                     </div>
                   </div>
 

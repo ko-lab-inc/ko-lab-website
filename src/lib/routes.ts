@@ -18,6 +18,7 @@ export const ROUTES = {
   installations: '/nos-capacites/installations',
   lab: '/nos-capacites/le-lab',
   equipements: '/nos-capacites/equipements',
+  production: '/nos-capacites/production-evenementielle',
   realisations: '/realisations',
   location: '/location',
   boutique: '/boutique',
@@ -95,6 +96,9 @@ export const routeCommande = (id: string) => `${ROUTES.compteCommandes}/${id}`
 export const ROUTES_CAPACITES = [
   { key: 'installations', href: ROUTES.installations },
   { key: 'equipements', href: ROUTES.equipements },
+  // Production événementielle — capacité ajoutée le 20 septembre 2026 (§11),
+  // à sa place du §4 : entre Équipements et Opérations terrain.
+  { key: 'production', href: ROUTES.production },
   { key: 'operations', href: ROUTES.operations },
 ] as const
 

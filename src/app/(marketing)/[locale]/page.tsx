@@ -14,6 +14,7 @@ import { Installations } from '@/components/sections/Installations'
 import { Lab } from '@/components/sections/Lab'
 import { Location } from '@/components/sections/Location'
 import { OperationsTerrain } from '@/components/sections/OperationsTerrain'
+import { ProductionEvenementielle } from '@/components/sections/ProductionEvenementielle'
 import { Realisations } from '@/components/sections/Realisations'
 import { IntroAnimee } from '@/components/ui/IntroAnimee'
 import { routing } from '@/i18n/routing'
@@ -164,6 +165,7 @@ export default async function AccueilPage({ params }: Props) {
       <CredibiliteTerrain />
       <Installations />
       <EquipementsDeploiement locale={locale} />
+      <ProductionEvenementielle locale={locale} />
       <OperationsTerrain locale={locale} />
       <Realisations />
       <Boutique />
