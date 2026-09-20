@@ -116,9 +116,17 @@ tons neutres » le même jour)** — accessibilité mesurée, pas suggérée :
 - Boutons bleus : texte noir uniquement (voir `Button.tsx`, variante `primary`).
 
 ### Typographie
-- Titres : `Fraunces` (serif, weight 300/400, avec italiques en accent)
-- Corps : `Instrument Sans` (weight 400/500)
-- Labels/données : `JetBrains Mono` (uppercase, letter-spacing)
+- Titres ET corps : `Montserrat` (variable, romain + italique) — depuis le
+  20 septembre 2026, révision §18 (« la police du site reste Montserrat »),
+  validée par Joe. Titres en weight 300/400 avec italiques en accent, corps
+  en 400/500. Remplace Fraunces (titres) et Instrument Sans (corps).
+- Labels/données : `JetBrains Mono` (uppercase, letter-spacing) — conservée,
+  police de données, pas « la police du site ».
+- Une seule déclaration next/font, sur `--font-sans` ; la classe Tailwind
+  `font-serif` la lit aussi (nom historique, gardé pour ne pas toucher des
+  centaines de classes). `--font-serif` n'existe plus.
+- Les skills 02, 08 et 12 citent encore Fraunces / Instrument Sans dans leurs
+  exemples : lire « Montserrat » à la place.
 
 ### Structure de page (alternance clair/sombre)
 1. Nav sticky (fond crème)
