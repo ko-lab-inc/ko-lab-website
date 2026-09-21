@@ -89,6 +89,10 @@ export default async function ProductionEvenementiellePage({ params }: Props) {
           t('item_8'),
         ]}
         src={ligne?.url ?? null}
+        // Le texte alternatif vit sur la ligne d'emplacement, comme l'URL :
+        // sans lui, le hero servait `alt=""` (constaté en production le
+        // 21 septembre 2026, première photo posée dans l'admin).
+        altPhoto={ligne ? ((locale === 'en' ? ligne.alt_en : null) ?? ligne.alt_fr) : undefined}
         cadrage="object-center"
       />
     </div>

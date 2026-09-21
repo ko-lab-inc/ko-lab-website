@@ -26,16 +26,27 @@ import type { MetadataRoute } from 'next'
 const siteUrl = DOMAINE
 
 /**
- * ⚠️ Le sitemap doit rester servi depuis le cache ISR, pas régénéré à
- * chaque exploration par un robot — les fonctions de date ci-dessous
- * touchent Supabase, et sans ce `revalidate` explicite, une route qui lit
- * une base de données peut basculer en rendu dynamique selon le contexte.
- * Chaque fonction de date est de toute façon SON PROPRE `unstable_cache`
- * (revalidate 3600, comme le reste du site) : même si ce fichier devait un
- * jour redevenir dynamique pour une autre raison, ça n'ouvrirait pas une
- * série de requêtes base à chaque appel — juste une lecture de cache.
+ * Rendu à chaque requête, SANS cache de route — et c'est voulu.
+ *
+ * Cette route était en ISR (`revalidate = 3600`) et les Server Actions de
+ * l'admin appelaient `revalidatePath('/sitemap.xml')` après chaque écriture.
+ * Constaté en production le 21 septembre 2026 : ni cet appel, ni
+ * `updateTag(ETIQUETTE_REALISATIONS)` ne touchaient la sortie de la route —
+ * le sitemap servi restait la version prérendue au déploiement (`lastmod`
+ * de CityFolk figé à 22:08Z alors que la base disait 03:28Z ; deux fiches
+ * publiées absentes ; un enregistrement de test dans l'admin n'a pas fait
+ * bouger l'en-tête `Age`), pendant que `/fr/realisations`, sur la même
+ * étiquette, répondait `REVALIDATED`. Une route de métadonnées ne suit pas
+ * les invalidations comme une page.
+ *
+ * En dynamique, chaque requête exécute ce fichier ; tout ce qu'il lit passe
+ * par des `unstable_cache` étiquetés (`lireRealisationsPubliees`,
+ * `lireProduitsPublies`, les fonctions de date ci-dessous), donc c'est une
+ * poignée de lectures de cache par exploration de robot, pas une série de
+ * requêtes base — et le sitemap reflète une fiche publiée dans l'admin à
+ * la requête suivante, ce qu'on demandait à `revalidatePath` sans l'obtenir.
  */
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 /**
  * Date fixe pour les pages sans contenu venant de la base — À METTRE À

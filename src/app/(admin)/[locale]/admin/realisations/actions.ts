@@ -250,19 +250,6 @@ async function construireImages(
   return { images: [...conservees, ...nouvelles] }
 }
 
-/**
- * Le sitemap liste une entrée par fiche projet publiée (§14.1 et §19 de la
- * révision du 20 septembre 2026). Sa route est régénérée au plus toutes les
- * heures (revalidate 3600) et `updateTag` ne touche que le cache de DONNÉES,
- * pas la sortie de la route : sans ceci, une fiche publiée dans l'admin
- * n'entrait dans le sitemap qu'à l'heure suivante (constaté le
- * 20 septembre 2026, 15 URL servies après la publication de CityFolk).
- * Appelé après chaque écriture, avec updateTag.
- */
-function invaliderSitemap() {
-  revalidatePath('/sitemap.xml')
-}
-
 /** Plafond de tentatives sur un slug déjà pris — au-delà, quelque chose d'anormal se passe. */
 const TENTATIVES_SLUG_MAX = 20
 
@@ -325,7 +312,6 @@ export async function creerRealisation(
   }
 
   updateTag(ETIQUETTE_REALISATIONS)
-  invaliderSitemap()
   revalidatePath(`/${locale}/admin/realisations`)
   return { succes: true }
 }
@@ -367,7 +353,6 @@ export async function modifierRealisation(
   }
 
   updateTag(ETIQUETTE_REALISATIONS)
-  invaliderSitemap()
   revalidatePath(`/${locale}/admin/realisations`)
   return { succes: true }
 }
@@ -394,7 +379,6 @@ export async function basculerPublicationRealisation(donnees: FormData): Promise
   }
 
   updateTag(ETIQUETTE_REALISATIONS)
-  invaliderSitemap()
   revalidatePath(`/${locale}/admin/realisations`)
 }
 
@@ -426,6 +410,5 @@ export async function supprimerRealisation(donnees: FormData): Promise<void> {
   }
 
   updateTag(ETIQUETTE_REALISATIONS)
-  invaliderSitemap()
   revalidatePath(`/${locale}/admin/realisations`)
 }
