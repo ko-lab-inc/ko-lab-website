@@ -94,3 +94,7 @@ Thumbs.db
 # financiers, courriels personnels). Dépôt GitHub public : même raison que
 # les entrées ci-dessus, jamais dans l'historique Git.
 /docs/briefs/
+# Originaux des albums photo de Joe (revision du 20 septembre 2026, §17) —
+# jamais dans le depot : gros fichiers bruts, les versions optimisees vont
+# dans Supabase Storage ou public/ via le lot 6.
+photos-joe/
