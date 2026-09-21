@@ -97,7 +97,7 @@ export const IMAGES = {
   besoinFabriquer: medias('home/besoin-fabriquer-2026.webp'),
 
   /** Photo réelle — mobilier et aménagement de site loués, DEVFEST 2026. */
-  besoinLouer: medias('rental/location-mobilier-2026.webp'),
+  besoinLouer: '/images/rental/devfest-table-bois-2026.webp', // lot 6 (20 sept. 2026, §17) : table en bois recyclé, chaises et scène, DevFest
 
   /**
    * Photo réelle depuis le 20 août 2026 — remplace l'Unsplash (consigne
@@ -162,7 +162,9 @@ export const IMAGES = {
    * photo d'un client tiers non sollicité. Aucune demande du boss de la
    * retirer.
    */
-  installationNacelle: medias('installations/installations-1787967308818.jpg'),
+  // lot 6 (20 sept. 2026) : kiosque marchand en bois — l’enseigne Bunker essayée
+  // d’abord ne laissait, en bannière étroite, que le nom d’un client à l’écran.
+  installationNacelle: '/images/installations/kiosque-bois-amenage-2025.webp',
 
   /**
    * Photos réelles — lot Installations, correspondance fournie par Christian
@@ -180,8 +182,8 @@ export const IMAGES = {
    * 20 août 2026, point 1). Guirlandes sert désormais realisationInstallation
    * plus bas, même raison.
    */
-  installationsPrincipale: medias('installations/installation-principale-2025.webp'),
-  installationsAlternative: medias('installations/installation-alt-2025.webp'),
+  installationsPrincipale: '/images/installations/decor-noel-atrium-dilawri-2025.webp', // lot 6 (20 sept. 2026, §17) : décor de Noël commercial, photo pro (Dilawri)
+  installationsAlternative: '/images/installations/decor-noel-atrium-dilawri-2025.webp', // lot 6 (20 sept. 2026, §17) : sapin et décor de Noël dans un atrium commercial (Dilawri, photo pro)
   installationsGuirlandes: medias('installations/installation-guirlandes-2025.webp'),
 
   /**
@@ -266,7 +268,7 @@ export const IMAGES = {
   // dominants). La deuxième, amenagementSalle2023, retirée d'ici le 27 août
   // 2026 (étape 3/3, migration 0043) : son seul consommateur (galerie
   // Location, en dur) est passé à galeries_photos.
-  espaceAmenage2023: medias('installations/espace-amenage-2023.webp'),
+  espaceAmenage2023: '/images/home/devfest-arche-nuit-2026.webp', // lot 6 (20 sept. 2026, §17) : arche fleurie et guirlandes lumineuses de nuit, DevFest
 
   // Feux sur glace 2024.
   structureEclairee2024: medias('installations/structure-eclairee-2024.webp'),
@@ -339,8 +341,8 @@ export const IMAGES = {
    * qu'elle remplace. Fichier déjà dans Storage, jamais câblé avant.
    */
   realisationTerrain: medias('deployment/deployment-camion-1787966108829.jpg'),
-  realisationInstallation: medias('installations/installation-guirlandes-2025.webp'),
-  realisationLab: medias('lab/realisation-lab-impression-2026.webp'),
+  realisationInstallation: '/images/installations/cinq23-picto-escalier-2026.webp', // lot 6 (20 sept. 2026, §17) : pictogramme 3D « Escalier », Cinq23
+  realisationLab: '/images/lab/cityfolk-legacy-walk-nuit-2026.webp', // lot 6 (20 sept. 2026, §17) : Legacy Walk CityFolk de nuit, panneaux rétroéclairés sur structures bois
   /** Réutilisée par les Réalisations : la CNC porte déjà la section LAB. */
 
   /**
@@ -378,7 +380,7 @@ export const IMAGES = {
    * locationMobilier existe déjà plus haut (besoinLouer) : même photo,
    * réutilisée ici pour le même besoin — duplication assumée, pas une erreur.
    */
-  locationStructures: medias('rental/location-structures-2026.webp'),
+  locationStructures: '/images/rental/devfest-dome-vip-2026.webp', // lot 6 (20 sept. 2026, §17) : dôme VIP DevFest, mobilier de salon et scène
   /**
    * ⚠️ REMPLACÉE le 3 septembre 2026, sur demande directe de Christian :
    * l'ancienne photo (`rental/location-ambiance-2026.webp`) montrait un grand
@@ -396,7 +398,7 @@ export const IMAGES = {
    * enseigne Bud Light et la scène Devfest — écartées pour cette raison.
    * Fichier déjà dans Storage, jamais câblé avant.
    */
-  locationAmbiance: medias('rental/amenagement-salle-2023.webp'),
+  locationAmbiance: '/images/rental/devfest-bar-2026.webp', // lot 6 (20 sept. 2026, §17) : bar habillé de verdure sous chapiteau, DevFest
 } as const
 
 /**
@@ -440,5 +442,7 @@ export const CADRAGES = {
    * dans l'image (~55% horizontal, ~32% vertical), à confirmer par capture
    * d'écran réelle du rendu — voir le rapport de la conversation.
    */
-  installationNacelle: 'object-[55%_32%]',
+  // Recalé le 20 septembre 2026 sur la nouvelle photo (enseigne Bunker,
+  // cadrée au centre) — l'ancienne valeur visait la nacelle en haut du cadre.
+  installationNacelle: 'object-center',
 } as const

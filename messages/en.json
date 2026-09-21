@@ -197,9 +197,9 @@
       "lien": "See All Projects",
       "a_venir": "Project coming soon",
       "titre_terrain": "Event deployment",
-      "titre_installation": "Seasonal installation",
-      "titre_lab": "Custom fabrication",
-      "alt_lab": "3D-printed \"20\" letters on the LAB workbench"
+      "titre_installation": "Architectural signage",
+      "titre_lab": "Creation and fabrication",
+      "alt_lab": "CityFolk Legacy Walk at night: backlit panels on wooden structures, string lights"
     },
     "ecosysteme": {
       "label": "The KO-LAB Ecosystem",
@@ -813,20 +813,20 @@
     "bandeau_annuler": "Cancel"
   },
   "Alt": {
-    "hub_hero": "Large industrial hall set up for an event, with a walkway and timber trusses overhead",
-    "installations_alt": "Decorated Christmas tree beside a glass door, with a wreath on the door",
+    "hub_hero": "Floral arch and string lights at nightfall, DevFest",
+    "installations_alt": "Large decorated Christmas tree in a car dealership atrium",
     "operations_deployer": "Two KO-LAB pickup trucks parked on a grass field, buildings in the background",
     "carrieres_intro": "KO-LAB crew in safety vests lined up in front of a scissor lift on an urban site",
     "hero": "KO-LAB crew in safety vests in front of a scissor lift on an urban event site",
-    "location_ambiance": "Long tables set with black tablecloths, white chairs and candelabras in an industrial hall",
-    "location_structures": "Covered stage and patio furniture on a festival site",
-    "location_mobilier": "Wooden tables, benches and event furniture set up under a marquee",
+    "location_ambiance": "Greenery-clad bar under a marquee, DevFest",
+    "location_structures": "VIP dome at DevFest: rattan lounges, tables and the stage in the background",
+    "location_mobilier": "Reclaimed-wood table, chairs and the stage in the background, DevFest",
     "lab": "Gold statuette being printed inside a LAB 3D printer",
-    "installations_principale": "Decorated Christmas tree and garlands in a building lobby",
+    "installations_principale": "Large decorated Christmas tree in a car dealership atrium",
     "transport_remorque": "Two KO-LAB crew members in hard hats and safety vests unloading equipment from a truck",
     "operations_crew": "KO-LAB crew in safety vests on an urban site, scissor lift in the background",
     "preuve_terrain": "Inflatable dome lit in pink at night, with visitors in front",
-    "installation_nacelle": "Technician in an aerial lift in front of a shop façade",
+    "installation_nacelle": "Wooden merchant booth set up under a marquee, with custom displays and shelving",
     "chantier_balisage": "Aerial view of a work site: orange boom lift and vehicles alongside a building"
   },
   "Commun": {

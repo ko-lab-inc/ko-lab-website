@@ -197,9 +197,9 @@
       "lien": "Voir toutes les réalisations",
       "a_venir": "Réalisation à venir",
       "titre_terrain": "Déploiement événementiel",
-      "titre_installation": "Installation saisonnière",
-      "titre_lab": "Fabrication sur mesure",
-      "alt_lab": "Lettres « 20 » imprimées en 3D sur l'établi du LAB"
+      "titre_installation": "Signalisation architecturale",
+      "titre_lab": "Création et fabrication",
+      "alt_lab": "Legacy Walk CityFolk de nuit : panneaux rétroéclairés sur structures de bois, guirlandes lumineuses"
     },
     "ecosysteme": {
       "label": "Écosystème KO-LAB",
@@ -815,20 +815,20 @@
     "bandeau_annuler": "Annuler"
   },
   "Alt": {
-    "hub_hero": "Grande salle industrielle aménagée pour un événement, passerelle et fermes de bois au plafond",
-    "installations_alt": "Sapin de Noël décoré près d’une porte vitrée, couronne accrochée à la porte",
+    "hub_hero": "Arche fleurie et guirlandes lumineuses à la tombée de la nuit, DevFest",
+    "installations_alt": "Grand sapin de Noël décoré dans l’atrium d’une concession automobile",
     "operations_deployer": "Deux pick-up KO-LAB stationnés sur un terrain gazonné, immeubles en arrière-plan",
     "carrieres_intro": "Équipe KO-LAB en gilets de sécurité alignée devant une nacelle à ciseaux, sur un site en ville",
     "hero": "Équipe KO-LAB en gilets de sécurité devant une nacelle à ciseaux, sur un site événementiel en ville",
-    "location_ambiance": "Longues tables dressées avec nappes noires, chaises blanches et chandeliers dans une salle industrielle",
-    "location_structures": "Scène couverte et mobilier de terrasse sur un site de festival",
-    "location_mobilier": "Tables en bois, bancs et mobilier de réception installés sous un chapiteau",
+    "location_ambiance": "Bar habillé de verdure sous un chapiteau, DevFest",
+    "location_structures": "Dôme VIP au DevFest : salons en rotin, tables et scène en arrière-plan",
+    "location_mobilier": "Table en bois recyclé, chaises et scène en arrière-plan, DevFest",
     "lab": "Statuette dorée en cours d’impression dans une imprimante 3D du LAB",
-    "installations_principale": "Sapin de Noël décoré et guirlandes dans le hall d’un immeuble",
+    "installations_principale": "Grand sapin de Noël décoré dans l’atrium d’une concession automobile",
     "transport_remorque": "Deux membres de l’équipe KO-LAB, casques et gilets de sécurité, déchargent un équipement d’un camion",
     "operations_crew": "Équipe KO-LAB en gilets de sécurité sur un site en ville, nacelle à ciseaux en arrière-plan",
     "preuve_terrain": "Dôme gonflable illuminé en rose la nuit, avec des visiteurs devant",
-    "installation_nacelle": "Technicien dans une nacelle articulée devant la façade d’un commerce",
+    "installation_nacelle": "Kiosque marchand en bois aménagé sous un chapiteau, présentoirs et étagères sur mesure",
     "chantier_balisage": "Vue aérienne d’un chantier : nacelle articulée orange et véhicules le long d’un immeuble"
   },
   "Commun": {

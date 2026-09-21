@@ -327,7 +327,13 @@ export function FormulaireRealisation({
             name="ordre"
             type="number"
             min={0}
-            step={10}
+            // step={1}, plus 10 (20 septembre 2026) : step={10} rendait le
+            // formulaire IMPOSSIBLE à enregistrer pour toute réalisation dont
+            // l’ordre n’est pas un multiple de 10 — la validation native du
+            // navigateur bloquait la soumission sans message dans la page
+            // (constaté avec ordre = 25). Le pas de 10 n’était qu’une commodité
+            // de saisie, pas une règle : le schéma zod accepte tout entier.
+            step={1}
             defaultValue={realisation?.ordre ?? 0}
             className={CHAMP}
           />
