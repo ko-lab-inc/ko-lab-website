@@ -202,8 +202,15 @@ grant select, update on public.articles_location to authenticated;
 --
 -- 5 Mo par fichier : les photos arrivent de Rentman en PNG/JPEG non optimisés
 -- (la seule présente au 1er octobre 2026 fait 366 Ko, mais rien ne garantit
--- la suite). La synchronisation les réencode avant dépôt ; cette limite est
--- le garde-fou, pas la cible.
+-- la suite).
+--
+-- ⚠️ CORRECTION du 1er octobre 2026 : une version antérieure de ce commentaire
+-- affirmait que la synchronisation réencode les photos avant dépôt. C'EST
+-- FAUX — elle les dépose telles qu'elle les reçoit. Le redimensionnement se
+-- fait à la LIVRAISON, par le transformateur d'images de Supabase, comme pour
+-- tout le reste du site (voir lib/chargeur-image.ts). Conséquence pratique :
+-- une photo de téléphone de plus de 5 Mo sera REFUSÉE au dépôt et comptée
+-- dans `photos_en_echec` ; l'article arrivera quand même, sans image.
 
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values (
