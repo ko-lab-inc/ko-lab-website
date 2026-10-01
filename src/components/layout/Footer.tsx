@@ -118,9 +118,17 @@ export async function Footer() {
             <p className="label-mono label-mono-d mb-5">{t('contact_titre')}</p>
             <address className="space-y-3 not-italic">
               <p className="text-sm text-ko-muted-d">{reglages.contactRegion}</p>
+              {/* `flex w-fit` et non `inline-flex` : le `space-y-3` de
+                  l'`<address>` pose une marge haute, qui ne sépare rien entre
+                  deux éléments EN LIGNE — ils restent sur la même ligne. Sans
+                  téléphone (cas de figure jusqu'au 1er octobre 2026), le
+                  courriel était seul et le défaut invisible ; dès le numéro
+                  renseigné, le pied affichait « info@ko-lab.ca+1 819 598-0225 »
+                  d'un seul tenant. `w-fit` garde la cible tactile sur la
+                  largeur du texte, pas sur toute la colonne. */}
               <a
                 href={`mailto:${reglages.contactCourriel}`}
-                className="inline-flex min-h-[44px] items-center text-sm text-ko-white transition-colors duration-200 hover:text-ko-blue2"
+                className="flex min-h-[44px] w-fit items-center text-sm text-ko-white transition-colors duration-200 hover:text-ko-blue2"
               >
                 {reglages.contactCourriel}
               </a>
@@ -129,7 +137,7 @@ export async function Footer() {
               {reglages.contactTelephone && (
                 <a
                   href={`tel:${reglages.contactTelephone.replace(/[^+\d]/g, '')}`}
-                  className="inline-flex min-h-[44px] items-center text-sm text-ko-white transition-colors duration-200 hover:text-ko-blue2"
+                  className="flex min-h-[44px] w-fit items-center text-sm text-ko-white transition-colors duration-200 hover:text-ko-blue2"
                 >
                   {reglages.contactTelephone}
                 </a>
