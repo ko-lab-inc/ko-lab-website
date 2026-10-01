@@ -1,5 +1,3 @@
-import { writeFileSync } from 'node:fs'
-
 import { describe, expect, it } from 'vitest'
 
 import { gabaritConfirmationCommande } from '@/lib/email/gabaritCommande'
@@ -86,12 +84,6 @@ describe('gabaritConfirmationCommande', () => {
     expect(text).toContain(DATE_LONGUE)
     expect(text).toContain(DATE_HEURE_EXPIRATION)
     expect(text).toContain(totalAttendu)
-
-    // Aperçu visuel manuel — écrit dans le scratchpad, jamais commité.
-    writeFileSync(
-      'C:/Users/DG/AppData/Local/Temp/claude/c--Users-DG-Downloads-KOLABINC/b2dbc591-dfa6-46f9-b5f8-6e6bcdedc8ce/scratchpad/apercu-courriel.html',
-      html,
-    )
   })
 
   it('mode ramassage : aucune adresse affichée', () => {

@@ -15,7 +15,8 @@
     "test:e2e:ui": "playwright test --ui",
     "audit:supabase": "node scripts/audit-supabase.mjs",
     "audit:limites": "node scripts/audit-limites.mjs",
-    "verifier:migrations": "node scripts/verifier-migrations.mjs"
+    "verifier:migrations": "node scripts/verifier-migrations.mjs",
+    "rentman:apercu": "tsx scripts/rentman-apercu.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -51,6 +52,7 @@
     "jsdom": "^24.1.0",
     "postcss": "^8.5.23",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^4.1.10"
   },
