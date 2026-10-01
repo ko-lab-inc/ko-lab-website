@@ -10,6 +10,7 @@ import { routing } from '@/i18n/routing'
 import { LIEN_RENTMAN } from '@/lib/constantes'
 import { lireGaleriePage } from '@/lib/galeries'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
+import { cn } from '@/lib/utils/cn'
 
 import type { Metadata, Viewport } from 'next'
 
@@ -164,10 +165,25 @@ export default async function LocationPage({ params }: Props) {
           </Reveal>
 
           {/* Effet « joint » du skill 08 : le fond de la grille dessine les
-              filets, aucune bordure n'est tracée sur les cellules. */}
+              filets, aucune bordure n'est tracée sur les cellules.
+
+              ⚠️ Corollaire : une cellule MANQUANTE laisse voir ce fond, donc
+              un rectangle gris. Avec 7 catégories dans une grille de 2 ou 4
+              colonnes, la dernière rangée en laissait toujours une — un bloc
+              vide que personne n'avait demandé (signalé le 1er octobre 2026).
+              La dernière carte occupe donc deux colonnes et referme la
+              rangée. Vaut tant que le nombre de catégories est impair ; si
+              une 8ᵉ apparaît, retirer ce `col-span` (la grille se referme
+              toute seule). */}
           <div className="mt-10 grid grid-cols-1 gap-px bg-ko-line sm:grid-cols-2 lg:grid-cols-4">
             {categories.map(({ cle, titre, texte }, i) => (
-              <Reveal key={cle} className="bg-ko-cream">
+              <Reveal
+                key={cle}
+                className={cn(
+                  'bg-ko-cream',
+                  categories.length % 2 === 1 && i === categories.length - 1 && 'sm:col-span-2',
+                )}
+              >
                 <div className="h-full px-7 py-9">
                   <span className="label-mono">{String(i + 1).padStart(2, '0')}</span>
                   <h3 className="mt-5 font-serif text-[22px] leading-tight text-ko-ink">{titre}</h3>
