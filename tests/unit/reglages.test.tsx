@@ -44,6 +44,8 @@ const LIBELLES = {
   modulairesAide: 'Désactivé, la catégorie disparaît.',
   boutiqueActive: 'Boutique en ligne',
   boutiqueActiveAide: 'Désactivée, la boutique disparaît entièrement.',
+  concoursActif: 'Page Concours',
+  concoursActifAide: 'Désactivée, la page disparaît de la navigation.',
   enregistrer: 'Enregistrer',
   enCours: 'Enregistrement…',
   succes: 'Enregistré.',
@@ -59,6 +61,7 @@ const REGLAGES = {
   panierActif: true,
   solutionsModulaires: false,
   boutiqueActive: true,
+  concoursActif: true,
 }
 
 function monter(reglages = REGLAGES) {

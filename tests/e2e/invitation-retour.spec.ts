@@ -101,7 +101,7 @@ test.describe('retour après une invitation', () => {
       headers: enTeteService,
       data: { email: emailInvite, email_confirm: false },
     })
-    const invited = await rCree.json()
+    await rCree.json()
     // Pose invited_at : seul generateLink(type:'invite') le fait, comme en
     // production — un simple createUser ne suffit pas à le distinguer d'une
     // inscription publique (voir page.tsx, note "ORIGINE ET ACTIVATION").

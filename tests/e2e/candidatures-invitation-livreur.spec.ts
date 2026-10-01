@@ -75,13 +75,6 @@ async function supprimerCandidature(request: import('@playwright/test').APIReque
   await request.delete(`${SUPABASE_URL}/rest/v1/candidatures?id=eq.${id}`, { headers: enTeteService }).catch(() => {})
 }
 
-async function supprimerCompteParEmail(request: import('@playwright/test').APIRequestContext, email: string) {
-  const r = await request.get(`${SUPABASE_URL}/auth/v1/admin/users?per_page=200`, { headers: enTeteService })
-  const users: { id: string; email?: string }[] = (await r.json()).users ?? []
-  const cible = users.find((u) => u.email === email)
-  if (cible) await request.delete(`${SUPABASE_URL}/auth/v1/admin/users/${cible.id}`, { headers: enTeteService }).catch(() => {})
-}
-
 test.describe('candidatures — statuts et invitation livreur (étape 3/3)', () => {
   test('cinq statuts proposés sur /admin/candidatures', async ({ page, request }) => {
     const { email, compteId } = await creerCompteAdmin(request, 'cand_statuts')

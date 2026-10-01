@@ -143,7 +143,10 @@ test('galerie Location — écrit depuis l’admin, ressort sur la page publique
   }).toPass({ timeout: 20_000 })
   if (!ligne) throw new Error('ligne introuvable après téléversement')
   ligneGalerieId = ligne.id
-  cheminDepose = ligne.url_stockage.split('/storage/v1/object/public/medias/')[1]
+  // `?? null` : sous noUncheckedIndexedAccess, `split()[1]` vaut
+  // `string | undefined`, et c'est justement ce chemin qui sert au nettoyage
+  // en fin de test — un undefined y passerait silencieusement.
+  cheminDepose = ligne.url_stockage.split('/storage/v1/object/public/medias/')[1] ?? null
 
   // ---------------------------- Apparaît sur la page publique (FR et EN — repli FR car alt_en NULL) ----------------------------
   await expect(async () => {
