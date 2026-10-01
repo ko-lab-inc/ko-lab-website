@@ -16,7 +16,9 @@
     "audit:supabase": "node scripts/audit-supabase.mjs",
     "audit:limites": "node scripts/audit-limites.mjs",
     "verifier:migrations": "node scripts/verifier-migrations.mjs",
-    "rentman:apercu": "tsx scripts/rentman-apercu.mjs"
+    "rentman:apercu": "tsx scripts/rentman-apercu.mjs",
+    "rentman:verifier": "tsx --conditions=react-server scripts/rentman-verifier-synchro.mjs",
+    "rentman:synchro": "tsx --conditions=react-server scripts/rentman-synchroniser.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
