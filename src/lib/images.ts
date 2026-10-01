@@ -114,7 +114,7 @@ export const IMAGES = {
    * Même fichier que besoinFabriquer ci-dessus, dupliqué volontairement (même
    * raison que hero/preuveTerrain). Sert la section LAB de l'accueil ET la
    * carte « Le LAB » du hub /nos-capacites (même clé, deux consommateurs).
-   * `soudeur`/`realisationLab` restent seuls encore Unsplash — voir plus bas.
+   * `soudeur` reste seul encore Unsplash — voir plus bas.
    */
   lab: medias('home/besoin-fabriquer-2026.webp'),
 
@@ -179,8 +179,7 @@ export const IMAGES = {
    * accueil). Alternative est câblée depuis le 20 août 2026 dans la carte
    * « installations » du hub /nos-capacites — elle y remplace besoinInstaller,
    * qui apparaissait déjà trois fois ailleurs sur le site (revue visuelle du
-   * 20 août 2026, point 1). Guirlandes sert désormais realisationInstallation
-   * plus bas, même raison.
+   * 20 août 2026, point 1).
    */
   installationsPrincipale: '/images/installations/decor-noel-atrium-dilawri-2025.webp', // lot 6 (20 sept. 2026, §17) : décor de Noël commercial, photo pro (Dilawri)
   installationsAlternative: '/images/installations/decor-noel-atrium-dilawri-2025.webp', // lot 6 (20 sept. 2026, §17) : sapin et décor de Noël dans un atrium commercial (Dilawri, photo pro)
@@ -317,32 +316,19 @@ export const IMAGES = {
    */
   soudeur: unsplash('photo-1745448797900-35d08e85e9db'),
 
-  // preuveTerrain et realisationInstallation ne dupliquent plus hero et
-  // besoinInstaller depuis le 20 août 2026 (revue visuelle, point 1) : ces
-  // deux photos apparaissaient déjà 3-4 fois chacune ailleurs sur le site
-  // (accueil, deux pages capacités, cette section) — la règle du point 1 est
-  // qu'un emplacement proche du hero (deux sections plus bas) n'affiche
-  // jamais la même photo qu'une autre page déjà très visible. Elles reprennent
-  // maintenant structureEclairee2024 et installationsGuirlandes à la place,
-  // deux photos du lot du jour même qui n'avaient pas encore de consommateur.
-  // realisationTerrain NE SUIT PLUS besoinDeployer depuis le 3 septembre 2026 :
-  // les deux pointaient sur la photo de feux d'artifice retirée ce jour-là
-  // (voir besoinDeployer plus haut pour la raison). Elles prennent maintenant
-  // deux photos distinctes du même lot `deployment/`, chacune ajustée à son
-  // emplacement — les camions brandés pour le besoin « déployer », la livraison
-  // de mobilier pour la carte « Déploiement événementiel ». realisationLab
-  // (soudeur) reste seule encore Unsplash — voir son commentaire plus haut.
+  // preuveTerrain ne duplique plus hero depuis le 20 août 2026 (revue
+  // visuelle, point 1) : cette photo apparaissait déjà 3-4 fois ailleurs sur
+  // le site — la règle du point 1 est qu'un emplacement proche du hero (deux
+  // sections plus bas) n'affiche jamais la même photo qu'une autre page déjà
+  // très visible.
+  //
+  // realisationTerrain / realisationInstallation / realisationLab RETIRÉES le
+  // 1er octobre 2026 (passe de finition, §1) : les trois cartes de la section
+  // Réalisations de l'accueil ne sont plus des catégories illustrées par une
+  // photo choisie ici, mais de vrais projets dont la photo vient de la base
+  // (voir Realisations.tsx). Plus aucun consommateur — les laisser aurait
+  // fait croire à trois emplacements encore servis.
   preuveTerrain: medias('installations/structure-eclairee-2024.webp'),
-  /**
-   * Photo réelle — remorque KO-LAB chargée de mobilier événementiel (tables
-   * cocktail, barils) livrée sur un site sous chapiteaux, camion attelé,
-   * membre de l'équipe au travail. Colle au libellé de la carte
-   * (« Déploiement événementiel ») bien mieux que la photo pyrotechnique
-   * qu'elle remplace. Fichier déjà dans Storage, jamais câblé avant.
-   */
-  realisationTerrain: medias('deployment/deployment-camion-1787966108829.jpg'),
-  realisationInstallation: '/images/installations/cinq23-picto-escalier-2026.webp', // lot 6 (20 sept. 2026, §17) : pictogramme 3D « Escalier », Cinq23
-  realisationLab: '/images/lab/cityfolk-legacy-walk-nuit-2026.webp', // lot 6 (20 sept. 2026, §17) : Legacy Walk CityFolk de nuit, panneaux rétroéclairés sur structures bois
   /** Réutilisée par les Réalisations : la CNC porte déjà la section LAB. */
 
   /**
@@ -414,14 +400,6 @@ export const CADRAGES = {
    * n'aurait montré que du ciel ici. Vérifié par capture d'écran réelle.
    */
   besoinDeployer: 'object-[50%_55%]',
-  /**
-   * Photo réelle (remorque de mobilier livrée sur site), format paysage 4:3 —
-   * la remorque chargée traverse le bas du cadre, les chapiteaux occupent le
-   * haut. Cadrage propre à cette carte depuis le 3 septembre 2026 : elle
-   * partageait celui de besoinDeployer tant que les deux emplacements
-   * pointaient sur la même photo.
-   */
-  realisationTerrain: 'object-[50%_60%]',
   /**
    * Photo réelle (équipe KO-LAB, Canada Day 2026), format portrait recadré
    * dans une carte 16/9 — le groupe se tient dans le tiers bas du cadre.

@@ -21,7 +21,7 @@
       "description": "3D design, 3D printing, laser, CNC, prototyping and part reproduction. From product development to the production line."
     },
     "equipements": {
-      "title": "Equipment and Deployment",
+      "title": "Logistics, Transport & Equipment",
       "description": "Trucks, trailers, lifts, material handling equipment and installation tools. The means to deliver the project."
     },
     "production": {
@@ -75,7 +75,7 @@
     "operations": "Field Operations",
     "installations": "Installations & Fit-Out",
     "lab": "The LAB",
-    "equipements": "Equipment & Deployment",
+    "equipements": "Logistics, Transport & Equipment",
     "production": "Event Production",
     "realisations": "Projects",
     "location": "Rentals",
@@ -175,7 +175,7 @@
       "etape4_detail": "Delivery and installation"
     },
     "equipements": {
-      "label": "Equipment & Deployment",
+      "label": "Logistics, Transport & Equipment",
       "title": "The right resources make delivery possible",
       "texte": "Trucks, open and enclosed trailers, lifts, material handling equipment, temporary lighting and power distribution.",
       "lien": "See Equipment"
@@ -193,13 +193,8 @@
     },
     "realisations": {
       "label": "Projects",
-      "title": "What we've put in the field",
-      "lien": "See All Projects",
-      "a_venir": "Project coming soon",
-      "titre_terrain": "Event deployment",
-      "titre_installation": "Architectural signage",
-      "titre_lab": "Creation and fabrication",
-      "alt_lab": "CityFolk Legacy Walk at night: backlit panels on wooden structures, string lights"
+      "title": "A few delivered projects.",
+      "lien": "See All Projects"
     },
     "ecosysteme": {
       "label": "The KO-LAB Ecosystem",
@@ -219,11 +214,10 @@
       "vip_role": "Mechanical service, vehicle support and fleet-related needs."
     },
     "offres": {
-      "label": "Also Available",
-      "location_tag": "Rentman",
+      "label": "Rentals & Equipment",
       "boutique_tag": "By Request",
-      "location_titre": "Rentals",
-      "location_texte": "Furniture, staging, fencing, lighting, décor, field equipment and infrastructure.",
+      "location_titre": "Everything it takes to equip the site.",
+      "location_texte": "Furniture, staging and platforms, fencing, lighting, décor, field equipment and infrastructure. Browse our inventory or start your request right here.",
       "location_lien": "See Inventory",
       "boutique_titre": "Shop",
       "boutique_texte": "Selected equipment, backed by a team that actually uses it.",
@@ -367,7 +361,7 @@
       "processus_7": "install / deploy"
     },
     "equipements": {
-      "label": "Equipment and Deployment",
+      "label": "Logistics, Transport & Equipment",
       "title": "The means to deliver.",
       "phrase": "The right teams move the project forward. The right resources make delivery possible.",
       "intro": "We don't just provide the people. We can also arrange the resources needed to get the work done.",
@@ -495,14 +489,15 @@
     }
   },
   "Location": {
-    "title": "Equipment Rental",
-    "intro": "Furniture, staging, fencing, lighting, décor, field equipment and infrastructure. Browse our inventory or send us your rental request.",
+    "label": "Rentals & Equipment",
+    "title": "Everything it takes to equip the site.",
+    "intro": "Furniture, staging and platforms, fencing, lighting, décor, field equipment and infrastructure. Browse our inventory or start your request right here.",
     "cta_rentman": "See Inventory",
     "cta_demande": "Make a Request",
     "cta_demande_temporaire": "Request a Rental",
     "note": "Can't find what you're looking for? Write to us — we often have access to more.",
-    "inventaire_titre": "Our full inventory is available on Rentman",
-    "inventaire_texte": "Browse our detailed inventory and the information available on each item directly through our Rentman portal.",
+    "inventaire_titre": "Our full inventory, in detail",
+    "inventaire_texte": "Browse our detailed inventory and the information available on each item, or send us your request right here.",
     "categories_label": "Equipment Categories",
     "cat_mobilier_titre": "Furnishings",
     "cat_mobilier_texte": "Tables, chairs, lounge furniture and VIP furnishings for your events.",

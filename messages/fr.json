@@ -21,7 +21,7 @@
       "description": "Conception 3D, impression 3D, laser, CNC, prototypage et reproduction de pièces. Du développement de produit à la chaîne de production."
     },
     "equipements": {
-      "title": "Équipements et déploiement",
+      "title": "Logistique, transport & équipements",
       "description": "Camions, remorques, nacelles, équipements de manutention et outils d'installation. Les moyens de livrer le projet."
     },
     "production": {
@@ -75,7 +75,7 @@
     "operations": "Opérations terrain",
     "installations": "Installations & aménagements",
     "lab": "Le LAB",
-    "equipements": "Équipements et déploiement",
+    "equipements": "Logistique, transport & équipements",
     "production": "Production événementielle",
     "realisations": "Réalisations",
     "location": "Location",
@@ -175,9 +175,9 @@
       "etape4_detail": "Livraison et installation"
     },
     "equipements": {
-      "label": "Équipements et déploiement",
+      "label": "Logistique, transport & équipements",
       "title": "Les bons moyens permettent de livrer",
-      "texte": "Camions, remorques ouvertes et fermées, nacelles, équipements de manutention, éclairage temporaire et distribution électrique.",
+      "texte": "Transport de matériel, camions et remorques, manutention, équipements de levage et moyens de déploiement. Nous pouvons organiser les ressources nécessaires pour acheminer, installer et retirer le matériel sur le terrain.",
       "lien": "Voir les équipements"
     },
     "production": {
@@ -193,13 +193,8 @@
     },
     "realisations": {
       "label": "Réalisations",
-      "title": "Ce qu'on a mis sur le terrain",
-      "lien": "Voir toutes les réalisations",
-      "a_venir": "Réalisation à venir",
-      "titre_terrain": "Déploiement événementiel",
-      "titre_installation": "Signalisation architecturale",
-      "titre_lab": "Création et fabrication",
-      "alt_lab": "Legacy Walk CityFolk de nuit : panneaux rétroéclairés sur structures de bois, guirlandes lumineuses"
+      "title": "Quelques projets livrés.",
+      "lien": "Voir toutes les réalisations"
     },
     "ecosysteme": {
       "label": "Écosystème KO-LAB",
@@ -219,11 +214,10 @@
       "vip_role": "Entretien mécanique, soutien aux véhicules et besoins liés à la flotte."
     },
     "offres": {
-      "label": "Aussi disponible",
-      "location_tag": "Rentman",
+      "label": "Location & équipements",
       "boutique_tag": "Sur commande",
-      "location_titre": "Location",
-      "location_texte": "Mobilier, scène, clôtures, éclairage, décor, équipements terrain et infrastructures.",
+      "location_titre": "Tout ce qu'il faut pour équiper le terrain.",
+      "location_texte": "Mobilier, scènes et plateformes, clôtures, éclairage, décor, équipements terrain et infrastructures. Consultez notre inventaire ou préparez votre demande directement sur le site.",
       "location_lien": "Voir l'inventaire",
       "boutique_titre": "Boutique",
       "boutique_texte": "Des équipements sélectionnés, accompagnés par une équipe qui les utilise réellement.",
@@ -367,7 +361,7 @@
       "processus_7": "installer / déployer"
     },
     "equipements": {
-      "label": "Équipements et déploiement",
+      "label": "Logistique, transport & équipements",
       "title": "Les moyens de livrer.",
       "phrase": "Les bonnes équipes font avancer le projet. Les bons moyens permettent de le livrer.",
       "intro": "Nous ne fournissons pas seulement les personnes. Nous pouvons aussi organiser les moyens nécessaires pour accomplir le travail.",
@@ -495,14 +489,15 @@
     }
   },
   "Location": {
-    "title": "Location",
-    "intro": "Mobilier, scène, clôtures, éclairage, décor, équipements terrain et infrastructures. Consultez notre inventaire ou envoyez-nous votre demande de location.",
-    "cta_rentman": "Voir l'inventaire sur Rentman",
+    "label": "Location & équipements",
+    "title": "Tout ce qu'il faut pour équiper le terrain.",
+    "intro": "Mobilier, scènes et plateformes, clôtures, éclairage, décor, équipements terrain et infrastructures. Consultez notre inventaire ou préparez votre demande directement sur le site.",
+    "cta_rentman": "Voir l'inventaire",
     "cta_demande": "Faire une demande de location",
     "cta_demande_temporaire": "Demander une location",
     "note": "Vous ne trouvez pas ce que vous cherchez? Écrivez-nous, on a souvent accès à plus.",
-    "inventaire_titre": "Notre inventaire complet est disponible sur Rentman",
-    "inventaire_texte": "Consultez notre inventaire détaillé et les informations disponibles sur les articles directement dans notre portail Rentman.",
+    "inventaire_titre": "Notre inventaire complet, en détail",
+    "inventaire_texte": "Consultez notre inventaire détaillé et les informations disponibles sur les articles, ou envoyez-nous votre demande directement sur le site.",
     "categories_label": "Catégories d'équipement",
     "cat_mobilier_titre": "Mobilier",
     "cat_mobilier_texte": "Tables, chaises, mobilier lounge et mobilier VIP pour vos événements.",

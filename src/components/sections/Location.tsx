@@ -15,6 +15,10 @@ import { ROUTES } from '@/lib/routes'
  * Boutique.tsx (section 12) garde le format carte de l'ancien Offres.tsx —
  * sans photo, rien à montrer de plus.
  *
+ * Section repositionnee le 1er octobre 2026 (§3) : elle n'est plus annoncee
+ * par « Aussi disponible » mais par « Location & equipements » — la location
+ * est une offre principale, pas un complement.
+ *
  * Le bouton Rentman externe reste masqué tant que l'URL n'est pas fournie
  * (LIEN_RENTMAN dans constantes.ts, condition posée sur /location/page.tsx,
  * Phase 3) : ce lien-ci pointe vers la page interne /location, jamais
@@ -33,8 +37,9 @@ export async function Location() {
 
         <div className="mt-10 grid grid-cols-1 items-center gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
           <Reveal>
-            <p className="label-mono text-xs">{t('location_tag')}</p>
-
+            {/* Pastille « Rentman » retiree le 1er octobre 2026 (passe de
+                finition, §3) : un nom d'outil interne au-dessus du titre,
+                sous un label qui dit deja de quoi la section parle. */}
             <h2 className="mt-5 font-serif text-3xl font-light leading-tight text-ko-ink lg:text-4xl">
               {t('location_titre')}
             </h2>

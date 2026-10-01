@@ -81,7 +81,12 @@ export default async function LocationPage({ params }: Props) {
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
         <div className="mx-auto max-w-container px-6 lg:px-16">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
-          <h1 className="ko-display mt-6 max-w-[16ch] text-ko-ink">{t('title')}</h1>
+          {/* Libelle ajoute le 1er octobre 2026 (§3) : le H1 porte desormais
+              une promesse (« Tout ce qu'il faut pour equiper le terrain. »)
+              et non plus le nom de la rubrique — c'est ce libelle qui le
+              nomme, comme sur les pages de capacites. */}
+          <p className="label-mono mt-6">{t('label')}</p>
+          <h1 className="ko-display mt-5 max-w-[22ch] text-ko-ink">{t('title')}</h1>
           <p className="mt-7 max-w-[54ch] text-base leading-relaxed text-ko-muted lg:text-lg">
             {t('intro')}
           </p>
