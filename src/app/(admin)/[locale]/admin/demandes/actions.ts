@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 
 import { exigerRole } from '@/lib/auth/garde'
+import { envoyerCourriel } from '@/lib/email/envoyer'
+import { gabaritDemandeTraitee } from '@/lib/email/gabaritsNotifications'
 import { estUuid } from '@/lib/utils/identifiant'
 import { STATUTS_DEMANDE, ROLES_EQUIPE } from '@/types'
 
@@ -42,8 +44,64 @@ export async function changerStatutDemande(donnees: FormData): Promise<void> {
     const acces = await exigerRole(ROLES_EQUIPE)
     if (!acces) return
     const { supabase } = acces
+
+    // On relit AVANT d'écrire : il faut savoir si le courriel « traitée » est
+    // déjà parti, et dans quelle langue le demandeur a écrit. `select` puis
+    // `update` plutôt qu'un `update ... returning` : la ligne retournée
+    // porterait déjà le nouveau statut, donc elle ne dirait plus si c'est
+    // CE clic qui a fait la bascule.
+    const { data: avant } = await supabase
+      .from('demandes_contact')
+      .select('nom, email, locale, statut, traite_notifie_le')
+      .eq('id', id)
+      .maybeSingle()
+
     const { error } = await supabase.from('demandes_contact').update({ statut }).eq('id', id)
-    if (error) console.error('[demandes] changement de statut refusé', error.message)
+    if (error) {
+      console.error('[demandes] changement de statut refusé', error.message)
+      return
+    }
+
+    // ------------------------------------------------- Courriel au demandeur
+    //
+    // Ajouté le 2 octobre 2026, à la demande de Joe.
+    //
+    // Trois conditions, toutes nécessaires :
+    //   · le nouveau statut est « traité » — « lu » ne regarde que l'équipe,
+    //     écrire « nous avons lu votre message » n'apprend rien à personne ;
+    //   · la demande n'était pas DÉJÀ traitée — repasser de traité à lu puis
+    //     de nouveau à traité ne doit pas renvoyer un second courriel ;
+    //   · `traite_notifie_le` est vide — garde-fou qui survit même si le
+    //     statut a fait l'aller-retour avant la migration 0049.
+    //
+    // La langue est celle que le DEMANDEUR avait sous les yeux (colonne
+    // `locale`, migration 0049), jamais celle de la route admin : voir la
+    // note de gabaritStatutCommande.ts, qui décrit précisément ce piège.
+    const doitNotifier =
+      statut === 'traite' &&
+      avant !== null &&
+      avant !== undefined &&
+      avant.statut !== 'traite' &&
+      avant.traite_notifie_le === null &&
+      Boolean(avant.email)
+
+    if (doitNotifier && avant) {
+      const langue = avant.locale === 'en' ? 'en' : 'fr'
+      const { sujet, texte } = gabaritDemandeTraitee({ nom: avant.nom, locale: langue })
+      const envoi = await envoyerCourriel({ a: avant.email, sujet, texte })
+
+      if (envoi.ok) {
+        // L'horodatage n'est posé QU'APRÈS un envoi réussi : un échec doit
+        // laisser la porte ouverte à une nouvelle tentative, pas marquer la
+        // demande comme notifiée alors que personne n'a rien reçu.
+        await supabase
+          .from('demandes_contact')
+          .update({ traite_notifie_le: new Date().toISOString() })
+          .eq('id', id)
+      } else {
+        console.error('[demandes] courriel « traitée » non envoyé :', envoi.raison)
+      }
+    }
   } catch (err) {
     console.error('[demandes] échec changement de statut', err)
   }

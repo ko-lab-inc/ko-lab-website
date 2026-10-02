@@ -214,7 +214,10 @@ export default async function MarketingLayout({ children, params }: Props) {
    *   GalerieRealisations.tsx  → Realisations
    *   CatalogueBoutique.tsx    → Panier, Boutique
    *   PagePanier.tsx           → Panier
-   *   WidgetAide.tsx           → Aide
+   *   WidgetAide.tsx           → Aide, Contact (2 octobre 2026 — la case de
+   *                              consentement reprend `Contact.form.consentement`,
+   *                              la même formulation que le formulaire complet
+   *                              plutôt qu'une seconde à maintenir)
    *   FormulaireDetailsCommande.tsx, EditeurLignesCommande.tsx
    *                            → Commande (migration 0021 ; la première montée
    *                              par /boutique/commande/details, la seconde

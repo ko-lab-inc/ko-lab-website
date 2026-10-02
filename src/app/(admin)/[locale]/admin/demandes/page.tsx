@@ -56,7 +56,11 @@ export default async function DemandesPage({ params }: Props) {
   const [{ data: demandes, error }, { data: moi }] = await Promise.all([
     supabase
       .from('demandes_contact')
-      .select('id, type, nom, email, telephone, organisation, message, statut, created_at')
+      // notification_erreur (migration 0049) : sans elle, une notification
+      // perdue n'apparaîtrait nulle part. C'est tout l'objet de la colonne.
+      .select(
+        'id, type, nom, email, telephone, organisation, message, statut, created_at, notification_erreur',
+      )
       .order('created_at', { ascending: false }),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
   ])
@@ -109,6 +113,8 @@ export default async function DemandesPage({ params }: Props) {
       dateStyle: 'medium',
       timeStyle: 'short',
     }),
+    // Renommée en camelCase comme le reste des props du tableau.
+    notificationErreur: d.notification_erreur,
   }))
 
   return (
@@ -138,6 +144,7 @@ export default async function DemandesPage({ params }: Props) {
           colonneTelephone: t('colonne_telephone'),
           colonneOrganisation: t('colonne_organisation'),
           colonneMessage: t('colonne_message'),
+          notificationEchouee: t('notification_echouee'),
           voir: t('action_voir'),
           supprimer: t('supprimer'),
           confirmer: t('confirmer_suppression_demande'),

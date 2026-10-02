@@ -898,6 +898,7 @@
     "confirmer_suppression_demande": "Supprimer cette demande définitivement ?",
     "colonne_nom": "Nom",
     "colonne_message": "Message",
+    "notification_echouee": "Notification à l’équipe non envoyée —",
     "voir_toutes_demandes": "Voir toutes les demandes",
     "colonne_telephone": "Téléphone",
     "colonne_organisation": "Organisation",

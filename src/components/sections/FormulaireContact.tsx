@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -29,6 +29,8 @@ const CHAMP =
 type Etat = 'repos' | 'envoi' | 'succes' | 'erreur' | 'limite'
 
 export function FormulaireContact() {
+  // Langue de la PAGE, pas un champ du formulaire — voir schemaContact.
+  const locale = useLocale() as 'fr' | 'en'
   const t = useTranslations('Contact')
   // Espace de noms distinct : l'en-tête de la demande groupée appartient au
   // panier, pas au formulaire. Le typage des messages refuse le mélange.
@@ -85,7 +87,9 @@ export function FormulaireContact() {
       const rep = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(donnees),
+        // `locale` n'est pas un champ du formulaire : elle vient de la page
+        // (migration 0049) et décide de la langue de l'accusé de réception.
+        body: JSON.stringify({ ...donnees, locale }),
       })
 
       if (rep.ok) {

@@ -40,6 +40,9 @@ export type Demande = {
   /** Déjà formatée côté serveur (Intl.DateTimeFormat) — jamais une fonction
    *  en prop, voir le plantage documenté dans TableauRealisations.tsx. */
   dateFormatee: string
+  /** Migration 0049. Non NULL = le courriel de notification vers l'équipe
+   *  n'est jamais parti pour cette demande. */
+  notificationErreur: string | null
 }
 
 export function TableauDemandes({
@@ -71,6 +74,8 @@ export function TableauDemandes({
     colonneTelephone: string
     colonneOrganisation: string
     colonneMessage: string
+    /** Migration 0049 — intitule de l alerte quand notification_erreur est posee. */
+    notificationEchouee: string
     voir: string
     supprimer: string
     confirmer: string
@@ -199,6 +204,28 @@ export function TableauDemandes({
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-base text-ko-ink">{d.nom}</span>
                   <span className="block truncate font-mono text-xs text-ko-muted">{d.email}</span>
+
+                  {/* Échec de notification — migration 0049. C'est CE bloc qui
+                      ferme le défaut constaté : jusqu'ici l'échec partait dans
+                      la console du serveur, que personne ne lit.
+
+                      Le point est en --ko-blue : la palette n'a pas de rouge,
+                      et en inventer un pour une alerte romprait la règle des
+                      trois couleurs de marque. C'est le TEXTE qui alerte, pas
+                      la couleur — et il reste lisible pour qui ne distingue
+                      pas les teintes. */}
+                  {d.notificationErreur && (
+                    <span className="mt-1 flex items-start gap-1.5 text-xs leading-snug text-ko-ink">
+                      <span
+                        aria-hidden="true"
+                        className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ko-blue"
+                      />
+                      <span>
+                        <strong className="font-medium">{textes.notificationEchouee}</strong>{' '}
+                        <span className="text-ko-muted">{d.notificationErreur}</span>
+                      </span>
+                    </span>
+                  )}
                 </span>
 
                 <span className="label-mono hidden w-28 shrink-0 sm:block">

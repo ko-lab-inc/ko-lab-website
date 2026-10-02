@@ -61,6 +61,20 @@ export const schemaContact = z.object({
    * la route, qui répond 200 sans rien enregistrer.
    */
   _hp: z.string().max(200).optional(),
+
+  /**
+   * Langue de la page depuis laquelle la demande part (migration 0049).
+   *
+   * Posée par le formulaire, pas déduite côté serveur : l'en-tête `Referer`
+   * peut être absent ou réécrit, et `Accept-Language` décrit les préférences
+   * du navigateur, pas la version du site réellement consultée.
+   *
+   * Elle ne décide que d'une chose : la langue des courriels envoyés AU
+   * DEMANDEUR (accusé de réception, « demande traitée »). Une valeur erronée
+   * ne lui coûterait qu'un courriel dans la mauvaise langue — raison pour
+   * laquelle elle est acceptée telle quelle, avec un repli sur le français.
+   */
+  locale: z.enum(['fr', 'en']).optional().default('fr'),
 })
 
 export type DonneesContact = z.infer<typeof schemaContact>

@@ -191,6 +191,21 @@ export type Database = {
           /** Migration 0041. NULL = ligne antérieure à l'ajout de la case de consentement. */
           consentement_le: string | null
           consentement_version: string | null
+          /** Migration 0049. Langue de la page de soumission — décide de la langue
+           *  de l'accusé de réception et du courriel « demande traitée ».
+           *  CHECK : 'fr' | 'en'. */
+          locale: string
+          /** Migration 0049. L'équipe a-t-elle été prévenue de cette demande ? */
+          notification_envoyee: boolean
+          /** Migration 0049. Message d'échec de ce courriel. NULL = aucun échec.
+           *  Affiché dans /admin/demandes : sans ça, une notification perdue ne
+           *  se voit nulle part. */
+          notification_erreur: string | null
+          /** Migration 0049. Le demandeur a-t-il reçu son accusé de réception ? */
+          accuse_envoye: boolean
+          /** Migration 0049. Horodatage du courriel « demande traitée ».
+           *  Non NULL = déjà envoyé, on ne le renvoie pas. */
+          traite_notifie_le: string | null
         }
         Insert: {
           id?: string
@@ -204,6 +219,11 @@ export type Database = {
           created_at?: string
           consentement_le?: string | null
           consentement_version?: string | null
+          locale?: string
+          notification_envoyee?: boolean
+          notification_erreur?: string | null
+          accuse_envoye?: boolean
+          traite_notifie_le?: string | null
         }
         Update: {
           id?: string
@@ -217,6 +237,11 @@ export type Database = {
           created_at?: string
           consentement_le?: string | null
           consentement_version?: string | null
+          locale?: string
+          notification_envoyee?: boolean
+          notification_erreur?: string | null
+          accuse_envoye?: boolean
+          traite_notifie_le?: string | null
         }
         Relationships: []
       }
@@ -306,6 +331,10 @@ export type Database = {
           /** Migration 0045. references postes_carrieres(id) on delete set null —
            *  NULL si le rétroremplissage n'a rattaché aucun poste avec certitude. */
           poste_id: string | null
+          /** Migration 0049. L'équipe RH a-t-elle été prévenue de cette candidature ? */
+          notification_envoyee: boolean
+          /** Migration 0049. Message d'échec de ce courriel. NULL = aucun échec. */
+          notification_erreur: string | null
         }
         Insert: {
           id?: string
@@ -328,6 +357,8 @@ export type Database = {
           invitation_envoyee_le?: string | null
           compte_id?: string | null
           poste_id?: string | null
+          notification_envoyee?: boolean
+          notification_erreur?: string | null
         }
         Update: {
           id?: string
@@ -350,6 +381,8 @@ export type Database = {
           invitation_envoyee_le?: string | null
           compte_id?: string | null
           poste_id?: string | null
+          notification_envoyee?: boolean
+          notification_erreur?: string | null
         }
         Relationships: []
       }

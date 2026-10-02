@@ -1,11 +1,12 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeAccompagnement, IconeFermer } from '@/components/ui/Icones'
-import { usePathname } from '@/i18n/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
+import { ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -35,7 +36,12 @@ import { cn } from '@/lib/utils/cn'
 type Etat = 'repos' | 'envoi' | 'succes' | 'erreur'
 
 export function WidgetAide() {
+  // Langue de la PAGE, pas un champ du formulaire — voir schemaContact.
+  const locale = useLocale() as 'fr' | 'en'
   const t = useTranslations('Aide')
+  // Le texte de consentement vit dans Contact.form : une seule formulation
+  // pour les deux formulaires, donc une seule a maintenir.
+  const tContact = useTranslations('Contact')
   const pathname = usePathname()
   const [ouvert, setOuvert] = useState(false)
   const [etat, setEtat] = useState<Etat>('repos')
@@ -116,6 +122,10 @@ export function WidgetAide() {
           email: donnees.get('email'),
           message: donnees.get('message'),
           _hp: donnees.get('_hp'),
+          // Case obligatoire du formulaire : 'on' quand elle est cochee.
+          consentement: donnees.get('consentement') === 'on',
+          // Voir FormulaireContact : décide de la langue de l'accusé de réception.
+          locale,
         }),
       })
       setEtat(reponse.ok ? 'succes' : 'erreur')
@@ -221,6 +231,54 @@ export function WidgetAide() {
                     className="w-full resize-none border border-ko-line bg-ko-white px-3.5 py-2.5 text-base text-ko-ink transition-colors duration-200 placeholder:text-ko-muted focus:border-ko-blue focus:outline-none"
                   />
                 </div>
+
+                {/* Consentement — AJOUTÉ le 2 octobre 2026, et c'est la raison
+                    pour laquelle ce widget n'a jamais rien envoyé.
+
+                    `schemaContact` exige `consentement === true` depuis
+                    l'audit Loi 25 du 23 août 2026 (migration 0041). Le
+                    formulaire de contact a reçu sa case ce jour-là ; celui-ci
+                    non. Sa charge utile partait donc sans le champ, la
+                    validation la refusait en 400, et le visiteur lisait
+                    « L'envoi a échoué » — signalé par Christian, prouvé en
+                    production : la même requête passe à 200 dès que le champ
+                    est présent.
+
+                    Même case, même texte et mêmes liens que le formulaire
+                    complet : un consentement recueilli autrement ici serait
+                    plus difficile à défendre qu'un consentement unique. */}
+                <label className="flex cursor-pointer items-start gap-2.5 text-xs leading-relaxed text-ko-muted">
+                  <input
+                    type="checkbox"
+                    name="consentement"
+                    required
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0 accent-ko-blue"
+                  />
+                  <span>
+                    {tContact.rich('form.consentement', {
+                      lienConditions: (chunks) => (
+                        <Link
+                          href={ROUTES.conditionsUtilisation}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline decoration-ko-blue underline-offset-4 hover:text-ko-ink"
+                        >
+                          {chunks}
+                        </Link>
+                      ),
+                      lienPolitique: (chunks) => (
+                        <Link
+                          href={ROUTES.politiqueConfidentialite}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline decoration-ko-blue underline-offset-4 hover:text-ko-ink"
+                        >
+                          {chunks}
+                        </Link>
+                      ),
+                    })}
+                  </span>
+                </label>
 
                 {etat === 'erreur' && (
                   <p role="alert" className="text-sm leading-relaxed text-ko-ink">

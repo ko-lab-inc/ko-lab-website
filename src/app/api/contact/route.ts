@@ -1,9 +1,11 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
-import { EMAILS, VERSION_POLITIQUES } from '@/lib/constantes'
+import { VERSION_POLITIQUES } from '@/lib/constantes'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { lireReglages } from '@/lib/reglages'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
+import { envoyerCourriel, raisonCourte } from '@/lib/email/envoyer'
+import { gabaritAccuseReception } from '@/lib/email/gabaritsNotifications'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { schemaContact } from '@/lib/validation'
 
@@ -17,6 +19,9 @@ import { schemaContact } from '@/lib/validation'
 
 /** Cette route écrit en base : elle ne doit jamais être mise en cache. */
 export const dynamic = 'force-dynamic'
+
+/** Séparateur de lignes du corps texte des courriels. */
+const SAUT = String.fromCharCode(10)
 
 export async function POST(req: NextRequest) {
   // Un formulaire légitime envoie du JSON. Refuser autre chose élimine
@@ -51,22 +56,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ succes: true })
   }
 
+  let idDemande: string | null = null
   try {
-    const { error } = await getSupabaseAdmin().from('demandes_contact').insert({
-      type: donnees.type,
-      nom: donnees.nom,
-      email: donnees.email,
-      telephone: donnees.telephone ?? null,
-      organisation: donnees.organisation ?? null,
-      message: donnees.message,
-      // Loi 25 (audit du 23 août 2026, migration 0041) — `donnees.consentement`
-      // vaut forcément `true` ici : schemaContact.safeParse a déjà rejeté toute
-      // autre valeur plus haut (z.literal(true)) avant d'atteindre ce bloc.
-      consentement_le: new Date().toISOString(),
-      consentement_version: VERSION_POLITIQUES,
-    })
+    const { data, error } = await getSupabaseAdmin()
+      .from('demandes_contact')
+      .insert({
+        type: donnees.type,
+        nom: donnees.nom,
+        email: donnees.email,
+        telephone: donnees.telephone ?? null,
+        organisation: donnees.organisation ?? null,
+        message: donnees.message,
+        // Migration 0049 — langue de la page du demandeur, pas celle de
+        // l'équipe. Décide de la langue de l'accusé ci-dessous.
+        locale: donnees.locale,
+        // Loi 25 (audit du 23 août 2026, migration 0041) — `donnees.consentement`
+        // vaut forcément `true` ici : schemaContact.safeParse a déjà rejeté toute
+        // autre valeur plus haut (z.literal(true)) avant d'atteindre ce bloc.
+        consentement_le: new Date().toISOString(),
+        consentement_version: VERSION_POLITIQUES,
+      })
+      .select('id')
+      .single()
 
     if (error) throw error
+    idDemande = data?.id ?? null
   } catch (err) {
     // Message générique côté client : divulguer err.message exposerait la
     // structure de la base et les noms de tables (skill 15).
@@ -74,49 +88,66 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ erreur: 'serveur' }, { status: 500 })
   }
 
-  // Notification par courriel — DÉGRADATION VOLONTAIRE.
+  // ------------------------------------------------------------ Courriels
   //
-  // La demande est déjà enregistrée à ce stade. Si Resend n'est pas configuré,
-  // ou s'il échoue, l'utilisateur doit quand même voir sa confirmation : son
-  // message n'est pas perdu, il est en base. Faire échouer la requête ici
-  // reviendrait à lui demander de renvoyer une demande déjà reçue.
-  const cleResend = process.env.RESEND_API_KEY
+  // DÉGRADATION VOLONTAIRE, MAIS PLUS SILENCIEUSE (2 octobre 2026).
+  //
+  // La demande est déjà enregistrée. Un échec d'envoi ne doit pas faire
+  // échouer la requête : le message du visiteur n'est pas perdu, et lui
+  // demander de le renvoyer serait absurde.
+  //
+  // Ce qui change : l'échec était jusqu'ici écrit dans la console du serveur
+  // et nulle part ailleurs. Le visiteur lisait « message envoyé », l'équipe
+  // ne recevait rien, et personne ne l'apprenait. Le résultat est désormais
+  // inscrit sur la ligne (`notification_envoyee`, `notification_erreur`,
+  // migration 0049) et /admin/demandes l'affiche.
+  const { contactCourriel } = await lireReglages()
 
-  if (!cleResend) {
-    console.warn('[api/contact] RESEND_API_KEY absente — notification non envoyée')
-  } else {
-    try {
-      const { Resend } = await import('resend')
+  const notification = await envoyerCourriel({
+    a: contactCourriel,
+    // Répondre écrit au DEMANDEUR, pas à soi-même.
+    repondreA: donnees.email,
+    sujet: `Nouvelle demande — ${donnees.type}`,
+    texte: [
+      `Type         : ${donnees.type}`,
+      `Nom          : ${donnees.nom}`,
+      `Courriel     : ${donnees.email}`,
+      `Téléphone    : ${donnees.telephone ?? '—'}`,
+      `Organisation : ${donnees.organisation ?? '—'}`,
+      `Langue       : ${donnees.locale}`,
+      '',
+      donnees.message,
+    ].join(SAUT),
+  })
+  if (!notification.ok) {
+    console.error('[api/contact] notification équipe non envoyée :', notification.raison)
+  }
 
-      /**
-       * Destination pilotée depuis les réglages (0011).
-       *
-       * ⚠️ L'expéditeur, lui, reste en dur. Il doit correspondre à un domaine
-       * VÉRIFIÉ chez Resend : le rendre modifiable depuis l'interface
-       * permettrait de saisir une adresse non vérifiée, et tous les envois
-       * échoueraient en silence. Changer d'expéditeur suppose de configurer
-       * le domaine côté Resend — ce n'est pas un réglage, c'est une opération.
-       */
-      const { contactCourriel } = await lireReglages()
+  // Accusé de réception au demandeur. La page de contact promet « On revient
+  // vers vous dans les 48 heures » — jusqu'ici, rien ne le confirmait au
+  // visiteur une fois l'onglet fermé.
+  const accuse = gabaritAccuseReception({ nom: donnees.nom, locale: donnees.locale })
+  const envoiAccuse = await envoyerCourriel({
+    a: donnees.email,
+    sujet: accuse.sujet,
+    texte: accuse.texte,
+  })
+  if (!envoiAccuse.ok) {
+    console.error('[api/contact] accusé de réception non envoyé :', envoiAccuse.raison)
+  }
 
-      await new Resend(cleResend).emails.send({
-        from: `KO-LAB <${EMAILS.envoiTransactionnel}>`,
-        to: contactCourriel,
-        replyTo: donnees.email,
-        subject: `Nouvelle demande — ${donnees.type}`,
-        text: [
-          `Type         : ${donnees.type}`,
-          `Nom          : ${donnees.nom}`,
-          `Courriel     : ${donnees.email}`,
-          `Téléphone    : ${donnees.telephone ?? '—'}`,
-          `Organisation : ${donnees.organisation ?? '—'}`,
-          '',
-          donnees.message,
-        ].join('\n'),
+  // Une seule écriture pour les deux résultats. `idDemande` est null si
+  // l'insertion n'a pas rendu d'identifiant — on ne tente alors rien plutôt
+  // que d'écrire au hasard.
+  if (idDemande) {
+    await getSupabaseAdmin()
+      .from('demandes_contact')
+      .update({
+        notification_envoyee: notification.ok,
+        notification_erreur: notification.ok ? null : raisonCourte(notification.raison),
+        accuse_envoye: envoiAccuse.ok,
       })
-    } catch (err) {
-      console.error('[api/contact] échec envoi Resend', err)
-    }
+      .eq('id', idDemande)
   }
 
   return NextResponse.json({ succes: true })

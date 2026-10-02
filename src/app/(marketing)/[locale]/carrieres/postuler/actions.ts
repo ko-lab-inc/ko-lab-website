@@ -3,7 +3,10 @@
 import { headers } from 'next/headers'
 import { z } from 'zod'
 
-import { VERSION_POLITIQUES } from '@/lib/constantes'
+import { DOMAINE, EMAILS, VERSION_POLITIQUES } from '@/lib/constantes'
+import { envoyerCourriel, raisonCourte } from '@/lib/email/envoyer'
+import { gabaritNouvelleCandidature } from '@/lib/email/gabaritsNotifications'
+import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
@@ -186,7 +189,9 @@ export async function envoyerCandidature(
     }
 
     // --------------------------------------------------------- Candidature
-    const { error } = await supabase.from('candidatures').insert({
+    const { data: creee, error } = await supabase
+      .from('candidatures')
+      .insert({
       nom: analyse.data.nom,
       telephone: analyse.data.telephone,
       email: analyse.data.email,
@@ -211,7 +216,9 @@ export async function envoyerCandidature(
       // Loi 25 (audit du 23 août 2026, migration 0041).
       consentement_le: new Date().toISOString(),
       consentement_version: VERSION_POLITIQUES,
-    })
+      })
+      .select('id')
+      .single()
 
     if (error) {
       // Le CV est déjà déposé : on le retire pour ne pas laisser un document
@@ -220,6 +227,57 @@ export async function envoyerCandidature(
       console.error('[candidature] enregistrement refusé', error.message)
       return { erreur: 'serveur' }
     }
+
+    // ------------------------------------------------- Notification équipe
+    //
+    // Ajoutée le 2 octobre 2026. Jusque-là, une candidature n'avertissait
+    // PERSONNE : le CV partait dans le stockage et le dossier attendait que
+    // quelqu'un ouvre /admin/candidatures de lui-même.
+    //
+    // Après l'enregistrement, jamais avant : si l'envoi échoue, la
+    // candidature est déjà sauvée. L'inverse perdrait un candidat pour une
+    // panne de messagerie.
+    //
+    // L'échec n'interrompt rien et n'est pas renvoyé au candidat — il n'y
+    // peut rien et son dossier est bien enregistré. Il est écrit sur la
+    // ligne, où l'équipe peut le voir.
+    const { sujet, texte } = gabaritNouvelleCandidature({
+      nom: analyse.data.nom,
+      email: analyse.data.email,
+      telephone: analyse.data.telephone,
+      ville: analyse.data.ville,
+      postes: analyse.data.postes,
+      disponibilites: analyse.data.disponibilites,
+      aExperience: analyse.data.a_experience === 'oui',
+      travailExterieur: analyse.data.travail_exterieur === 'oui',
+      avecCv: cvChemin !== null,
+      lienAdmin: `${DOMAINE}/fr/admin/candidatures`,
+    })
+
+    const envoi = await envoyerCourriel({
+      // Les candidatures vont aux RH, pas à la boîte générale.
+      a: EMAILS.rh,
+      sujet,
+      texte,
+      // Répondre écrit au CANDIDAT, pas à soi-même.
+      repondreA: analyse.data.email,
+    })
+
+    // Client de service : la politique RLS de `candidatures` n'accorde
+    // l'UPDATE qu'à l'équipe authentifiée, et ce code s'exécute pour un
+    // visiteur anonyme. Portée volontairement minuscule — ces deux colonnes,
+    // cette ligne-là.
+    if (creee?.id) {
+      await getSupabaseAdmin()
+        .from('candidatures')
+        .update(
+          envoi.ok
+            ? { notification_envoyee: true, notification_erreur: null }
+            : { notification_envoyee: false, notification_erreur: raisonCourte(envoi.raison) },
+        )
+        .eq('id', creee.id)
+    }
+    if (!envoi.ok) console.error('[candidature] notification RH non envoyée :', envoi.raison)
   } catch (err) {
     console.error('[candidature] échec', err)
     return { erreur: 'serveur' }
