@@ -377,7 +377,7 @@ export default async function MarketingLayout({ children, params }: Props) {
             que ce soit de l'extérieur. Renseigner
             NEXT_PUBLIC_CRISP_WEBSITE_ID bascule de l'un à l'autre.
           */}
-          {CRISP_CONFIGURE ? <ChatCrisp /> : <WidgetAide />}
+          {CRISP_CONFIGURE ? <ChatCrisp /> : <WidgetAide telephone={reglages.contactTelephone || null} />}
 
           <BoutonRetourHaut />
           </PanierProvider>

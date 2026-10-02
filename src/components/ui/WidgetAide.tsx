@@ -35,7 +35,7 @@ import { cn } from '@/lib/utils/cn'
 
 type Etat = 'repos' | 'envoi' | 'succes' | 'erreur'
 
-export function WidgetAide() {
+export function WidgetAide({ telephone }: { telephone: string | null }) {
   // Langue de la PAGE, pas un champ du formulaire — voir schemaContact.
   const locale = useLocale() as 'fr' | 'en'
   const t = useTranslations('Aide')
@@ -293,6 +293,25 @@ export function WidgetAide() {
                 >
                   {etat === 'envoi' ? t('envoi') : t('envoyer')}
                 </button>
+
+                {/* Téléphone — ajouté le 2 octobre 2026.
+                    Un prospect pressé ne doit pas avoir à remplir trois champs
+                    pour joindre quelqu'un. `tel:` sans espaces ni tirets : le
+                    numéro affiché reste lisible, celui qui est composé doit
+                    être valide.
+                    Rendu uniquement si le réglage est renseigné — la ligne
+                    disparaît si KO-LAB le vide, comme dans le pied de page. */}
+                {telephone && (
+                  <p className="border-t border-ko-line pt-3 text-center text-xs text-ko-muted">
+                    {t('ou_appeler')}{' '}
+                    <a
+                      href={`tel:${telephone.replace(/[^+\d]/g, '')}`}
+                      className="whitespace-nowrap font-medium text-ko-ink underline decoration-ko-blue underline-offset-4"
+                    >
+                      {telephone}
+                    </a>
+                  </p>
+                )}
               </form>
             </>
           )}

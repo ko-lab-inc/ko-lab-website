@@ -6,6 +6,8 @@ import { FormulaireCandidature, type LibellesCandidature } from '@/components/se
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
+import { EMAILS } from '@/lib/constantes'
+import { lireReglages } from '@/lib/reglages'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata, Viewport } from 'next'
@@ -91,6 +93,10 @@ export default async function PostulerPage({ params, searchParams }: Props) {
   // question d'afficher une chaîne arbitraire dans le formulaire.
   const posteInitial = poste && titres.includes(poste) ? poste : undefined
 
+  // Téléphone affiché sous le formulaire — même source que le pied de page,
+  // donc une seule valeur à changer dans /admin/reglages.
+  const reglages = await lireReglages()
+
   const libelles: LibellesCandidature = {
     nom: tf('nom'),
     telephone: tf('telephone'),
@@ -172,9 +178,37 @@ export default async function PostulerPage({ params, searchParams }: Props) {
             />
           )}
 
+          {/* Coordonnées sous le formulaire — ajoutées le 2 octobre 2026.
+              Cette page n'en portait AUCUNE : un candidat qui a une question
+              sur un poste, ou qui n'arrive pas à joindre son CV, n'avait
+              d'autre issue que de repartir. Le téléphone vient des réglages
+              (vide = la ligne disparaît) ; l'adresse est celle des RH, pas la
+              boîte générale, pour que la candidature arrive au bon endroit. */}
+          <div className="mt-12 border-t border-ko-line pt-8">
+            <p className="max-w-[54ch] text-sm leading-relaxed text-ko-muted">
+              {t('postuler_aide')}
+            </p>
+            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
+              <a
+                href={`mailto:${EMAILS.rh}`}
+                className="inline-flex min-h-[44px] w-fit items-center text-sm text-ko-ink underline decoration-ko-blue underline-offset-4 transition-colors duration-200 hover:text-ko-muted"
+              >
+                {EMAILS.rh}
+              </a>
+              {reglages.contactTelephone && (
+                <a
+                  href={`tel:${reglages.contactTelephone.replace(/[^+\d]/g, '')}`}
+                  className="inline-flex min-h-[44px] w-fit items-center whitespace-nowrap text-sm text-ko-ink underline decoration-ko-blue underline-offset-4 transition-colors duration-200 hover:text-ko-muted"
+                >
+                  {reglages.contactTelephone}
+                </a>
+              )}
+            </div>
+          </div>
+
           <Link
             href={ROUTES.carrieres}
-            className="mt-12 inline-flex min-h-[44px] items-center text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
+            className="mt-10 inline-flex min-h-[44px] items-center text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
           >
             ← {t('postuler_retour')}
           </Link>

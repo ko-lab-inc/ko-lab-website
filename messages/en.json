@@ -572,6 +572,7 @@
     "postuler_titre": "Application",
     "postuler_intro": "We're not just building projects. We're building a team. Take a few minutes to tell us about yourself, your experience, and the kind of projects that interest you.",
     "postuler_retour": "Back to Positions",
+    "postuler_aide": "A question about a role, or trouble attaching your résumé? Write or call us — we answer during business hours.",
     "champ_obligatoire": "Required",
     "form": {
       "nom": "Full name",
@@ -1295,6 +1296,7 @@
     "courriel": "Your email",
     "message": "Your question",
     "envoyer": "Send",
+    "ou_appeler": "Or call us at",
     "envoi": "Sending…",
     "succes_titre": "Message received.",
     "succes_texte": "We'll get back to you at the address provided.",

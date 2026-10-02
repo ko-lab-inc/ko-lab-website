@@ -572,6 +572,7 @@
     "postuler_titre": "Candidature",
     "postuler_intro": "Nous ne bâtissons pas seulement des projets. Nous bâtissons une équipe. Prenez quelques minutes pour nous parler de vous, de votre expérience et du type de projets qui vous intéressent.",
     "postuler_retour": "Retour aux postes",
+    "postuler_aide": "Une question sur un poste, ou un problème pour joindre votre CV? Écrivez-nous ou appelez-nous : on répond pendant les heures ouvrables.",
     "champ_obligatoire": "Obligatoire",
     "form": {
       "nom": "Nom complet",
@@ -1297,6 +1298,7 @@
     "courriel": "Votre courriel",
     "message": "Votre question",
     "envoyer": "Envoyer",
+    "ou_appeler": "Ou appelez-nous au",
     "envoi": "Envoi…",
     "succes_titre": "Message reçu.",
     "succes_texte": "On revient vers vous à l'adresse indiquée.",
