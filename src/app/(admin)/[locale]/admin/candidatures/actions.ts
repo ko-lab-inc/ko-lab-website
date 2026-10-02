@@ -53,7 +53,14 @@ export async function changerStatutCandidature(donnees: FormData): Promise<void>
     const acces = await exigerRole(ROLES_EQUIPE)
     if (!acces) return
     const { supabase } = acces
-    const { error } = await supabase.from('candidatures').update({ statut }).eq('id', id)
+    // Migration 0051 — QUI a change le statut, et QUAND. Sur une candidature
+    // l'enjeu est plus fort que sur une demande : « retenue » puis « refusee »
+    // engage une decision d'embauche, et personne ne pouvait dire qui l'avait
+    // prise.
+    const { error } = await supabase
+      .from('candidatures')
+      .update({ statut, statut_par: acces.userId, statut_le: new Date().toISOString() })
+      .eq('id', id)
     if (error) console.error('[candidatures] changement de statut refusé', error.message)
   } catch (err) {
     console.error('[candidatures] échec changement de statut', err)
@@ -307,4 +314,36 @@ export async function inviterCandidatLivreur(
     raisonEchecCourriel: resultat.raisonEchecCourriel,
     lien: resultat.lien,
   }
+}
+
+/**
+ * Note interne d'une candidature — migration 0051.
+ *
+ * ⚠️ JAMAIS envoyee au candidat. La migration 0019 revoque meme le GRANT
+ * SELECT a `anon` sur cette table, precisement pour proteger ses
+ * coordonnees : cette colonne en herite.
+ *
+ * Meme forme que `enregistrerNoteDemande` — un seul geste a apprendre pour
+ * les deux ecrans.
+ */
+export async function enregistrerNoteCandidature(donnees: FormData): Promise<void> {
+  const locale = String(donnees.get('locale') ?? 'fr')
+  const id = String(donnees.get('id') ?? '')
+  const note = String(donnees.get('note_interne') ?? '').trim().slice(0, 4000)
+  if (!estUuid(id)) return
+
+  try {
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    const { supabase } = acces
+    const { error } = await supabase
+      .from('candidatures')
+      .update({ note_interne: note === '' ? null : note })
+      .eq('id', id)
+    if (error) console.error('[candidatures] note refusée', error.message)
+  } catch (err) {
+    console.error('[candidatures] échec enregistrement de la note', err)
+  }
+
+  revalidatePath(`/${locale}/admin/candidatures`)
 }

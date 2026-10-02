@@ -50,7 +50,7 @@ export default async function CandidaturesPage({ params }: Props) {
     supabase
       .from('candidatures')
       .select(
-        'id, nom, telephone, email, ville, postes, disponibilites, travail_exterieur, a_experience, experience_texte, cv_chemin, source, statut, created_at, poste_id, compte_id, invitation_envoyee_le',
+        'id, nom, telephone, email, ville, postes, disponibilites, travail_exterieur, a_experience, experience_texte, cv_chemin, source, statut, created_at, poste_id, compte_id, invitation_envoyee_le, note_interne, statut_par, statut_le',
       )
       .order('created_at', { ascending: false }),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
@@ -83,6 +83,18 @@ export default async function CandidaturesPage({ params }: Props) {
     )
   }
 
+  // Noms de l'équipe pour « statut changé par » — une seule requête, et
+  // seulement sur les comptes réellement cités.
+  const idsTraitants = [...new Set((candidatures ?? []).map((c) => c.statut_par).filter(Boolean))]
+  const nomsEquipe = new Map<string, string>()
+  if (idsTraitants.length > 0) {
+    const { data: profilsEquipe } = await supabase
+      .from('profils')
+      .select('id, nom, email')
+      .in('id', idsTraitants as string[])
+    for (const p of profilsEquipe ?? []) nomsEquipe.set(p.id, p.nom?.trim() || p.email?.trim() || p.id)
+  }
+
   // Date formatée ICI : une fonction ne traverse pas la frontière RSC.
   const donnees = (candidatures ?? []).map((c) => ({
     ...c,
@@ -90,6 +102,11 @@ export default async function CandidaturesPage({ params }: Props) {
       dateStyle: 'medium',
       timeStyle: 'short',
     }),
+    noteInterne: c.note_interne,
+    statutPar: c.statut_par ? (nomsEquipe.get(c.statut_par) ?? null) : null,
+    statutLeFormate: c.statut_le
+      ? format.dateTime(new Date(c.statut_le), { dateStyle: 'medium', timeStyle: 'short' })
+      : null,
     // Résolu ici, pas dans le composant client : `t()` avec interpolation
     // n'est disponible que côté serveur sur cet écran (pas de
     // NextIntlClientProvider dans l'admin — voir NavAdmin.tsx).
@@ -141,6 +158,10 @@ export default async function CandidaturesPage({ params }: Props) {
           pageSuivante: t('page_suivante'),
           invitationTitre: t('candidature_invitation_titre'),
           voirCompte: t('candidature_voir_compte'),
+          noteInterne: t('note_interne'),
+          noteInterneAide: t('note_interne_aide'),
+          noteEnregistrer: t('note_enregistrer'),
+          traitePar: t('traite_par'),
           invitation: {
             inviter: t('candidature_inviter_livreur'),
             confirmer: t('candidature_confirmer_invitation_livreur'),

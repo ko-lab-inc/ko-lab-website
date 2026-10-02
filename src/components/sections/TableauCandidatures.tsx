@@ -5,10 +5,12 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import {
   changerStatutCandidature,
+  enregistrerNoteCandidature,
   supprimerCandidature,
   telechargerCv,
 } from '@/app/(admin)/[locale]/admin/candidatures/actions'
 import { InvitationLivreur, type TextesInvitationLivreur } from '@/components/sections/InvitationLivreur'
+import { buttonVariants } from '@/components/ui/Button'
 import { IconeFermer, IconeOeil, IconePoubelle } from '@/components/ui/Icones'
 import { POSTE_LIVREUR } from '@/lib/constantes'
 import { cn } from '@/lib/utils/cn'
@@ -84,6 +86,11 @@ export type Candidature = {
   invitation_envoyee_le: string | null
   /** Déjà formatée ET déjà interpolée côté serveur (t('candidature_invitee_le', {date})) — `null` si jamais invitée. */
   invitationEnvoyeeLeFormatee: string | null
+  /** Migration 0051. Note de l'équipe. Jamais envoyée au candidat. */
+  noteInterne: string | null
+  /** Migration 0051. Nom déjà résolu côté serveur — jamais un identifiant. */
+  statutPar: string | null
+  statutLeFormate: string | null
 }
 
 export function TableauCandidatures({
@@ -132,6 +139,11 @@ export function TableauCandidatures({
     /** Migration 0045 (étape 3/3) — section « Invitation » du détail. */
     invitationTitre: string
     voirCompte: string
+    /** Migration 0051 — note interne et trace de changement de statut. */
+    noteInterne: string
+    noteInterneAide: string
+    noteEnregistrer: string
+    traitePar: string
     invitation: TextesInvitationLivreur
   }
 }) {
@@ -439,6 +451,43 @@ export function TableauCandidatures({
                 <p className="text-sm text-ko-muted">{textes.cvAucun}</p>
               )}
             </div>
+
+            {/* ---------------------------- Note interne ---------------------------- */}
+            {/* Migration 0051. Meme forme que l'ecran des demandes : un seul
+                geste a apprendre pour les deux.  evite qu'une
+                note reste affichee en passant d'une candidature a l'autre. */}
+            <form
+              key={voir.id}
+              action={enregistrerNoteCandidature}
+              className="mt-5 border-t border-ko-line pt-5"
+            >
+              <input type="hidden" name="locale" value={locale} />
+              <input type="hidden" name="id" value={voir.id} />
+
+              <label htmlFor="note-candidature" className="label-mono text-ko-muted">
+                {textes.noteInterne}
+              </label>
+              <p className="mt-1.5 text-xs leading-relaxed text-ko-muted">{textes.noteInterneAide}</p>
+              <textarea
+                id="note-candidature"
+                name="note_interne"
+                rows={4}
+                maxLength={4000}
+                defaultValue={voir.noteInterne ?? ''}
+                className="mt-2.5 w-full resize-y border border-ko-line bg-ko-white px-3 py-2 text-sm leading-relaxed text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none"
+              />
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <button type="submit" className={buttonVariants({ variant: 'primary', size: 'sm' })}>
+                  {textes.noteEnregistrer}
+                </button>
+                {voir.statutLeFormate && (
+                  <p className="font-mono text-xs text-ko-muted">
+                    {textes.traitePar} {voir.statutPar ?? '—'} · {voir.statutLeFormate}
+                  </p>
+                )}
+              </div>
+            </form>
 
             {/* Invitation — migration 0045 (étape 3/3). N'apparaît QUE pour
                 une candidature retenue visant le poste livreur : match
