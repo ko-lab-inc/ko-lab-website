@@ -28,7 +28,7 @@ const CHAMP =
 
 type Etat = 'repos' | 'envoi' | 'succes' | 'erreur' | 'limite'
 
-export function FormulaireContact() {
+export function FormulaireContact({ delaiReponseHeures }: { delaiReponseHeures: number }) {
   // Langue de la PAGE, pas un champ du formulaire — voir schemaContact.
   const locale = useLocale() as 'fr' | 'en'
   const t = useTranslations('Contact')
@@ -111,7 +111,7 @@ export function FormulaireContact() {
     return (
       <div className="border border-ko-line bg-ko-cream p-8">
         <p className="label-mono">{t('succes.titre')}</p>
-        <p className="mt-3 text-base leading-relaxed text-ko-ink">{t('succes.texte')}</p>
+        <p className="mt-3 text-base leading-relaxed text-ko-ink">{t('succes.texte', { heures: delaiReponseHeures })}</p>
       </div>
     )
   }

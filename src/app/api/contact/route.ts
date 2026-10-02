@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
   // ne recevait rien, et personne ne l'apprenait. Le résultat est désormais
   // inscrit sur la ligne (`notification_envoyee`, `notification_erreur`,
   // migration 0049) et /admin/demandes l'affiche.
-  const { contactCourriel } = await lireReglages()
+  const { contactCourriel, delaiReponseHeures } = await lireReglages()
 
   const notification = await envoyerCourriel({
     a: contactCourriel,
@@ -126,7 +126,11 @@ export async function POST(req: NextRequest) {
   // Accusé de réception au demandeur. La page de contact promet « On revient
   // vers vous dans les 48 heures » — jusqu'ici, rien ne le confirmait au
   // visiteur une fois l'onglet fermé.
-  const accuse = gabaritAccuseReception({ nom: donnees.nom, locale: donnees.locale })
+  const accuse = gabaritAccuseReception({
+    nom: donnees.nom,
+    locale: donnees.locale,
+    delaiHeures: delaiReponseHeures,
+  })
   const envoiAccuse = await envoyerCourriel({
     a: donnees.email,
     sujet: accuse.sujet,

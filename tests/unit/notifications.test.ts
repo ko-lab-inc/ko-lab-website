@@ -76,14 +76,14 @@ describe('gabaritNouvelleCandidature', () => {
 
 describe('gabaritAccuseReception', () => {
   it('répond en français à qui a écrit depuis /fr', () => {
-    const { sujet, texte } = gabaritAccuseReception({ nom: 'Luc', locale: 'fr' })
+    const { sujet, texte } = gabaritAccuseReception({ nom: 'Luc', locale: 'fr', delaiHeures: 48 })
     expect(sujet).toContain('Nous avons bien reçu')
     expect(texte).toContain('Bonjour Luc,')
     expect(texte).toContain('48 heures')
   })
 
   it('répond en anglais à qui a écrit depuis /en', () => {
-    const { sujet, texte } = gabaritAccuseReception({ nom: 'Luc', locale: 'en' })
+    const { sujet, texte } = gabaritAccuseReception({ nom: 'Luc', locale: 'en', delaiHeures: 48 })
     expect(sujet).toContain('We received your request')
     expect(texte).toContain('Hello Luc,')
     expect(texte).toContain('48 hours')
@@ -94,7 +94,7 @@ describe('gabaritAccuseReception', () => {
   it('donne une adresse de contact réelle, pas l’expéditeur technique', () => {
     // info@ko-lab.ca est la boîte consultée ; site@ko-lab-center.ca n'est
     // qu'un expéditeur vérifié chez Resend et n'est relevé par personne.
-    const { texte } = gabaritAccuseReception({ nom: 'Luc', locale: 'fr' })
+    const { texte } = gabaritAccuseReception({ nom: 'Luc', locale: 'fr', delaiHeures: 48 })
     expect(texte).toContain('info@ko-lab.ca')
     expect(texte).not.toContain('site@ko-lab-center.ca')
   })

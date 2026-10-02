@@ -68,7 +68,7 @@ export default async function ContactPage({ params }: Props) {
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
           <h1 className="ko-display mt-6 max-w-[16ch] text-ko-ink">{t('title')}</h1>
           <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-ko-muted lg:text-lg">
-            {t('intro')}
+            {t('intro', { heures: reglages.delaiReponseHeures })}
           </p>
         </div>
       </section>
@@ -82,7 +82,7 @@ export default async function ContactPage({ params }: Props) {
                   client en rendu dynamique s'il n'est pas isolé, ce qui
                   empêcherait la prégénération de cette page. */}
               <Suspense fallback={<div className="min-h-[560px]" />}>
-                <FormulaireContact />
+                <FormulaireContact delaiReponseHeures={reglages.delaiReponseHeures} />
               </Suspense>
             </Reveal>
 
@@ -131,7 +131,7 @@ export default async function ContactPage({ params }: Props) {
                 </address>
 
                 <p className="mt-8 max-w-[34ch] border-t border-ko-line pt-8 text-sm leading-relaxed text-ko-muted">
-                  {t('succes.texte')}
+                  {t('succes.texte', { heures: reglages.delaiReponseHeures })}
                 </p>
 
                 <p className="label-mono mt-10">{tNav('capacites')}</p>

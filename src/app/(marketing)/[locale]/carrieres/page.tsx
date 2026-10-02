@@ -12,6 +12,7 @@ import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
 import { resoudrePhotoPoste, type ResolutionPhotoPoste } from '@/lib/carrieres-photo'
 import { EMAILS } from '@/lib/constantes'
 import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
+import { lireReglages } from '@/lib/reglages'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata, Viewport } from 'next'
@@ -68,6 +69,10 @@ export default async function CarrieresPage({ params }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
+
+  // Delai de reponse annonce dans le bloc RH — reglage, plus une valeur ecrite
+  // dans le texte (migration 0051).
+  const reglages = await lireReglages()
 
   const t = await getTranslations('Carrieres')
   const tAlt = await getTranslations('Alt')
@@ -362,7 +367,7 @@ export default async function CarrieresPage({ params }: Props) {
               <p className="label-mono">{t('rh_label')}</p>
               <h2 className="ko-h2 mt-5 text-ko-ink">{t('rh_titre')}</h2>
               <p className="mx-auto mt-6 max-w-[48ch] text-base leading-relaxed text-ko-muted">
-                {t('rh_texte')}
+                {t('rh_texte', { heures: reglages.delaiReponseHeures })}
               </p>
 
               <a

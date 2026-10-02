@@ -9,6 +9,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
+import { lireReglages } from '@/lib/reglages'
 import { cn } from '@/lib/utils/cn'
 
 import type { VignetteBandeau } from '@/components/ui/BandeauImages'
@@ -87,6 +88,8 @@ export async function PageCapacite({
 }: PageCapaciteProps) {
   const t = await getTranslations('Capacites.cta')
   const tCommun = await getTranslations('Commun')
+  // Delai de reponse annonce — reglage, plus une valeur ecrite dans le texte.
+  const { delaiReponseHeures } = await lireReglages()
 
   return (
     <>
@@ -280,7 +283,7 @@ export async function PageCapacite({
               <p className="label-mono">{t('label')}</p>
               <h2 className="ko-h2 mt-5 text-ko-ink">{t('title')}</h2>
               <p className="mx-auto mt-6 max-w-[48ch] text-base leading-relaxed text-ko-muted">
-                {t('texte')}
+                {t('texte', { heures: delaiReponseHeures })}
               </p>
 
               <div className="mt-9 flex flex-col items-center gap-5 sm:flex-row sm:justify-center sm:gap-8">

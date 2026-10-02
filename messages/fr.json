@@ -246,7 +246,7 @@
     "cta": {
       "label": "Prochaine étape",
       "title": "Un mandat en tête?",
-      "texte": "Décrivez-nous le projet — les dates, le lieu, ce qu'il faut mettre sur le terrain. On revient vers vous dans les 48 heures.",
+      "texte": "Décrivez-nous le projet — les dates, le lieu, ce qu'il faut mettre sur le terrain. On revient vers vous dans les {heures} heures.",
       "bouton": "Démarrer un projet",
       "retour": "Toutes nos capacités"
     },
@@ -509,7 +509,7 @@
   },
   "Contact": {
     "title": "Démarrer un projet",
-    "intro": "Décrivez-nous le projet. On revient vers vous dans les 48 heures.",
+    "intro": "Décrivez-nous le projet. On revient vers vous dans les {heures} heures.",
     "form": {
       "type": "Type de demande",
       "type_mandat": "Démarrer un mandat",
@@ -543,7 +543,7 @@
     },
     "succes": {
       "titre": "Message envoyé",
-      "texte": "On revient vers vous dans les 48 heures."
+      "texte": "On revient vers vous dans les {heures} heures."
     }
   },
   "Carrieres": {
@@ -560,7 +560,7 @@
     "competences_titre": "Compétences recherchées",
     "rh_label": "Ressources humaines",
     "rh_titre": "Des questions concernant le recrutement ?",
-    "rh_texte": "Écrivez-nous directement : nous répondons habituellement dans les 48 heures ouvrables.",
+    "rh_texte": "Écrivez-nous directement : nous répondons habituellement dans les {heures} heures ouvrables.",
     "rh_cta": "Contacter les RH",
     "postuler_titre": "Candidature",
     "postuler_intro": "Nous ne bâtissons pas seulement des projets. Nous bâtissons une équipe. Prenez quelques minutes pour nous parler de vous, de votre expérience et du type de projets qui vous intéressent.",
@@ -596,7 +596,7 @@
       "envoyer": "Envoyer ma candidature",
       "en_cours": "Envoi…",
       "succes_titre": "Candidature envoyée",
-      "succes_texte": "Merci — nous l'avons bien reçue. L'équipe revient vers vous dans les 48 heures ouvrables si votre profil correspond à un poste ouvert.",
+      "succes_texte": "Merci — nous l'avons bien reçue. L'équipe revient vers vous dans les {heures} heures ouvrables si votre profil correspond à un poste ouvert.",
       "erreur_donnees": "Vérifiez les champs obligatoires : il en manque un, ou l'un d'eux est mal rempli.",
       "erreur_cv": "Le CV n'a pas pu être envoyé. Vérifiez que c'est un PDF, un DOC ou un DOCX de moins de 10 Mo.",
       "erreur_trop": "Trop de candidatures envoyées depuis cet appareil. Patientez quelques minutes.",

@@ -89,9 +89,14 @@ export function gabaritNouvelleCandidature({
 export function gabaritAccuseReception({
   nom,
   locale,
+  delaiHeures,
 }: {
   nom: string
   locale: AppLocale
+  /** Reglage `delai_reponse_heures` (migration 0051). Ecrit en dur a 48
+   *  jusqu'au 2 octobre 2026, comme les quatre autres endroits du site qui
+   *  font la meme promesse — et qui divergeaient des que l'un changeait. */
+  delaiHeures: number
 }): { sujet: string; texte: string } {
   if (locale === 'en') {
     return {
@@ -100,7 +105,7 @@ export function gabaritAccuseReception({
         `Hello ${nom},`,
         '',
         'We received your request and someone from the team will get back to you',
-        'within 48 hours.',
+        `within ${delaiHeures} hours.`,
         '',
         'If your project is time-sensitive, reply to this email with the dates and',
         'the location — it helps us answer faster.',
@@ -118,7 +123,7 @@ export function gabaritAccuseReception({
       `Bonjour ${nom},`,
       '',
       'Nous avons bien reçu votre demande. Quelqu’un de l’équipe revient vers vous',
-      'dans les 48 heures.',
+      `dans les ${delaiHeures} heures.`,
       '',
       'Si le projet est urgent, répondez à ce courriel en indiquant les dates et le',
       'lieu — ça nous permet de répondre plus vite.',

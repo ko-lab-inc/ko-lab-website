@@ -246,7 +246,7 @@
     "cta": {
       "label": "Next Step",
       "title": "Have a project in mind?",
-      "texte": "Tell us about the project — dates, location, what needs to go in the field. We'll get back to you within 48 hours.",
+      "texte": "Tell us about the project — dates, location, what needs to go in the field. We'll get back to you within {heures} hours.",
       "bouton": "Start a Project",
       "retour": "All Our Capabilities"
     },
@@ -509,7 +509,7 @@
   },
   "Contact": {
     "title": "Start a Project",
-    "intro": "Tell us about the project. We'll get back to you within 48 hours.",
+    "intro": "Tell us about the project. We'll get back to you within {heures} hours.",
     "form": {
       "type": "Request type",
       "type_mandat": "Start a project",
@@ -543,7 +543,7 @@
     },
     "succes": {
       "titre": "Message Sent",
-      "texte": "We'll get back to you within 48 hours."
+      "texte": "We'll get back to you within {heures} hours."
     }
   },
   "Carrieres": {
@@ -560,7 +560,7 @@
     "competences_titre": "Skills We're Looking For",
     "rh_label": "Human Resources",
     "rh_titre": "Questions about hiring?",
-    "rh_texte": "Write to us directly: we usually reply within 48 business hours.",
+    "rh_texte": "Write to us directly: we usually reply within {heures} business hours.",
     "rh_cta": "Contact HR",
     "postuler_titre": "Application",
     "postuler_intro": "We're not just building projects. We're building a team. Take a few minutes to tell us about yourself, your experience, and the kind of projects that interest you.",
@@ -596,7 +596,7 @@
       "envoyer": "Submit My Application",
       "en_cours": "Sending…",
       "succes_titre": "Application Sent",
-      "succes_texte": "Thank you — we've received it. The team will follow up within 48 business hours if your profile matches an open position.",
+      "succes_texte": "Thank you — we've received it. The team will follow up within {heures} business hours if your profile matches an open position.",
       "erreur_donnees": "Check the required fields: one is missing, or one wasn't filled in correctly.",
       "erreur_cv": "The résumé couldn't be sent. Make sure it's a PDF, DOC or DOCX under 10 MB.",
       "erreur_trop": "Too many applications sent from this device. Please wait a few minutes.",

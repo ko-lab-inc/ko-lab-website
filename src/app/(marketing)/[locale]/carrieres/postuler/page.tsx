@@ -144,7 +144,7 @@ export default async function PostulerPage({ params, searchParams }: Props) {
     envoyer: tf('envoyer'),
     enCours: tf('en_cours'),
     succesTitre: tf('succes_titre'),
-    succesTexte: tf('succes_texte'),
+    succesTexte: tf('succes_texte', { heures: reglages.delaiReponseHeures }),
     erreurDonnees: tf('erreur_donnees'),
     erreurCv: tf('erreur_cv'),
     erreurTrop: tf('erreur_trop'),
