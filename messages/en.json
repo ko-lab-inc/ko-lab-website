@@ -881,6 +881,7 @@
     "commande_statut_completee": "Complétée",
     "commande_statut_annulee": "Annulée",
     "demandes_titre": "Demandes",
+    "demandes_export": "Export as CSV",
     "demandes_vide_filtre": "Aucune demande ne correspond à ce filtre.",
     "demandes_recherche_placeholder": "Rechercher (nom, courriel, message)…",
     "demandes_recherche_label": "Rechercher dans les demandes",

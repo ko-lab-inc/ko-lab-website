@@ -3,6 +3,7 @@ import { getFormatter, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
 import { EnteteAdmin, PanneauAdmin } from '@/components/layout/CadreAdmin'
+import { buttonVariants } from '@/components/ui/Button'
 import { TableauDemandes } from '@/components/sections/TableauDemandes'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
@@ -143,7 +144,24 @@ export default async function DemandesPage({ params }: Props) {
 
   return (
     <div data-theme-sombre>
-      <EnteteAdmin titre={t('demandes_titre')} />
+      <EnteteAdmin
+        titre={t('demandes_titre')}
+        action={
+          /* Un <a> et non un <Link> : c'est un TÉLÉCHARGEMENT, pas une
+             navigation. Le routeur de Next intercepterait le clic et
+             tenterait d'afficher le CSV comme une page.
+
+             Pas de bouton sur l'écran d'erreur plus haut : proposer un export
+             au moment où la lecture vient d'échouer ne mènerait qu'à un
+             second échec. */
+          <a
+            href="/api/admin/demandes/export"
+            className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+          >
+            {t('demandes_export')}
+          </a>
+        }
+      />
 
       <TableauDemandes
         locale={locale}
