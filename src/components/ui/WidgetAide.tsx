@@ -80,10 +80,30 @@ export function WidgetAide({ telephone }: { telephone: string | null }) {
 
   const fermer = useCallback(() => {
     setOuvert(false)
-    // Le focus doit revenir au lanceur, sinon il retombe sur <body> et la
-    // navigation au clavier repart du haut de la page.
-    lanceur.current?.focus()
   }, [])
+
+  /**
+   * Retour du focus au lanceur après fermeture — dans un effet, et pas dans
+   * `fermer()`.
+   *
+   * Le lanceur n'existe plus dans le DOM pendant que le panneau est ouvert
+   * (voir son rendu conditionnel plus bas) : l'appeler depuis `fermer()`
+   * viserait une référence encore nulle, React ne remontant le bouton qu'au
+   * rendu suivant. Le focus retomberait alors sur <body> et la navigation au
+   * clavier repartirait du haut de la page.
+   *
+   * `aEteOuvert` évite de voler le focus au chargement : sans lui, l'effet
+   * s'exécuterait une première fois avec `ouvert` à false et placerait le
+   * focus sur un bouton flottant alors que personne n'a rien demandé.
+   */
+  const aEteOuvert = useRef(false)
+  useEffect(() => {
+    if (ouvert) {
+      aEteOuvert.current = true
+      return
+    }
+    if (aEteOuvert.current) lanceur.current?.focus()
+  }, [ouvert])
 
   /**
    * Rouvrir remet le formulaire à neuf.
@@ -157,7 +177,16 @@ export function WidgetAide({ telephone }: { telephone: string | null }) {
 
   return (
     <div
-      className="fixed right-4 z-40 lg:right-6"
+      className={cn(
+        "fixed right-4 lg:right-6",
+        // z-40 au repos : la nav est en z-50 pour que son panneau mobile, une
+        // fois ouvert, recouvre proprement les widgets flottants (correctif du
+        // 3 septembre 2026, voir Nav.tsx). Ouvert, en revanche, ce panneau EST
+        // le premier plan : son titre et sa croix de fermeture passaient sous
+        // la barre de navigation, donc hors de portee. Monter le z-index
+        // seulement a ce moment-la corrige l'un sans defaire l'autre.
+        ouvert ? "z-[60]" : "z-40",
+      )}
       style={{ bottom: `calc(1rem + ${decalage}px)` }}
     >
       {ouvert && (
@@ -184,7 +213,7 @@ export function WidgetAide({ telephone }: { telephone: string | null }) {
            * tant qu'on n'a pas fait défiler. 8rem couvre le lanceur (44 px),
            * l'écart `mb-3` et la marge basse du conteneur.
            */
-          className="mb-3 max-h-[calc(100svh-8rem)] w-[calc(100vw-2rem)] max-w-[360px] overflow-y-auto overscroll-contain border border-ko-line bg-ko-white p-6 shadow-card"
+          className="mb-3 max-h-[calc(100svh-9rem)] w-[calc(100vw-2rem)] max-w-[360px] overflow-y-auto overscroll-contain border border-ko-line bg-ko-white p-6 shadow-card"
         >
           <div className="flex items-start justify-between gap-4">
             <p className="ko-h3 text-[20px] text-ko-ink">{t('titre')}</p>
@@ -361,16 +390,23 @@ export function WidgetAide({ telephone }: { telephone: string | null }) {
         adoucis plutôt qu'un cercle vert : le rond coloré est précisément le
         marqueur de widget générique que le skill 08 écarte.
       */}
-      <button
-        ref={lanceur}
-        type="button"
-        onClick={() => (ouvert ? fermer() : ouvrir())}
-        aria-expanded={ouvert}
-        aria-label={t('ouvrir')}
-        className="ml-auto flex h-14 w-14 items-center justify-center rounded-sm bg-ko-black text-ko-white shadow-card transition-colors duration-200 hover:bg-ko-black2"
-      >
-        {ouvert ? <IconeFermer taille={22} /> : <IconeAccompagnement taille={22} />}
-      </button>
+      {/* Le lanceur DISPARAIT pendant que le panneau est ouvert.
+          Il portait une croix de fermeture qui faisait doublon avec celle du
+          panneau, et surtout il poussait le panneau 68 px plus haut — assez
+          pour glisser son titre sous la barre de navigation. Une seule croix,
+          en haut du formulaire, la ou on la cherche. */}
+      {!ouvert && (
+        <button
+          ref={lanceur}
+          type="button"
+          onClick={ouvrir}
+          aria-expanded={false}
+          aria-label={t('ouvrir')}
+          className="ml-auto flex h-14 w-14 items-center justify-center rounded-sm bg-ko-black text-ko-white shadow-card transition-colors duration-200 hover:bg-ko-black2"
+        >
+          <IconeAccompagnement taille={22} />
+        </button>
+      )}
     </div>
   )
 }
