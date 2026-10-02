@@ -62,6 +62,14 @@ const REGLAGES = {
   solutionsModulaires: false,
   boutiqueActive: true,
   concoursActif: true,
+  // Migration 0051 — valeurs qui etaient figees dans le code.
+  lienRentman: '',
+  lienCandidatureExterne: '',
+  delaiReponseHeures: 48,
+  heuresOuverture: '',
+  reseauFacebook: '',
+  reseauInstagram: '',
+  reseauLinkedin: '',
 }
 
 function monter(reglages = REGLAGES) {

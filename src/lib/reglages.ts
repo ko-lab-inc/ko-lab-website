@@ -64,6 +64,37 @@ export type Reglages = {
    * et de robots.txt, et rend ses routes introuvables (404).
    */
   concoursActif: boolean
+
+  /* --------------------------------------------------------------------------
+   * Migration 0051 — valeurs qui étaient FIGÉES DANS LE CODE.
+   *
+   * Chacune de ces trois premières obligeait à un déploiement pour un
+   * changement que personne chez KO-LAB ne devrait avoir à demander.
+   * ------------------------------------------------------------------------ */
+
+  /**
+   * URL publique de l'inventaire Rentman. Vide = le bouton « Voir
+   * l'inventaire » laisse place à « Demander une location », qui mène au
+   * formulaire. Remplace la constante LIEN_RENTMAN.
+   */
+  lienRentman: string
+  /**
+   * Formulaire de candidature externe, proposé à côté de celui du site.
+   * Vide = le lien disparaît. Remplace LIEN_CANDIDATURE_EXTERNE.
+   */
+  lienCandidatureExterne: string
+  /**
+   * Délai de réponse annoncé, EN HEURES. Écrit en dur à trois endroits
+   * jusqu'au 2 octobre 2026 — page Contact, accusé de réception, Carrières —
+   * qui divergeaient dès que l'un des trois changeait.
+   */
+  delaiReponseHeures: number
+  /** Heures d'ouverture affichées. Vide = la ligne n'apparaît pas. */
+  heuresOuverture: string
+  /** URL complète. Vide = aucune icône affichée. */
+  reseauFacebook: string
+  reseauInstagram: string
+  reseauLinkedin: string
 }
 
 /**
@@ -95,6 +126,17 @@ function repli(): Reglages {
     // — inverse de leur raisonnement, pour la même raison : la page /concours
     // elle-même est neuve (Phase 10), rien à laisser inchangé en son absence.
     concoursActif: false,
+    // Vides : aucune de ces valeurs n'a d'équivalent « avant la table » à
+    // reproduire, et une URL inventée serait pire qu'une absence — un lien
+    // mort sur un site public se voit, une icône absente non.
+    lienRentman: '',
+    lienCandidatureExterne: '',
+    // 48 h : la valeur qui était en dur dans les trois textes.
+    delaiReponseHeures: 48,
+    heuresOuverture: '',
+    reseauFacebook: '',
+    reseauInstagram: '',
+    reseauLinkedin: '',
   }
 }
 
@@ -107,6 +149,13 @@ const CLES = {
   solutions_modulaires: 'solutionsModulaires',
   boutique_active: 'boutiqueActive',
   concours_actif: 'concoursActif',
+  lien_rentman: 'lienRentman',
+  lien_candidature_externe: 'lienCandidatureExterne',
+  delai_reponse_heures: 'delaiReponseHeures',
+  heures_ouverture: 'heuresOuverture',
+  reseau_facebook: 'reseauFacebook',
+  reseau_instagram: 'reseauInstagram',
+  reseau_linkedin: 'reseauLinkedin',
 } as const
 
 export type CleReglage = keyof typeof CLES
@@ -136,6 +185,12 @@ async function lireDepuisBase(): Promise<Reglages> {
         champ === 'concoursActif'
       ) {
         valeurs[champ] = ligne.valeur === 'true'
+      } else if (champ === 'delaiReponseHeures') {
+        // Seul réglage numérique. Une saisie illisible garde le repli plutôt
+        // que de produire « On revient vers vous dans les NaN heures » sur une
+        // page publique — le champ est libre dans l'admin, il faut le prévoir.
+        const n = Number.parseInt(ligne.valeur.trim(), 10)
+        if (Number.isFinite(n) && n > 0) valeurs[champ] = n
       } else {
         // Une valeur vide en base est une valeur VOULUE — « pas de téléphone à
         // afficher » — et non une absence. On ne retombe donc pas sur le

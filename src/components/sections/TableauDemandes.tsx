@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { changerStatutDemande, supprimerDemande } from '@/app/(admin)/[locale]/admin/demandes/actions'
+import {
+  changerStatutDemande,
+  enregistrerNoteDemande,
+  supprimerDemande,
+} from '@/app/(admin)/[locale]/admin/demandes/actions'
+import { buttonVariants } from '@/components/ui/Button'
 import { IconeFermer, IconeOeil, IconePoubelle } from '@/components/ui/Icones'
 import { cn } from '@/lib/utils/cn'
 
@@ -43,6 +48,12 @@ export type Demande = {
   /** Migration 0049. Non NULL = le courriel de notification vers l'équipe
    *  n'est jamais parti pour cette demande. */
   notificationErreur: string | null
+  /** Migration 0051. Note de l'équipe. Jamais envoyée au demandeur. */
+  noteInterne: string | null
+  /** Migration 0051. Nom du membre ayant posé le dernier changement de statut,
+   *  déjà résolu côté serveur — jamais un identifiant à l'écran. */
+  traitePar: string | null
+  traiteLeFormate: string | null
 }
 
 export function TableauDemandes({
@@ -74,8 +85,13 @@ export function TableauDemandes({
     colonneTelephone: string
     colonneOrganisation: string
     colonneMessage: string
-    /** Migration 0049 — intitule de l alerte quand notification_erreur est posee. */
+    /** Migration 0049 — intitulé de l'alerte quand notification_erreur est posée. */
     notificationEchouee: string
+    /** Migration 0051 — note interne et trace de traitement. */
+    noteInterne: string
+    noteInterneAide: string
+    noteEnregistrer: string
+    traitePar: string
     voir: string
     supprimer: string
     confirmer: string
@@ -411,6 +427,55 @@ export function TableauDemandes({
                 {voir.message}
               </p>
             </div>
+
+            {/* ------------------------------ Note interne ------------------------------ */}
+            {/* Migration 0051. Le formulaire se soumet lui-même — pas de
+                sauvegarde automatique à la frappe : une note se rédige, elle
+                ne se synchronise pas mot à mot, et un enregistrement par
+                lettre ferait autant d'écritures en base.
+
+                `key={voir.id}` : sans elle, ouvrir une demande puis une autre
+                garderait la note de la première dans le champ, React
+                réutilisant le même textarea non contrôlé. */}
+            <form
+              key={voir.id}
+              action={enregistrerNoteDemande}
+              className="mt-5 border-t border-ko-line pt-5"
+            >
+              <input type="hidden" name="locale" value={locale} />
+              <input type="hidden" name="id" value={voir.id} />
+
+              <label htmlFor="note-interne" className="label-mono text-ko-muted">
+                {textes.noteInterne}
+              </label>
+              <p className="mt-1.5 text-xs leading-relaxed text-ko-muted">
+                {textes.noteInterneAide}
+              </p>
+              <textarea
+                id="note-interne"
+                name="note_interne"
+                rows={4}
+                maxLength={4000}
+                defaultValue={voir.noteInterne ?? ''}
+                className="mt-2.5 w-full resize-y border border-ko-line bg-ko-white px-3 py-2 text-sm leading-relaxed text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none"
+              />
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <button
+                  type="submit"
+                  className={buttonVariants({ variant: 'primary', size: 'sm' })}
+                >
+                  {textes.noteEnregistrer}
+                </button>
+
+                {/* Trace de traitement — qui a changé le statut, et quand. */}
+                {voir.traiteLeFormate && (
+                  <p className="font-mono text-xs text-ko-muted">
+                    {textes.traitePar} {voir.traitePar ?? '—'} · {voir.traiteLeFormate}
+                  </p>
+                )}
+              </div>
+            </form>
           </div>
         )}
       </dialog>

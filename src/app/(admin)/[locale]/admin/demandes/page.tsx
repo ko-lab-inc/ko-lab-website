@@ -59,7 +59,7 @@ export default async function DemandesPage({ params }: Props) {
       // notification_erreur (migration 0049) : sans elle, une notification
       // perdue n'apparaîtrait nulle part. C'est tout l'objet de la colonne.
       .select(
-        'id, type, nom, email, telephone, organisation, message, statut, created_at, notification_erreur',
+        'id, type, nom, email, telephone, organisation, message, statut, created_at, notification_erreur, note_interne, traite_le, traite_par',
       )
       .order('created_at', { ascending: false }),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
@@ -105,6 +105,22 @@ export default async function DemandesPage({ params }: Props) {
     )
   }
 
+  // Noms de l'équipe, pour afficher « traité par Marie » plutôt qu'un UUID.
+  // Une seule requête pour tout le tableau, et seulement sur les comptes
+  // réellement cités : une demande sur deux n'a jamais changé de statut.
+  const idsTraitants = [...new Set((demandes ?? []).map((d) => d.traite_par).filter(Boolean))]
+  const nomsEquipe = new Map<string, string>()
+  if (idsTraitants.length > 0) {
+    const { data: profils } = await supabase
+      .from('profils')
+      .select('id, nom, email')
+      .in('id', idsTraitants as string[])
+    // Le nom peut etre vide en base ; le courriel sert alors de repli, et
+    // l'identifiant en dernier recours — l'ecran doit toujours afficher
+    // quelque chose de reconnaissable.
+    for (const p of profils ?? []) nomsEquipe.set(p.id, p.nom?.trim() || p.email?.trim() || p.id)
+  }
+
   // Date formatée UNE fois ici, jamais une fonction transmise au client — voir
   // le plantage documenté dans TableauRealisations.tsx (imagesCompte).
   const donnees = (demandes ?? []).map((d) => ({
@@ -115,6 +131,14 @@ export default async function DemandesPage({ params }: Props) {
     }),
     // Renommée en camelCase comme le reste des props du tableau.
     notificationErreur: d.notification_erreur,
+    noteInterne: d.note_interne,
+    // Nom du membre de l'équipe, pas son identifiant : l'écran doit dire
+    // « Marie », pas un UUID. Résolu ici, côté serveur, parce que le tableau
+    // est un composant client et n'a pas accès à la table des profils.
+    traitePar: d.traite_par ? (nomsEquipe.get(d.traite_par) ?? null) : null,
+    traiteLeFormate: d.traite_le
+      ? format.dateTime(new Date(d.traite_le), { dateStyle: 'medium', timeStyle: 'short' })
+      : null,
   }))
 
   return (
@@ -145,6 +169,10 @@ export default async function DemandesPage({ params }: Props) {
           colonneOrganisation: t('colonne_organisation'),
           colonneMessage: t('colonne_message'),
           notificationEchouee: t('notification_echouee'),
+          noteInterne: t('note_interne'),
+          noteInterneAide: t('note_interne_aide'),
+          noteEnregistrer: t('note_enregistrer'),
+          traitePar: t('traite_par'),
           voir: t('action_voir'),
           supprimer: t('supprimer'),
           confirmer: t('confirmer_suppression_demande'),

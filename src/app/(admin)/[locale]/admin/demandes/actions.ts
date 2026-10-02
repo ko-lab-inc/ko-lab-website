@@ -56,7 +56,18 @@ export async function changerStatutDemande(donnees: FormData): Promise<void> {
       .eq('id', id)
       .maybeSingle()
 
-    const { error } = await supabase.from('demandes_contact').update({ statut }).eq('id', id)
+    // Migration 0051 — on enregistre QUI a changé le statut et QUAND. Le
+    // statut passait à « traité » sans dire par qui : en cas de doute une
+    // semaine plus tard, personne ne pouvait répondre.
+    //
+    // `traite_le` est distinct de `traite_notifie_le` (0049) : le premier date
+    // le GESTE de l'équipe, le second le COURRIEL envoyé au demandeur. Les
+    // deux peuvent diverger — un envoi qui échoue, un statut repassé à « lu »
+    // puis remis à « traité ».
+    const { error } = await supabase
+      .from('demandes_contact')
+      .update({ statut, traite_par: acces.userId, traite_le: new Date().toISOString() })
+      .eq('id', id)
     if (error) {
       console.error('[demandes] changement de statut refusé', error.message)
       return
@@ -138,6 +149,51 @@ export async function supprimerDemande(donnees: FormData): Promise<void> {
     }
   } catch (err) {
     console.error('[demandes] échec suppression', err)
+  }
+
+  revalidatePath(`/${locale}/admin/demandes`)
+}
+
+/**
+ * Note interne d'une demande — migration 0051.
+ *
+ * ---------------------------------------------------------------------------
+ * POURQUOI CETTE ACTION EXISTE
+ *
+ * Jusqu'au 2 octobre 2026, une demande n'acceptait qu'UNE seule action :
+ * changer son statut. Rien ne pouvait y être attaché. Qui a appelé, ce qui a
+ * été dit, le prix annoncé — tout ça vivait dans la tête de quelqu'un, dans
+ * ses courriels ou son téléphone, et disparaissait dès que cette personne
+ * était absente. L'écran était une boîte de réception, pas un outil de
+ * travail.
+ *
+ * ⚠️ CETTE NOTE N'EST JAMAIS ENVOYÉE NI AFFICHÉE PUBLIQUEMENT. La politique
+ * RLS de `demandes_contact` réserve déjà la lecture à l'équipe ; aucune des
+ * pages publiques ne lit cette table. C'est la raison pour laquelle le champ
+ * peut rester libre : il n'a pas à être rédigé pour un client.
+ * ---------------------------------------------------------------------------
+ */
+export async function enregistrerNoteDemande(donnees: FormData): Promise<void> {
+  const locale = String(donnees.get('locale') ?? 'fr')
+  const id = String(donnees.get('id') ?? '')
+  // Borne haute : un champ de texte sans limite finit par recevoir un
+  // copier-coller de fil de discussion entier, que l'écran affiche ensuite en
+  // entier dans une modale.
+  const note = String(donnees.get('note_interne') ?? '').trim().slice(0, 4000)
+  if (!estUuid(id)) return
+
+  try {
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    const { supabase } = acces
+    // Chaîne vide → NULL : « pas de note » est une absence, pas une note vide.
+    const { error } = await supabase
+      .from('demandes_contact')
+      .update({ note_interne: note === '' ? null : note })
+      .eq('id', id)
+    if (error) console.error('[demandes] note refusée', error.message)
+  } catch (err) {
+    console.error('[demandes] échec enregistrement de la note', err)
   }
 
   revalidatePath(`/${locale}/admin/demandes`)

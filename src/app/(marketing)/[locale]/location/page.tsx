@@ -7,8 +7,8 @@ import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
-import { LIEN_RENTMAN } from '@/lib/constantes'
 import { lireGaleriePage } from '@/lib/galeries'
+import { lireReglages } from '@/lib/reglages'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
@@ -55,6 +55,12 @@ export default async function LocationPage({ params }: Props) {
   const t = await getTranslations('Location')
   const tCommun = await getTranslations('Commun')
   const images = await lireGaleriePage('location', locale)
+  // L'URL vient des réglages depuis le 2 octobre 2026 (migration 0051) : elle
+  // était figée dans le code, donc la recevoir de Rentman imposait un
+  // déploiement. `lireReglages` est déjà appelé plus bas pour le téléphone —
+  // une seule lecture, mise en cache.
+  const reglagesSite = await lireReglages()
+  const lienRentman = reglagesSite.lienRentman.trim()
 
   // ⚠️ Passé de 4 à 7 catégories le 3 septembre 2026 (point 18 du prompt de
   // corrections finales) : les 4 anciennes (Remorques/Nacelles/Outils/
@@ -118,14 +124,14 @@ export default async function LocationPage({ params }: Props) {
                     dans cet état ; les deux boutons d'origine reviennent dès
                     que Christian communique l'URL réelle — une seule ligne à
                     changer dans constantes.ts. */}
-                {LIEN_RENTMAN !== '#' ? (
+                {lienRentman !== '' ? (
                   <>
                     {/* Lien externe : <a> et non le <Link> localisé, qui
                         préfixerait l'URL d'une locale. rel="noopener" est
                         obligatoire avec target="_blank" — sans lui, la page
                         ouverte accède à window.opener (skill 09). */}
                     <a
-                      href={LIEN_RENTMAN}
+                      href={lienRentman}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={buttonVariants({ variant: 'primary' })}

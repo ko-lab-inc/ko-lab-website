@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
-import { LIEN_CANDIDATURE_EXTERNE } from '@/lib/constantes'
+import { lireReglages } from '@/lib/reglages'
 
 /**
  * Redirection traçée vers le Google Form de candidature — Phase 6.2.
@@ -29,7 +29,21 @@ import { LIEN_CANDIDATURE_EXTERNE } from '@/lib/constantes'
  * Imparfait (un clic n'est pas une candidature complétée), mais réel.
  * ---------------------------------------------------------------------------
  */
-export function GET() {
+export async function GET(req: NextRequest) {
   console.log('[carrieres] clic vers le canal externe (Google Form)')
-  return NextResponse.redirect(LIEN_CANDIDATURE_EXTERNE)
+
+  // Depuis les réglages (migration 0051) : changer de formulaire ne doit pas
+  // demander un déploiement. Le lien était figé dans le code jusqu'au
+  // 2 octobre 2026.
+  const { lienCandidatureExterne } = await lireReglages()
+  const cible = lienCandidatureExterne.trim()
+
+  // Réglage vidé = il n'y a plus de canal externe. On renvoie vers le
+  // formulaire du site plutôt que vers une adresse absente : une redirection
+  // vers une chaîne vide est une erreur serveur, et le visiteur qui a cliqué
+  // « postuler » doit atterrir quelque part où il peut postuler.
+  if (cible === '') {
+    return NextResponse.redirect(new URL('/fr/carrieres/postuler', req.url))
+  }
+  return NextResponse.redirect(cible)
 }

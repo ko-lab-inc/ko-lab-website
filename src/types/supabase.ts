@@ -206,6 +206,14 @@ export type Database = {
           /** Migration 0049. Horodatage du courriel « demande traitée ».
            *  Non NULL = déjà envoyé, on ne le renvoie pas. */
           traite_notifie_le: string | null
+          /** Migration 0051. Note de l'équipe sur cette demande. JAMAIS envoyée au
+           *  demandeur ni affichée publiquement. */
+          note_interne: string | null
+          /** Migration 0051. Compte ayant pose le dernier changement de statut. */
+          traite_par: string | null
+          /** Migration 0051. Horodatage du dernier changement de statut — distinct
+           *  de traite_notifie_le (0049), qui date le COURRIEL au demandeur. */
+          traite_le: string | null
         }
         Insert: {
           id?: string
@@ -224,6 +232,9 @@ export type Database = {
           notification_erreur?: string | null
           accuse_envoye?: boolean
           traite_notifie_le?: string | null
+          note_interne?: string | null
+          traite_par?: string | null
+          traite_le?: string | null
         }
         Update: {
           id?: string
@@ -242,6 +253,9 @@ export type Database = {
           notification_erreur?: string | null
           accuse_envoye?: boolean
           traite_notifie_le?: string | null
+          note_interne?: string | null
+          traite_par?: string | null
+          traite_le?: string | null
         }
         Relationships: []
       }
@@ -335,6 +349,11 @@ export type Database = {
           notification_envoyee: boolean
           /** Migration 0049. Message d'échec de ce courriel. NULL = aucun échec. */
           notification_erreur: string | null
+          /** Migration 0051. Note de l'équipe sur ce candidat. Jamais envoyée. */
+          note_interne: string | null
+          /** Migration 0051. Compte ayant pose le dernier changement de statut. */
+          statut_par: string | null
+          statut_le: string | null
         }
         Insert: {
           id?: string
@@ -359,6 +378,9 @@ export type Database = {
           poste_id?: string | null
           notification_envoyee?: boolean
           notification_erreur?: string | null
+          note_interne?: string | null
+          statut_par?: string | null
+          statut_le?: string | null
         }
         Update: {
           id?: string
@@ -383,6 +405,9 @@ export type Database = {
           poste_id?: string | null
           notification_envoyee?: boolean
           notification_erreur?: string | null
+          note_interne?: string | null
+          statut_par?: string | null
+          statut_le?: string | null
         }
         Relationships: []
       }
