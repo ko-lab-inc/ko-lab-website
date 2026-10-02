@@ -92,7 +92,6 @@ test.describe('Espace admin — fumée', () => {
       '/fr/admin/demandes',
       '/fr/admin/catalogue',
       '/fr/admin/realisations',
-      '/fr/admin/videos',
       '/fr/admin/carrieres',
       '/fr/admin/candidatures',
       '/fr/admin/utilisateurs',

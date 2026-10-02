@@ -82,12 +82,9 @@ export default async function LeLabPage({ params }: Props) {
         src={photoHero?.src ?? null}
         altPhoto={photoHero?.alt}
         cadrage="object-center"
-        // `videos` retirée (LOT E1, §11, 30 août 2026) : masquage, pas
-        // suppression — BandeauVideos.tsx, la table `videos` et /admin/videos
-        // restent tous intacts, ce composant ne reçoit simplement plus la
-        // prop. PageCapacite ne rend la bande QUE si `videos` est passée
-        // (voir sa propre docstring) : l'omettre suffit, pas besoin d'un
-        // tableau vide.
+        // La bande de vidéos a été masquée le 30 août 2026 (LOT E1, §11),
+        // puis la fonction entière a été RETIRÉE le 2 octobre 2026 à la
+        // demande de Christian : « on ne va plus l'utiliser ».
         // Ordre de la revision du 20 septembre 2026 (§8) : ce que le LAB
         // resout, puis la signalisation, puis les projets, puis les preuves
         // en photos, et SEULEMENT ensuite les technologies, puis le

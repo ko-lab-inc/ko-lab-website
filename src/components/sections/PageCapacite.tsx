@@ -1,7 +1,6 @@
 import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
-import { BandeauVideos, type VignetteVideo } from '@/components/ui/BandeauVideos'
 import { buttonVariants } from '@/components/ui/Button'
 import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
 import { Parallax } from '@/components/ui/Parallax'
@@ -53,20 +52,10 @@ type PageCapaciteProps = {
   /** Désature les contre-jours ambrés, trop saturés pour la palette. */
   desature?: boolean
   /**
-   * Bande de vidéos, entre la liste des capacités et le CTA.
-   *
-   * ⚠️ C'est la PRÉSENCE de la prop qui décide, pas son contenu. Passer un
-   * tableau vide affiche la section avec des emplacements réservés (voir
-   * BandeauVideos) ; ne pas passer la prop du tout n'affiche rien. Seule la
-   * page Le LAB en prévoit une aujourd'hui — les trois autres pages de
-   * capacités omettent simplement la prop.
-   */
-  videos?: readonly VignetteVideo[]
-  /**
-   * Galerie photo, entre la liste des capacités et la bande de vidéos —
-   * ajoutée le 20 août 2026 pour donner une deuxième preuve visuelle que la
-   * seule photo de hero. Contrairement à `videos`, une prop absente OU un
-   * tableau vide n'affichent tout simplement rien (GaleriePhotos/BandeauImages
+   * Galerie photo, entre la liste des capacités et le CTA — ajoutée le
+   * 20 août 2026 pour donner une deuxième preuve visuelle que la seule photo
+   * de hero. Une prop absente OU un tableau vide n'affichent rien
+   * (GaleriePhotos/BandeauImages
    * n'ont pas d'emplacement réservé à montrer) : pas de section vide sur les
    * pages qui n'ont pas encore assez de photos propres pour ce sujet.
    */
@@ -93,7 +82,6 @@ export async function PageCapacite({
   altPhoto,
   cadrage,
   desature = false,
-  videos,
   images,
   contenuSupplementaire,
 }: PageCapaciteProps) {
@@ -283,36 +271,6 @@ export async function PageCapacite({
 
       {contenuSupplementaire}
 
-      {/* ------------------------------ Vidéos ------------------------------ */}
-      {/* Rendue dès que la prop est passée, même vide — la bande affiche alors
-          des emplacements réservés (voir BandeauVideos). Placée APRÈS la liste
-          des capacités et AVANT le CTA : on montre le savoir-faire en images
-          une fois qu'il a été énoncé, et juste avant de proposer de démarrer
-          un projet. */}
-      {videos !== undefined && (
-        <section className="border-t border-ko-line bg-ko-white pb-16 lg:pb-24">
-          <div className="mx-auto max-w-container px-6 lg:px-16">
-            <Reveal>
-              <p className="label-mono pt-16 lg:pt-24">{t('videos_label')}</p>
-              <h2 className="ko-h3 mt-5 max-w-[28ch] text-ko-ink">{t('videos_titre')}</h2>
-
-              <div className="mt-10">
-                <BandeauVideos
-                  videos={videos}
-                  libelles={{
-                    groupe: t('videos_titre'),
-                    lire: t('videos_lire'),
-                    precedent: t('videos_precedent'),
-                    suivant: t('videos_suivant'),
-                    aVenir: t('videos_a_venir'),
-                    fermer: t('videos_fermer'),
-                  }}
-                />
-              </div>
-            </Reveal>
-          </div>
-        </section>
-      )}
 
       {/* ------------------------------- CTA ------------------------------- */}
       <section className="bg-ko-cream py-20 lg:py-28">

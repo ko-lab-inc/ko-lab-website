@@ -90,21 +90,22 @@ test('nav admin : « Médias » est un accordéon fermé par défaut, à trois s
 
   const lienRealisations = nav.getByRole('link', { name: 'Réalisations' })
   const lienEmplacements = nav.getByRole('link', { name: 'Emplacements médias' })
-  const lienVideos = nav.getByRole('link', { name: 'Vidéos' })
 
-  // Fermé par défaut : les trois sous-entrées ne sont PAS dans l'arbre a11y.
+  // Fermé par défaut : les sous-entrées ne sont PAS dans l'arbre a11y.
+  // « Vidéos » a disparu du groupe le 2 octobre 2026 : la fonction entière a
+  // été retirée, on vérifie donc qu'elle n'y est plus.
   await expect(lienRealisations).toHaveCount(0)
   await expect(lienEmplacements).toHaveCount(0)
-  await expect(lienVideos).toHaveCount(0)
+  await expect(nav.getByRole('link', { name: 'Vidéos' })).toHaveCount(0)
 
   await boutonMedias.click()
   await expect(boutonMedias).toHaveAttribute('aria-expanded', 'true')
   await expect(lienRealisations).toBeVisible()
   await expect(lienEmplacements).toBeVisible()
-  await expect(lienVideos).toBeVisible()
+  await expect(nav.getByRole('link', { name: 'Vidéos' })).toHaveCount(0)
 
-  await lienVideos.click()
-  await page.waitForURL('**/admin/videos')
+  await lienEmplacements.click()
+  await page.waitForURL('**/admin/medias-emplacements')
 
   // Sous `lg`, le panneau entier se referme à chaque navigation (voir
   // NavAdmin.tsx) — le rouvrir avant de vérifier l'état du groupe.
@@ -268,20 +269,3 @@ test('/admin/medias-emplacements : retirer une photo affiche le placeholder publ
   }
 })
 
-test('/admin/videos : vignette Aperçu ouvre le modal, sans bloc texte alternatif', async ({ page, request }) => {
-  const compte = await creerCompteEditor(request)
-  await connecter(page, compte.email)
-
-  await page.goto('/fr/admin/videos')
-  const premiereVignette = page.getByRole('button', { name: /Voir l'aperçu/i }).first()
-  await premiereVignette.click()
-
-  const dialogue = page.locator('dialog[open]')
-  await expect(dialogue).toBeVisible()
-  await expect(dialogue.locator('img')).toBeVisible()
-  // La table videos n'a pas de colonne alt : le bloc « Texte alternatif » est omis, pas vide.
-  await expect(dialogue.getByText('Texte alternatif')).toHaveCount(0)
-
-  await dialogue.getByRole('button', { name: /Fermer/i }).click()
-  await expect(dialogue).toBeHidden()
-})

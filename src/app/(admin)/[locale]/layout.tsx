@@ -12,7 +12,6 @@ import {
   IconeEquipe,
   IconeEtiquette,
   IconeGalerie,
-  IconeLecture,
   IconeMallette,
   IconePanier,
   IconeReglages,
@@ -140,11 +139,6 @@ export default async function AdminLayout({ children, params }: Props) {
               href: `/${locale}/admin/medias-emplacements`,
               label: t('nav_medias_emplacements'),
               icone: <IconeGalerie taille={17} />,
-            },
-            {
-              href: `/${locale}/admin/videos`,
-              label: t('nav_videos'),
-              icone: <IconeLecture taille={17} />,
             },
             {
               href: `/${locale}/admin/concours`,
