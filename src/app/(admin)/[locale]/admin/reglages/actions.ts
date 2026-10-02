@@ -180,5 +180,31 @@ export async function enregistrerReglages(
    */
   updateTag(ETIQUETTE_REGLAGES)
   revalidatePath(`/${locale}/admin/reglages`)
+
+  /**
+   * ⚠️ ET LES PAGES PUBLIQUES — sans cette ligne, un réglage enregistré
+   * n'apparaît sur le site qu'à l'expiration naturelle de l'ISR, soit jusqu'à
+   * UNE HEURE plus tard.
+   *
+   * `updateTag` expire le cache de DONNÉES de `lireReglages`, pas la sortie
+   * déjà rendue des pages qui l'ont consommée. Mesuré en production le
+   * 2 octobre 2026 : le compte Instagram saisi dans cet écran n'apparaissait
+   * toujours pas au pied de page douze minutes après — alors que la valeur
+   * était bien en base et le code bien déployé (vérifié : les champs
+   * existaient dans l'admin de production). Même nature que le défaut du
+   * sitemap corrigé le 21 septembre.
+   *
+   * Le défaut existe depuis la migration 0011 ; il devient seulement visible
+   * maintenant, parce qu'on vient d'ajouter des réglages qu'on remplit en
+   * regardant le résultat. Quelqu'un qui saisit une adresse Facebook et ne
+   * voit rien conclut que ça ne marche pas.
+   *
+   * `'layout'` et la racine : les coordonnées et les réseaux vivent dans le
+   * PIED DE PAGE, donc sur toutes les pages des deux langues. Purger tout est
+   * assommant en apparence, mais un réglage se change quelques fois par an —
+   * et une invalidation partielle laisserait des pages incohérentes entre
+   * elles, ce qui est pire qu'un rendu de plus.
+   */
+  revalidatePath('/', 'layout')
   return { succes: true }
 }
