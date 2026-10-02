@@ -85,6 +85,25 @@ export function WidgetAide({ telephone }: { telephone: string | null }) {
     lanceur.current?.focus()
   }, [])
 
+  /**
+   * Rouvrir remet le formulaire à neuf.
+   *
+   * Sans ça, l'état `succes` survivait à la fermeture : rouvrir le panneau
+   * réaffichait « Message reçu » indéfiniment, et il devenait impossible de
+   * poser une deuxième question — y compris pour corriger la première, qui
+   * est précisément le moment où on y revient. Signalé par Christian le
+   * 2 octobre 2026, capture à l'appui.
+   *
+   * La remise à zéro est à l'OUVERTURE et non à la fermeture : le visiteur
+   * doit avoir le temps de lire « Message reçu » avant que ça disparaisse,
+   * et une fermeture par la touche Échap ne doit pas effacer la confirmation
+   * sous ses yeux.
+   */
+  const ouvrir = useCallback(() => {
+    setEtat('repos')
+    setOuvert(true)
+  }, [])
+
   // Échap ferme, comme le menu de la nav.
   useEffect(() => {
     if (!ouvert) return
@@ -149,7 +168,23 @@ export function WidgetAide({ telephone }: { telephone: string | null }) {
           aria-label={t('titre')}
           // w-[calc(100vw-2rem)] : à 375 px un panneau de largeur fixe
           // dépassait à droite. Plafonné à 360 px au-delà.
-          className="mb-3 w-[calc(100vw-2rem)] max-w-[360px] border border-ko-line bg-ko-white p-6 shadow-card"
+          /*
+           * `max-h` + `overflow-y-auto` : le panneau est ancré en bas et
+           * grandit vers le HAUT, donc tout ce qui dépasse sort par le haut de
+           * la fenêtre — en silence, sans barre de défilement, et c'est le
+           * champ « Votre nom » qui disparaît en premier.
+           *
+           * Mesuré le 2 octobre 2026 : 606 px de haut, donc hors écran dès une
+           * fenêtre de 680 px (-10 px), et de 90 px à 600 px. Sur un portable
+           * de 1366×768 avec la barre d'adresse et la barre des tâches, on y
+           * est. Signalé par Christian, capture à l'appui.
+           *
+           * `100svh` et non `100vh` : sur mobile, `vh` compte la barre
+           * d'adresse rétractée, donc promet une hauteur que l'écran n'a pas
+           * tant qu'on n'a pas fait défiler. 8rem couvre le lanceur (44 px),
+           * l'écart `mb-3` et la marge basse du conteneur.
+           */
+          className="mb-3 max-h-[calc(100svh-8rem)] w-[calc(100vw-2rem)] max-w-[360px] overflow-y-auto overscroll-contain border border-ko-line bg-ko-white p-6 shadow-card"
         >
           <div className="flex items-start justify-between gap-4">
             <p className="ko-h3 text-[20px] text-ko-ink">{t('titre')}</p>
@@ -329,7 +364,7 @@ export function WidgetAide({ telephone }: { telephone: string | null }) {
       <button
         ref={lanceur}
         type="button"
-        onClick={() => (ouvert ? fermer() : setOuvert(true))}
+        onClick={() => (ouvert ? fermer() : ouvrir())}
         aria-expanded={ouvert}
         aria-label={t('ouvrir')}
         className="ml-auto flex h-14 w-14 items-center justify-center rounded-sm bg-ko-black text-ko-white shadow-card transition-colors duration-200 hover:bg-ko-black2"

@@ -9,6 +9,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { CADRAGES, FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD, IMAGES } from '@/lib/images'
+import { obtenirEmplacement } from '@/lib/medias-emplacements'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
@@ -106,6 +107,15 @@ export default async function CapacitesHubPage({ params }: Props) {
     getTranslations('Capacites.production'),
   ])
 
+  // Photo de la carte Production — MÊME SOURCE que la page qu'elle annonce
+  // (/nos-capacites/production-evenementielle), et non une image choisie ici.
+  // Sans ça, remplir l'emplacement depuis l'admin changeait la page mais pas
+  // la carte du hub, qui restait sur son PhotoPlaceholder : constaté le
+  // 2 octobre 2026, alors que l'emplacement était rempli depuis le
+  // 20 septembre. Une capacité annoncée sans photo, à côté de trois qui en
+  // ont, se lit comme une capacité qu'on n'assume pas.
+  const emplacementProduction = await obtenirEmplacement('production_evenementielle')
+
   // Ordre et numéros de la révision du 20 septembre 2026 (§4) :
   // Installations & aménagements, Équipements & déploiement, Opérations
   // terrain — celui du menu (ROUTES_CAPACITES) et de l'accueil. Le LAB a
@@ -153,11 +163,14 @@ export default async function CapacitesHubPage({ params }: Props) {
       titre: tProd('title'),
       intro: tProd('intro'),
       items: ITEMS_8.map((k) => tProd(k)),
-      // Pas de photo : l'emplacement production_evenementielle est vide tant
-      // que KO-LAB n'en a pas choisi une dans l'admin. La carte rend alors
-      // un PhotoPlaceholder, comme la page elle-même.
-      src: null,
-      alt: '',
+      // Vient de l'emplacement `production_evenementielle`, choisi dans
+      // l'admin. Tant qu'il est vide, `src` reste null et la carte rend un
+      // PhotoPlaceholder — jamais la photo d'un autre mandat à la place
+      // (§15 et §18 de la révision du 20 septembre 2026).
+      src: emplacementProduction?.url ?? null,
+      alt: emplacementProduction
+        ? ((locale === 'en' ? emplacementProduction.alt_en : null) ?? emplacementProduction.alt_fr)
+        : '',
       cadrage: 'object-center',
       desature: false,
     },
@@ -211,7 +224,17 @@ export default async function CapacitesHubPage({ params }: Props) {
           className="absolute inset-0 bg-gradient-to-r from-ko-scrim/[0.92] via-ko-scrim/70 to-ko-scrim/40"
         />
 
-        <div className="relative z-10 mx-auto max-w-container px-6 pb-20 pt-28 lg:px-16 lg:pb-28 lg:pt-40">
+        {/* Les variantes `max-height` compriment l'en-tête sur les fenêtres
+            courtes. Mesuré le 2 octobre 2026 : le bas du paragraphe tombait à
+            613 px — sous la ligne de flottaison dès 600 px de fenêtre, là où
+            Le LAB s'arrête à 425 px. Un portable 1366×768 avec barre d'adresse
+            et barre des tâches y est. Signalé par Christian.
+
+            Pourquoi ici et pas sur PageCapacite : ce hero porte un titre de
+            trois lignes ET un paragraphe d'intro, les pages de capacité n'ont
+            que le titre. Même gabarit, poids différent — c'est le contenu
+            qu'il faut compenser, pas le gabarit qu'il faut changer. */}
+        <div className="relative z-10 mx-auto max-w-container px-6 pb-20 pt-28 [@media(max-height:760px)]:pb-14 [@media(max-height:760px)]:pt-20 lg:px-16 lg:pb-28 lg:pt-40 lg:[@media(max-height:760px)]:pb-16 lg:[@media(max-height:760px)]:pt-24">
           <p className="flex items-center gap-3">
             <span aria-hidden="true" className="h-px w-8 bg-ko-blue" />
             <span className="label-mono label-mono-d">{t('hub.label')}</span>
