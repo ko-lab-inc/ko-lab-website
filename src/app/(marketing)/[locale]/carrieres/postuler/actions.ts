@@ -1,5 +1,7 @@
 'use server'
 
+import { randomUUID } from 'node:crypto'
+
 import { headers } from 'next/headers'
 import { z } from 'zod'
 
@@ -189,9 +191,26 @@ export async function envoyerCandidature(
     }
 
     // --------------------------------------------------------- Candidature
-    const { data: creee, error } = await supabase
-      .from('candidatures')
-      .insert({
+    // ⚠️ L'IDENTIFIANT EST POSÉ ICI, et surtout PAS relu après l'insertion.
+    //
+    // La migration 0019 révoque explicitement SELECT sur `candidatures` pour
+    // `anon`, afin de protéger les coordonnées des candidats. Or PostgREST
+    // traduit un `.select()` enchaîné à un `.insert()` en
+    // `INSERT ... RETURNING`, qui exige ce privilège EN PLUS du droit
+    // d'écrire — le même piège que `Prefer: return=representation`, décrit
+    // dans CLAUDE.md à propos des sondes REST.
+    //
+    // Première version de cette notification : `.insert(...).select('id')`.
+    // Le formulaire de candidature a cessé de fonctionner en production le
+    // 2 octobre 2026, le temps d'un déploiement, pour cette seule raison —
+    // et personne n'aurait pu le deviner depuis le code, puisque la requête
+    // réussit pour un membre de l'équipe et échoue pour un visiteur.
+    //
+    // Générer l'identifiant nous-mêmes le rend connu sans rien relire.
+    const idCandidature = randomUUID()
+
+    const { error } = await supabase.from('candidatures').insert({
+      id: idCandidature,
       nom: analyse.data.nom,
       telephone: analyse.data.telephone,
       email: analyse.data.email,
@@ -216,9 +235,7 @@ export async function envoyerCandidature(
       // Loi 25 (audit du 23 août 2026, migration 0041).
       consentement_le: new Date().toISOString(),
       consentement_version: VERSION_POLITIQUES,
-      })
-      .select('id')
-      .single()
+    })
 
     if (error) {
       // Le CV est déjà déposé : on le retire pour ne pas laisser un document
@@ -267,16 +284,15 @@ export async function envoyerCandidature(
     // l'UPDATE qu'à l'équipe authentifiée, et ce code s'exécute pour un
     // visiteur anonyme. Portée volontairement minuscule — ces deux colonnes,
     // cette ligne-là.
-    if (creee?.id) {
-      await getSupabaseAdmin()
-        .from('candidatures')
-        .update(
-          envoi.ok
-            ? { notification_envoyee: true, notification_erreur: null }
-            : { notification_envoyee: false, notification_erreur: raisonCourte(envoi.raison) },
-        )
-        .eq('id', creee.id)
-    }
+    await getSupabaseAdmin()
+      .from('candidatures')
+      .update(
+        envoi.ok
+          ? { notification_envoyee: true, notification_erreur: null }
+          : { notification_envoyee: false, notification_erreur: raisonCourte(envoi.raison) },
+      )
+      .eq('id', idCandidature)
+
     if (!envoi.ok) console.error('[candidature] notification RH non envoyée :', envoi.raison)
   } catch (err) {
     console.error('[candidature] échec', err)
