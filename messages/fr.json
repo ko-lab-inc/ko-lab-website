@@ -1044,6 +1044,8 @@
     "erreur_photo": "La photo n'a pas pu être téléversée. Vérifiez son format et sa taille.",
     "reglages_intro": "Ces valeurs s'appliquent au site public dès l'enregistrement, sans redéploiement.",
     "reglages_groupe_contact": "Coordonnées",
+    "reglages_adresse": "Adresse postale",
+    "reglages_adresse_aide": "Affichée au pied de page et sur la page Contact. Vide : la ligne n’apparaît pas. Distincte du secteur ci-dessous, qui est le territoire desservi.",
     "reglages_groupe_liens": "Liens et délais",
     "reglages_groupe_liens_aide": "Trois valeurs qui étaient écrites dans le code : les changer demandait un déploiement.",
     "reglages_lien_rentman": "Lien de l’inventaire Rentman",

@@ -97,6 +97,9 @@ export default async function ContactPage({ params }: Props) {
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-widest text-ko-muted">
                       {reglages.contactRegion}
+                  {reglages.contactAdresse && (
+                    <span className="mt-1 block text-ko-muted">{reglages.contactAdresse}</span>
+                  )}
                   {/* Heures d'ouverture juste sous le secteur — migration
                       0051. C'est l'endroit où quelqu'un qui s'apprête à
                       téléphoner regarde. */}

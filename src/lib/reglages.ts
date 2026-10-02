@@ -49,6 +49,15 @@ export type Reglages = {
   contactCourriel: string
   contactTelephone: string
   contactRegion: string
+  /**
+   * Adresse postale affichée. Vide = la ligne n'apparaît pas.
+   *
+   * DISTINCTE de `contactRegion` : celle-ci est le SECTEUR DESSERVI
+   * (`areaServed`), celle-là le LIEU de l'entreprise (`address`).
+   * Les confondre enverrait une adresse de rue là où Google attend une zone
+   * de service.
+   */
+  contactAdresse: string
   panierActif: boolean
   solutionsModulaires: boolean
   /**
@@ -111,6 +120,7 @@ function repli(): Reglages {
     contactCourriel: EMAILS.info,
     contactTelephone: '',
     contactRegion: 'Outaouais, Québec',
+    contactAdresse: '',
     // Comparaison stricte à 'true' : une variable absente, vide ou mal
     // orthographiée désactive la fonctionnalité au lieu de lever une
     // exception. Même règle que l'ancien lib/config/features.ts, retiré : les
@@ -145,6 +155,7 @@ const CLES = {
   contact_courriel: 'contactCourriel',
   contact_telephone: 'contactTelephone',
   contact_region: 'contactRegion',
+  contact_adresse: 'contactAdresse',
   panier_actif: 'panierActif',
   solutions_modulaires: 'solutionsModulaires',
   boutique_active: 'boutiqueActive',

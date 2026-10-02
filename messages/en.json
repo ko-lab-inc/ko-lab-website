@@ -1042,6 +1042,8 @@
     "erreur_photo": "La photo n'a pas pu être téléversée. Vérifiez son format et sa taille.",
     "reglages_intro": "Ces valeurs s'appliquent au site public dès l'enregistrement, sans redéploiement.",
     "reglages_groupe_contact": "Coordonnées",
+    "reglages_adresse": "Postal address",
+    "reglages_adresse_aide": "Shown in the footer and on the Contact page. Empty: the line does not appear. Distinct from the area below, which is the territory served.",
     "reglages_groupe_liens": "Links and delays",
     "reglages_groupe_liens_aide": "Three values that used to live in the code: changing them required a deployment.",
     "reglages_lien_rentman": "Rentman inventory link",

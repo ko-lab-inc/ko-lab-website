@@ -330,6 +330,14 @@ export default async function MarketingLayout({ children, params }: Props) {
     slogan: locale === 'en' ? 'From idea to ground.' : "De l'idée au terrain.",
     email: reglages.contactCourriel,
     ...(reglages.contactTelephone ? { telephone: reglages.contactTelephone } : {}),
+    // `address` au format TEXTE : schema.org l'accepte, mais ne produira pas
+    // de résultat enrichi — il faudrait une adresse décomposée
+    // (streetAddress, addressLocality, postalCode…). Choix assumé, voir la
+    // migration 0052 : quatre champs pour une adresse qui ne change jamais,
+    // c'est quatre occasions de se tromper, et le gain reste hypothétique
+    // tant que ko-lab-center.ca n'est pas indexé.
+    ...(reglages.contactAdresse ? { address: reglages.contactAdresse } : {}),
+    // Le TERRITOIRE desservi, à ne pas confondre avec l'adresse ci-dessus.
     areaServed: reglages.contactRegion,
   }
 

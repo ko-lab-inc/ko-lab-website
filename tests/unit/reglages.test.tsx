@@ -29,6 +29,8 @@ vi.mock('@/app/(admin)/[locale]/admin/reglages/actions', () => ({
 
 const LIBELLES = {
   groupeContact: 'Coordonnées',
+  adresse: 'adresse',
+  adresseAide: 'adresseAide',
   groupeLiens: 'groupeLiens',
   groupeLiensAide: 'groupeLiensAide',
   lienRentman: 'lienRentman',
@@ -74,6 +76,7 @@ const REGLAGES = {
   contactCourriel: 'info@ko-lab-center.ca',
   contactTelephone: '',
   contactRegion: 'Outaouais, Québec',
+  contactAdresse: '',
   panierActif: true,
   solutionsModulaires: false,
   boutiqueActive: true,

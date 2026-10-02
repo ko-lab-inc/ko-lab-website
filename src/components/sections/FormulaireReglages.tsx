@@ -28,6 +28,8 @@ import type { Reglages } from '@/lib/reglages'
 export type LibellesReglages = {
   groupeContact: string
   groupeContactAide: string
+  adresse: string
+  adresseAide: string
   groupeFonctions: string
   groupeFonctionsAide: string
   /* Migration 0051. */
@@ -218,6 +220,18 @@ export function FormulaireReglages({
             maxLength={120}
             defaultValue={reglages.contactRegion}
             aria-describedby="contact_region-aide"
+            className={CHAMP}
+          />
+        </Champ>
+
+        <Champ id="contact_adresse" libelle={libelles.adresse} aide={libelles.adresseAide}>
+          <input
+            id="contact_adresse"
+            name="contact_adresse"
+            type="text"
+            maxLength={200}
+            defaultValue={reglages.contactAdresse}
+            aria-describedby="contact_adresse-aide"
             className={CHAMP}
           />
         </Champ>

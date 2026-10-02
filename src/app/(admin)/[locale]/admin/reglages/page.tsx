@@ -71,6 +71,8 @@ export default async function Page({ params }: Props) {
         reglages={reglages}
         libelles={{
           groupeContact: t('reglages_groupe_contact'),
+          adresse: t('reglages_adresse'),
+          adresseAide: t('reglages_adresse_aide'),
           groupeLiens: t('reglages_groupe_liens'),
           groupeLiensAide: t('reglages_groupe_liens_aide'),
           lienRentman: t('reglages_lien_rentman'),

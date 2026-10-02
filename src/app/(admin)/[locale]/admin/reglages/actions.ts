@@ -65,6 +65,8 @@ const schema = z.object({
    */
   contact_telephone: z.string().trim().max(40),
   contact_region: z.string().trim().max(120),
+  // Libre et vidable, comme le téléphone : une chaîne vide retire la ligne.
+  contact_adresse: z.string().trim().max(200),
 
   /* ---------------------------------------------------------------------
    * Migration 0051. Toutes LIBRES ET VIDABLES : une chaine vide est la facon
@@ -106,6 +108,7 @@ export async function enregistrerReglages(
     contact_courriel: donnees.get('contact_courriel'),
     contact_telephone: donnees.get('contact_telephone') ?? '',
     contact_region: donnees.get('contact_region') ?? '',
+    contact_adresse: donnees.get('contact_adresse') ?? '',
     lien_rentman: donnees.get('lien_rentman') ?? '',
     lien_candidature_externe: donnees.get('lien_candidature_externe') ?? '',
     delai_reponse_heures: donnees.get('delai_reponse_heures') ?? '48',

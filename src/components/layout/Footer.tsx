@@ -119,6 +119,11 @@ export async function Footer() {
             <p className="label-mono label-mono-d mb-5">{t('contact_titre')}</p>
             <address className="space-y-3 not-italic">
               <p className="text-sm text-ko-muted-d">{reglages.contactRegion}</p>
+              {/* Adresse postale — migration 0052. Juste sous le secteur :
+                  « où vous travaillez » puis « où vous êtes ». */}
+              {reglages.contactAdresse && (
+                <p className="text-sm text-ko-muted-d">{reglages.contactAdresse}</p>
+              )}
               {/* `flex w-fit` et non `inline-flex` : le `space-y-3` de
                   l'`<address>` pose une marge haute, qui ne sépare rien entre
                   deux éléments EN LIGNE — ils restent sur la même ligne. Sans
