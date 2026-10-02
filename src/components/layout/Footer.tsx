@@ -1,5 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 
+import { IconeFacebook, IconeInstagram, IconeLinkedin } from '@/components/ui/Icones'
 import { Link } from '@/i18n/navigation'
 import { lireReglages } from '@/lib/reglages'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
@@ -142,7 +143,43 @@ export async function Footer() {
                   {reglages.contactTelephone}
                 </a>
               )}
+
+              {/* Heures d'ouverture — migration 0051. Le site promettait déjà
+                  une réponse « pendant les heures ouvrables » sans jamais les
+                  nommer : le visiteur ne savait pas s'il pouvait appeler
+                  maintenant. Vide = la ligne n'apparaît pas, comme le
+                  téléphone. */}
+              {reglages.heuresOuverture && (
+                <p className="text-sm text-ko-muted-d">{reglages.heuresOuverture}</p>
+              )}
             </address>
+
+            {/* Réseaux sociaux — migration 0051. Le site n'en portait AUCUN.
+                Chaque icône n'apparaît que si son URL est renseignée : trois
+                réglages indépendants, pas un bloc tout ou rien. `rel` complet
+                parce que ce sont des liens sortants vers des domaines tiers. */}
+            {(reglages.reseauFacebook || reglages.reseauInstagram || reglages.reseauLinkedin) && (
+              <div className="mt-5 flex items-center gap-1">
+                {[
+                  { url: reglages.reseauFacebook, Icone: IconeFacebook, nom: 'Facebook' },
+                  { url: reglages.reseauInstagram, Icone: IconeInstagram, nom: 'Instagram' },
+                  { url: reglages.reseauLinkedin, Icone: IconeLinkedin, nom: 'LinkedIn' },
+                ]
+                  .filter((r) => r.url)
+                  .map(({ url, Icone, nom }) => (
+                    <a
+                      key={nom}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={nom}
+                      className="flex h-11 w-11 items-center justify-center text-ko-muted-d transition-colors duration-200 hover:text-ko-blue2"
+                    >
+                      <Icone taille={20} />
+                    </a>
+                  ))}
+              </div>
+            )}
 
             <Link
               href={ROUTES.contact}

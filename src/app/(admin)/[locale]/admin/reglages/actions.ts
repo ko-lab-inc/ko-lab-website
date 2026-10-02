@@ -32,6 +32,21 @@ export type EtatReglages = {
   succes?: boolean
 }
 
+/**
+ * URL facultative : vide, ou commencant par https://.
+ *
+ * `z.string().url()` refuserait la chaine vide, qui est pourtant la valeur
+ * voulue pour « pas de lien ». Et `http://` est ecarte : ces liens partent
+ * dans le pied de page d'un site en HTTPS, un lien non chiffre y declencherait
+ * un avertissement de navigateur.
+ */
+const lienFacultatif = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .refine((v) => v === '' || v.startsWith('https://'), { message: 'url_invalide' })
+
 const schema = z.object({
   /**
    * Le courriel est OBLIGATOIRE et validé.
@@ -50,6 +65,28 @@ const schema = z.object({
    */
   contact_telephone: z.string().trim().max(40),
   contact_region: z.string().trim().max(120),
+
+  /* ---------------------------------------------------------------------
+   * Migration 0051. Toutes LIBRES ET VIDABLES : une chaine vide est la facon
+   * de retirer l'element du site, exactement comme le telephone ci-dessus.
+   *
+   * Les URL ne sont pas validees par `z.string().url()` : ce schema refuserait
+   * la chaine vide, qui est precisement la valeur « pas de lien ». Le controle
+   * porte donc sur le prefixe, et seulement quand il y a quelque chose a
+   * controler — une URL sans schema (« facebook.com/kolab ») serait
+   * interpretee comme un chemin relatif par le navigateur et menerait a une
+   * 404 sur notre propre site.
+   * ------------------------------------------------------------------- */
+  lien_rentman: lienFacultatif(400),
+  lien_candidature_externe: lienFacultatif(400),
+  delai_reponse_heures: z
+    .string()
+    .trim()
+    .regex(/^[1-9][0-9]{0,3}$/, { message: 'delai_invalide' }),
+  heures_ouverture: z.string().trim().max(120),
+  reseau_facebook: lienFacultatif(300),
+  reseau_instagram: lienFacultatif(300),
+  reseau_linkedin: lienFacultatif(300),
   panier_actif: z.enum(['true', 'false']),
   solutions_modulaires: z.enum(['true', 'false']),
   boutique_active: z.enum(['true', 'false']),
@@ -69,6 +106,13 @@ export async function enregistrerReglages(
     contact_courriel: donnees.get('contact_courriel'),
     contact_telephone: donnees.get('contact_telephone') ?? '',
     contact_region: donnees.get('contact_region') ?? '',
+    lien_rentman: donnees.get('lien_rentman') ?? '',
+    lien_candidature_externe: donnees.get('lien_candidature_externe') ?? '',
+    delai_reponse_heures: donnees.get('delai_reponse_heures') ?? '48',
+    heures_ouverture: donnees.get('heures_ouverture') ?? '',
+    reseau_facebook: donnees.get('reseau_facebook') ?? '',
+    reseau_instagram: donnees.get('reseau_instagram') ?? '',
+    reseau_linkedin: donnees.get('reseau_linkedin') ?? '',
     panier_actif: coche(donnees, 'panier_actif'),
     solutions_modulaires: coche(donnees, 'solutions_modulaires'),
     boutique_active: coche(donnees, 'boutique_active'),

@@ -490,3 +490,46 @@ export function IconeMallette(props: IconeProps) {
     </Icone>
   )
 }
+
+/* ==========================================================================
+ * Réseaux sociaux — migration 0051.
+ *
+ * Tracés au trait, comme toutes les autres icônes de ce fichier, et JAMAIS
+ * les logos officiels en aplat de couleur : la palette KO-LAB compte trois
+ * couleurs de marque, et poser du bleu Facebook à côté du bleu KO-LAB casse
+ * le seul signal d'interaction du site (skill 08). Un contour qui hérite de
+ * `currentColor` reste lisible sur fond clair comme sur fond sombre.
+ * ======================================================================== */
+
+/** Facebook — le « f » dans son cadre, au trait. */
+export function IconeFacebook(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="M15 8.5h-1.5A1.5 1.5 0 0 0 12 10v2m-1.5 0h4.5M12 12v7" />
+    </Icone>
+  )
+}
+
+/** Instagram — cadre arrondi, objectif, et le point du flash. */
+export function IconeInstagram(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.2" cy="6.8" r="0.9" fill="currentColor" stroke="none" />
+    </Icone>
+  )
+}
+
+/** LinkedIn — le « in » dans son cadre, au trait. */
+export function IconeLinkedin(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="3" />
+      <path d="M7.5 10.5V17" />
+      <circle cx="7.5" cy="7.3" r="0.9" fill="currentColor" stroke="none" />
+      <path d="M11.5 17v-6.5m0 2a2.5 2.5 0 0 1 5 0V17" />
+    </Icone>
+  )
+}

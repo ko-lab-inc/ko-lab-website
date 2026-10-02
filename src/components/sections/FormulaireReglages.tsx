@@ -30,6 +30,23 @@ export type LibellesReglages = {
   groupeContactAide: string
   groupeFonctions: string
   groupeFonctionsAide: string
+  /* Migration 0051. */
+  groupeLiens: string
+  groupeLiensAide: string
+  lienRentman: string
+  lienRentmanAide: string
+  lienCandidature: string
+  lienCandidatureAide: string
+  delaiReponse: string
+  delaiReponseAide: string
+  heuresOuverture: string
+  heuresOuvertureAide: string
+  groupeReseaux: string
+  groupeReseauxAide: string
+  facebook: string
+  instagram: string
+  linkedin: string
+  reseauAide: string
   courriel: string
   courrielAide: string
   telephone: string
@@ -201,6 +218,117 @@ export function FormulaireReglages({
             maxLength={120}
             defaultValue={reglages.contactRegion}
             aria-describedby="contact_region-aide"
+            className={CHAMP}
+          />
+        </Champ>
+
+        <Champ id="heures_ouverture" libelle={libelles.heuresOuverture} aide={libelles.heuresOuvertureAide}>
+          <input
+            id="heures_ouverture"
+            name="heures_ouverture"
+            type="text"
+            maxLength={120}
+            defaultValue={reglages.heuresOuverture}
+            aria-describedby="heures_ouverture-aide"
+            className={CHAMP}
+          />
+        </Champ>
+      </fieldset>
+
+      {/* ------------------------------ Liens ------------------------------- */}
+      {/* Migration 0051 — ces trois valeurs étaient FIGÉES DANS LE CODE : les
+          changer demandait un déploiement, donc un développeur, pour une
+          décision qui n'en relève pas. */}
+      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
+        <legend className="px-2">
+          <span className="block text-base text-ko-ink">{libelles.groupeLiens}</span>
+        </legend>
+        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeLiensAide}</p>
+
+        <Champ id="lien_rentman" libelle={libelles.lienRentman} aide={libelles.lienRentmanAide}>
+          <input
+            id="lien_rentman"
+            name="lien_rentman"
+            type="text"
+            maxLength={400}
+            inputMode="url"
+            defaultValue={reglages.lienRentman}
+            aria-describedby="lien_rentman-aide"
+            className={CHAMP}
+          />
+        </Champ>
+
+        <Champ id="lien_candidature_externe" libelle={libelles.lienCandidature} aide={libelles.lienCandidatureAide}>
+          <input
+            id="lien_candidature_externe"
+            name="lien_candidature_externe"
+            type="text"
+            maxLength={400}
+            inputMode="url"
+            defaultValue={reglages.lienCandidatureExterne}
+            aria-describedby="lien_candidature_externe-aide"
+            className={CHAMP}
+          />
+        </Champ>
+
+        <Champ id="delai_reponse_heures" libelle={libelles.delaiReponse} aide={libelles.delaiReponseAide}>
+          <input
+            id="delai_reponse_heures"
+            name="delai_reponse_heures"
+            type="text"
+            inputMode="numeric"
+            maxLength={4}
+            defaultValue={String(reglages.delaiReponseHeures)}
+            aria-describedby="delai_reponse_heures-aide"
+            className={CHAMP}
+          />
+        </Champ>
+      </fieldset>
+
+      {/* --------------------------- Réseaux sociaux -------------------------- */}
+      {/* Chaque réseau est indépendant : une icône n'apparaît au pied de page
+          que si SON adresse est renseignée. Vider le champ la retire. */}
+      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
+        <legend className="px-2">
+          <span className="block text-base text-ko-ink">{libelles.groupeReseaux}</span>
+        </legend>
+        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeReseauxAide}</p>
+
+        <Champ id="reseau_facebook" libelle={libelles.facebook} aide={libelles.reseauAide}>
+          <input
+            id="reseau_facebook"
+            name="reseau_facebook"
+            type="text"
+            maxLength={300}
+            inputMode="url"
+            defaultValue={reglages.reseauFacebook}
+            aria-describedby="reseau_facebook-aide"
+            className={CHAMP}
+          />
+        </Champ>
+
+        <Champ id="reseau_instagram" libelle={libelles.instagram} aide={libelles.reseauAide}>
+          <input
+            id="reseau_instagram"
+            name="reseau_instagram"
+            type="text"
+            maxLength={300}
+            inputMode="url"
+            defaultValue={reglages.reseauInstagram}
+            aria-describedby="reseau_instagram-aide"
+            className={CHAMP}
+          />
+        </Champ>
+
+        <Champ id="reseau_linkedin" libelle={libelles.linkedin} aide={libelles.reseauAide}>
+          <input
+            id="reseau_linkedin"
+            name="reseau_linkedin"
+            type="text"
+            maxLength={300}
+            inputMode="url"
+            defaultValue={reglages.reseauLinkedin}
+            aria-describedby="reseau_linkedin-aide"
             className={CHAMP}
           />
         </Champ>
