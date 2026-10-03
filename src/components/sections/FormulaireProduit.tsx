@@ -156,7 +156,7 @@ export function FormulaireProduit({
       return
     }
     setErreurTaillePhoto(
-      `${fichier.name} fait ${formaterMo(fichier.size)} Mo — la limite est de ${formaterMo(TAILLE_MAX_PHOTO)} Mo. Choisissez un fichier plus léger.`,
+      `${fichier.name} fait ${formaterMo(fichier.size)} Mo, la limite est de ${formaterMo(TAILLE_MAX_PHOTO)} Mo. Choisissez un fichier plus léger.`,
     )
   }
 

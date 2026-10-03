@@ -157,7 +157,7 @@ function SectionGalerie({
     if (fichier.size > TAILLE_MAX_PHOTO) {
       setFichierPret(false)
       setErreurTaille(
-        `${fichier.name} fait ${formaterMo(fichier.size)} Mo — la limite est de ${formaterMo(TAILLE_MAX_PHOTO)} Mo. Choisissez un fichier plus léger.`,
+        `${fichier.name} fait ${formaterMo(fichier.size)} Mo, la limite est de ${formaterMo(TAILLE_MAX_PHOTO)} Mo. Choisissez un fichier plus léger.`,
       )
       return
     }

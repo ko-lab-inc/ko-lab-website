@@ -198,7 +198,7 @@ function PagePanneau({
             correctif du champ natif. */}
         <section className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
           <p className="mb-3 text-xs uppercase tracking-wide text-slate-300">
-            Prochain départ {compteurs.prochainDepart ? `— actuellement ${compteurs.prochainDepart}` : '— non réglé'}
+            Prochain départ {compteurs.prochainDepart ? `: actuellement ${compteurs.prochainDepart}` : ': non réglé'}
           </p>
           <div className="grid grid-cols-4 gap-2">
             {[10, 15, 20, 30].map((minutes) => (
@@ -302,7 +302,7 @@ function PagePanneau({
                     >
                       <td className="py-2">
                         {jour.date}
-                        {jour.date === aujourdhui ? " — aujourd'hui" : ''}
+                        {jour.date === aujourdhui ? " (aujourd'hui)" : ''}
                       </td>
                       <td className="py-2 text-right tabular-nums">{jour.participants}</td>
                       <td className="py-2 text-right tabular-nums">{jour.decharges}</td>

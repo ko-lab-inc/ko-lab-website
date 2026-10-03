@@ -259,7 +259,7 @@ export function SelecteurPhotoEmplacement({
     if (!fichier) return
     if (fichier.size > TAILLE_MAX_PHOTO) {
       setErreurTeleversement(
-        `${fichier.name} fait ${formaterMo(fichier.size)} Mo — la limite est de ${formaterMo(TAILLE_MAX_PHOTO)} Mo. Choisissez un fichier plus léger.`,
+        `${fichier.name} fait ${formaterMo(fichier.size)} Mo, la limite est de ${formaterMo(TAILLE_MAX_PHOTO)} Mo. Choisissez un fichier plus léger.`,
       )
       if (inputFichier.current) inputFichier.current.value = ''
       return

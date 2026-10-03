@@ -223,7 +223,7 @@ export function FormulaireRealisation({
     const total = Array.from(fichiers).reduce((somme, f) => somme + f.size, 0)
     if (total > TAILLE_MAX_CUMULEE_PHOTOS) {
       setErreurTaillePhotos(
-        `${fichiers.length} fichiers sélectionnés totalisent ${formaterMo(total)} Mo — la limite est de ${formaterMo(TAILLE_MAX_CUMULEE_PHOTOS)} Mo par envoi. Retirez-en quelques-uns, ou téléversez-les en plusieurs fois.`,
+        `${fichiers.length} fichiers sélectionnés totalisent ${formaterMo(total)} Mo, la limite est de ${formaterMo(TAILLE_MAX_CUMULEE_PHOTOS)} Mo par envoi. Retirez-en quelques-uns, ou téléversez-les en plusieurs fois.`,
       )
       return false
     }

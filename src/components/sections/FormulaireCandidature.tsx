@@ -192,7 +192,7 @@ export function FormulaireCandidature({
       return
     }
     setErreurTailleCv(
-      `${fichier.name} fait ${formaterMo(fichier.size)} Mo — la limite est de ${formaterMo(TAILLE_CV_MAX)} Mo. Choisissez un fichier plus léger.`,
+      `${fichier.name} fait ${formaterMo(fichier.size)} Mo, la limite est de ${formaterMo(TAILLE_CV_MAX)} Mo. Choisissez un fichier plus léger.`,
     )
   }
 

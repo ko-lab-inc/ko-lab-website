@@ -67,7 +67,7 @@ const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mon
 type Props = { children: ReactNode; params: Promise<{ locale: string }> }
 
 export const metadata: Metadata = {
-  title: 'Espace équipe — KO-LAB',
+  title: 'Espace équipe · KO-LAB',
   // Un outil interne n'a rien à faire dans un index. `nofollow` en plus :
   // inutile d'exposer la structure des écrans de gestion.
   robots: { index: false, follow: false },

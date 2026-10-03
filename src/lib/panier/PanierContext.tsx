@@ -312,6 +312,6 @@ export function usePanier(): Panier {
 export function formaterDemande(articles: readonly ArticlePanier[], entete: string): string {
   if (articles.length === 0) return ''
 
-  const lignes = articles.map((a) => `— ${a.nom} (${a.categorie}) × ${a.quantite}`)
+  const lignes = articles.map((a) => `- ${a.nom} (${a.categorie}) × ${a.quantite}`)
   return `${entete}\n\n${lignes.join('\n')}`
 }

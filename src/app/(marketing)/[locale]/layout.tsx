@@ -127,7 +127,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: {
       default: t('title'),
       // Les pages enfants ne fournissent que leur nom : « Le LAB — KO-LAB ».
-      template: '%s — KO-LAB',
+      template: '%s · KO-LAB',
     },
     description: t('description'),
     alternates: {
