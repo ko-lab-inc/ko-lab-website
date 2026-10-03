@@ -5,7 +5,8 @@ import { randomUUID } from 'node:crypto'
 import { headers } from 'next/headers'
 import { z } from 'zod'
 
-import { DOMAINE, EMAILS, VERSION_POLITIQUES } from '@/lib/constantes'
+import { DOMAINE, VERSION_POLITIQUES } from '@/lib/constantes'
+import { lireDestinataires } from '@/lib/destinataires'
 import { envoyerCourriel, raisonCourte } from '@/lib/email/envoyer'
 import { gabaritNouvelleCandidature } from '@/lib/email/gabaritsNotifications'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
@@ -273,7 +274,13 @@ export async function envoyerCandidature(
 
     const envoi = await envoyerCourriel({
       // Les candidatures vont aux RH, pas à la boîte générale.
-      a: EMAILS.rh,
+      //
+      // Réglage `notifications_candidatures` depuis 0053, plus la constante
+      // EMAILS.rh : plusieurs personnes peuvent avoir à voir passer les
+      // candidatures, et la liste se change sans déploiement. Elle ne revient
+      // jamais vide (repli sur l'adresse RH, puis sur la constante) — voir
+      // lib/destinataires.ts.
+      a: (await lireDestinataires()).candidatures,
       sujet,
       texte,
       // Répondre écrit au CANDIDAT, pas à soi-même.

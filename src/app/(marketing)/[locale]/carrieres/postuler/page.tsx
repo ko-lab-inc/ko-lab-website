@@ -6,8 +6,7 @@ import { FormulaireCandidature, type LibellesCandidature } from '@/components/se
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
-import { EMAILS } from '@/lib/constantes'
-import { lireReglages } from '@/lib/reglages'
+import { lireReglages, messageAbsence } from '@/lib/reglages'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata, Viewport } from 'next'
@@ -144,7 +143,12 @@ export default async function PostulerPage({ params, searchParams }: Props) {
     envoyer: tf('envoyer'),
     enCours: tf('en_cours'),
     succesTitre: tf('succes_titre'),
-    succesTexte: tf('succes_texte', { heures: reglages.delaiReponseHeures }),
+    // Pendant une fermeture, le candidat doit lire le message d'absence a la
+    // place de « on revient dans les 48 heures » — c'est l'ecran qu'il voit
+    // juste apres avoir envoye son dossier (migration 0053).
+    succesTexte:
+      messageAbsence(reglages, locale) ??
+      tf('succes_texte', { heures: reglages.delaiReponseHeures }),
     erreurDonnees: tf('erreur_donnees'),
     erreurCv: tf('erreur_cv'),
     erreurTrop: tf('erreur_trop'),
@@ -190,10 +194,10 @@ export default async function PostulerPage({ params, searchParams }: Props) {
             </p>
             <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
               <a
-                href={`mailto:${EMAILS.rh}`}
+                href={`mailto:${reglages.courrielRh}`}
                 className="inline-flex min-h-[44px] w-fit items-center text-sm text-ko-ink underline decoration-ko-blue underline-offset-4 transition-colors duration-200 hover:text-ko-muted"
               >
-                {EMAILS.rh}
+                {reglages.courrielRh}
               </a>
               {reglages.contactTelephone && (
                 <a

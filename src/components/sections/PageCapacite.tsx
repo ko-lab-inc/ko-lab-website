@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 
 import { buttonVariants } from '@/components/ui/Button'
 import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
@@ -9,8 +9,10 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
-import { lireReglages } from '@/lib/reglages'
+import { lireReglages, messageAbsence } from '@/lib/reglages'
 import { cn } from '@/lib/utils/cn'
+
+import type { AppLocale } from '@/i18n/routing'
 
 import type { VignetteBandeau } from '@/components/ui/BandeauImages'
 
@@ -89,7 +91,14 @@ export async function PageCapacite({
   const t = await getTranslations('Capacites.cta')
   const tCommun = await getTranslations('Commun')
   // Delai de reponse annonce — reglage, plus une valeur ecrite dans le texte.
-  const { delaiReponseHeures } = await lireReglages()
+  const reglages = await lireReglages()
+  const { delaiReponseHeures } = reglages
+  // Pendant une fermeture (0053), le message d'absence prend la place de la
+  // promesse de delai. `getLocale()` et non une prop : ce composant est rendu
+  // dans l'arbre d'une page, donc APRES le setRequestLocale du layout — meme
+  // motif que Realisations.tsx. La reserve notee dans le layout ne vaut que
+  // pour le root layout, qui s'execute avant cet appel.
+  const absence = messageAbsence(reglages, (await getLocale()) as AppLocale)
 
   return (
     <>
@@ -283,7 +292,7 @@ export async function PageCapacite({
               <p className="label-mono">{t('label')}</p>
               <h2 className="ko-h2 mt-5 text-ko-ink">{t('title')}</h2>
               <p className="mx-auto mt-6 max-w-[48ch] text-base leading-relaxed text-ko-muted">
-                {t('texte', { heures: delaiReponseHeures })}
+                {absence ?? t('texte', { heures: delaiReponseHeures })}
               </p>
 
               <div className="mt-9 flex flex-col items-center gap-5 sm:flex-row sm:justify-center sm:gap-8">

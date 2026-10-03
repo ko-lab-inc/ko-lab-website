@@ -6,7 +6,7 @@ import { Suspense } from 'react'
 import { FormulaireContact } from '@/components/sections/FormulaireContact'
 import { Reveal } from '@/components/ui/Reveal'
 import { routing } from '@/i18n/routing'
-import { lireReglages } from '@/lib/reglages'
+import { lireReglages, messageAbsence } from '@/lib/reglages'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata, Viewport } from 'next'
@@ -61,6 +61,11 @@ export default async function ContactPage({ params }: Props) {
   // de traduction : elles changent sans déploiement.
   const reglages = await lireReglages()
 
+  // Pendant une fermeture (migration 0053), ce message REMPLACE la phrase de
+  // delai partout sur cette page. L'afficher en plus laisserait « on revient
+  // dans les 48 heures » a cote de « nous sommes fermes jusqu'au 6 janvier ».
+  const absence = messageAbsence(reglages, locale)
+
   return (
     <div data-theme-sombre>
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
@@ -68,7 +73,7 @@ export default async function ContactPage({ params }: Props) {
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
           <h1 className="ko-display mt-6 max-w-[16ch] text-ko-ink">{t('title')}</h1>
           <p className="mt-7 max-w-[52ch] text-base leading-relaxed text-ko-muted lg:text-lg">
-            {t('intro', { heures: reglages.delaiReponseHeures })}
+            {absence ?? t('intro', { heures: reglages.delaiReponseHeures })}
           </p>
         </div>
       </section>
@@ -82,7 +87,10 @@ export default async function ContactPage({ params }: Props) {
                   client en rendu dynamique s'il n'est pas isolé, ce qui
                   empêcherait la prégénération de cette page. */}
               <Suspense fallback={<div className="min-h-[560px]" />}>
-                <FormulaireContact delaiReponseHeures={reglages.delaiReponseHeures} />
+                <FormulaireContact
+                  delaiReponseHeures={reglages.delaiReponseHeures}
+                  absence={absence}
+                />
               </Suspense>
             </Reveal>
 
@@ -131,7 +139,7 @@ export default async function ContactPage({ params }: Props) {
                 </address>
 
                 <p className="mt-8 max-w-[34ch] border-t border-ko-line pt-8 text-sm leading-relaxed text-ko-muted">
-                  {t('succes.texte', { heures: reglages.delaiReponseHeures })}
+                  {absence ?? t('succes.texte', { heures: reglages.delaiReponseHeures })}
                 </p>
 
                 <p className="label-mono mt-10">{tNav('capacites')}</p>

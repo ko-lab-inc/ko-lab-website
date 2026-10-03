@@ -91,6 +91,53 @@ describe('gabaritAccuseReception', () => {
     expect(texte).not.toMatch(/Bonjour|heures/)
   })
 
+  /* ---------------------------------------------------------------------
+   * Migration 0053 — message d'absence
+   * ------------------------------------------------------------------- */
+
+  it('REMPLACE la promesse de délai par le message d’absence', () => {
+    // ⚠️ L'invariant central de ce réglage.
+    //
+    // Si le message d'absence s'AJOUTAIT au lieu de remplacer, ce courriel
+    // dirait « nous revenons dans les 48 heures » puis « nous sommes fermés
+    // jusqu'au 6 janvier » dans le même paragraphe. C'est la première
+    // promesse que le destinataire retiendrait — et c'est la fausse.
+    const { texte } = gabaritAccuseReception({
+      nom: 'Luc',
+      locale: 'fr',
+      delaiHeures: 48,
+      absence: 'Nous sommes fermés jusqu’au 6 janvier.',
+    })
+
+    expect(texte).toContain('Nous sommes fermés jusqu’au 6 janvier.')
+    // Ni le nombre d'heures, ni la phrase qui l'introduit.
+    expect(texte).not.toContain('48')
+    expect(texte).not.toMatch(/revient vers vous/)
+  })
+
+  it('en anglais aussi — sans reliquat de la phrase de délai', () => {
+    const { texte } = gabaritAccuseReception({
+      nom: 'Luc',
+      locale: 'en',
+      delaiHeures: 48,
+      absence: 'We are closed until January 6.',
+    })
+
+    expect(texte).toContain('We are closed until January 6.')
+    expect(texte).not.toContain('48')
+    expect(texte).not.toMatch(/get back to you/)
+  })
+
+  it('garde la phrase de délai quand aucune absence n’est fournie', () => {
+    // Le cas normal, qui doit rester intact : `absence` est facultatif, son
+    // absence ne doit RIEN changer au courriel d'avant 0053.
+    const avecNull = gabaritAccuseReception({ nom: 'Luc', locale: 'fr', delaiHeures: 72, absence: null })
+    const sansArgument = gabaritAccuseReception({ nom: 'Luc', locale: 'fr', delaiHeures: 72 })
+
+    expect(avecNull.texte).toContain('72 heures')
+    expect(avecNull).toEqual(sansArgument)
+  })
+
   it('donne une adresse de contact réelle, pas l’expéditeur technique', () => {
     // info@ko-lab.ca est la boîte consultée ; site@ko-lab-center.ca n'est
     // qu'un expéditeur vérifié chez Resend et n'est relevé par personne.

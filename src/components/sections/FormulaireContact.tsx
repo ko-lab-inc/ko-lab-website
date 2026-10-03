@@ -28,7 +28,18 @@ const CHAMP =
 
 type Etat = 'repos' | 'envoi' | 'succes' | 'erreur' | 'limite'
 
-export function FormulaireContact({ delaiReponseHeures }: { delaiReponseHeures: number }) {
+export function FormulaireContact({
+  delaiReponseHeures,
+  absence,
+}: {
+  delaiReponseHeures: number
+  /**
+   * Message d'absence (migration 0053), ou null en fonctionnement normal.
+   * Resolu cote SERVEUR et passe en prop : `messageAbsence()` lit les
+   * reglages, et ce composant est client — il ne peut pas les lire lui-meme.
+   */
+  absence: string | null
+}) {
   // Langue de la PAGE, pas un champ du formulaire — voir schemaContact.
   const locale = useLocale() as 'fr' | 'en'
   const t = useTranslations('Contact')
@@ -111,7 +122,7 @@ export function FormulaireContact({ delaiReponseHeures }: { delaiReponseHeures: 
     return (
       <div className="border border-ko-line bg-ko-cream p-8">
         <p className="label-mono">{t('succes.titre')}</p>
-        <p className="mt-3 text-base leading-relaxed text-ko-ink">{t('succes.texte', { heures: delaiReponseHeures })}</p>
+        <p className="mt-3 text-base leading-relaxed text-ko-ink">{absence ?? t('succes.texte', { heures: delaiReponseHeures })}</p>
       </div>
     )
   }

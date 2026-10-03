@@ -4,6 +4,7 @@ import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server
 import { JetBrains_Mono, Montserrat } from 'next/font/google'
 import { notFound } from 'next/navigation'
 
+import { BandeauAnnonce } from '@/components/layout/BandeauAnnonce'
 import { Footer } from '@/components/layout/Footer'
 import { Nav } from '@/components/layout/Nav'
 import { BoutonRetourHaut } from '@/components/ui/BoutonRetourHaut'
@@ -11,7 +12,7 @@ import { ChatCrisp } from '@/components/ui/ChatCrisp'
 import { WidgetAide } from '@/components/ui/WidgetAide'
 import { DOMAINE } from '@/lib/constantes'
 import { PanierProvider } from '@/lib/panier/PanierContext'
-import { lireReglages } from '@/lib/reglages'
+import { bandeauPour, lireReglages } from '@/lib/reglages'
 import { routing } from '@/i18n/routing'
 
 import type { Metadata } from 'next'
@@ -190,6 +191,10 @@ export default async function MarketingLayout({ children, params }: Props) {
    */
   const reglages = await lireReglages()
 
+  // Texte du bandeau d'annonce pour CETTE langue, ou null. La règle de choix
+  // vit dans lib/reglages.ts, où elle est testable sans rendu.
+  const bandeau = bandeauPour(reglages, locale)
+
   const t = await getTranslations('Commun')
 
   /**
@@ -363,6 +368,13 @@ export default async function MarketingLayout({ children, params }: Props) {
           >
             {t('aller_au_contenu')}
           </a>
+
+          {/* AVANT la nav, dans le flux normal : la nav est `sticky top-0`,
+              le bandeau défile donc puis disparaît et la nav vient se coller
+              en haut comme avant. `bandeauPour` rend `null` si
+              l'interrupteur est éteint OU si le texte de cette langue est
+              vide — rien n'est rendu dans ce cas, pas même un conteneur. */}
+          {bandeau && <BandeauAnnonce texte={bandeau} />}
 
           <Nav
             panierActif={reglages.panierActif}

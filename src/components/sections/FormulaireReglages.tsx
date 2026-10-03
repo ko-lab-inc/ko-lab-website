@@ -49,6 +49,29 @@ export type LibellesReglages = {
   instagram: string
   linkedin: string
   reseauAide: string
+  /* Migration 0053. */
+  courrielRh: string
+  courrielRhAide: string
+  groupeNotifications: string
+  groupeNotificationsAide: string
+  notifDemandes: string
+  notifDemandesAide: string
+  notifCandidatures: string
+  notifCandidaturesAide: string
+  groupeBandeau: string
+  groupeBandeauAide: string
+  bandeauActif: string
+  bandeauActifAide: string
+  bandeauFr: string
+  bandeauEn: string
+  bandeauTexteAide: string
+  groupeAbsence: string
+  groupeAbsenceAide: string
+  absenceActif: string
+  absenceActifAide: string
+  absenceFr: string
+  absenceEn: string
+  absenceTexteAide: string
   courriel: string
   courrielAide: string
   telephone: string
@@ -67,12 +90,22 @@ export type LibellesReglages = {
   enCours: string
   succes: string
   erreurDonnees: string
+  erreurAdresse: string
   erreurRefuse: string
   erreurServeur: string
 }
 
 const CHAMP =
   'min-h-[40px] w-full border border-ko-line bg-ko-white px-3 py-2 text-sm text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none'
+
+/**
+ * Zone de texte — bandeau, absence, listes de destinataires.
+ *
+ * `resize-y` et non `resize` : la largeur est contrainte par la colonne du
+ * formulaire, et un redimensionnement horizontal ferait déborder la zone de
+ * son conteneur. `leading-relaxed` parce qu'on y relit une liste d'adresses.
+ */
+const ZONE = `${CHAMP} min-h-[80px] resize-y leading-relaxed`
 
 function Champ({
   id,
@@ -159,10 +192,23 @@ function Interrupteur({
 export function FormulaireReglages({
   locale,
   reglages,
+  destinataires,
   libelles,
 }: {
   locale: string
   reglages: Reglages
+  /**
+   * Les deux listes de destinataires — migration 0053.
+   *
+   * ⚠️ SÉPARÉES DE `reglages`, ET CE N'EST PAS UN CAPRICE DE SIGNATURE.
+   *
+   * Elles sont marquées `publique = false` en base : `lireReglages()`, qui lit
+   * avec la clé `anon`, ne les voit pas. La page les lit avec le client de
+   * session, que la politique `reglages_lecture_equipe` autorise à tout voir.
+   * Les mettre dans le même objet laisserait croire qu'elles viennent de la
+   * même lecture, et la prochaine personne les chercherait dans `Reglages`.
+   */
+  destinataires: { demandes: string; candidatures: string }
   libelles: LibellesReglages
 }) {
   const [etat, action, enCours] = useActionState<EtatReglages, FormData>(
@@ -172,6 +218,7 @@ export function FormulaireReglages({
 
   const messages: Record<string, string> = {
     donnees: libelles.erreurDonnees,
+    adresse: libelles.erreurAdresse,
     refuse: libelles.erreurRefuse,
     serveur: libelles.erreurServeur,
   }
@@ -232,6 +279,18 @@ export function FormulaireReglages({
             maxLength={200}
             defaultValue={reglages.contactAdresse}
             aria-describedby="contact_adresse-aide"
+            className={CHAMP}
+          />
+        </Champ>
+
+        <Champ id="courriel_rh" libelle={libelles.courrielRh} aide={libelles.courrielRhAide}>
+          <input
+            id="courriel_rh"
+            name="courriel_rh"
+            type="email"
+            maxLength={200}
+            defaultValue={reglages.courrielRh}
+            aria-describedby="courriel_rh-aide"
             className={CHAMP}
           />
         </Champ>
@@ -344,6 +403,131 @@ export function FormulaireReglages({
             defaultValue={reglages.reseauLinkedin}
             aria-describedby="reseau_linkedin-aide"
             className={CHAMP}
+          />
+        </Champ>
+      </fieldset>
+
+      {/* --------------------------- Notifications --------------------------- */}
+      {/* Migration 0053. Les deux seuls champs de cet écran qui ne sont PAS
+          affichés sur le site : ce sont des adresses internes, et la base les
+          garde hors de portée de la lecture publique. */}
+      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
+        <legend className="px-2">
+          <span className="block text-base text-ko-ink">{libelles.groupeNotifications}</span>
+        </legend>
+        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeNotificationsAide}</p>
+
+        <Champ
+          id="notifications_demandes"
+          libelle={libelles.notifDemandes}
+          aide={libelles.notifDemandesAide}
+        >
+          <textarea
+            id="notifications_demandes"
+            name="notifications_demandes"
+            rows={2}
+            maxLength={600}
+            defaultValue={destinataires.demandes}
+            aria-describedby="notifications_demandes-aide"
+            className={ZONE}
+          />
+        </Champ>
+
+        <Champ
+          id="notifications_candidatures"
+          libelle={libelles.notifCandidatures}
+          aide={libelles.notifCandidaturesAide}
+        >
+          <textarea
+            id="notifications_candidatures"
+            name="notifications_candidatures"
+            rows={2}
+            maxLength={600}
+            defaultValue={destinataires.candidatures}
+            aria-describedby="notifications_candidatures-aide"
+            className={ZONE}
+          />
+        </Champ>
+      </fieldset>
+
+      {/* ------------------------- Bandeau d'annonce ------------------------- */}
+      {/* L'interrupteur est au-dessus des textes, pas en dessous : c'est la
+          décision (afficher ou non), les textes n'en sont que le contenu. */}
+      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
+        <legend className="px-2">
+          <span className="block text-base text-ko-ink">{libelles.groupeBandeau}</span>
+        </legend>
+        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeBandeauAide}</p>
+
+        <Interrupteur
+          nom="bandeau_actif"
+          libelle={libelles.bandeauActif}
+          aide={libelles.bandeauActifAide}
+          defaut={reglages.bandeauActif}
+        />
+
+        <Champ id="bandeau_texte_fr" libelle={libelles.bandeauFr} aide={libelles.bandeauTexteAide}>
+          <textarea
+            id="bandeau_texte_fr"
+            name="bandeau_texte_fr"
+            rows={2}
+            maxLength={200}
+            defaultValue={reglages.bandeauTexteFr}
+            aria-describedby="bandeau_texte_fr-aide"
+            className={ZONE}
+          />
+        </Champ>
+
+        <Champ id="bandeau_texte_en" libelle={libelles.bandeauEn}>
+          <textarea
+            id="bandeau_texte_en"
+            name="bandeau_texte_en"
+            rows={2}
+            maxLength={200}
+            defaultValue={reglages.bandeauTexteEn}
+            className={ZONE}
+          />
+        </Champ>
+      </fieldset>
+
+      {/* -------------------------- Message d'absence ------------------------- */}
+      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
+        <legend className="px-2">
+          <span className="block text-base text-ko-ink">{libelles.groupeAbsence}</span>
+        </legend>
+        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeAbsenceAide}</p>
+
+        <Interrupteur
+          nom="absence_actif"
+          libelle={libelles.absenceActif}
+          aide={libelles.absenceActifAide}
+          defaut={reglages.absenceActif}
+        />
+
+        <Champ
+          id="absence_message_fr"
+          libelle={libelles.absenceFr}
+          aide={libelles.absenceTexteAide}
+        >
+          <textarea
+            id="absence_message_fr"
+            name="absence_message_fr"
+            rows={3}
+            maxLength={300}
+            defaultValue={reglages.absenceMessageFr}
+            aria-describedby="absence_message_fr-aide"
+            className={ZONE}
+          />
+        </Champ>
+
+        <Champ id="absence_message_en" libelle={libelles.absenceEn}>
+          <textarea
+            id="absence_message_en"
+            name="absence_message_en"
+            rows={3}
+            maxLength={300}
+            defaultValue={reglages.absenceMessageEn}
+            className={ZONE}
           />
         </Champ>
       </fieldset>

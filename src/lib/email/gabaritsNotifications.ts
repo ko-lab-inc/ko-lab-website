@@ -90,6 +90,7 @@ export function gabaritAccuseReception({
   nom,
   locale,
   delaiHeures,
+  absence = null,
 }: {
   nom: string
   locale: AppLocale
@@ -97,6 +98,16 @@ export function gabaritAccuseReception({
    *  jusqu'au 2 octobre 2026, comme les quatre autres endroits du site qui
    *  font la meme promesse — et qui divergeaient des que l'un changeait. */
   delaiHeures: number
+  /**
+   * Message d'absence (migration 0053), ou `null` en fonctionnement normal.
+   *
+   * ⚠️ Quand il est fourni, il REMPLACE la phrase de délai au lieu de s'y
+   * ajouter. Un courriel qui dirait « nous revenons vers vous dans les 48
+   * heures » puis « nous sommes fermés jusqu'au 6 janvier » se contredirait
+   * dans le même paragraphe, et c'est la première promesse que le destinataire
+   * retiendrait. Voir `messageAbsence()` dans lib/reglages.ts.
+   */
+  absence?: string | null
 }): { sujet: string; texte: string } {
   if (locale === 'en') {
     return {
@@ -104,8 +115,12 @@ export function gabaritAccuseReception({
       texte: [
         `Hello ${nom},`,
         '',
-        'We received your request and someone from the team will get back to you',
-        `within ${delaiHeures} hours.`,
+        ...(absence
+          ? ['We received your request.', '', absence]
+          : [
+              'We received your request and someone from the team will get back to you',
+              `within ${delaiHeures} hours.`,
+            ]),
         '',
         'If your project is time-sensitive, reply to this email with the dates and',
         'the location — it helps us answer faster.',
@@ -122,8 +137,12 @@ export function gabaritAccuseReception({
     texte: [
       `Bonjour ${nom},`,
       '',
-      'Nous avons bien reçu votre demande. Quelqu’un de l’équipe revient vers vous',
-      `dans les ${delaiHeures} heures.`,
+      ...(absence
+        ? ['Nous avons bien reçu votre demande.', '', absence]
+        : [
+            'Nous avons bien reçu votre demande. Quelqu’un de l’équipe revient vers vous',
+            `dans les ${delaiHeures} heures.`,
+          ]),
       '',
       'Si le projet est urgent, répondez à ce courriel en indiquant les dates et le',
       'lieu — ça nous permet de répondre plus vite.',

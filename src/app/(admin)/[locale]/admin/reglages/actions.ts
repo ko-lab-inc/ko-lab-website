@@ -28,7 +28,7 @@ import { exigerRole } from '@/lib/auth/garde'
  */
 
 export type EtatReglages = {
-  erreur?: 'donnees' | 'refuse' | 'serveur'
+  erreur?: 'donnees' | 'adresse' | 'refuse' | 'serveur'
   succes?: boolean
 }
 
@@ -46,6 +46,38 @@ const lienFacultatif = (max: number) =>
     .trim()
     .max(max)
     .refine((v) => v === '' || v.startsWith('https://'), { message: 'url_invalide' })
+
+/**
+ * Liste de destinataires — migration 0053.
+ *
+ * ⚠️ CHAQUE ADRESSE EST VALIDÉE, PAS SEULEMENT LA FORME DE LA LISTE.
+ *
+ * C'est ici, et seulement ici, qu'une adresse fautive peut encore être
+ * signalée à un humain. Au moment de l'envoi, il est trop tard : Resend refuse
+ * le lot entier si une seule adresse est invalide, et la notification de la
+ * demande ne part pour PERSONNE — pas même pour les destinataires corrects.
+ * Un `christian@kolab` oublié sans point couperait donc la réception de toute
+ * l'équipe, et l'échec n'apparaîtrait que dans la colonne
+ * `notification_erreur` de /admin/demandes, bien après coup.
+ *
+ * La chaîne vide est acceptée : c'est la façon de dire « garder le repli »
+ * (l'adresse de contact affichée). Voir lib/destinataires.ts.
+ */
+const listeDestinataires = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .refine(
+      (v) =>
+        v === '' ||
+        v
+          .split(/[,;\n]/)
+          .map((a) => a.trim())
+          .filter((a) => a !== '')
+          .every((a) => z.string().email().safeParse(a).success),
+      { message: 'adresse_invalide' },
+    )
 
 const schema = z.object({
   /**
@@ -93,6 +125,41 @@ const schema = z.object({
   solutions_modulaires: z.enum(['true', 'false']),
   boutique_active: z.enum(['true', 'false']),
   concours_actif: z.enum(['true', 'false']),
+
+  /* ---------------------------------------------------------------------
+   * Migration 0053.
+   * ------------------------------------------------------------------- */
+
+  /**
+   * Adresse RH affichée. Vide est accepté — `lireReglages()` retombe alors sur
+   * EMAILS.rh, parce qu'un `mailto:` vide ouvrirait un courriel sans
+   * destinataire. Mais si quelque chose est saisi, ce doit être une adresse :
+   * elle devient un lien cliquable sur une page publique.
+   */
+  courriel_rh: z
+    .string()
+    .trim()
+    .max(200)
+    .refine((v) => v === '' || z.string().email().safeParse(v).success, {
+      message: 'adresse_invalide',
+    }),
+  notifications_demandes: listeDestinataires(600),
+  notifications_candidatures: listeDestinataires(600),
+
+  bandeau_actif: z.enum(['true', 'false']),
+  /**
+   * 200 caractères : le bandeau fait une ou deux lignes au-dessus de la nav.
+   * Au-delà, il pousse le contenu hors de l'écran sur un téléphone — ce n'est
+   * pas un endroit pour un paragraphe, et la limite le dit plutôt que de
+   * laisser découvrir le problème en production.
+   */
+  bandeau_texte_fr: z.string().trim().max(200),
+  bandeau_texte_en: z.string().trim().max(200),
+
+  absence_actif: z.enum(['true', 'false']),
+  /** 300 : celui-ci remplace un paragraphe, il peut donner une date et une consigne. */
+  absence_message_fr: z.string().trim().max(300),
+  absence_message_en: z.string().trim().max(300),
 })
 
 /** Une case non cochée n'est PAS envoyée par le navigateur : absente = false. */
@@ -120,8 +187,35 @@ export async function enregistrerReglages(
     solutions_modulaires: coche(donnees, 'solutions_modulaires'),
     boutique_active: coche(donnees, 'boutique_active'),
     concours_actif: coche(donnees, 'concours_actif'),
+    courriel_rh: donnees.get('courriel_rh') ?? '',
+    notifications_demandes: donnees.get('notifications_demandes') ?? '',
+    notifications_candidatures: donnees.get('notifications_candidatures') ?? '',
+    bandeau_actif: coche(donnees, 'bandeau_actif'),
+    bandeau_texte_fr: donnees.get('bandeau_texte_fr') ?? '',
+    bandeau_texte_en: donnees.get('bandeau_texte_en') ?? '',
+    absence_actif: coche(donnees, 'absence_actif'),
+    absence_message_fr: donnees.get('absence_message_fr') ?? '',
+    absence_message_en: donnees.get('absence_message_en') ?? '',
   })
-  if (!analyse.success) return { erreur: 'donnees' }
+  if (!analyse.success) {
+    /**
+     * Message DISTINCT pour les quatre champs d'adresse.
+     *
+     * « Verifiez les champs » sur un formulaire de vingt-quatre reglages dont
+     * un porte une liste de cinq adresses ne dit rien : on relit tout sans
+     * trouver. Le seul motif de refus de ces champs etant une adresse mal
+     * formee, autant le dire — c'est la seule information utile ici, et le
+     * seul moment ou elle peut encore etre montree a quelqu'un.
+     */
+    const champs = new Set(analyse.error.issues.map((probleme) => String(probleme.path[0])))
+    const adresses = [
+      'contact_courriel',
+      'courriel_rh',
+      'notifications_demandes',
+      'notifications_candidatures',
+    ]
+    return { erreur: adresses.some((champ) => champs.has(champ)) ? 'adresse' : 'donnees' }
+  }
 
   try {
     const acces = await exigerRole(['admin'])

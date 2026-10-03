@@ -68,8 +68,32 @@ const LIBELLES = {
   enCours: 'Enregistrement…',
   succes: 'Enregistré.',
   erreurDonnees: 'Vérifiez les champs.',
+  erreurAdresse: 'Une adresse est mal écrite.',
   erreurRefuse: 'Refusé.',
   erreurServeur: 'Échec.',
+  // Migration 0053.
+  courrielRh: 'Courriel RH affiché',
+  courrielRhAide: 'Vide = rh@ko-lab.ca.',
+  groupeNotifications: 'Qui reçoit les notifications',
+  groupeNotificationsAide: 'Jamais affichées sur le site.',
+  notifDemandes: 'Nouvelle demande de contact',
+  notifDemandesAide: 'Vide = le courriel de contact.',
+  notifCandidatures: 'Nouvelle candidature',
+  notifCandidaturesAide: 'Vide = le courriel RH.',
+  groupeBandeau: 'Bandeau d’annonce',
+  groupeBandeauAide: 'Une bande au-dessus du menu.',
+  bandeauActif: 'Afficher le bandeau',
+  bandeauActifAide: 'Visible immédiatement sur tout le site.',
+  bandeauFr: 'Texte français',
+  bandeauEn: 'Texte anglais',
+  bandeauTexteAide: 'Une langue vide n’affiche rien dans cette langue.',
+  groupeAbsence: 'Message d’absence',
+  groupeAbsenceAide: 'Pendant une fermeture.',
+  absenceActif: 'Activer le message d’absence',
+  absenceActifAide: 'Remplace le délai annoncé.',
+  absenceFr: 'Message français',
+  absenceEn: 'Message anglais',
+  absenceTexteAide: 'Une langue vide conserve la phrase de délai.',
 }
 
 const REGLAGES = {
@@ -89,10 +113,27 @@ const REGLAGES = {
   reseauFacebook: '',
   reseauInstagram: '',
   reseauLinkedin: '',
+  // Migration 0053.
+  courrielRh: 'rh@ko-lab.ca',
+  bandeauActif: false,
+  bandeauTexteFr: '',
+  bandeauTexteEn: '',
+  absenceActif: false,
+  absenceMessageFr: '',
+  absenceMessageEn: '',
 }
 
-function monter(reglages = REGLAGES) {
-  return render(<FormulaireReglages locale="fr" reglages={reglages} libelles={LIBELLES} />)
+const DESTINATAIRES = { demandes: '', candidatures: '' }
+
+function monter(reglages = REGLAGES, destinataires = DESTINATAIRES) {
+  return render(
+    <FormulaireReglages
+      locale="fr"
+      reglages={reglages}
+      destinataires={destinataires}
+      libelles={LIBELLES}
+    />,
+  )
 }
 
 describe('FormulaireReglages', () => {
@@ -168,5 +209,79 @@ describe('FormulaireReglages', () => {
     expect(screen.getByText('Désactivé, le panier disparaît.')).toBeVisible()
     expect(screen.getByText('Désactivé, la catégorie disparaît.')).toBeVisible()
     expect(screen.getByText('Désactivée, la boutique disparaît entièrement.')).toBeVisible()
+  })
+
+  /* ======================================================================
+   * Migration 0053 — destinataires, bandeau, absence
+   * ==================================================================== */
+
+  it('présente les destinataires venus de la prop SÉPARÉE, pas de `reglages`', () => {
+    // ⚠️ Le test qui compte vraiment de ce lot.
+    //
+    // Les deux listes sont marquées `publique = false` en base : elles ne sont
+    // PAS dans `Reglages`, parce que `lireReglages()` lit avec la clé anon et
+    // ne les voit pas. Elles arrivent par une lecture distincte, faite avec le
+    // client de session.
+    //
+    // Si quelqu'un « simplifie » un jour en les reversant dans `reglages`,
+    // les champs s'afficheront vides à chaque ouverture de l'écran quelle que
+    // soit la valeur enregistrée — un réglage qui semble ne jamais se
+    // sauvegarder, sans le moindre message d'erreur. Ce test échoue d'abord.
+    monter(REGLAGES, {
+      demandes: 'info@ko-lab.ca, christian@ko-lab.ca',
+      candidatures: 'rh@ko-lab.ca',
+    })
+
+    expect(screen.getByLabelText('Nouvelle demande de contact')).toHaveValue(
+      'info@ko-lab.ca, christian@ko-lab.ca',
+    )
+    expect(screen.getByLabelText('Nouvelle candidature')).toHaveValue('rh@ko-lab.ca')
+  })
+
+  it('envoie les neuf nouveaux champs dans le FormData', () => {
+    monter(
+      {
+        ...REGLAGES,
+        courrielRh: 'rh@ko-lab.ca',
+        bandeauActif: true,
+        bandeauTexteFr: 'Fermé du 24 au 2',
+        bandeauTexteEn: 'Closed Dec 24 – Jan 2',
+        absenceActif: false,
+        absenceMessageFr: 'De retour le 6.',
+        absenceMessageEn: 'Back on the 6th.',
+      },
+      { demandes: 'a@ko-lab.ca', candidatures: 'b@ko-lab.ca' },
+    )
+
+    const formulaire = screen.getByRole('button', { name: 'Enregistrer' }).closest('form')
+    const donnees = new FormData(formulaire as HTMLFormElement)
+
+    expect(donnees.get('courriel_rh')).toBe('rh@ko-lab.ca')
+    expect(donnees.get('notifications_demandes')).toBe('a@ko-lab.ca')
+    expect(donnees.get('notifications_candidatures')).toBe('b@ko-lab.ca')
+    expect(donnees.get('bandeau_texte_fr')).toBe('Fermé du 24 au 2')
+    expect(donnees.get('bandeau_texte_en')).toBe('Closed Dec 24 – Jan 2')
+    expect(donnees.get('absence_message_fr')).toBe('De retour le 6.')
+    expect(donnees.get('absence_message_en')).toBe('Back on the 6th.')
+    // Les deux interrupteurs, dans des états opposés : coché = présent,
+    // décoché = absent, comme les quatre drapeaux d'origine.
+    expect(donnees.get('bandeau_actif')).toBe('true')
+    expect(donnees.get('absence_actif')).toBeNull()
+  })
+
+  it('dit que le message d’absence REMPLACE la phrase de délai', () => {
+    // Le point le moins évident de cet écran. Quelqu'un qui croit n'ajouter
+    // qu'un avis ne s'attend pas à ce que le courriel de confirmation change
+    // de texte : l'aide doit le dire avant, pas après.
+    monter()
+    expect(screen.getByText('Pendant une fermeture.')).toBeVisible()
+    expect(screen.getByText('Remplace le délai annoncé.')).toBeVisible()
+  })
+
+  it('les textes bilingues sont des zones de texte, pas des champs d’une ligne', () => {
+    monter()
+    for (const libelle of ['Texte français', 'Texte anglais', 'Message français', 'Message anglais']) {
+      expect(screen.getByLabelText(libelle).tagName).toBe('TEXTAREA')
+    }
   })
 })

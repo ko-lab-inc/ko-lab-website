@@ -5,6 +5,8 @@ import { unstable_cache } from 'next/cache'
 import { EMAILS } from '@/lib/constantes'
 import { createStaticClient } from '@/lib/supabase/static'
 
+import type { AppLocale } from '@/i18n/routing'
+
 /**
  * Réglages du site — coordonnées et drapeaux, modifiables sans redéploiement.
  *
@@ -104,6 +106,45 @@ export type Reglages = {
   reseauFacebook: string
   reseauInstagram: string
   reseauLinkedin: string
+
+  /* --------------------------------------------------------------------------
+   * Migration 0053.
+   *
+   * ⚠️ LES DESTINATAIRES DES NOTIFICATIONS NE SONT PAS ICI — voir
+   * `lib/destinataires.ts`. Ils sont marqués `publique = false` en base, donc
+   * invisibles de ce module, qui lit avec la clé `anon`. C'est voulu : des
+   * adresses de l'équipe dans une table lisible publiquement seraient
+   * moissonnables par n'importe qui.
+   * ------------------------------------------------------------------------ */
+
+  /**
+   * Adresse RH AFFICHÉE sur /carrieres (lien `mailto:`). Remplace la constante
+   * EMAILS.rh, figée dans le code exactement comme `info@` l'était avant 0011.
+   * Vide = repli sur EMAILS.rh.
+   *
+   * UNE SEULE adresse, à la différence de `notificationsCandidatures` : celle-ci
+   * devient un lien cliquable, une liste y produirait un lien cassé.
+   */
+  courrielRh: string
+
+  /**
+   * Bandeau d'annonce au-dessus de la navigation.
+   *
+   * L'interrupteur est SÉPARÉ du texte pour qu'éteindre le bandeau ne perde
+   * pas le message — on le rallume l'an prochain sans le réécrire.
+   */
+  bandeauActif: boolean
+  bandeauTexteFr: string
+  bandeauTexteEn: string
+
+  /**
+   * Message d'absence. Quand il est actif, il REMPLACE la promesse de délai
+   * (`delaiReponseHeures`) partout où elle est faite, courriel compris — voir
+   * `messageAbsence()` plus bas pour la raison.
+   */
+  absenceActif: boolean
+  absenceMessageFr: string
+  absenceMessageEn: string
 }
 
 /**
@@ -147,6 +188,19 @@ function repli(): Reglages {
     reseauFacebook: '',
     reseauInstagram: '',
     reseauLinkedin: '',
+    // Repli sur la constante : c'est l'adresse qui était en dur dans
+    // /carrieres avant 0053, donc l'état exact d'avant la clé.
+    courrielRh: EMAILS.rh,
+    // `false` : un bandeau d'annonce qui apparaîtrait de lui-même sur toutes
+    // les pages publiques parce que la migration n'a pas tourné serait le pire
+    // repli possible. Même raisonnement pour l'absence — elle remplace une
+    // promesse, elle ne doit jamais s'activer par accident.
+    bandeauActif: false,
+    bandeauTexteFr: '',
+    bandeauTexteEn: '',
+    absenceActif: false,
+    absenceMessageFr: '',
+    absenceMessageEn: '',
   }
 }
 
@@ -167,6 +221,13 @@ const CLES = {
   reseau_facebook: 'reseauFacebook',
   reseau_instagram: 'reseauInstagram',
   reseau_linkedin: 'reseauLinkedin',
+  courriel_rh: 'courrielRh',
+  bandeau_actif: 'bandeauActif',
+  bandeau_texte_fr: 'bandeauTexteFr',
+  bandeau_texte_en: 'bandeauTexteEn',
+  absence_actif: 'absenceActif',
+  absence_message_fr: 'absenceMessageFr',
+  absence_message_en: 'absenceMessageEn',
 } as const
 
 export type CleReglage = keyof typeof CLES
@@ -193,7 +254,9 @@ async function lireDepuisBase(): Promise<Reglages> {
         champ === 'panierActif' ||
         champ === 'solutionsModulaires' ||
         champ === 'boutiqueActive' ||
-        champ === 'concoursActif'
+        champ === 'concoursActif' ||
+        champ === 'bandeauActif' ||
+        champ === 'absenceActif'
       ) {
         valeurs[champ] = ligne.valeur === 'true'
       } else if (champ === 'delaiReponseHeures') {
@@ -209,6 +272,10 @@ async function lireDepuisBase(): Promise<Reglages> {
         // d'écrire, et une adresse vide couperait la réception des demandes.
         const texte = ligne.valeur.trim()
         if (champ === 'contactCourriel' && texte === '') continue
+        // Même raison pour l'adresse RH : /carrieres affiche un lien
+        // `mailto:` et une valeur vide produirait « mailto: » tout court —
+        // un lien qui ouvre un courriel sans destinataire.
+        if (champ === 'courrielRh' && texte === '') continue
         valeurs[champ] = texte
       }
     }
@@ -226,6 +293,53 @@ async function lireDepuisBase(): Promise<Reglages> {
  * `server-only` : la tentative échoue à la compilation plutôt qu'au premier
  * rendu en production.
  */
+/* ==========================================================================
+ * Lectures dérivées — migration 0053
+ *
+ * Pures, et exportées séparément : le choix de la langue et la règle
+ * « vide = pas de bandeau » sont la vraie logique de ces deux réglages, et
+ * elle doit être testable sans base ni rendu.
+ * ========================================================================== */
+
+/**
+ * Texte du bandeau pour cette langue, ou `null` s'il n'y a rien à afficher.
+ *
+ * Trois façons de ne rien afficher : l'interrupteur est éteint, OU le texte de
+ * cette langue est vide. La seconde n'est pas un oubli à corriger : elle
+ * permet une annonce qui ne concerne qu'un public — un avis sur un événement
+ * francophone n'a rien à dire à un visiteur de /en. Afficher le texte de
+ * l'autre langue en repli serait pire que de ne rien afficher.
+ */
+export function bandeauPour(reglages: Reglages, locale: AppLocale): string | null {
+  if (!reglages.bandeauActif) return null
+  const texte = locale === 'en' ? reglages.bandeauTexteEn : reglages.bandeauTexteFr
+  return texte.trim() === '' ? null : texte
+}
+
+/**
+ * Message d'absence pour cette langue, ou `null` si la promesse de délai
+ * habituelle doit être conservée.
+ *
+ * ⚠️ POURQUOI CE MESSAGE REMPLACE LA PROMESSE AU LIEU DE S'Y AJOUTER
+ *
+ * Le site annonce « on revient vers vous dans les 48 heures » à cinq endroits
+ * et dans l'accusé de réception. Pendant une fermeture, cette phrase est
+ * fausse. Un avis d'absence AFFICHÉ EN PLUS donnerait un site qui dit les deux
+ * choses à la fois, et le courriel d'accusé continuerait de promettre 48
+ * heures à quelqu'un qui n'aura de réponse que dans dix jours — soit
+ * exactement la divergence que `delai_reponse_heures` a supprimée en 0051, à
+ * nouveau introduite.
+ *
+ * Repli sur la langue vide DIFFÉRENT du bandeau : ici on garde la phrase de
+ * délai plutôt que de n'afficher rien. Une page de contact sans aucune
+ * indication de délai serait une régression, pas une annonce omise.
+ */
+export function messageAbsence(reglages: Reglages, locale: AppLocale): string | null {
+  if (!reglages.absenceActif) return null
+  const texte = locale === 'en' ? reglages.absenceMessageEn : reglages.absenceMessageFr
+  return texte.trim() === '' ? null : texte
+}
+
 export const lireReglages = unstable_cache(lireDepuisBase, ['reglages-site'], {
   tags: [ETIQUETTE_REGLAGES],
   // Filet si l'invalidation par étiquette est manquée — un enregistrement

@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { VERSION_POLITIQUES } from '@/lib/constantes'
+import { lireDestinataires } from '@/lib/destinataires'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
-import { lireReglages } from '@/lib/reglages'
+import { lireReglages, messageAbsence } from '@/lib/reglages'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { envoyerCourriel, raisonCourte } from '@/lib/email/envoyer'
 import { gabaritAccuseReception } from '@/lib/email/gabaritsNotifications'
@@ -101,10 +102,22 @@ export async function POST(req: NextRequest) {
   // ne recevait rien, et personne ne l'apprenait. Le résultat est désormais
   // inscrit sur la ligne (`notification_envoyee`, `notification_erreur`,
   // migration 0049) et /admin/demandes l'affiche.
-  const { contactCourriel, delaiReponseHeures } = await lireReglages()
+  const reglages = await lireReglages()
+  const { delaiReponseHeures } = reglages
+
+  /**
+   * Destinataires lus à part (migration 0053) : la liste n'est pas dans
+   * `lireReglages()`, qui lit avec la clé `anon` et ne voit pas les clés
+   * marquées non publiques. Les adresses de l'équipe ne sont pas affichables.
+   *
+   * `demandes` ne revient JAMAIS vide — voir lib/destinataires.ts : un tableau
+   * vide passé à Resend produirait une demande reçue dont personne n'est
+   * averti.
+   */
+  const destinataires = await lireDestinataires()
 
   const notification = await envoyerCourriel({
-    a: contactCourriel,
+    a: destinataires.demandes,
     // Répondre écrit au DEMANDEUR, pas à soi-même.
     repondreA: donnees.email,
     sujet: `Nouvelle demande — ${donnees.type}`,
@@ -130,6 +143,11 @@ export async function POST(req: NextRequest) {
     nom: donnees.nom,
     locale: donnees.locale,
     delaiHeures: delaiReponseHeures,
+    // Pendant une fermeture, le message d'absence PREND LA PLACE de la
+    // promesse de délai — sinon ce courriel annoncerait 48 heures à quelqu'un
+    // qui n'aura de réponse qu'au retour de l'équipe. La langue suit celle de
+    // la DEMANDE, pas celle d'un éventuel écran d'administration.
+    absence: messageAbsence(reglages, donnees.locale),
   })
   const envoiAccuse = await envoyerCourriel({
     a: donnees.email,

@@ -10,9 +10,8 @@ import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
 import { resoudrePhotoPoste, type ResolutionPhotoPoste } from '@/lib/carrieres-photo'
-import { EMAILS } from '@/lib/constantes'
 import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
-import { lireReglages } from '@/lib/reglages'
+import { lireReglages, messageAbsence } from '@/lib/reglages'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 
 import type { Metadata, Viewport } from 'next'
@@ -367,11 +366,11 @@ export default async function CarrieresPage({ params }: Props) {
               <p className="label-mono">{t('rh_label')}</p>
               <h2 className="ko-h2 mt-5 text-ko-ink">{t('rh_titre')}</h2>
               <p className="mx-auto mt-6 max-w-[48ch] text-base leading-relaxed text-ko-muted">
-                {t('rh_texte', { heures: reglages.delaiReponseHeures })}
+                {messageAbsence(reglages, locale) ?? t('rh_texte', { heures: reglages.delaiReponseHeures })}
               </p>
 
               <a
-                href={`mailto:${EMAILS.rh}`}
+                href={`mailto:${reglages.courrielRh}`}
                 className={`mt-9 ${buttonVariants({ variant: 'ghost' })}`}
               >
                 {t('rh_cta')}

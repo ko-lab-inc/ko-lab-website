@@ -6,6 +6,7 @@ import { EnteteAdmin } from '@/components/layout/CadreAdmin'
 import { FormulaireReglages } from '@/components/sections/FormulaireReglages'
 import { routing } from '@/i18n/routing'
 import { lireReglages } from '@/lib/reglages'
+import { createClient } from '@/lib/supabase/server'
 
 import type { Viewport } from 'next'
 
@@ -58,6 +59,36 @@ export default async function Page({ params }: Props) {
   const t = await getTranslations('Admin')
   const reglages = await lireReglages()
 
+  /**
+   * Les deux listes de destinataires — migration 0053.
+   *
+   * ⚠️ LUES ICI, ET PAS PAR `lireReglages()`.
+   *
+   * Elles sont marquees `publique = false` en base. `lireReglages()` lit avec
+   * la cle `anon`, que la politique `reglages_lecture_publique` restreint a
+   * `publique = true` : ces deux lignes lui sont INVISIBLES. Sans cette
+   * lecture-ci, les deux champs s'afficheraient vides a chaque ouverture de
+   * l'ecran, quelle que soit la valeur enregistree — un reglage qui semble ne
+   * jamais se sauvegarder.
+   *
+   * Le client de SESSION, pas la service role key : la politique
+   * `reglages_lecture_equipe` autorise deja l'equipe a tout voir, donc rien
+   * n'est contourne. `lib/supabase/admin.ts` reserve la service role key aux
+   * API routes, et un composant n'en est pas une.
+   */
+  const supabase = await createClient()
+  const { data: privees } = await supabase
+    .from('reglages')
+    .select('cle, valeur')
+    .in('cle', ['notifications_demandes', 'notifications_candidatures'])
+
+  const valeur = (cle: string) =>
+    (privees ?? []).find((ligne) => ligne.cle === cle)?.valeur ?? ''
+  const destinataires = {
+    demandes: valeur('notifications_demandes'),
+    candidatures: valeur('notifications_candidatures'),
+  }
+
   return (
     <div data-theme-sombre>
       <EnteteAdmin titre={t('reglages_titre')} />
@@ -69,6 +100,7 @@ export default async function Page({ params }: Props) {
       <FormulaireReglages
         locale={locale}
         reglages={reglages}
+        destinataires={destinataires}
         libelles={{
           groupeContact: t('reglages_groupe_contact'),
           adresse: t('reglages_adresse'),
@@ -94,6 +126,28 @@ export default async function Page({ params }: Props) {
           groupeFonctionsAide: t('reglages_groupe_fonctions_aide'),
           courriel: t('reglages_courriel'),
           courrielAide: t('reglages_courriel_aide'),
+          courrielRh: t('reglages_courriel_rh'),
+          courrielRhAide: t('reglages_courriel_rh_aide'),
+          groupeNotifications: t('reglages_groupe_notifications'),
+          groupeNotificationsAide: t('reglages_groupe_notifications_aide'),
+          notifDemandes: t('reglages_notif_demandes'),
+          notifDemandesAide: t('reglages_notif_demandes_aide'),
+          notifCandidatures: t('reglages_notif_candidatures'),
+          notifCandidaturesAide: t('reglages_notif_candidatures_aide'),
+          groupeBandeau: t('reglages_groupe_bandeau'),
+          groupeBandeauAide: t('reglages_groupe_bandeau_aide'),
+          bandeauActif: t('reglages_bandeau_actif'),
+          bandeauActifAide: t('reglages_bandeau_actif_aide'),
+          bandeauFr: t('reglages_bandeau_fr'),
+          bandeauEn: t('reglages_bandeau_en'),
+          bandeauTexteAide: t('reglages_bandeau_texte_aide'),
+          groupeAbsence: t('reglages_groupe_absence'),
+          groupeAbsenceAide: t('reglages_groupe_absence_aide'),
+          absenceActif: t('reglages_absence_actif'),
+          absenceActifAide: t('reglages_absence_actif_aide'),
+          absenceFr: t('reglages_absence_fr'),
+          absenceEn: t('reglages_absence_en'),
+          absenceTexteAide: t('reglages_absence_texte_aide'),
           telephone: t('reglages_telephone'),
           telephoneAide: t('reglages_telephone_aide'),
           region: t('reglages_region'),
@@ -110,6 +164,7 @@ export default async function Page({ params }: Props) {
           enCours: t('reglages_en_cours'),
           succes: t('reglages_succes'),
           erreurDonnees: t('reglages_erreur_donnees'),
+          erreurAdresse: t('reglages_erreur_adresse'),
           erreurRefuse: t('reglages_erreur_refuse'),
           erreurServeur: t('reglages_erreur_serveur'),
         }}
