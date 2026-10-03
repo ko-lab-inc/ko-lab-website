@@ -178,6 +178,7 @@ export default async function PostulerPage({ params, searchParams }: Props) {
             <FormulaireCandidature
               postes={titres}
               posteInitial={posteInitial}
+              locale={locale}
               libelles={libelles}
             />
           )}

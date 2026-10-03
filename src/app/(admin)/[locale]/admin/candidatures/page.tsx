@@ -50,7 +50,7 @@ export default async function CandidaturesPage({ params }: Props) {
     supabase
       .from('candidatures')
       .select(
-        'id, nom, telephone, email, ville, postes, disponibilites, travail_exterieur, a_experience, experience_texte, cv_chemin, source, statut, created_at, poste_id, compte_id, invitation_envoyee_le, note_interne, statut_par, statut_le',
+        'id, nom, telephone, email, ville, postes, disponibilites, travail_exterieur, a_experience, experience_texte, cv_chemin, source, statut, created_at, poste_id, compte_id, invitation_envoyee_le, note_interne, statut_par, statut_le, reponse_envoyee_le, accuse_envoye, accuse_erreur',
       )
       .order('created_at', { ascending: false }),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
@@ -115,6 +115,14 @@ export default async function CandidaturesPage({ params }: Props) {
           date: format.dateTime(new Date(c.invitation_envoyee_le), { dateStyle: 'medium', timeStyle: 'short' }),
         })
       : null,
+    // Migration 0054 — même raison d'être résolu ici que la ligne au-dessus.
+    reponseEnvoyeeLeFormatee: c.reponse_envoyee_le
+      ? t('reponse_envoyee_le', {
+          date: format.dateTime(new Date(c.reponse_envoyee_le), { dateStyle: 'medium', timeStyle: 'short' }),
+        })
+      : null,
+    accuseEnvoye: c.accuse_envoye,
+    accuseErreur: c.accuse_erreur,
   }))
 
   return (
@@ -160,6 +168,23 @@ export default async function CandidaturesPage({ params }: Props) {
           voirCompte: t('candidature_voir_compte'),
           noteInterne: t('note_interne'),
           noteInterneAide: t('note_interne_aide'),
+          accuseEchoue: t('candidature_accuse_echoue'),
+          reponse: {
+            titre: t('reponse_titre'),
+            aide: t('reponse_aide'),
+            envoyer: t('reponse_envoyer'),
+            confirmer: t('reponse_confirmer'),
+            enCours: t('reponse_en_cours'),
+            succes: t('reponse_succes'),
+            dejaEnvoyeeLe: t('reponse_deja_envoyee'),
+            erreurRefuse: t('reponse_erreur_refuse'),
+            erreurIntrouvable: t('reponse_erreur_introuvable'),
+            erreurPasEligible: t('reponse_erreur_pas_eligible'),
+            erreurDejaEnvoyee: t('reponse_erreur_deja_envoyee'),
+            erreurEnvoi: t('reponse_erreur_envoi'),
+            erreurTropDeTentatives: t('reponse_erreur_trop'),
+            erreurServeur: t('reponse_erreur_serveur'),
+          },
           noteEnregistrer: t('note_enregistrer'),
           traitePar: t('traite_par'),
           invitation: {

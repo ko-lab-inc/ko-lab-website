@@ -167,12 +167,19 @@ function ChoixOuiNon({
 export function FormulaireCandidature({
   postes,
   posteInitial,
+  locale,
   libelles,
 }: {
   /** Intitulés des postes ouverts — lus en base, jamais codés en dur. */
   postes: readonly string[]
   /** Poste pré-coché, depuis `?poste=` sur le lien « Postuler ». */
   posteInitial?: string
+  /**
+   * Langue de la page — migration 0054. Transmise en champ caché et STOCKÉE
+   * sur la candidature : c'est elle qui décidera, des semaines plus tard, de
+   * la langue de la réponse envoyée depuis /admin/candidatures.
+   */
+  locale: string
   libelles: LibellesCandidature
 }) {
   const [etat, action, enCours] = useActionState<EtatCandidature, FormData>(envoyerCandidature, {})
@@ -224,6 +231,11 @@ export function FormulaireCandidature({
       }}
       className="max-w-[640px] space-y-7"
     >
+      {/* Langue de la page — migration 0054. Stockée sur la candidature, et
+          c'est elle qui décidera de la langue de la réponse envoyée des
+          semaines plus tard depuis /admin/candidatures. */}
+      <input type="hidden" name="locale" value={locale} />
+
       {/* Piège à robots : hors flux visuel et hors tabulation, mais rempli
           par les remplisseurs automatiques. Le serveur répond « succès »
           sans rien écrire quand il est rempli. */}

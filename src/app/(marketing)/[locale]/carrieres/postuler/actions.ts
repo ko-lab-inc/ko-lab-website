@@ -8,7 +8,11 @@ import { z } from 'zod'
 import { DOMAINE, VERSION_POLITIQUES } from '@/lib/constantes'
 import { lireDestinataires } from '@/lib/destinataires'
 import { envoyerCourriel, raisonCourte } from '@/lib/email/envoyer'
-import { gabaritNouvelleCandidature } from '@/lib/email/gabaritsNotifications'
+import {
+  gabaritAccuseCandidature,
+  gabaritNouvelleCandidature,
+} from '@/lib/email/gabaritsNotifications'
+import { lireReglages, messageAbsence } from '@/lib/reglages'
 import { getSupabaseAdmin } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
@@ -88,6 +92,20 @@ const schemaCandidature = z.object({
   // ce sont deux déclarations différentes, chacune doit rester vérifiable
   // séparément.
   consentement: z.literal('true'),
+  /**
+   * Langue de la page d'où part la candidature — migration 0054.
+   *
+   * ⚠️ STOCKÉE, pas seulement utilisée pour l'accusé qui part dans la seconde.
+   * La réponse de refus, elle, part des semaines plus tard depuis
+   * /admin/candidatures : à ce moment-là, la seule langue à portée serait
+   * celle de l'écran qu'un membre de l'équipe a ouvert. Un refus en anglais à
+   * un candidat francophone serait le seul message qu'il recevra de KO-LAB.
+   *
+   * `optional().default('fr')` et pas obligatoire : une valeur manquante ne
+   * doit jamais faire échouer une candidature. Elle ne coûterait qu'un
+   * courriel dans la mauvaise langue — une candidature perdue coûte bien plus.
+   */
+  locale: z.enum(['fr', 'en']).optional().default('fr'),
 })
 
 /**
@@ -163,6 +181,7 @@ export async function envoyerCandidature(
     source: donnees.get('source'),
     confirmation: donnees.get('confirmation'),
     consentement: donnees.get('consentement'),
+    locale: donnees.get('locale') ?? 'fr',
   })
 
   if (!analyse.success) return { erreur: 'donnees' }
@@ -236,6 +255,8 @@ export async function envoyerCandidature(
       // Loi 25 (audit du 23 août 2026, migration 0041).
       consentement_le: new Date().toISOString(),
       consentement_version: VERSION_POLITIQUES,
+      // Migration 0054 — voir la note du schéma plus haut.
+      locale: analyse.data.locale,
     })
 
     if (error) {
@@ -301,6 +322,48 @@ export async function envoyerCandidature(
       .eq('id', idCandidature)
 
     if (!envoi.ok) console.error('[candidature] notification RH non envoyée :', envoi.raison)
+
+    /* ------------------------------------------------------------------
+     * Accusé de réception AU CANDIDAT — migration 0054.
+     *
+     * Jusqu'ici, un candidat ne recevait jamais rien : il joignait son CV,
+     * lisait « nous revenons vers vous dans les 48 heures ouvrables », et
+     * plus aucun signe de vie. Les demandes de contact avaient leur accusé
+     * depuis 0049 ; les candidatures, non.
+     *
+     * Envoyé APRÈS la notification de l'équipe, et son échec n'empêche rien :
+     * les deux envois sont indépendants, et la candidature est déjà
+     * enregistrée. Le résultat est inscrit sur la ligne — un envoi raté qui
+     * ne laisse pas de trace est le défaut que 0049 a servi à supprimer.
+     * ------------------------------------------------------------------ */
+    const reglages = await lireReglages()
+    const accuse = gabaritAccuseCandidature({
+      nom: analyse.data.nom,
+      locale: analyse.data.locale,
+      delaiHeures: reglages.delaiReponseHeures,
+      // Pendant une fermeture (0053), le message d'absence remplace la phrase
+      // de délai — sinon ce courriel promettrait 48 heures ouvrables à
+      // quelqu'un qui n'aura de nouvelles qu'au retour de l'équipe.
+      absence: messageAbsence(reglages, analyse.data.locale),
+    })
+    const envoiAccuse = await envoyerCourriel({
+      a: analyse.data.email,
+      sujet: accuse.sujet,
+      texte: accuse.texte,
+    })
+
+    await getSupabaseAdmin()
+      .from('candidatures')
+      .update(
+        envoiAccuse.ok
+          ? { accuse_envoye: true, accuse_erreur: null }
+          : { accuse_envoye: false, accuse_erreur: raisonCourte(envoiAccuse.raison) },
+      )
+      .eq('id', idCandidature)
+
+    if (!envoiAccuse.ok) {
+      console.error('[candidature] accusé au candidat non envoyé :', envoiAccuse.raison)
+    }
   } catch (err) {
     console.error('[candidature] échec', err)
     return { erreur: 'serveur' }

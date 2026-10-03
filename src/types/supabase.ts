@@ -354,6 +354,16 @@ export type Database = {
           /** Migration 0051. Compte ayant pose le dernier changement de statut. */
           statut_par: string | null
           statut_le: string | null
+        /** Migration 0054 — langue du candidat, pour la reponse envoyee
+         *  des semaines plus tard depuis /admin/candidatures. */
+        locale: string
+        accuse_envoye: boolean
+        accuse_erreur: string | null
+        /** Horodatage, pas un booleen : savoir QUAND la reponse est partie
+         *  change ce qu'on dit a un candidat qui rappelle. Sert aussi de
+         *  verrou contre un second envoi. */
+        reponse_envoyee_le: string | null
+        reponse_par: string | null
         }
         Insert: {
           id?: string
@@ -381,6 +391,11 @@ export type Database = {
           note_interne?: string | null
           statut_par?: string | null
           statut_le?: string | null
+        locale?: string
+        accuse_envoye?: boolean
+        accuse_erreur?: string | null
+        reponse_envoyee_le?: string | null
+        reponse_par?: string | null
         }
         Update: {
           id?: string
@@ -408,6 +423,11 @@ export type Database = {
           note_interne?: string | null
           statut_par?: string | null
           statut_le?: string | null
+        locale?: string
+        accuse_envoye?: boolean
+        accuse_erreur?: string | null
+        reponse_envoyee_le?: string | null
+        reponse_par?: string | null
         }
         Relationships: []
       }

@@ -6,6 +6,8 @@ import { redirect } from 'next/navigation'
 
 import { creerCompteEtInviter } from '@/app/(admin)/[locale]/admin/utilisateurs/actions'
 import { exigerRole } from '@/lib/auth/garde'
+import { envoyerCourriel } from '@/lib/email/envoyer'
+import { gabaritCandidatureRefusee } from '@/lib/email/gabaritsNotifications'
 import { POSTE_LIVREUR } from '@/lib/constantes'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { estUuid } from '@/lib/utils/identifiant'
@@ -346,4 +348,116 @@ export async function enregistrerNoteCandidature(donnees: FormData): Promise<voi
   }
 
   revalidatePath(`/${locale}/admin/candidatures`)
+}
+
+
+/* ==========================================================================
+ * Réponse au candidat — migration 0054
+ * ========================================================================== */
+
+export type EtatReponseCandidat = {
+  erreur?: 'refuse' | 'introuvable' | 'pas_eligible' | 'deja_envoyee' | 'envoi' | 'trop_de_tentatives' | 'serveur'
+  succes?: boolean
+  /** Raison brute de l'échec Resend — affichée telle quelle à l'équipe. */
+  raison?: string
+}
+
+/**
+ * Prévenir un candidat que sa candidature n'est pas retenue.
+ *
+ * ---------------------------------------------------------------------------
+ * ⚠️ POURQUOI UN BOUTON, ET PAS UN DÉCLENCHEMENT SUR LE CHANGEMENT DE STATUT
+ *
+ * Le courriel « demande traitée » part tout seul quand une demande passe à
+ * `traite` (voir admin/demandes/actions.ts). Il aurait été cohérent de faire
+ * pareil au passage à `refusee`. C'est délibérément refusé.
+ *
+ * Les deux messages ne pèsent pas le même poids. « Votre demande a été
+ * traitée » envoyé par erreur est au pire inutile. « Votre candidature n'a pas
+ * été retenue » met fin à la relation avec quelqu'un qui a confié son CV et
+ * attend une réponse. Un clic de trop dans une liste déroulante — un mauvais
+ * dossier, un classement de routine, un essai — et c'est parti, sans
+ * rattrapage.
+ *
+ * Changer le statut et prévenir la personne sont donc deux gestes distincts.
+ * On peut classer un dossier sans écrire à personne ; écrire demande un
+ * second geste, volontaire, confirmé.
+ *
+ * ---------------------------------------------------------------------------
+ * CE QUI EST VÉRIFIÉ, ET DANS QUEL ORDRE
+ *
+ * La ligne est lue AVANT tout envoi, et trois conditions doivent tenir :
+ * le dossier est bien `refusee`, aucune réponse n'est encore partie, et
+ * l'adresse existe. Aucune n'est déduite de ce que le client a envoyé — le
+ * formulaire ne transmet qu'un identifiant.
+ *
+ * ⚠️ `reponse_envoyee_le` n'est écrit QU'APRÈS un envoi réussi. L'inverse —
+ * marquer puis envoyer — laisserait un dossier marqué « répondu » alors que
+ * le candidat n'a rien reçu, et le bouton aurait disparu pour toujours. Même
+ * discipline que `traite_notifie_le` dans admin/demandes/actions.ts.
+ */
+export async function repondreCandidatRefus(
+  _precedent: EtatReponseCandidat,
+  donnees: FormData,
+): Promise<EtatReponseCandidat> {
+  const locale = String(donnees.get('locale') ?? 'fr')
+  const id = String(donnees.get('id') ?? '')
+  if (!estUuid(id)) return { erreur: 'introuvable' }
+
+  // Plus serré que le changement de statut (30/5 min) : celui-ci envoie du
+  // courrier vers l'extérieur. Un script qui s'emballe ici écrit à de vraies
+  // personnes.
+  if (rateLimit(`reponse-candidat:${adresseDepuis(await headers())}`, { max: 10, windowMs: 600_000 })) {
+    return { erreur: 'trop_de_tentatives' }
+  }
+
+  try {
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return { erreur: 'refuse' }
+    const { supabase } = acces
+
+    const { data: candidature, error: erreurLecture } = await supabase
+      .from('candidatures')
+      .select('id, nom, email, locale, statut, reponse_envoyee_le')
+      .eq('id', id)
+      .maybeSingle()
+
+    if (erreurLecture || !candidature) return { erreur: 'introuvable' }
+    // Le statut décide, pas le bouton : masquer le bouton côté client est un
+    // confort d'affichage, la garantie est ici.
+    if (candidature.statut !== 'refusee') return { erreur: 'pas_eligible' }
+    if (candidature.reponse_envoyee_le) return { erreur: 'deja_envoyee' }
+    if (!candidature.email) return { erreur: 'pas_eligible' }
+
+    // ⚠️ `candidature.locale`, et JAMAIS la locale de l'écran. Un membre de
+    // l'équipe qui travaille sur /en/admin/ enverrait sinon un refus en
+    // anglais à un candidat francophone — et c'est le seul message que cette
+    // personne recevra de KO-LAB. Voir la migration 0054.
+    const langue = candidature.locale === 'en' ? 'en' : 'fr'
+    const { sujet, texte } = gabaritCandidatureRefusee({ nom: candidature.nom, locale: langue })
+
+    const envoi = await envoyerCourriel({ a: candidature.email, sujet, texte })
+    if (!envoi.ok) {
+      console.error('[candidatures] réponse de refus non envoyée :', envoi.raison)
+      return { erreur: 'envoi', raison: envoi.raison }
+    }
+
+    // Seulement maintenant — voir la note en tête.
+    const { error } = await supabase
+      .from('candidatures')
+      .update({ reponse_envoyee_le: new Date().toISOString(), reponse_par: acces.userId })
+      .eq('id', id)
+
+    if (error) {
+      // Le courriel EST parti. Le dire franchement plutôt que de prétendre
+      // l'échec : le candidat l'a reçu, et un second envoi serait pire.
+      console.error('[candidatures] réponse envoyée mais trace non écrite', error.message)
+    }
+  } catch (err) {
+    console.error('[candidatures] échec réponse au candidat', err)
+    return { erreur: 'serveur' }
+  }
+
+  revalidatePath(`/${locale}/admin/candidatures`)
+  return { succes: true }
 }

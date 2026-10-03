@@ -10,6 +10,7 @@ import {
   telechargerCv,
 } from '@/app/(admin)/[locale]/admin/candidatures/actions'
 import { InvitationLivreur, type TextesInvitationLivreur } from '@/components/sections/InvitationLivreur'
+import { ReponseCandidat, type TextesReponseCandidat } from '@/components/sections/ReponseCandidat'
 import { buttonVariants } from '@/components/ui/Button'
 import { IconeFermer, IconeOeil, IconePoubelle } from '@/components/ui/Icones'
 import { POSTE_LIVREUR } from '@/lib/constantes'
@@ -91,6 +92,13 @@ export type Candidature = {
   /** Migration 0051. Nom déjà résolu côté serveur — jamais un identifiant. */
   statutPar: string | null
   statutLeFormate: string | null
+  /** Migration 0054 — déjà formatée ET interpolée côté serveur. `null` tant
+   *  qu'aucune réponse n'est partie : c'est ce qui décide de l'affichage du
+   *  bouton. */
+  reponseEnvoyeeLeFormatee: string | null
+  /** Migration 0054 — l'accusé de réception est-il parti au candidat ? */
+  accuseEnvoye: boolean
+  accuseErreur: string | null
 }
 
 export function TableauCandidatures({
@@ -142,6 +150,9 @@ export function TableauCandidatures({
     /** Migration 0051 — note interne et trace de changement de statut. */
     noteInterne: string
     noteInterneAide: string
+    /** Migration 0054. */
+    accuseEchoue: string
+    reponse: TextesReponseCandidat
     noteEnregistrer: string
     traitePar: string
     invitation: TextesInvitationLivreur
@@ -529,6 +540,45 @@ export function TableauCandidatures({
                   </div>
                 )
               })()}
+
+            {/* ------------------- Réponse au candidat (0054) -------------------
+                N'apparaît QUE sur un dossier déjà marqué « non retenue ». Ce
+                bloc est volontairement séparé de la liste déroulante des
+                statuts, juste au-dessus : classer un dossier et écrire à la
+                personne sont deux gestes distincts, et le second ne doit
+                jamais découler du premier. Voir repondreCandidatRefus. */}
+            {voir.statut === 'refusee' && (
+              <div className="mt-5 border-t border-ko-line pt-5">
+                <p className="label-mono mb-2 text-ko-muted">{textes.reponse.titre}</p>
+                {voir.reponseEnvoyeeLeFormatee ? (
+                  // Une fois partie, le bouton disparaît et la date prend sa
+                  // place. L'action serveur refuse de toute façon un second
+                  // envoi — ceci n'est que l'affichage de ce fait.
+                  <p className="text-sm text-ko-ink">{voir.reponseEnvoyeeLeFormatee}</p>
+                ) : (
+                  <ReponseCandidat
+                    id={voir.id}
+                    email={voir.email}
+                    locale={locale}
+                    textes={textes.reponse}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* L'accusé de réception du candidat a-t-il échoué ? Même raison
+                d'être que `notification_erreur` sur les demandes : un envoi
+                perdu qui ne laisse aucune trace visible est le défaut que la
+                migration 0049 a servi à supprimer. Le candidat, lui, a vu
+                « Candidature envoyée » quoi qu'il arrive. */}
+            {!voir.accuseEnvoye && (
+              <p className="mt-5 border-t border-ko-line pt-5 text-sm leading-relaxed text-ko-ink">
+                {textes.accuseEchoue}
+                {voir.accuseErreur && (
+                  <span className="mt-1 block text-ko-muted">{voir.accuseErreur}</span>
+                )}
+              </p>
+            )}
           </div>
         )}
       </dialog>
