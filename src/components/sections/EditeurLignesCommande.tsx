@@ -189,7 +189,7 @@ export function EditeurLignesCommande({
           <ul className="mt-3 space-y-1">
             {lignesIndisponibles.map((l) => (
               <li key={l.id} className="text-sm text-ko-muted">
-                — {l.nomProduit} × {l.quantite}
+                - {l.nomProduit} × {l.quantite}
               </li>
             ))}
           </ul>

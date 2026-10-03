@@ -144,7 +144,7 @@ export default async function ContactPage({ params }: Props) {
 
                 <p className="label-mono mt-10">{tNav('capacites')}</p>
                 <p className="mt-3 max-w-[34ch] text-sm leading-relaxed text-ko-muted">
-                  {tNav('cta')} — {tFooter('signature')}
+                  {tNav('cta')} · {tFooter('signature')}
                 </p>
               </aside>
             </Reveal>

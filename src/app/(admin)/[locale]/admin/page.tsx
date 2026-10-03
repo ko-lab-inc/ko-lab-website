@@ -335,7 +335,7 @@ export default async function TableauDeBordPage({ params }: Props) {
                       className="flex flex-col gap-1.5 px-6 py-4 sm:flex-row sm:items-baseline sm:gap-6"
                     >
                       <span className="min-w-0 flex-1 truncate text-base text-ko-ink">
-                        {d.nom} — {d.email}
+                        {d.nom} · {d.email}
                       </span>
                       <span className="label-mono shrink-0 sm:w-24">{d.type}</span>
                       <span className="shrink-0 font-mono text-xs text-ko-muted sm:w-40 sm:text-right">
