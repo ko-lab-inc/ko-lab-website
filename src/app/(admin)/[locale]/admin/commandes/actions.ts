@@ -146,7 +146,7 @@ async function notifierClient({
       // (ko-lab.ca), pas dans une adresse jamais consultée. Voir lib/constantes.ts.
       replyTo: EMAILS.info,
       to: email,
-      subject: `Commande ${numero} — ${statutLabel}`,
+      subject: `Commande ${numero} (${statutLabel})`,
       html,
       text,
     })

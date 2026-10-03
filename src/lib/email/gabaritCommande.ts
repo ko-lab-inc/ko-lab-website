@@ -119,7 +119,7 @@ const TEXTES = {
     surDemande: 'Sur demande',
     totalIndicatif: 'Total indicatif',
     noteHorsPrix: 'Hors produits à prix sur demande. ',
-    notePrix: 'Prix indicatifs — on revient vers vous pour les confirmer.',
+    notePrix: 'Prix indicatifs. On revient vers vous pour les confirmer.',
     modeLivraisonEtiquette: 'Mode de livraison',
     voirCommande: 'Voir ma commande',
     noteConnexion: [
@@ -146,7 +146,7 @@ const TEXTES = {
     surDemande: 'On request',
     totalIndicatif: 'Indicative total',
     noteHorsPrix: 'Excludes products priced on request. ',
-    notePrix: "Indicative prices — we'll get back to you to confirm them.",
+    notePrix: "Indicative prices. We'll get back to you to confirm them.",
     modeLivraisonEtiquette: 'Delivery method',
     voirCommande: 'View My Order',
     noteConnexion: [
@@ -156,7 +156,7 @@ const TEXTES = {
     signature: 'From idea to ground.',
     confidentialite: 'Privacy Policy',
     conditions: 'Terms of Use',
-    envoiAutomatique: 'This email was sent automatically — no need to reply.',
+    envoiAutomatique: 'This email was sent automatically, no need to reply.',
     expedition: 'Shipping',
     ramassage: 'Pickup on site',
   },
@@ -349,7 +349,7 @@ export function gabaritConfirmationCommande({
     '',
     ...lignes.map(
       (l) =>
-        `— ${l.nom} × ${l.quantite}${l.prix != null ? ` (${formaterPrix(l.prix * l.quantite, locale)})` : ` (${tx.surDemande})`}`,
+        `- ${l.nom} × ${l.quantite}${l.prix != null ? ` (${formaterPrix(l.prix * l.quantite, locale)})` : ` (${tx.surDemande})`}`,
     ),
     '',
     `${tx.totalIndicatif} : ${formaterPrix(total, locale)}`,

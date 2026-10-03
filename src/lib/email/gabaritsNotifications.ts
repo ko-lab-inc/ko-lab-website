@@ -59,21 +59,21 @@ export function gabaritNouvelleCandidature({
   return {
     // Le nom et la ville dans l'objet : la liste des courriels suffit souvent
     // à décider si ça vaut un rappel aujourd'hui ou lundi.
-    sujet: `Nouvelle candidature — ${nom}${ville ? `, ${ville}` : ''}`,
+    sujet: `Candidature de ${nom}${ville ? ` (${ville})` : ''}`,
     texte: [
       `${nom} vient de postuler sur ko-lab-center.ca.`,
       '',
-      `Postes        : ${postes.length > 0 ? postes.join(', ') : '—'}`,
-      `Ville         : ${ville || '—'}`,
+      `Postes        : ${postes.length > 0 ? postes.join(', ') : 'non précisé'}`,
+      `Ville         : ${ville || 'non précisée'}`,
       `Courriel      : ${email}`,
-      `Téléphone     : ${telephone || '—'}`,
-      `Disponibilités: ${disponibilites || '—'}`,
+      `Téléphone     : ${telephone || 'non précisé'}`,
+      `Disponibilités: ${disponibilites || 'non précisées'}`,
       `Expérience    : ${aExperience ? 'oui' : 'non'}`,
       `Travail ext.  : ${travailExterieur ? 'oui' : 'non'}`,
       // Le CV n'est PAS joint : il vit dans un bucket privé et une pièce
       // jointe en ferait une copie hors de tout contrôle d'accès. Le lien
       // vers l'admin est le seul chemin, et il exige une session.
-      `CV joint      : ${avecCv ? 'oui — à ouvrir depuis l’espace équipe' : 'non'}`,
+      `CV joint      : ${avecCv ? 'oui, à ouvrir depuis l’espace équipe' : 'non'}`,
       '',
       `Dossier complet : ${lienAdmin}`,
       '',
@@ -111,7 +111,7 @@ export function gabaritAccuseReception({
 }): { sujet: string; texte: string } {
   if (locale === 'en') {
     return {
-      sujet: 'We received your request — KO-LAB',
+      sujet: 'We received your request',
       texte: [
         `Hello ${nom},`,
         '',
@@ -123,9 +123,8 @@ export function gabaritAccuseReception({
             ]),
         '',
         'If your project is time-sensitive, reply to this email with the dates and',
-        'the location — it helps us answer faster.',
+        'the location. It helps us answer faster.',
         '',
-        '—',
         'KO-LAB Inc. · From idea to field.',
         `Outaouais, Québec · ${EMAILS.info}`,
       ].join('\n'),
@@ -133,7 +132,7 @@ export function gabaritAccuseReception({
   }
 
   return {
-    sujet: 'Nous avons bien reçu votre demande — KO-LAB',
+    sujet: 'Nous avons bien reçu votre demande',
     texte: [
       `Bonjour ${nom},`,
       '',
@@ -145,9 +144,8 @@ export function gabaritAccuseReception({
           ]),
       '',
       'Si le projet est urgent, répondez à ce courriel en indiquant les dates et le',
-      'lieu — ça nous permet de répondre plus vite.',
+      'lieu. Ça nous permet de répondre plus vite.',
       '',
-      '—',
       'KO-LAB Inc. · De l’idée au terrain.',
       `Outaouais, Québec · ${EMAILS.info}`,
     ].join('\n'),
@@ -174,16 +172,15 @@ export function gabaritDemandeTraitee({
 }): { sujet: string; texte: string } {
   if (locale === 'en') {
     return {
-      sujet: 'Your request has been handled — KO-LAB',
+      sujet: 'Your request has been handled',
       texte: [
         `Hello ${nom},`,
         '',
         'Your request has been handled by our team.',
         '',
         'If you have not heard from us directly, or if something is still open on',
-        'your side, simply reply to this email — it reaches us.',
+        'your side, simply reply to this email. It reaches us.',
         '',
-        '—',
         'KO-LAB Inc. · From idea to field.',
         `Outaouais, Québec · ${EMAILS.info}`,
       ].join('\n'),
@@ -191,17 +188,16 @@ export function gabaritDemandeTraitee({
   }
 
   return {
-    sujet: 'Votre demande a été traitée — KO-LAB',
+    sujet: 'Votre demande a été traitée',
     texte: [
       `Bonjour ${nom},`,
       '',
       'Votre demande a été traitée par notre équipe.',
       '',
       'Si vous n’avez pas eu de nouvelles directement, ou s’il reste quelque chose',
-      'en suspens de votre côté, répondez simplement à ce courriel — il nous',
+      'en suspens de votre côté, répondez simplement à ce courriel. Il nous',
       'parvient.',
       '',
-      '—',
       'KO-LAB Inc. · De l’idée au terrain.',
       `Outaouais, Québec · ${EMAILS.info}`,
     ].join('\n'),
@@ -241,11 +237,11 @@ export function gabaritAccuseCandidature({
 }): { sujet: string; texte: string } {
   if (locale === 'en') {
     return {
-      sujet: 'We received your application — KO-LAB',
+      sujet: 'We received your application',
       texte: [
         `Hello ${nom},`,
         '',
-        'Thank you — we received your application and it reached our team.',
+        'Thank you for your application. It reached our team.',
         '',
         ...(absence
           ? [absence]
@@ -254,10 +250,9 @@ export function gabaritAccuseCandidature({
               `${delaiHeures} business hours if your profile matches an open position.`,
             ]),
         '',
-        'Nothing more is needed from your side. If something changes — your',
-        'availability, your phone number — just reply to this email.',
+        'Nothing more is needed from your side. If your availability or your phone',
+        'number changes, just reply to this email.',
         '',
-        '—',
         'KO-LAB Inc. · From idea to field.',
         `Outaouais, Québec · ${EMAILS.info}`,
       ].join('\n'),
@@ -265,25 +260,22 @@ export function gabaritAccuseCandidature({
   }
 
   return {
-    sujet: 'Nous avons bien reçu votre candidature — KO-LAB',
+    sujet: 'Nous avons bien reçu votre candidature',
     texte: [
       `Bonjour ${nom},`,
       '',
-      'Merci — nous avons bien reçu votre candidature, elle est parvenue à notre',
-      'équipe.',
+      'Merci pour votre candidature. Elle est bien parvenue à notre équipe.',
       '',
       ...(absence
         ? [absence]
         : [
-            'Nous examinons les candidatures au fur et à mesure, et nous revenons vers',
-            `vous dans les ${delaiHeures} heures ouvrables si votre profil correspond à un`,
-            'poste ouvert.',
+            'Nous examinons les candidatures au fur et à mesure. Nous revenons vers vous',
+            `dans les ${delaiHeures} heures ouvrables si votre profil correspond à un poste ouvert.`,
           ]),
       '',
-      'Vous n’avez rien d’autre à faire de votre côté. Si quelque chose change —',
-      'vos disponibilités, votre numéro — répondez simplement à ce courriel.',
+      'Vous n’avez rien d’autre à faire de votre côté. Si vos disponibilités ou',
+      'votre numéro changent, répondez simplement à ce courriel.',
       '',
-      '—',
       'KO-LAB Inc. · De l’idée au terrain.',
       `Outaouais, Québec · ${EMAILS.info}`,
     ].join('\n'),
@@ -329,19 +321,18 @@ export function gabaritCandidatureRefusee({
 }): { sujet: string; texte: string } {
   if (locale === 'en') {
     return {
-      sujet: 'Your application — KO-LAB',
+      sujet: 'Your application at KO-LAB',
       texte: [
         `Hello ${nom},`,
         '',
         'We reviewed your application, and we are not moving forward with it for',
         'the positions currently open.',
         '',
-        'Thank you for the time you gave us. Our openings change through the year —',
+        'Thank you for the time you gave us. Our openings change through the year, so',
         'you are welcome to apply again when a new one matches what you do.',
         '',
         'If you have a question, reply to this email and it reaches us.',
         '',
-        '—',
         'KO-LAB Inc. · From idea to field.',
         `Outaouais, Québec · ${EMAILS.info}`,
       ].join('\n'),
@@ -349,20 +340,19 @@ export function gabaritCandidatureRefusee({
   }
 
   return {
-    sujet: 'Votre candidature — KO-LAB',
+    sujet: 'Votre candidature chez KO-LAB',
     texte: [
       `Bonjour ${nom},`,
       '',
       'Nous avons étudié votre candidature, et nous ne la retenons pas pour les',
       'postes actuellement ouverts.',
       '',
-      'Merci pour le temps que vous nous avez accordé. Nos besoins changent au fil',
-      'de l’année — n’hésitez pas à postuler de nouveau lorsqu’un poste',
-      'correspond à ce que vous faites.',
+      'Merci pour le temps que vous nous avez accordé. Nos besoins changent au fil de',
+      'l’année : n’hésitez pas à postuler de nouveau lorsqu’un poste correspond à ce',
+      'que vous faites.',
       '',
       'Si vous avez une question, répondez à ce courriel : il nous parvient.',
       '',
-      '—',
       'KO-LAB Inc. · De l’idée au terrain.',
       `Outaouais, Québec · ${EMAILS.info}`,
     ].join('\n'),

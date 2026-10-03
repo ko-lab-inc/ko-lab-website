@@ -120,13 +120,13 @@ export async function POST(req: NextRequest) {
     a: destinataires.demandes,
     // Répondre écrit au DEMANDEUR, pas à soi-même.
     repondreA: donnees.email,
-    sujet: `Nouvelle demande — ${donnees.type}`,
+    sujet: `Nouvelle demande (${donnees.type})`,
     texte: [
       `Type         : ${donnees.type}`,
       `Nom          : ${donnees.nom}`,
       `Courriel     : ${donnees.email}`,
-      `Téléphone    : ${donnees.telephone ?? '—'}`,
-      `Organisation : ${donnees.organisation ?? '—'}`,
+      `Téléphone    : ${donnees.telephone ?? 'non précisé'}`,
+      `Organisation : ${donnees.organisation ?? 'non précisée'}`,
       `Langue       : ${donnees.locale}`,
       '',
       donnees.message,

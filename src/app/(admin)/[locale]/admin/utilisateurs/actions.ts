@@ -341,7 +341,7 @@ export async function creerCompteEtInviter(
         from: `KO-LAB <${EMAILS.envoiTransactionnel}>`,
         replyTo: EMAILS.info,
         to: email,
-        subject: "Invitation à rejoindre KO-LAB — You've been invited to join KO-LAB",
+        subject: "Invitation à rejoindre KO-LAB / You've been invited to join KO-LAB",
         html,
         text,
       })
@@ -511,7 +511,7 @@ export async function renvoyerInvitation(
         from: `KO-LAB <${EMAILS.envoiTransactionnel}>`,
         replyTo: EMAILS.info,
         to: email,
-        subject: "Invitation à rejoindre KO-LAB — You've been invited to join KO-LAB",
+        subject: "Invitation à rejoindre KO-LAB / You've been invited to join KO-LAB",
         html,
         text,
       })

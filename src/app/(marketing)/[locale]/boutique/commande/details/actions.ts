@@ -307,8 +307,8 @@ export async function creerCommande(
           // de validation de Christian.
           subject:
             locale === 'en'
-              ? `Order Confirmation — ${data.numero}`
-              : `Confirmation de commande — ${data.numero}`,
+              ? `Order confirmation ${data.numero}`
+              : `Confirmation de commande ${data.numero}`,
           html,
           text,
         })

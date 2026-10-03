@@ -242,8 +242,8 @@ export async function modifierCommande(
         // (PHASE 9 — BILINGUE) : proposition, en attente de Christian.
         subject:
           locale === 'en'
-            ? `Order Updated — ${commande.numero}`
-            : `Commande mise à jour — ${commande.numero}`,
+            ? `Order updated ${commande.numero}`
+            : `Commande mise à jour ${commande.numero}`,
         html,
         text,
       })

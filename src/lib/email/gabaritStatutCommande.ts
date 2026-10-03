@@ -251,7 +251,7 @@ export function gabaritChangementStatut({
     '',
     `Parcours : ${etapesTimeline.map((e) => libellesStatuts[e] ?? e).join(' > ')}`,
     '',
-    ...(lignes.length > 0 ? lignes.map((l) => `— ${l.nom} × ${l.quantite}`) : []),
+    ...(lignes.length > 0 ? lignes.map((l) => `- ${l.nom} × ${l.quantite}`) : []),
     '',
     lienCommande,
     '',

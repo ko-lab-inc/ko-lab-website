@@ -137,7 +137,7 @@ export function gabaritInvitation({
                 plus, demandez à la personne qui vous a invité·e de vous en envoyer un nouveau.
               </p>
               <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${MUET};">
-                Vous ne vous attendiez pas à ce courriel ? Vous pouvez l'ignorer — aucun accès
+                Vous ne vous attendiez pas à ce courriel ? Vous pouvez l'ignorer, aucun accès
                 n'est activé tant que ce lien n'a pas été utilisé.
               </p>
             </td>
@@ -164,7 +164,7 @@ export function gabaritInvitation({
                 works, ask the person who invited you to send you a new one.
               </p>
               <p style="margin:16px 0 0;font-family:Arial,Helvetica,sans-serif;font-size:12px;color:${MUET};">
-                Weren't expecting this email? You can ignore it — no access is activated
+                Weren't expecting this email? You can ignore it. No access is activated
                 until this link is used.
               </p>
             </td>

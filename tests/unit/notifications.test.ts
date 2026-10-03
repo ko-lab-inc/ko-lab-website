@@ -39,7 +39,7 @@ describe('gabaritNouvelleCandidature', () => {
   }
 
   it('met le nom et la ville dans l’objet — la liste des courriels suffit à trier', () => {
-    expect(gabaritNouvelleCandidature(base).sujet).toBe('Nouvelle candidature — Awa Diallo, Gatineau')
+    expect(gabaritNouvelleCandidature(base).sujet).toBe('Candidature de Awa Diallo (Gatineau)')
   })
 
   it('reprend les champs utiles au rappel', () => {
@@ -67,7 +67,7 @@ describe('gabaritNouvelleCandidature', () => {
       disponibilites: '',
       avecCv: false,
     })
-    expect(sujet).toBe('Nouvelle candidature — Awa Diallo')
+    expect(sujet).toBe('Candidature de Awa Diallo')
     expect(texte).toMatch(/CV joint\s*:\s*non/)
     expect(texte).not.toContain('undefined')
     expect(texte).not.toContain('null')
