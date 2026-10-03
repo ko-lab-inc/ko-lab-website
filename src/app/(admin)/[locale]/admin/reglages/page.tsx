@@ -202,6 +202,13 @@ export default async function Page({ params }: Props) {
           notifDemandesAide: t('reglages_notif_demandes_aide'),
           notifCandidatures: t('reglages_notif_candidatures'),
           notifCandidaturesAide: t('reglages_notif_candidatures_aide'),
+          champsCourriels: {
+            adresseLabel: t('courriels_adresse'),
+            ajouter: t('courriels_ajouter'),
+            retirer: t('courriels_retirer'),
+            placeholder: t('courriels_placeholder'),
+            aucune: t('courriels_aucune'),
+          },
           groupeBandeau: t('reglages_groupe_bandeau'),
           groupeBandeauAide: t('reglages_groupe_bandeau_aide'),
           bandeauActif: t('reglages_bandeau_actif'),

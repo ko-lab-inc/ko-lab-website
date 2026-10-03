@@ -79,6 +79,21 @@ const listeDestinataires = (max: number) =>
       { message: 'adresse_invalide' },
     )
 
+/**
+ * Rassemble les champs d'adresse en la seule chaine que la base stocke.
+ *
+ * Le stockage reste une liste separee par des virgules : changer la forme en
+ * base obligerait a migrer les reglages deja saisis, pour un gain nul — la
+ * colonne est lue par un seul module (`lib/destinataires.ts`), qui sait deja
+ * la decouper.
+ */
+function joindreAdresses(valeurs: FormDataEntryValue[]): string {
+  return valeurs
+    .map((v) => String(v).trim())
+    .filter((v) => v !== '')
+    .join(', ')
+}
+
 const schema = z.object({
   /**
    * Le courriel est OBLIGATOIRE et validé.
@@ -188,8 +203,19 @@ export async function enregistrerReglages(
     boutique_active: coche(donnees, 'boutique_active'),
     concours_actif: coche(donnees, 'concours_actif'),
     courriel_rh: donnees.get('courriel_rh') ?? '',
-    notifications_demandes: donnees.get('notifications_demandes') ?? '',
-    notifications_candidatures: donnees.get('notifications_candidatures') ?? '',
+    /**
+     * ⚠️ `getAll`, PAS `get` — le formulaire envoie un champ par adresse.
+     *
+     * `ChampsCourriels` rend plusieurs `<input>` portant le MEME `name`, pour
+     * que le navigateur puisse valider chacun (`type="email"`) et que l'erreur
+     * designe la bonne ligne. `get()` ne renverrait que la premiere : les
+     * autres adresses disparaîtraient silencieusement a l'enregistrement.
+     *
+     * Les champs vides sont ecartes ici, pas plus bas : une ligne laissee
+     * vierge veut dire « rien », pas « une adresse invalide ».
+     */
+    notifications_demandes: joindreAdresses(donnees.getAll('notifications_demandes')),
+    notifications_candidatures: joindreAdresses(donnees.getAll('notifications_candidatures')),
     bandeau_actif: coche(donnees, 'bandeau_actif'),
     bandeau_texte_fr: donnees.get('bandeau_texte_fr') ?? '',
     bandeau_texte_en: donnees.get('bandeau_texte_en') ?? '',

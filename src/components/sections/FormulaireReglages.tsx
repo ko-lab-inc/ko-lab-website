@@ -6,6 +6,10 @@ import {
   enregistrerReglages,
   type EtatReglages,
 } from '@/app/(admin)/[locale]/admin/reglages/actions'
+import {
+  ChampsCourriels,
+  type TextesChampsCourriels,
+} from '@/components/sections/ChampsCourriels'
 import { buttonVariants } from '@/components/ui/Button'
 import { cn } from '@/lib/utils/cn'
 
@@ -58,6 +62,8 @@ export type LibellesReglages = {
   notifDemandesAide: string
   notifCandidatures: string
   notifCandidaturesAide: string
+  /** Textes du composant a champs multiples. */
+  champsCourriels: TextesChampsCourriels
   groupeBandeau: string
   groupeBandeauAide: string
   bandeauActif: string
@@ -130,6 +136,39 @@ function Champ({
         </p>
       )}
     </div>
+  )
+}
+
+/**
+ * Habillage d'un GROUPE de champs, par opposition a `Champ` qui en etiquette
+ * un seul.
+ *
+ * ⚠️ `<fieldset>` + `<legend>`, et pas un `<label for>` : un label ne peut
+ * designer qu'un seul champ. Avec plusieurs adresses, il pointerait la
+ * premiere et les suivantes n'auraient aucun nom accessible — chaque champ
+ * porte donc le sien (voir ChampsCourriels), et la legende nomme l'ensemble.
+ */
+function GroupeCourriels({
+  id,
+  libelle,
+  aide,
+  children,
+}: {
+  id: string
+  libelle: string
+  aide?: string
+  children: React.ReactNode
+}) {
+  return (
+    <fieldset>
+      <legend className="label-mono mb-1.5 block text-ko-muted">{libelle}</legend>
+      {children}
+      {aide && (
+        <p id={`${id}-aide`} className="mt-1.5 text-sm leading-relaxed text-ko-muted">
+          {aide}
+        </p>
+      )}
+    </fieldset>
   )
 }
 
@@ -432,37 +471,33 @@ export function FormulaireReglages({
         </legend>
         <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeNotificationsAide}</p>
 
-        <Champ
+        <GroupeCourriels
           id="notifications_demandes"
           libelle={libelles.notifDemandes}
           aide={libelles.notifDemandesAide}
         >
-          <textarea
-            id="notifications_demandes"
-            name="notifications_demandes"
-            rows={2}
-            maxLength={600}
-            defaultValue={brutes.demandes}
-            aria-describedby="notifications_demandes-aide"
-            className={ZONE}
+          <ChampsCourriels
+            nom="notifications_demandes"
+            groupe={libelles.notifDemandes}
+            valeurInitiale={brutes.demandes}
+            textes={libelles.champsCourriels}
+            aideId="notifications_demandes-aide"
           />
-        </Champ>
+        </GroupeCourriels>
 
-        <Champ
+        <GroupeCourriels
           id="notifications_candidatures"
           libelle={libelles.notifCandidatures}
           aide={libelles.notifCandidaturesAide}
         >
-          <textarea
-            id="notifications_candidatures"
-            name="notifications_candidatures"
-            rows={2}
-            maxLength={600}
-            defaultValue={brutes.candidatures}
-            aria-describedby="notifications_candidatures-aide"
-            className={ZONE}
+          <ChampsCourriels
+            nom="notifications_candidatures"
+            groupe={libelles.notifCandidatures}
+            valeurInitiale={brutes.candidatures}
+            textes={libelles.champsCourriels}
+            aideId="notifications_candidatures-aide"
           />
-        </Champ>
+        </GroupeCourriels>
       </fieldset>
 
       {/* ------------------------- Bandeau d'annonce ------------------------- */}

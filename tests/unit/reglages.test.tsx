@@ -80,6 +80,13 @@ const LIBELLES = {
   notifDemandesAide: 'Vide = le courriel de contact.',
   notifCandidatures: 'Nouvelle candidature',
   notifCandidaturesAide: 'Vide = le courriel RH.',
+  champsCourriels: {
+    adresseLabel: '{groupe}, adresse {n}',
+    ajouter: 'Ajouter une adresse',
+    retirer: 'Retirer {adresse}',
+    placeholder: 'nom@exemple.ca',
+    aucune: "Aucune adresse : le repli ci-dessus s'applique",
+  },
   groupeBandeau: 'Bandeau d’annonce',
   groupeBandeauAide: 'Une bande au-dessus du menu.',
   bandeauActif: 'Afficher le bandeau',
@@ -233,10 +240,84 @@ describe('FormulaireReglages', () => {
       candidatures: 'rh@ko-lab.ca',
     })
 
-    expect(screen.getByLabelText('Nouvelle demande de contact')).toHaveValue(
-      'info@ko-lab.ca, christian@ko-lab.ca',
-    )
-    expect(screen.getByLabelText('Nouvelle candidature')).toHaveValue('rh@ko-lab.ca')
+    // Une liste enregistree donne UN CHAMP PAR ADRESSE, dans l'ordre.
+    expect(screen.getByLabelText('Nouvelle demande de contact, adresse 1')).toBeDefined()
+    expect(screen.getByLabelText('Nouvelle candidature, adresse 1')).toBeDefined()
+    const champs = screen.getAllByRole('textbox').filter((c) => c.getAttribute('type') === 'email')
+    const valeurs = champs.map((c) => (c as HTMLInputElement).value)
+    expect(valeurs).toContain('info@ko-lab.ca')
+    expect(valeurs).toContain('christian@ko-lab.ca')
+    expect(valeurs).toContain('rh@ko-lab.ca')
+  })
+
+  /* ======================================================================
+   * Champs de courriel multiples
+   * ==================================================================== */
+
+  it('decoupe la valeur enregistree en un champ par adresse', () => {
+    monter(REGLAGES, { demandes: 'a@ko-lab.ca, b@ko-lab.ca, c@ko-lab.ca', candidatures: '' })
+
+    const formulaire = screen.getByRole('button', { name: 'Enregistrer' }).closest('form')
+    const donnees = new FormData(formulaire as HTMLFormElement)
+
+    // ⚠️ getAll, pas get : c'est tout l'interet d'un champ par adresse. Si le
+    // serveur lisait `get()`, seule la premiere partirait et les deux autres
+    // disparaitraient a l'enregistrement, sans message.
+    expect(donnees.getAll('notifications_demandes')).toEqual([
+      'a@ko-lab.ca',
+      'b@ko-lab.ca',
+      'c@ko-lab.ca',
+    ])
+  })
+
+  it('chaque champ est de type email — le navigateur valide avant l envoi', () => {
+    monter(REGLAGES, { demandes: 'a@ko-lab.ca', candidatures: 'b@ko-lab.ca' })
+    for (const libelle of [
+      'Nouvelle demande de contact, adresse 1',
+      'Nouvelle candidature, adresse 1',
+    ]) {
+      expect(screen.getByLabelText(libelle)).toHaveAttribute('type', 'email')
+    }
+  })
+
+  it('le bouton + ajoute un champ, et n ENVOIE PAS le formulaire', () => {
+    // ⚠️ Dans un <form>, un <button> sans `type` vaut `submit`. Sans
+    // `type="button"`, cliquer sur « + » enregistrerait les vingt-quatre
+    // reglages au lieu d'ajouter une ligne.
+    monter(REGLAGES, { demandes: 'a@ko-lab.ca', candidatures: '' })
+
+    const plus = screen.getAllByRole('button', { name: 'Ajouter une adresse' })[0]!
+    expect(plus).toHaveAttribute('type', 'button')
+
+    const avant = screen.getAllByRole('textbox').filter((c) => c.getAttribute('type') === 'email').length
+    fireEvent.click(plus)
+    const apres = screen.getAllByRole('textbox').filter((c) => c.getAttribute('type') === 'email').length
+    expect(apres).toBe(avant + 1)
+  })
+
+  it('retirer une adresse retire LA BONNE, pas celle du dessous', () => {
+    // ⚠️ Le defaut classique d'une liste clee par l'index : React reutilise
+    // les champs et la valeur affichee ne suit pas la ligne retiree. On croit
+    // avoir supprime la mauvaise adresse.
+    monter(REGLAGES, { demandes: 'un@ko-lab.ca, deux@ko-lab.ca, trois@ko-lab.ca', candidatures: '' })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer deux@ko-lab.ca' }))
+
+    const formulaire = screen.getByRole('button', { name: 'Enregistrer' }).closest('form')
+    expect(new FormData(formulaire as HTMLFormElement).getAll('notifications_demandes')).toEqual([
+      'un@ko-lab.ca',
+      'trois@ko-lab.ca',
+    ])
+  })
+
+  it('un groupe vide garde un champ, jamais zero', () => {
+    // Zero champ laisserait un bouton « + » isole, sans indice de ce qu'on y met.
+    monter(REGLAGES, { demandes: 'seule@ko-lab.ca', candidatures: '' })
+    fireEvent.click(screen.getByRole('button', { name: 'Retirer seule@ko-lab.ca' }))
+
+    const formulaire = screen.getByRole('button', { name: 'Enregistrer' }).closest('form')
+    // Le champ existe et est vide : le serveur l'ecartera.
+    expect(new FormData(formulaire as HTMLFormElement).getAll('notifications_demandes')).toEqual([''])
   })
 
   it('envoie les neuf nouveaux champs dans le FormData', () => {
