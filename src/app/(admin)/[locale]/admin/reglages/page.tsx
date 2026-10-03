@@ -6,7 +6,7 @@ import { EnteteAdmin } from '@/components/layout/CadreAdmin'
 import { FormulaireReglages } from '@/components/sections/FormulaireReglages'
 import { routing } from '@/i18n/routing'
 import { EMAILS } from '@/lib/constantes'
-import { lireReglages } from '@/lib/reglages'
+import type { Reglages } from '@/lib/reglages'
 import { createClient } from '@/lib/supabase/server'
 
 import type { Viewport } from 'next'
@@ -58,52 +58,102 @@ export default async function Page({ params }: Props) {
   if (!hasLocale(routing.locales, locale)) notFound()
 
   const t = await getTranslations('Admin')
-  const reglages = await lireReglages()
 
+  /**
+   * =========================================================================
+   * ⚠️ CET ÉCRAN NE LIT **JAMAIS** LES RÉGLAGES PAR `lireReglages()`.
+   * =========================================================================
+   *
+   * INCIDENT DU 3 OCTOBRE 2026 — un bandeau d'annonce est resté affiché sur
+   * le site public alors que la base, elle, était vide depuis une heure.
+   *
+   * Ce qui s'est passé, dans l'ordre :
+   *   1. `lireReglages()` est un `unstable_cache`, voulu : il est appelé par
+   *      le layout du site vitrine, donc à chaque rendu de chaque page.
+   *   2. Cet écran l'appelait aussi, pour préremplir le formulaire.
+   *   3. Le cache d'une instance de production ne se vide QUE par un
+   *      `updateTag` exécuté SUR cette instance. Une modification faite
+   *      ailleurs — autre environnement, écriture directe en base, autre
+   *      région serverless — ne l'atteint pas.
+   *   4. Le formulaire s'est donc affiché prérempli avec des valeurs
+   *      PÉRIMÉES, et comme il envoie TOUS les réglages d'un seul bouton,
+   *      l'enregistrement les a RÉÉCRITES en base.
+   *
+   * Autrement dit : changer un seul champ pouvait faire revenir
+   * silencieusement d'anciennes valeurs sur tous les autres, et les
+   * republier sur le site. Une mise à jour perdue, sans message, sans trace.
+   *
+   * La lecture ci-dessous passe par le client de SESSION, qui ne met rien en
+   * cache : ce formulaire montre l'état réel de la base au moment où il
+   * s'ouvre. C'est la seule lecture correcte pour un écran dont le bouton
+   * réécrit tout.
+   *
+   * `lireReglages()` garde tout son sens pour le SITE PUBLIC, où le cache est
+   * exactement ce qu'on veut. Il n'a simplement rien à faire ici.
+   *
+   * ⚠️ Le client de SESSION, et pas la service role key : la politique
+   * `reglages_lecture_equipe` (0011) autorise déjà l'équipe à tout voir — y
+   * compris les lignes `publique = false`, que la clé `anon` ne voit pas.
+   * Rien n'est contourné. `lib/supabase/admin.ts` réserve la service role key
+   * aux API routes, et un composant n'en est pas une.
+   */
+  const supabase = await createClient()
+  const { data: lignes } = await supabase.from('reglages').select('cle, valeur')
+
+  const valeur = (cle: string) =>
+    (lignes ?? []).find((ligne) => ligne.cle === cle)?.valeur ?? ''
+  /**
+   * ⚠️ `=== 'true'`, et surtout pas `Boolean(valeur(...))` : toute chaîne non
+   * vide est vraie en JavaScript, donc `'false'` allumerait l'interrupteur.
+   */
+  const drapeau = (cle: string) => valeur(cle) === 'true'
+
+  /**
+   * Valeurs BRUTES, telles qu'elles sont en base — aucun repli appliqué.
+   *
+   * C'est volontaire et c'est le pendant de la note ci-dessus : un champ
+   * prérempli avec un repli (`courriel_rh` vide qui s'afficherait
+   * `rh@ko-lab.ca`) écrirait ce repli en base au premier enregistrement. Le
+   * réglage cesserait alors de dire « vide = la valeur du code » pour
+   * devenir une copie, qui divergerait. Les replis sont affichés en
+   * `placeholder`, jamais en `defaultValue`.
+   */
+  const reglages: Reglages = {
+    contactCourriel: valeur('contact_courriel'),
+    contactTelephone: valeur('contact_telephone'),
+    contactRegion: valeur('contact_region'),
+    contactAdresse: valeur('contact_adresse'),
+    panierActif: drapeau('panier_actif'),
+    solutionsModulaires: drapeau('solutions_modulaires'),
+    boutiqueActive: drapeau('boutique_active'),
+    concoursActif: drapeau('concours_actif'),
+    lienRentman: valeur('lien_rentman'),
+    lienCandidatureExterne: valeur('lien_candidature_externe'),
+    // Seul réglage numérique. Un champ vide ou illisible retombe sur 48 pour
+    // ne pas afficher « NaN » dans le formulaire.
+    delaiReponseHeures: Number.parseInt(valeur('delai_reponse_heures'), 10) || 48,
+    heuresOuverture: valeur('heures_ouverture'),
+    reseauFacebook: valeur('reseau_facebook'),
+    reseauInstagram: valeur('reseau_instagram'),
+    reseauLinkedin: valeur('reseau_linkedin'),
+    courrielRh: valeur('courriel_rh'),
+    bandeauActif: drapeau('bandeau_actif'),
+    bandeauTexteFr: valeur('bandeau_texte_fr'),
+    bandeauTexteEn: valeur('bandeau_texte_en'),
+    absenceActif: drapeau('absence_actif'),
+    absenceMessageFr: valeur('absence_message_fr'),
+    absenceMessageEn: valeur('absence_message_en'),
+  }
   /**
    * Les deux listes de destinataires — migration 0053.
    *
-   * ⚠️ LUES ICI, ET PAS PAR `lireReglages()`.
-   *
-   * Elles sont marquees `publique = false` en base. `lireReglages()` lit avec
-   * la cle `anon`, que la politique `reglages_lecture_publique` restreint a
-   * `publique = true` : ces deux lignes lui sont INVISIBLES. Sans cette
-   * lecture-ci, les deux champs s'afficheraient vides a chaque ouverture de
-   * l'ecran, quelle que soit la valeur enregistree — un reglage qui semble ne
-   * jamais se sauvegarder.
-   *
-   * Le client de SESSION, pas la service role key : la politique
-   * `reglages_lecture_equipe` autorise deja l'equipe a tout voir, donc rien
-   * n'est contourne. `lib/supabase/admin.ts` reserve la service role key aux
-   * API routes, et un composant n'en est pas une.
-   */
-  const supabase = await createClient()
-  const { data: privees } = await supabase
-    .from('reglages')
-    .select('cle, valeur')
-    .in('cle', ['notifications_demandes', 'notifications_candidatures', 'courriel_rh'])
-
-  const valeur = (cle: string) =>
-    (privees ?? []).find((ligne) => ligne.cle === cle)?.valeur ?? ''
-  /**
-   * ⚠️ `courriel_rh` EST LU ICI AUSSI, ET CE N'EST PAS POUR LE RLS.
-   *
-   * Celui-ci est bien `publique = true` : `lireReglages()` le voit. Mais il
-   * en rend la valeur APRES repli — vide en base devient `rh@ko-lab.ca`. Si
-   * le champ affichait ça, le premier enregistrement ECRIRAIT le repli en
-   * base, et le reglage cesserait de dire « vide = la valeur du code » : il
-   * deviendrait une copie, qui divergerait le jour ou la constante change.
-   * C'est exactement le piege que la migration 0053 evite pour les
-   * destinataires.
-   *
-   * Le formulaire recoit donc la valeur BRUTE, et montre le repli en
-   * `placeholder` — ce qui dit aussi a l'oeil la difference entre « j'ai
-   * choisi cette adresse » et « c'est la valeur par defaut ».
+   * Séparées de `reglages` parce qu'elles ne sont PAS dans le type
+   * `Reglages` : marquées `publique = false`, `lireReglages()` ne peut pas
+   * les voir, et les y mettre laisserait croire le contraire.
    */
   const brutes = {
     demandes: valeur('notifications_demandes'),
     candidatures: valeur('notifications_candidatures'),
-    courrielRh: valeur('courriel_rh'),
   }
 
   return (

@@ -217,7 +217,7 @@ export function FormulaireReglages({
    * Les mettre dans `reglages` laisserait croire qu'elles viennent de la même
    * lecture, et la prochaine personne les chercherait dans `Reglages`.
    */
-  brutes: { demandes: string; candidatures: string; courrielRh: string }
+  brutes: { demandes: string; candidatures: string }
   /** Affiché en `placeholder` du champ RH : ce qui s'applique s'il reste vide. */
   courrielRhDefaut: string
   libelles: LibellesReglages
@@ -303,7 +303,7 @@ export function FormulaireReglages({
             // Valeur BRUTE, et le repli seulement en placeholder : un champ
             // prérempli avec `reglages.courrielRh` écrirait le repli en base
             // au premier enregistrement. Voir la note sur `brutes`.
-            defaultValue={brutes.courrielRh}
+            defaultValue={reglages.courrielRh}
             placeholder={courrielRhDefaut}
             aria-describedby="courriel_rh-aide"
             className={CHAMP}

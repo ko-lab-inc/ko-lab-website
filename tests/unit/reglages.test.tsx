@@ -123,7 +123,7 @@ const REGLAGES = {
   absenceMessageEn: '',
 }
 
-const BRUTES = { demandes: '', candidatures: '', courrielRh: '' }
+const BRUTES = { demandes: '', candidatures: '' }
 
 function monter(reglages = REGLAGES, brutes = BRUTES) {
   return render(
@@ -231,7 +231,6 @@ describe('FormulaireReglages', () => {
     monter(REGLAGES, {
       demandes: 'info@ko-lab.ca, christian@ko-lab.ca',
       candidatures: 'rh@ko-lab.ca',
-      courrielRh: '',
     })
 
     expect(screen.getByLabelText('Nouvelle demande de contact')).toHaveValue(
@@ -252,7 +251,7 @@ describe('FormulaireReglages', () => {
         absenceMessageFr: 'De retour le 6.',
         absenceMessageEn: 'Back on the 6th.',
       },
-      { demandes: 'a@ko-lab.ca', candidatures: 'b@ko-lab.ca', courrielRh: 'rh@ko-lab.ca' },
+      { demandes: 'a@ko-lab.ca', candidatures: 'b@ko-lab.ca' },
     )
 
     const formulaire = screen.getByRole('button', { name: 'Enregistrer' }).closest('form')
@@ -283,7 +282,7 @@ describe('FormulaireReglages', () => {
     // Conséquence : le réglage cesse de dire « vide = la valeur du code » et
     // devient une copie, qui divergera le jour où EMAILS.rh changera. C'est
     // exactement le piège que 0053 évite pour les destinataires.
-    monter({ ...REGLAGES, courrielRh: 'rh@ko-lab.ca' }, { ...BRUTES, courrielRh: '' })
+    monter({ ...REGLAGES, courrielRh: '' })
 
     const champ = screen.getByLabelText('Courriel RH affiché')
     expect(champ).toHaveValue('')
@@ -297,7 +296,7 @@ describe('FormulaireReglages', () => {
   it('affiche l’adresse RH quand elle a vraiment été choisie', () => {
     // Le pendant du test précédent : une valeur réellement saisie doit
     // apparaître, sinon la correction aurait rendu le champ inutilisable.
-    monter(REGLAGES, { ...BRUTES, courrielRh: 'recrutement@ko-lab.ca' })
+    monter({ ...REGLAGES, courrielRh: 'recrutement@ko-lab.ca' })
     expect(screen.getByLabelText('Courriel RH affiché')).toHaveValue('recrutement@ko-lab.ca')
   })
 
