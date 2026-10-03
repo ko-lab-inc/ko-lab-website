@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { EnteteAdmin } from '@/components/layout/CadreAdmin'
 import { FormulaireReglages } from '@/components/sections/FormulaireReglages'
 import { routing } from '@/i18n/routing'
+import { EMAILS } from '@/lib/constantes'
 import { lireReglages } from '@/lib/reglages'
 import { createClient } from '@/lib/supabase/server'
 
@@ -80,13 +81,29 @@ export default async function Page({ params }: Props) {
   const { data: privees } = await supabase
     .from('reglages')
     .select('cle, valeur')
-    .in('cle', ['notifications_demandes', 'notifications_candidatures'])
+    .in('cle', ['notifications_demandes', 'notifications_candidatures', 'courriel_rh'])
 
   const valeur = (cle: string) =>
     (privees ?? []).find((ligne) => ligne.cle === cle)?.valeur ?? ''
-  const destinataires = {
+  /**
+   * ⚠️ `courriel_rh` EST LU ICI AUSSI, ET CE N'EST PAS POUR LE RLS.
+   *
+   * Celui-ci est bien `publique = true` : `lireReglages()` le voit. Mais il
+   * en rend la valeur APRES repli — vide en base devient `rh@ko-lab.ca`. Si
+   * le champ affichait ça, le premier enregistrement ECRIRAIT le repli en
+   * base, et le reglage cesserait de dire « vide = la valeur du code » : il
+   * deviendrait une copie, qui divergerait le jour ou la constante change.
+   * C'est exactement le piege que la migration 0053 evite pour les
+   * destinataires.
+   *
+   * Le formulaire recoit donc la valeur BRUTE, et montre le repli en
+   * `placeholder` — ce qui dit aussi a l'oeil la difference entre « j'ai
+   * choisi cette adresse » et « c'est la valeur par defaut ».
+   */
+  const brutes = {
     demandes: valeur('notifications_demandes'),
     candidatures: valeur('notifications_candidatures'),
+    courrielRh: valeur('courriel_rh'),
   }
 
   return (
@@ -100,7 +117,8 @@ export default async function Page({ params }: Props) {
       <FormulaireReglages
         locale={locale}
         reglages={reglages}
-        destinataires={destinataires}
+        brutes={brutes}
+        courrielRhDefaut={EMAILS.rh}
         libelles={{
           groupeContact: t('reglages_groupe_contact'),
           adresse: t('reglages_adresse'),

@@ -123,14 +123,15 @@ const REGLAGES = {
   absenceMessageEn: '',
 }
 
-const DESTINATAIRES = { demandes: '', candidatures: '' }
+const BRUTES = { demandes: '', candidatures: '', courrielRh: '' }
 
-function monter(reglages = REGLAGES, destinataires = DESTINATAIRES) {
+function monter(reglages = REGLAGES, brutes = BRUTES) {
   return render(
     <FormulaireReglages
       locale="fr"
       reglages={reglages}
-      destinataires={destinataires}
+      brutes={brutes}
+      courrielRhDefaut="rh@ko-lab.ca"
       libelles={LIBELLES}
     />,
   )
@@ -230,6 +231,7 @@ describe('FormulaireReglages', () => {
     monter(REGLAGES, {
       demandes: 'info@ko-lab.ca, christian@ko-lab.ca',
       candidatures: 'rh@ko-lab.ca',
+      courrielRh: '',
     })
 
     expect(screen.getByLabelText('Nouvelle demande de contact')).toHaveValue(
@@ -250,7 +252,7 @@ describe('FormulaireReglages', () => {
         absenceMessageFr: 'De retour le 6.',
         absenceMessageEn: 'Back on the 6th.',
       },
-      { demandes: 'a@ko-lab.ca', candidatures: 'b@ko-lab.ca' },
+      { demandes: 'a@ko-lab.ca', candidatures: 'b@ko-lab.ca', courrielRh: 'rh@ko-lab.ca' },
     )
 
     const formulaire = screen.getByRole('button', { name: 'Enregistrer' }).closest('form')
@@ -267,6 +269,36 @@ describe('FormulaireReglages', () => {
     // décoché = absent, comme les quatre drapeaux d'origine.
     expect(donnees.get('bandeau_actif')).toBe('true')
     expect(donnees.get('absence_actif')).toBeNull()
+  })
+
+  it('le champ RH reste VIDE quand la base est vide — le repli n’est qu’un placeholder', () => {
+    // ⚠️ Régression constatée en réel le 2 octobre 2026.
+    //
+    // `lireReglages()` rend `courrielRh` APRÈS repli : vide en base devient
+    // rh@ko-lab.ca. Le champ était prérempli avec cette valeur, donc le
+    // premier enregistrement écrivait le repli EN BASE — mesuré pendant un
+    // audit, `courriel_rh` est passé de "" à "rh@ko-lab.ca" sans que personne
+    // ne l'ait saisi.
+    //
+    // Conséquence : le réglage cesse de dire « vide = la valeur du code » et
+    // devient une copie, qui divergera le jour où EMAILS.rh changera. C'est
+    // exactement le piège que 0053 évite pour les destinataires.
+    monter({ ...REGLAGES, courrielRh: 'rh@ko-lab.ca' }, { ...BRUTES, courrielRh: '' })
+
+    const champ = screen.getByLabelText('Courriel RH affiché')
+    expect(champ).toHaveValue('')
+    expect(champ).toHaveAttribute('placeholder', 'rh@ko-lab.ca')
+
+    // Et rien ne part dans le FormData : l'action écrira bien une chaîne vide.
+    const formulaire = screen.getByRole('button', { name: 'Enregistrer' }).closest('form')
+    expect(new FormData(formulaire as HTMLFormElement).get('courriel_rh')).toBe('')
+  })
+
+  it('affiche l’adresse RH quand elle a vraiment été choisie', () => {
+    // Le pendant du test précédent : une valeur réellement saisie doit
+    // apparaître, sinon la correction aurait rendu le champ inutilisable.
+    monter(REGLAGES, { ...BRUTES, courrielRh: 'recrutement@ko-lab.ca' })
+    expect(screen.getByLabelText('Courriel RH affiché')).toHaveValue('recrutement@ko-lab.ca')
   })
 
   it('dit que le message d’absence REMPLACE la phrase de délai', () => {

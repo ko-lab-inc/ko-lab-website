@@ -192,23 +192,34 @@ function Interrupteur({
 export function FormulaireReglages({
   locale,
   reglages,
-  destinataires,
+  brutes,
+  courrielRhDefaut,
   libelles,
 }: {
   locale: string
   reglages: Reglages
   /**
-   * Les deux listes de destinataires — migration 0053.
+   * Valeurs BRUTES, telles qu'elles sont en base — migration 0053.
    *
    * ⚠️ SÉPARÉES DE `reglages`, ET CE N'EST PAS UN CAPRICE DE SIGNATURE.
    *
-   * Elles sont marquées `publique = false` en base : `lireReglages()`, qui lit
-   * avec la clé `anon`, ne les voit pas. La page les lit avec le client de
-   * session, que la politique `reglages_lecture_equipe` autorise à tout voir.
-   * Les mettre dans le même objet laisserait croire qu'elles viennent de la
-   * même lecture, et la prochaine personne les chercherait dans `Reglages`.
+   * Deux raisons distinctes, à ne pas confondre :
+   *
+   *   `demandes` / `candidatures` : marquées `publique = false` en base.
+   *   `lireReglages()` lit avec la clé `anon` et NE LES VOIT PAS. La page les
+   *   lit avec le client de session, que `reglages_lecture_equipe` autorise.
+   *
+   *   `courrielRh` : visible, mais `lireReglages()` en rend la valeur APRÈS
+   *   repli. Un champ prérempli avec le repli le fige en base au premier
+   *   enregistrement — le réglage cesse alors de dire « vide = la valeur du
+   *   code » et devient une copie qui divergera.
+   *
+   * Les mettre dans `reglages` laisserait croire qu'elles viennent de la même
+   * lecture, et la prochaine personne les chercherait dans `Reglages`.
    */
-  destinataires: { demandes: string; candidatures: string }
+  brutes: { demandes: string; candidatures: string; courrielRh: string }
+  /** Affiché en `placeholder` du champ RH : ce qui s'applique s'il reste vide. */
+  courrielRhDefaut: string
   libelles: LibellesReglages
 }) {
   const [etat, action, enCours] = useActionState<EtatReglages, FormData>(
@@ -289,7 +300,11 @@ export function FormulaireReglages({
             name="courriel_rh"
             type="email"
             maxLength={200}
-            defaultValue={reglages.courrielRh}
+            // Valeur BRUTE, et le repli seulement en placeholder : un champ
+            // prérempli avec `reglages.courrielRh` écrirait le repli en base
+            // au premier enregistrement. Voir la note sur `brutes`.
+            defaultValue={brutes.courrielRh}
+            placeholder={courrielRhDefaut}
             aria-describedby="courriel_rh-aide"
             className={CHAMP}
           />
@@ -427,7 +442,7 @@ export function FormulaireReglages({
             name="notifications_demandes"
             rows={2}
             maxLength={600}
-            defaultValue={destinataires.demandes}
+            defaultValue={brutes.demandes}
             aria-describedby="notifications_demandes-aide"
             className={ZONE}
           />
@@ -443,7 +458,7 @@ export function FormulaireReglages({
             name="notifications_candidatures"
             rows={2}
             maxLength={600}
-            defaultValue={destinataires.candidatures}
+            defaultValue={brutes.candidatures}
             aria-describedby="notifications_candidatures-aide"
             className={ZONE}
           />
