@@ -1075,7 +1075,7 @@
     "reglages_notif_demandes": "Nouvelle demande de contact",
     "reglages_notif_demandes_aide": "Exemple : info@ko-lab.ca, christian@ko-lab.ca. Vide = le courriel de contact ci-dessus.",
     "reglages_notif_candidatures": "Nouvelle candidature",
-    "reglages_notif_candidatures_aide": "Vide = le courriel RH ci-dessus. Vérifiez chaque adresse : une seule faute empêche l'envoi à TOUTE la liste.",
+    "reglages_notif_candidatures_aide": "Vide = le courriel RH ci-dessus. Une adresse mal écrite fait refuser l'enregistrement : rien n'est sauvegardé tant qu'elle n'est pas corrigée.",
     "reglages_groupe_bandeau": "Bandeau d'annonce",
     "reglages_groupe_bandeau_aide": "Une bande noire au-dessus du menu, sur toutes les pages publiques : fermeture, événement, avis de service. Le texte reste enregistré quand le bandeau est éteint — inutile de le réécrire l'an prochain.",
     "reglages_bandeau_actif": "Afficher le bandeau",
