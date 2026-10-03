@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 
-import { creerCompteEtInviter } from '@/app/(admin)/[locale]/admin/utilisateurs/actions'
+import { creerCompteEtInviter } from '@/lib/auth/invitation'
 import { exigerRole } from '@/lib/auth/garde'
 import { envoyerCourriel } from '@/lib/email/envoyer'
 import { gabaritCandidatureRefusee } from '@/lib/email/gabaritsNotifications'
