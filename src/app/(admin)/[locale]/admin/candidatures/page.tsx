@@ -136,6 +136,8 @@ export default async function CandidaturesPage({ params }: Props) {
         posteLivreurId={posteLivreur?.id ?? null}
         libelles={{ statuts: libellesStatuts }}
         textes={{
+          nomUn: t('candidatures_nom_un'),
+          nomPlusieurs: t('candidatures_nom_plusieurs'),
           vide: t('candidatures_vide'),
           videFiltre: t('candidatures_vide_filtre'),
           rechercheLabel: t('candidatures_recherche_label'),

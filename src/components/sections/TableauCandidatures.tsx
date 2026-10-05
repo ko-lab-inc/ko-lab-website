@@ -116,6 +116,9 @@ export function TableauCandidatures({
   posteLivreurId: string | null
   libelles: { statuts: Record<string, string> }
   textes: {
+    /** Nom au singulier / pluriel pour l'en-tête compteur de la carte. */
+    nomUn: string
+    nomPlusieurs: string
     vide: string
     videFiltre: string
     rechercheLabel: string
@@ -238,6 +241,13 @@ export function TableauCandidatures({
       </div>
 
       <div className="border border-ko-line bg-ko-white">
+        {/* En-tête de carte — même traitement que les cartes de Réglages :
+            un filet sous un libellé. Le compteur reflète le FILTRE en cours. */}
+        <div className="border-b border-ko-line px-5 py-3.5 sm:px-6">
+          <p className="label-mono text-ko-muted">
+            {filtrees.length} {filtrees.length <= 1 ? textes.nomUn : textes.nomPlusieurs}
+          </p>
+        </div>
         {pageCourante.length === 0 ? (
           <p className="p-6 text-base leading-relaxed text-ko-muted">
             {candidatures.length === 0 ? textes.vide : textes.videFiltre}
@@ -247,7 +257,7 @@ export function TableauCandidatures({
             {pageCourante.map((c) => (
               <li
                 key={c.id}
-                className="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 py-3 transition-colors duration-200 hover:bg-ko-cream"
+                className="flex flex-wrap items-center gap-x-4 gap-y-3 px-5 py-4 transition-colors duration-200 hover:bg-ko-cream sm:px-6"
               >
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-base text-ko-ink">{c.nom}</span>

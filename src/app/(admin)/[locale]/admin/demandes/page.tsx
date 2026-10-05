@@ -172,6 +172,8 @@ export default async function DemandesPage({ params }: Props) {
           statuts: libellesStatuts,
         }}
         textes={{
+          nomUn: t('demandes_nom_un'),
+          nomPlusieurs: t('demandes_nom_plusieurs'),
           vide: t('aucune_demande'),
           videFiltre: t('demandes_vide_filtre'),
           rechercheLabel: t('demandes_recherche_label'),
