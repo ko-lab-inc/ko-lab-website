@@ -147,7 +147,7 @@ function Carte({
   return (
     <section aria-labelledby={id} className="border border-ko-line bg-ko-white">
       <div className="border-b border-ko-line px-5 py-4 sm:px-6">
-        <h2 id={id} className="text-base text-ko-ink">
+        <h2 id={id} className="text-base text-ko-ink sm:text-lg">
           {titre}
         </h2>
         {aide && (
@@ -325,7 +325,7 @@ export function FormulaireReglages({
   const etat2 = { actif: libelles.etatActif, inactif: libelles.etatInactif }
 
   return (
-    <form action={action} className="max-w-[680px] space-y-8">
+    <form action={action} className="w-full space-y-8">
       <input type="hidden" name="locale" value={locale} />
 
       {/* ---------------------------- Coordonnées ---------------------------- */}

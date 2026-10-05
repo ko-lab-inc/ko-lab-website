@@ -157,7 +157,10 @@ export default async function Page({ params }: Props) {
   }
 
   return (
-    <div data-theme-sombre>
+    // Colonne CENTRÉE et de largeur de lecture confortable (5 octobre 2026).
+    // Les cartes ne flottent plus à gauche avec un grand vide à droite : tout
+    // l'écran des réglages est une colonne centrée, en-tête et note comprises.
+    <div data-theme-sombre className="mx-auto w-full max-w-[880px]">
       <EnteteAdmin titre={t('reglages_titre')} />
 
       <p className="mb-8 max-w-[70ch] text-base leading-relaxed text-ko-muted">

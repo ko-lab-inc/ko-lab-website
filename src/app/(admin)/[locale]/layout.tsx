@@ -359,8 +359,27 @@ export default async function AdminLayout({ children, params }: Props) {
               ce `<main>` dans les deux cas. Corriger ICI plutôt que dans
               chaque copie couvre les deux d'un coup, et toute case
               masquée future dans l'espace admin. */}
-          <main className="relative min-w-0 flex-1 px-6 py-8 lg:overflow-y-auto lg:px-8 lg:py-10">
-            {children}
+          {/*
+            Padding RESPONSIVE : serré sur un téléphone (px-4), confortable au
+            fil des tailles. `overflow-x-hidden` évite qu'un contenu trop large
+            (une ligne de tableau) ne crée un défilement horizontal parasite.
+
+            ⚠️ Le conteneur centré est un ENFANT de ce `<main>`, et il n'est
+            PAS `relative` : `<main>` doit rester le plus proche ancêtre
+            positionné, sinon le correctif de défilement des `<input sr-only>`
+            (voir la note au-dessus) se reporterait sur ce conteneur et
+            laisserait repartir le scroll vers la fenêtre.
+          */}
+          <main className="relative min-w-0 flex-1 overflow-x-hidden px-4 py-6 sm:px-6 sm:py-8 lg:overflow-y-auto lg:px-8 lg:py-10">
+            {/*
+              Conteneur CENTRÉ, commun à TOUT l'admin (demande du 5 octobre
+              2026 : « les conteneurs bien centrés, la taille s'adapte »). Sur
+              un grand écran, le contenu ne colle plus à gauche avec un vide à
+              droite — il est borné et centré. Chaque page choisit ensuite sa
+              propre largeur de lecture à l'intérieur (un formulaire se
+              resserre, un tableau prend toute la place).
+            */}
+            <div className="mx-auto w-full max-w-[1200px]">{children}</div>
           </main>
         </div>
       </body>
