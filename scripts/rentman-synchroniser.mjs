@@ -33,7 +33,10 @@ for (const ligne of readFileSync(new URL('../.env.local', import.meta.url), 'utf
 
 const { synchroniser } = await import('../src/lib/rentman/synchroniser.ts')
 
-const r = await synchroniser()
+// --photos : recopie TOUTES les photos (meme inchangees) pour reappliquer
+// la compression aux images deja en bucket. Voir l'option forcerPhotos.
+const forcerPhotos = process.argv.includes('--photos')
+const r = await synchroniser(undefined, { forcerPhotos })
 
 console.log(`\n${GRIS}Synchronisation terminée en ${(r.duree_ms / 1000).toFixed(1)} s${RAZ}\n`)
 console.log(`  articles lus chez Rentman ... ${r.lus}`)

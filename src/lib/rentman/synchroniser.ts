@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createClient } from '@supabase/supabase-js'
+import sharp from 'sharp'
 
 import { lireEquipement, lireFichier, telechargerPhoto } from './client'
 import { estRetenu, normaliser, type ArticleNormalise, type ArticleRentman, type Rejet } from './normaliser'
@@ -90,11 +91,32 @@ async function copierPhoto(
   const photo = await telechargerPhoto(fichier)
   if (!photo) return null
 
-  const extension = photo.type.split('/')[1]?.replace('jpeg', 'jpg') ?? 'jpg'
-  const chemin = `${article.rentman_id}.${extension}`
+  /**
+   * ⚠️ COMPRESSION AVANT L'ENVOI — deux raisons, et la première est bloquante.
+   *
+   * 1. Le bucket `location` plafonne à 5 Mo. Une photo prise au téléphone par
+   *    Roxanne dépasse facilement (constaté le 5 octobre 2026 : « Arche de
+   *    feuilles », 6,7 Mo, rejetée « object exceeded the maximum allowed
+   *    size »). Sans redimensionnement, ces articles se publient sans photo.
+   *
+   * 2. Même sous 5 Mo, une photo de 2 Mo servie telle quelle sur une page de
+   *    catalogue est lourde. On la ramène à une largeur d'affichage raisonnable.
+   *
+   * 1600 px de large suffisent pour la plus grande vignette du site ;
+   * `withoutEnlargement` ne gonfle jamais une petite image. Sortie JPEG q82,
+   * un bon compromis poids/qualité et un type toujours accepté par le bucket.
+   */
+  const octets = await sharp(photo.octets)
+    .rotate() // respecte l'orientation EXIF d'une photo de téléphone
+    .resize({ width: 1600, withoutEnlargement: true })
+    .jpeg({ quality: 82 })
+    .toBuffer()
 
-  const { error } = await supabase.storage.from('location').upload(chemin, photo.octets, {
-    contentType: photo.type,
+  // Toujours .jpg : on vient de convertir en JPEG, quel que soit l'original.
+  const chemin = `${article.rentman_id}.jpg`
+
+  const { error } = await supabase.storage.from('location').upload(chemin, octets, {
+    contentType: 'image/jpeg',
     upsert: true,
   })
   if (error) throw new Error(`photo ${chemin} : ${error.message}`)
@@ -110,6 +132,15 @@ async function copierPhoto(
  */
 export async function synchroniser(
   source?: () => Promise<ArticleRentman[]>,
+  options: {
+    /**
+     * Recopie TOUTES les photos, même celles d'articles inchangés. Sert à
+     * réappliquer un nouveau traitement d'image (ex. la compression ajoutée le
+     * 5 octobre 2026) aux photos déjà en bucket, qui sinon ne seraient
+     * retouchées qu'au prochain changement de l'article dans Rentman.
+     */
+    forcerPhotos?: boolean
+  } = {},
 ): Promise<Rapport> {
   const debut = Date.now()
   const supabase = clientService()
@@ -160,6 +191,7 @@ export async function synchroniser(
       // 584 réécritures et autant de retéléversements de photos par
       // synchronisation (constaté par le script de vérification, étape 2).
       const aJour =
+        !options.forcerPhotos &&
         avant !== undefined &&
         avant.publie &&
         memeInstant(avant.rentman_modifie_le, article.rentman_modifie_le) &&
