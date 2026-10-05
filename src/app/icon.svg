@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="KO-LAB">
+  <!--
+    Favicon KO-LAB — placeholder aux couleurs de marque (noir #111210, accent
+    bleu #61b4db, blanc), à remplacer par le vrai logo quand il sera fourni.
+
+    Lettres dessinées en STROKES, pas en texte : un <text> dépendrait d'une
+    police installée au moment de la rastérisation (librsvg via sharp pour le
+    .ico), et pourrait ne pas s'afficher. Des traits rendent à l'identique
+    dans le navigateur et à la génération du PNG.
+  -->
+  <rect width="32" height="32" rx="7" fill="#111210" />
+  <!-- K blanc -->
+  <path
+    d="M9 8 V24 M9 16 L16 8 M9 16 L16 24"
+    fill="none"
+    stroke="#ffffff"
+    stroke-width="2.6"
+    stroke-linecap="square"
+  />
+  <!-- O bleu (accent de marque) -->
+  <circle cx="22.5" cy="16" r="5" fill="none" stroke="#61b4db" stroke-width="2.6" />
+</svg>
