@@ -53,7 +53,15 @@ function Carte({
 
   return (
     <article className="group flex flex-col border border-ko-line bg-ko-white">
-      <div className="relative aspect-[4/3] overflow-hidden bg-ko-cream">
+      {/* ⚠️ RATIO PORTRAIT (4/5), PAS PAYSAGE.
+          Les photos de Roxanne sont prises au téléphone en PORTRAIT (1600×2133,
+          un ratio 3/4), et le produit est souvent dans le BAS de l'image (on
+          regarde dans un bac : le rebord vide en haut, le contenu en dessous).
+          Un cadre paysage 4/3 + object-cover coupait une bande horizontale au
+          milieu — donc surtout le vide, pas le produit (constaté le
+          5 octobre 2026). Un cadre 4/5 montre ~94 % de la photo portrait :
+          le produit redevient visible, sans trop allonger la carte. */}
+      <div className="relative aspect-[4/5] overflow-hidden bg-ko-cream">
         {produit.image_url ? (
           <Image
             src={produit.image_url}
@@ -65,7 +73,7 @@ function Carte({
         ) : (
           // Pas de photo sur la fiche Rentman : le placeholder du site, jamais
           // une carte vide. Même ratio que l'image pour ne pas décaler la grille.
-          <PhotoPlaceholder ratio="aspect-[4/3]" className="h-full w-full" />
+          <PhotoPlaceholder ratio="aspect-[4/5]" className="h-full w-full" />
         )}
       </div>
 
