@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useId } from 'react'
 
 import {
   enregistrerReglages,
@@ -19,13 +19,23 @@ import type { Reglages } from '@/lib/reglages'
  * Réglages du site.
  *
  * ---------------------------------------------------------------------------
- * DEUX GROUPES, ET LE SECOND EST DANGEREUX
+ * DISPOSITION — CARTES ET LIGNES (demande du 5 octobre 2026)
  *
- * Les coordonnées sont des champs ordinaires. Les drapeaux, non : chacun ouvre
- * ou ferme une partie du site pour tous les visiteurs. Ils sont donc séparés
- * visuellement, et chacun porte une phrase qui dit ce que la décocher
- * PROVOQUE — pas ce que la case s'appelle. « Panier actif » ne dit rien à
- * quelqu'un qui n'a pas écrit le code.
+ * Christian voulait la disposition d'un écran de réglages Wix : des CARTES
+ * avec un en-tête, et dans chaque carte des LIGNES séparées par un filet, où
+ * un interrupteur porte son état (« Actif » / « Inactif ») à côté de son titre
+ * et de sa description. La STRUCTURE est reprise, pas les couleurs : tout reste
+ * dans la palette KO-LAB et sous le thème admin sombre.
+ *
+ * ---------------------------------------------------------------------------
+ * CE QUI N'A PAS CHANGÉ, ET POURQUOI C'EST IMPORTANT
+ *
+ * Les drapeaux ouvrent ou ferment une partie du site pour tous les visiteurs.
+ * Chacun porte donc toujours une phrase qui dit ce que le DÉCOCHER provoque,
+ * pas ce que la case s'appelle — « Panier actif » ne dit rien à qui n'a pas
+ * écrit le code. Et chaque interrupteur reste une vraie `<input checkbox>`
+ * masquée : le rôle, l'état coché, le clavier et l'envoi dans le FormData
+ * viennent d'elle, pas d'un `<div>` stylé qui en oublierait la moitié.
  * ---------------------------------------------------------------------------
  */
 
@@ -92,6 +102,9 @@ export type LibellesReglages = {
   boutiqueActiveAide: string
   concoursActif: string
   concoursActifAide: string
+  /** État affiché à côté de chaque interrupteur (façon « Active » de Wix). */
+  etatActif: string
+  etatInactif: string
   enregistrer: string
   enCours: string
   succes: string
@@ -105,15 +118,49 @@ const CHAMP =
   'min-h-[40px] w-full border border-ko-line bg-ko-white px-3 py-2 text-sm text-ko-ink transition-colors duration-200 focus:border-ko-blue focus:outline-none'
 
 /**
- * Zone de texte — bandeau, absence, listes de destinataires.
+ * Zone de texte — bandeau, absence.
  *
  * `resize-y` et non `resize` : la largeur est contrainte par la colonne du
- * formulaire, et un redimensionnement horizontal ferait déborder la zone de
- * son conteneur. `leading-relaxed` parce qu'on y relit une liste d'adresses.
+ * formulaire, et un redimensionnement horizontal ferait déborder la zone.
  */
 const ZONE = `${CHAMP} min-h-[80px] resize-y leading-relaxed`
 
-function Champ({
+/**
+ * Carte de réglages — en-tête (titre + description) puis un corps dont les
+ * lignes sont séparées par un filet. C'est le conteneur façon Wix.
+ *
+ * `<section aria-labelledby>` plutôt que `<fieldset><legend>` : la légende d'un
+ * fieldset bordé se positionne mal dès qu'on veut un vrai bandeau d'en-tête, et
+ * chaque champ de ces cartes porte déjà son propre libellé — le groupe n'a
+ * besoin que d'un nom de région, ce que l'en-tête fournit.
+ */
+function Carte({
+  titre,
+  aide,
+  children,
+}: {
+  titre: string
+  aide?: string
+  children: React.ReactNode
+}) {
+  const id = useId()
+  return (
+    <section aria-labelledby={id} className="border border-ko-line bg-ko-white">
+      <div className="border-b border-ko-line px-5 py-4 sm:px-6">
+        <h2 id={id} className="text-base text-ko-ink">
+          {titre}
+        </h2>
+        {aide && (
+          <p className="mt-1 max-w-[62ch] text-sm leading-relaxed text-ko-muted">{aide}</p>
+        )}
+      </div>
+      <div className="divide-y divide-ko-line">{children}</div>
+    </section>
+  )
+}
+
+/** Un champ texte, en ligne dans une carte. */
+function LigneChamp({
   id,
   libelle,
   aide,
@@ -125,13 +172,13 @@ function Champ({
   children: React.ReactNode
 }) {
   return (
-    <div>
+    <div className="px-5 py-4 sm:px-6">
       <label htmlFor={id} className="label-mono mb-1.5 block text-ko-muted">
         {libelle}
       </label>
       {children}
       {aide && (
-        <p id={`${id}-aide`} className="mt-1.5 text-sm leading-relaxed text-ko-muted">
+        <p id={`${id}-aide`} className="mt-1.5 max-w-[62ch] text-sm leading-relaxed text-ko-muted">
           {aide}
         </p>
       )}
@@ -140,15 +187,14 @@ function Champ({
 }
 
 /**
- * Habillage d'un GROUPE de champs, par opposition a `Champ` qui en etiquette
- * un seul.
+ * Une liste d'adresses, en ligne dans une carte.
  *
- * ⚠️ `<fieldset>` + `<legend>`, et pas un `<label for>` : un label ne peut
- * designer qu'un seul champ. Avec plusieurs adresses, il pointerait la
- * premiere et les suivantes n'auraient aucun nom accessible — chaque champ
- * porte donc le sien (voir ChampsCourriels), et la legende nomme l'ensemble.
+ * `<fieldset>` ici, à la différence des autres lignes : il y a PLUSIEURS champs
+ * (une adresse par ligne) et un `<label for>` ne peut en désigner qu'un. La
+ * légende nomme l'ensemble, chaque champ porte son propre nom (voir
+ * ChampsCourriels).
  */
-function GroupeCourriels({
+function LigneGroupeCourriels({
   id,
   libelle,
   aide,
@@ -160,11 +206,11 @@ function GroupeCourriels({
   children: React.ReactNode
 }) {
   return (
-    <fieldset>
+    <fieldset className="px-5 py-4 sm:px-6">
       <legend className="label-mono mb-1.5 block text-ko-muted">{libelle}</legend>
       {children}
       {aide && (
-        <p id={`${id}-aide`} className="mt-1.5 text-sm leading-relaxed text-ko-muted">
+        <p id={`${id}-aide`} className="mt-1.5 max-w-[62ch] text-sm leading-relaxed text-ko-muted">
           {aide}
         </p>
       )}
@@ -173,58 +219,63 @@ function GroupeCourriels({
 }
 
 /**
- * Interrupteur.
+ * Ligne d'interrupteur — la pièce maîtresse de la disposition Wix :
+ * `interrupteur · état · titre + description`, en ligne, séparée de la suivante
+ * par le filet de la carte.
  *
- * Une vraie `<input type="checkbox">`, masquée visuellement mais présente :
- * elle apporte le rôle, l'état coché, la navigation au clavier et l'envoi dans
- * le FormData. Un `<div>` stylé en interrupteur oblige à réécrire tout ça, et
- * en oublie toujours une partie.
+ * L'état « Actif / Inactif » suit la case EN CSS (`group-has-[:checked]`), sans
+ * état React : la case reste non contrôlée, donc toujours envoyée telle quelle
+ * dans le FormData. Les deux libellés sont `aria-hidden` — l'état est déjà
+ * porté par le rôle « checkbox » de la case, les répéter alourdirait la lecture.
  */
-function Interrupteur({
+function LigneInterrupteur({
   nom,
   libelle,
   aide,
   defaut,
+  actif,
+  inactif,
 }: {
   nom: string
   libelle: string
   aide: string
   defaut: boolean
+  actif: string
+  inactif: string
 }) {
   return (
-    <div className="flex items-start gap-3">
-      <label className="group flex min-h-[44px] cursor-pointer items-center gap-3">
-        <input
-          type="checkbox"
-          name={nom}
-          defaultValue="true"
-          defaultChecked={defaut}
-          className="peer sr-only"
-        />
-        {/* La case reste la source de vérité ; ce qui suit n'en est que le
-            reflet.
+    <label className="group flex cursor-pointer items-start gap-4 px-5 py-4 sm:px-6">
+      <input
+        type="checkbox"
+        name={nom}
+        defaultValue="true"
+        defaultChecked={defaut}
+        className="peer sr-only"
+      />
 
-            ⚠️ Deux variantes différentes, et ce n'est pas une redondance. La
-            piste est le FRÈRE de la case : `peer-checked` s'y applique. Le
-            bouton, lui, est son ENFANT — `peer-*` ne remonte pas, il ne
-            fonctionne qu'entre frères. D'où `group-has-[:checked]` sur le
-            label englobant, qui, lui, contient la case. */}
-        <span
-          aria-hidden="true"
-          className="relative h-6 w-11 shrink-0 rounded-full bg-ko-line transition-colors duration-200 peer-checked:bg-ko-blue peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ko-blue"
-        >
-          {/* Bouton : bg-ko-frost, PAS bg-ko-white — la couche sombre remappe
-              .bg-ko-white vers #111210 : bouton presque noir, invisible sur la
-              piste éteinte (19 septembre 2026, même défaut que le burger admin). */}
-          <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-ko-frost shadow-sm transition-transform duration-200 group-has-[:checked]:translate-x-5" />
-        </span>
+      {/* Interrupteur. `peer-checked` colore la piste (frère de la case) ;
+          `group-has-[:checked]` déplace le bouton (enfant, hors de portée de
+          `peer-*`). Bouton en `bg-ko-frost` et pas `bg-ko-white` : la couche
+          sombre remappe `.bg-ko-white` vers #111210 — bouton noir invisible. */}
+      <span
+        aria-hidden="true"
+        className="relative mt-0.5 h-6 w-11 shrink-0 rounded-full bg-ko-line transition-colors duration-200 peer-checked:bg-ko-blue peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ko-blue"
+      >
+        <span className="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-ko-frost shadow-sm transition-transform duration-200 group-has-[:checked]:translate-x-5" />
+      </span>
 
-        <span className="min-w-0">
-          <span className="block text-sm text-ko-ink">{libelle}</span>
-          <span className="block text-sm leading-relaxed text-ko-muted">{aide}</span>
-        </span>
-      </label>
-    </div>
+      {/* État, façon « Active » de Wix. Bleu quand actif (8,10:1 sur fond
+          sombre), muet quand inactif. Largeur fixe pour aligner les titres. */}
+      <span aria-hidden="true" className="label-mono mt-1 w-12 shrink-0">
+        <span className="hidden text-ko-blue group-has-[:checked]:inline">{actif}</span>
+        <span className="text-ko-muted group-has-[:checked]:hidden">{inactif}</span>
+      </span>
+
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm text-ko-ink">{libelle}</span>
+        <span className="mt-0.5 block text-sm leading-relaxed text-ko-muted">{aide}</span>
+      </span>
+    </label>
   )
 }
 
@@ -252,9 +303,6 @@ export function FormulaireReglages({
    *   repli. Un champ prérempli avec le repli le fige en base au premier
    *   enregistrement — le réglage cesse alors de dire « vide = la valeur du
    *   code » et devient une copie qui divergera.
-   *
-   * Les mettre dans `reglages` laisserait croire qu'elles viennent de la même
-   * lecture, et la prochaine personne les chercherait dans `Reglages`.
    */
   brutes: { demandes: string; candidatures: string }
   /** Affiché en `placeholder` du champ RH : ce qui s'applique s'il reste vide. */
@@ -273,18 +321,16 @@ export function FormulaireReglages({
     serveur: libelles.erreurServeur,
   }
 
+  /** Raccourci : tous les interrupteurs partagent les mêmes libellés d'état. */
+  const etat2 = { actif: libelles.etatActif, inactif: libelles.etatInactif }
+
   return (
-    <form action={action} className="max-w-[640px] space-y-10">
+    <form action={action} className="max-w-[680px] space-y-8">
       <input type="hidden" name="locale" value={locale} />
 
       {/* ---------------------------- Coordonnées ---------------------------- */}
-      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
-        <legend className="px-2">
-          <span className="block text-base text-ko-ink">{libelles.groupeContact}</span>
-        </legend>
-        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeContactAide}</p>
-
-        <Champ id="contact_courriel" libelle={libelles.courriel} aide={libelles.courrielAide}>
+      <Carte titre={libelles.groupeContact} aide={libelles.groupeContactAide}>
+        <LigneChamp id="contact_courriel" libelle={libelles.courriel} aide={libelles.courrielAide}>
           <input
             id="contact_courriel"
             name="contact_courriel"
@@ -295,9 +341,9 @@ export function FormulaireReglages({
             aria-describedby="contact_courriel-aide"
             className={CHAMP}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="contact_telephone" libelle={libelles.telephone} aide={libelles.telephoneAide}>
+        <LigneChamp id="contact_telephone" libelle={libelles.telephone} aide={libelles.telephoneAide}>
           <input
             id="contact_telephone"
             name="contact_telephone"
@@ -307,9 +353,9 @@ export function FormulaireReglages({
             aria-describedby="contact_telephone-aide"
             className={CHAMP}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="contact_region" libelle={libelles.region} aide={libelles.regionAide}>
+        <LigneChamp id="contact_region" libelle={libelles.region} aide={libelles.regionAide}>
           <input
             id="contact_region"
             name="contact_region"
@@ -319,9 +365,9 @@ export function FormulaireReglages({
             aria-describedby="contact_region-aide"
             className={CHAMP}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="contact_adresse" libelle={libelles.adresse} aide={libelles.adresseAide}>
+        <LigneChamp id="contact_adresse" libelle={libelles.adresse} aide={libelles.adresseAide}>
           <input
             id="contact_adresse"
             name="contact_adresse"
@@ -331,25 +377,23 @@ export function FormulaireReglages({
             aria-describedby="contact_adresse-aide"
             className={CHAMP}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="courriel_rh" libelle={libelles.courrielRh} aide={libelles.courrielRhAide}>
+        <LigneChamp id="courriel_rh" libelle={libelles.courrielRh} aide={libelles.courrielRhAide}>
           <input
             id="courriel_rh"
             name="courriel_rh"
             type="email"
             maxLength={200}
-            // Valeur BRUTE, et le repli seulement en placeholder : un champ
-            // prérempli avec `reglages.courrielRh` écrirait le repli en base
-            // au premier enregistrement. Voir la note sur `brutes`.
+            // Valeur BRUTE, repli seulement en placeholder (voir la note sur `brutes`).
             defaultValue={reglages.courrielRh}
             placeholder={courrielRhDefaut}
             aria-describedby="courriel_rh-aide"
             className={CHAMP}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="heures_ouverture" libelle={libelles.heuresOuverture} aide={libelles.heuresOuvertureAide}>
+        <LigneChamp id="heures_ouverture" libelle={libelles.heuresOuverture} aide={libelles.heuresOuvertureAide}>
           <input
             id="heures_ouverture"
             name="heures_ouverture"
@@ -359,20 +403,12 @@ export function FormulaireReglages({
             aria-describedby="heures_ouverture-aide"
             className={CHAMP}
           />
-        </Champ>
-      </fieldset>
+        </LigneChamp>
+      </Carte>
 
       {/* ------------------------------ Liens ------------------------------- */}
-      {/* Migration 0051 — ces trois valeurs étaient FIGÉES DANS LE CODE : les
-          changer demandait un déploiement, donc un développeur, pour une
-          décision qui n'en relève pas. */}
-      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
-        <legend className="px-2">
-          <span className="block text-base text-ko-ink">{libelles.groupeLiens}</span>
-        </legend>
-        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeLiensAide}</p>
-
-        <Champ id="lien_rentman" libelle={libelles.lienRentman} aide={libelles.lienRentmanAide}>
+      <Carte titre={libelles.groupeLiens} aide={libelles.groupeLiensAide}>
+        <LigneChamp id="lien_rentman" libelle={libelles.lienRentman} aide={libelles.lienRentmanAide}>
           <input
             id="lien_rentman"
             name="lien_rentman"
@@ -383,9 +419,9 @@ export function FormulaireReglages({
             aria-describedby="lien_rentman-aide"
             className={CHAMP}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="lien_candidature_externe" libelle={libelles.lienCandidature} aide={libelles.lienCandidatureAide}>
+        <LigneChamp id="lien_candidature_externe" libelle={libelles.lienCandidature} aide={libelles.lienCandidatureAide}>
           <input
             id="lien_candidature_externe"
             name="lien_candidature_externe"
@@ -396,9 +432,9 @@ export function FormulaireReglages({
             aria-describedby="lien_candidature_externe-aide"
             className={CHAMP}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="delai_reponse_heures" libelle={libelles.delaiReponse} aide={libelles.delaiReponseAide}>
+        <LigneChamp id="delai_reponse_heures" libelle={libelles.delaiReponse} aide={libelles.delaiReponseAide}>
           <input
             id="delai_reponse_heures"
             name="delai_reponse_heures"
@@ -409,19 +445,12 @@ export function FormulaireReglages({
             aria-describedby="delai_reponse_heures-aide"
             className={CHAMP}
           />
-        </Champ>
-      </fieldset>
+        </LigneChamp>
+      </Carte>
 
       {/* --------------------------- Réseaux sociaux -------------------------- */}
-      {/* Chaque réseau est indépendant : une icône n'apparaît au pied de page
-          que si SON adresse est renseignée. Vider le champ la retire. */}
-      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
-        <legend className="px-2">
-          <span className="block text-base text-ko-ink">{libelles.groupeReseaux}</span>
-        </legend>
-        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeReseauxAide}</p>
-
-        <Champ id="reseau_facebook" libelle={libelles.facebook} aide={libelles.reseauAide}>
+      <Carte titre={libelles.groupeReseaux} aide={libelles.groupeReseauxAide}>
+        <LigneChamp id="reseau_facebook" libelle={libelles.facebook} aide={libelles.reseauAide}>
           <input
             id="reseau_facebook"
             name="reseau_facebook"
@@ -432,9 +461,9 @@ export function FormulaireReglages({
             aria-describedby="reseau_facebook-aide"
             className={CHAMP}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="reseau_instagram" libelle={libelles.instagram} aide={libelles.reseauAide}>
+        <LigneChamp id="reseau_instagram" libelle={libelles.instagram} aide={libelles.reseauAide}>
           <input
             id="reseau_instagram"
             name="reseau_instagram"
@@ -445,9 +474,9 @@ export function FormulaireReglages({
             aria-describedby="reseau_instagram-aide"
             className={CHAMP}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="reseau_linkedin" libelle={libelles.linkedin} aide={libelles.reseauAide}>
+        <LigneChamp id="reseau_linkedin" libelle={libelles.linkedin} aide={libelles.reseauAide}>
           <input
             id="reseau_linkedin"
             name="reseau_linkedin"
@@ -458,20 +487,12 @@ export function FormulaireReglages({
             aria-describedby="reseau_linkedin-aide"
             className={CHAMP}
           />
-        </Champ>
-      </fieldset>
+        </LigneChamp>
+      </Carte>
 
       {/* --------------------------- Notifications --------------------------- */}
-      {/* Migration 0053. Les deux seuls champs de cet écran qui ne sont PAS
-          affichés sur le site : ce sont des adresses internes, et la base les
-          garde hors de portée de la lecture publique. */}
-      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
-        <legend className="px-2">
-          <span className="block text-base text-ko-ink">{libelles.groupeNotifications}</span>
-        </legend>
-        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeNotificationsAide}</p>
-
-        <GroupeCourriels
+      <Carte titre={libelles.groupeNotifications} aide={libelles.groupeNotificationsAide}>
+        <LigneGroupeCourriels
           id="notifications_demandes"
           libelle={libelles.notifDemandes}
           aide={libelles.notifDemandesAide}
@@ -483,9 +504,9 @@ export function FormulaireReglages({
             textes={libelles.champsCourriels}
             aideId="notifications_demandes-aide"
           />
-        </GroupeCourriels>
+        </LigneGroupeCourriels>
 
-        <GroupeCourriels
+        <LigneGroupeCourriels
           id="notifications_candidatures"
           libelle={libelles.notifCandidatures}
           aide={libelles.notifCandidaturesAide}
@@ -497,26 +518,22 @@ export function FormulaireReglages({
             textes={libelles.champsCourriels}
             aideId="notifications_candidatures-aide"
           />
-        </GroupeCourriels>
-      </fieldset>
+        </LigneGroupeCourriels>
+      </Carte>
 
       {/* ------------------------- Bandeau d'annonce ------------------------- */}
-      {/* L'interrupteur est au-dessus des textes, pas en dessous : c'est la
-          décision (afficher ou non), les textes n'en sont que le contenu. */}
-      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
-        <legend className="px-2">
-          <span className="block text-base text-ko-ink">{libelles.groupeBandeau}</span>
-        </legend>
-        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeBandeauAide}</p>
-
-        <Interrupteur
+      {/* L'interrupteur en PREMIÈRE ligne : c'est la décision (afficher ou non),
+          les textes n'en sont que le contenu. */}
+      <Carte titre={libelles.groupeBandeau} aide={libelles.groupeBandeauAide}>
+        <LigneInterrupteur
           nom="bandeau_actif"
           libelle={libelles.bandeauActif}
           aide={libelles.bandeauActifAide}
           defaut={reglages.bandeauActif}
+          {...etat2}
         />
 
-        <Champ id="bandeau_texte_fr" libelle={libelles.bandeauFr} aide={libelles.bandeauTexteAide}>
+        <LigneChamp id="bandeau_texte_fr" libelle={libelles.bandeauFr} aide={libelles.bandeauTexteAide}>
           <textarea
             id="bandeau_texte_fr"
             name="bandeau_texte_fr"
@@ -526,9 +543,9 @@ export function FormulaireReglages({
             aria-describedby="bandeau_texte_fr-aide"
             className={ZONE}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="bandeau_texte_en" libelle={libelles.bandeauEn}>
+        <LigneChamp id="bandeau_texte_en" libelle={libelles.bandeauEn}>
           <textarea
             id="bandeau_texte_en"
             name="bandeau_texte_en"
@@ -537,28 +554,20 @@ export function FormulaireReglages({
             defaultValue={reglages.bandeauTexteEn}
             className={ZONE}
           />
-        </Champ>
-      </fieldset>
+        </LigneChamp>
+      </Carte>
 
       {/* -------------------------- Message d'absence ------------------------- */}
-      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
-        <legend className="px-2">
-          <span className="block text-base text-ko-ink">{libelles.groupeAbsence}</span>
-        </legend>
-        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeAbsenceAide}</p>
-
-        <Interrupteur
+      <Carte titre={libelles.groupeAbsence} aide={libelles.groupeAbsenceAide}>
+        <LigneInterrupteur
           nom="absence_actif"
           libelle={libelles.absenceActif}
           aide={libelles.absenceActifAide}
           defaut={reglages.absenceActif}
+          {...etat2}
         />
 
-        <Champ
-          id="absence_message_fr"
-          libelle={libelles.absenceFr}
-          aide={libelles.absenceTexteAide}
-        >
+        <LigneChamp id="absence_message_fr" libelle={libelles.absenceFr} aide={libelles.absenceTexteAide}>
           <textarea
             id="absence_message_fr"
             name="absence_message_fr"
@@ -568,9 +577,9 @@ export function FormulaireReglages({
             aria-describedby="absence_message_fr-aide"
             className={ZONE}
           />
-        </Champ>
+        </LigneChamp>
 
-        <Champ id="absence_message_en" libelle={libelles.absenceEn}>
+        <LigneChamp id="absence_message_en" libelle={libelles.absenceEn}>
           <textarea
             id="absence_message_en"
             name="absence_message_en"
@@ -579,42 +588,44 @@ export function FormulaireReglages({
             defaultValue={reglages.absenceMessageEn}
             className={ZONE}
           />
-        </Champ>
-      </fieldset>
+        </LigneChamp>
+      </Carte>
 
-      {/* --------------------------- Fonctionnalités -------------------------- */}
-      <fieldset className="space-y-5 border border-ko-line bg-ko-white p-6">
-        <legend className="px-2">
-          <span className="block text-base text-ko-ink">{libelles.groupeFonctions}</span>
-        </legend>
-        <p className="text-sm leading-relaxed text-ko-muted">{libelles.groupeFonctionsAide}</p>
-
-        <Interrupteur
+      {/* --------------------------- Parties du site -------------------------- */}
+      {/* La carte la plus proche de la capture Wix : quatre interrupteurs,
+          chacun avec son état et ce que le couper provoque. */}
+      <Carte titre={libelles.groupeFonctions} aide={libelles.groupeFonctionsAide}>
+        <LigneInterrupteur
           nom="panier_actif"
           libelle={libelles.panier}
           aide={libelles.panierAide}
           defaut={reglages.panierActif}
+          {...etat2}
         />
-        <Interrupteur
+        <LigneInterrupteur
           nom="solutions_modulaires"
           libelle={libelles.modulaires}
           aide={libelles.modulairesAide}
           defaut={reglages.solutionsModulaires}
+          {...etat2}
         />
-        <Interrupteur
+        <LigneInterrupteur
           nom="boutique_active"
           libelle={libelles.boutiqueActive}
           aide={libelles.boutiqueActiveAide}
           defaut={reglages.boutiqueActive}
+          {...etat2}
         />
-        <Interrupteur
+        <LigneInterrupteur
           nom="concours_actif"
           libelle={libelles.concoursActif}
           aide={libelles.concoursActifAide}
           defaut={reglages.concoursActif}
+          {...etat2}
         />
-      </fieldset>
+      </Carte>
 
+      {/* Barre d'action — reste en bas, hors des cartes. */}
       <div className="flex items-center gap-4">
         <button
           type="submit"

@@ -235,6 +235,8 @@ export default async function Page({ params }: Props) {
           boutiqueActiveAide: t('reglages_boutique_active_aide'),
           concoursActif: t('reglages_concours_actif'),
           concoursActifAide: t('reglages_concours_actif_aide'),
+          etatActif: t('reglages_etat_actif'),
+          etatInactif: t('reglages_etat_inactif'),
           enregistrer: t('reglages_enregistrer'),
           enCours: t('reglages_en_cours'),
           succes: t('reglages_succes'),

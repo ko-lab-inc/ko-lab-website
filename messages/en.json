@@ -1080,6 +1080,8 @@
     "reglages_groupe_contact_aide": "Affichées sur le site, et utilisées pour recevoir les demandes.",
     "reglages_groupe_fonctions": "Parties du site",
     "reglages_groupe_fonctions_aide": "Chaque interrupteur ouvre ou ferme une partie du site pour tous les visiteurs.",
+    "reglages_etat_actif": "Actif",
+    "reglages_etat_inactif": "Inactif",
     "reglages_courriel": "Courriel de contact",
     "reglages_courriel_aide": "Adresse affichée au public : pied de page, page Contact, pages légales. Elle reçoit aussi les demandes du formulaire tant qu'aucun destinataire n'est précisé plus bas. Une adresse invalide coupe la réception sans avertissement, d'où le champ obligatoire et vérifié.",
     "reglages_courriel_rh": "Courriel RH affiché",

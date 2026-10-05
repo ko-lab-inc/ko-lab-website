@@ -64,6 +64,8 @@ const LIBELLES = {
   boutiqueActiveAide: 'Désactivée, la boutique disparaît entièrement.',
   concoursActif: 'Page Concours',
   concoursActifAide: 'Désactivée, la page disparaît de la navigation.',
+  etatActif: 'Actif',
+  etatInactif: 'Inactif',
   enregistrer: 'Enregistrer',
   enCours: 'Enregistrement…',
   succes: 'Enregistré.',
