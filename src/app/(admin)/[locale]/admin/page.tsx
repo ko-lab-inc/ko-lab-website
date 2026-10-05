@@ -15,10 +15,16 @@ import {
   IconeAccompagnement,
   IconeAlerte,
   IconeBadgeStock,
+  IconeCamion,
+  IconeEquipe,
+  IconeEtiquette,
+  IconeGalerie,
   IconeHorloge,
+  IconeMallette,
   IconeMonnaie,
   IconePanier,
   IconeProfil,
+  IconeReglages,
   IconeTendance,
 } from '@/components/ui/Icones'
 import { routing } from '@/i18n/routing'
@@ -89,6 +95,38 @@ const JOURS = 30
 /** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
 export const viewport: Viewport = {
   themeColor: '#111210',
+}
+
+/**
+ * Tuile du hub de sections — icône + titre + description, en lien vers la
+ * section (disposition de la page Paramètres de Wix, demande du 5 octobre
+ * 2026). L'icône passe au bleu au survol, comme un lien de la nav.
+ */
+function TuileNav({
+  href,
+  titre,
+  description,
+  Icone,
+}: {
+  href: string
+  titre: string
+  description: string
+  Icone: (p: { taille?: number; className?: string }) => React.ReactNode
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex gap-3.5 border border-ko-line bg-ko-white p-4 transition-colors duration-200 hover:border-ko-blue sm:p-5"
+    >
+      <span className="mt-0.5 shrink-0 text-ko-muted transition-colors duration-200 group-hover:text-ko-blue">
+        <Icone taille={20} />
+      </span>
+      <span className="min-w-0">
+        <span className="block text-sm text-ko-ink">{titre}</span>
+        <span className="mt-1 block text-sm leading-relaxed text-ko-muted">{description}</span>
+      </span>
+    </Link>
+  )
 }
 
 export default async function TableauDeBordPage({ params }: Props) {
@@ -388,6 +426,48 @@ export default async function TableauDeBordPage({ params }: Props) {
           )}
         </div>
       </div>
+
+      {/* ---------------------------------------------------------------
+            HUB DE SECTIONS — grille de tuiles facon page Parametres de Wix
+            (demande du 5 octobre 2026). Une tuile par section, groupee comme
+            la barre laterale. Ajoute SOUS les stats : les chiffres restent,
+            et on gagne l'acces direct a chaque ecran.
+            --------------------------------------------------------------- */}
+        <div className="mt-12">
+          <h2 className="ko-h3 mb-6 text-[20px] text-ko-ink">{t('hub_titre')}</h2>
+
+          <div className="space-y-8">
+            <div>
+              <p className="label-mono mb-3 text-ko-muted">{t('section_gestion')}</p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <TuileNav href={`/${locale}/admin/demandes`} titre={t('nav_demandes')} description={t('hub_demandes')} Icone={IconeAccompagnement} />
+                <TuileNav href={`/${locale}/admin/commandes`} titre={t('nav_commandes')} description={t('hub_commandes')} Icone={IconePanier} />
+                <TuileNav href={`/${locale}/admin/catalogue`} titre={t('nav_catalogue')} description={t('hub_catalogue')} Icone={IconeBadgeStock} />
+                <TuileNav href={`/${locale}/admin/realisations`} titre={t('nav_realisations')} description={t('hub_realisations')} Icone={IconeGalerie} />
+                <TuileNav href={`/${locale}/admin/medias-emplacements`} titre={t('nav_medias_emplacements')} description={t('hub_medias_emplacements')} Icone={IconeGalerie} />
+                <TuileNav href={`/${locale}/admin/concours`} titre={t('nav_concours')} description={t('hub_concours')} Icone={IconeGalerie} />
+                <TuileNav href={`/${locale}/admin/carrieres`} titre={t('nav_carrieres')} description={t('hub_carrieres')} Icone={IconeMallette} />
+                <TuileNav href={`/${locale}/admin/candidatures`} titre={t('nav_candidatures')} description={t('hub_candidatures')} Icone={IconeEquipe} />
+              </div>
+            </div>
+
+            <div>
+              <p className="label-mono mb-3 text-ko-muted">{t('section_equipe')}</p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <TuileNav href={`/${locale}/admin/utilisateurs`} titre={t('nav_utilisateurs')} description={t('hub_utilisateurs')} Icone={IconeEquipe} />
+                <TuileNav href={`/${locale}/admin/vendeurs`} titre={t('nav_vendeurs')} description={t('hub_vendeurs')} Icone={IconeEtiquette} />
+                <TuileNav href={`/${locale}/admin/livreurs`} titre={t('nav_livreurs')} description={t('hub_livreurs')} Icone={IconeCamion} />
+              </div>
+            </div>
+
+            <div>
+              <p className="label-mono mb-3 text-ko-muted">{t('section_compte')}</p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <TuileNav href={`/${locale}/admin/reglages`} titre={t('nav_reglages')} description={t('hub_reglages')} Icone={IconeReglages} />
+              </div>
+            </div>
+          </div>
+        </div>
     </div>
   )
 }
