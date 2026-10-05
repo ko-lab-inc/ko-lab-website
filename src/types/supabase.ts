@@ -90,6 +90,77 @@ export type Database = {
         Relationships: []
       }
 
+      /** Migration 0048 — produits de location synchronisés depuis Rentman. */
+      articles_location: {
+        Row: {
+          id: string
+          rentman_id: number
+          slug: string
+          nom_fr: string
+          nom_en: string | null
+          description_fr: string | null
+          description_en: string | null
+          categorie: string
+          dossier_rentman: string | null
+          prix: number | null
+          tags: string[]
+          image_url: string | null
+          image_alt_fr: string | null
+          image_alt_en: string | null
+          publie: boolean
+          ordre: number
+          rentman_modifie_le: string | null
+          synchronise_le: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          rentman_id: number
+          slug: string
+          nom_fr: string
+          nom_en?: string | null
+          description_fr?: string | null
+          description_en?: string | null
+          categorie: string
+          dossier_rentman?: string | null
+          prix?: number | null
+          tags?: string[]
+          image_url?: string | null
+          image_alt_fr?: string | null
+          image_alt_en?: string | null
+          publie?: boolean
+          ordre?: number
+          rentman_modifie_le?: string | null
+          synchronise_le?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          rentman_id?: number
+          slug?: string
+          nom_fr?: string
+          nom_en?: string | null
+          description_fr?: string | null
+          description_en?: string | null
+          categorie?: string
+          dossier_rentman?: string | null
+          prix?: number | null
+          tags?: string[]
+          image_url?: string | null
+          image_alt_fr?: string | null
+          image_alt_en?: string | null
+          publie?: boolean
+          ordre?: number
+          rentman_modifie_le?: string | null
+          synchronise_le?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+
       produits_boutique: {
         Row: {
           id: string

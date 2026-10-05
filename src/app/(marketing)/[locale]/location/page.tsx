@@ -2,13 +2,16 @@ import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
+import { GrilleProduitsLocation } from '@/components/sections/GrilleProduitsLocation'
 import { buttonVariants } from '@/components/ui/Button'
 import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireGaleriePage } from '@/lib/galeries'
+import { grouperParCategorie, lireProduitsLocation } from '@/lib/location-produits'
 import { lireReglages } from '@/lib/reglages'
+import { CATEGORIES_LOCATION } from '@/lib/rentman/categories'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
 
@@ -62,6 +65,12 @@ export default async function LocationPage({ params }: Props) {
   const reglagesSite = await lireReglages()
   const lienRentman = reglagesSite.lienRentman.trim()
 
+  // Produits de location synchronisés depuis Rentman (migration 0048). Vide
+  // tant que rien n'est publié : la page retombe alors sur le bloc d'invitation
+  // plus bas, comme avant.
+  const produits = await lireProduitsLocation()
+  const groupes = grouperParCategorie(produits, CATEGORIES_LOCATION)
+
   // ⚠️ Passé de 4 à 7 catégories le 3 septembre 2026 (point 18 du prompt de
   // corrections finales) : les 4 anciennes (Remorques/Nacelles/Outils/
   // Mobilier événementiel) donnaient l'impression que l'offre de location
@@ -99,6 +108,36 @@ export default async function LocationPage({ params }: Props) {
           </p>
         </div>
       </section>
+
+      {/* ------------------------- Produits de location ------------------------
+          Grille alimentée par la synchronisation Rentman (migration 0048).
+          N'apparaît que s'il y a des produits publiés — sinon la page garde
+          son seul bloc d'invitation, comme avant l'intégration. */}
+      {produits.length > 0 && (
+        <section className="bg-ko-white py-16 lg:py-24">
+          <div className="mx-auto max-w-container px-6 lg:px-16">
+            <Reveal>
+              <p className="label-mono">{t('produits_titre')}</p>
+              <p className="mt-5 max-w-[54ch] text-base leading-relaxed text-ko-muted">
+                {t('produits_intro')}
+              </p>
+            </Reveal>
+
+            <div className="mt-12">
+              <GrilleProduitsLocation
+                groupes={groupes}
+                locale={locale}
+                libelles={{
+                  categories: Object.fromEntries(categories.map((c) => [c.cle, c.titre])),
+                  prixSurDemande: t('prix_sur_demande'),
+                  demander: t('demander_produit'),
+                  demanderAria: t('demander_produit_aria'),
+                }}
+              />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ---------------------------- Vers Rentman ---------------------------- */}
       <section className="bg-ko-white py-16 lg:py-24">
