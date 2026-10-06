@@ -8,6 +8,7 @@ import {
   supprimerDemande,
 } from '@/app/(admin)/[locale]/admin/demandes/actions'
 import { buttonVariants } from '@/components/ui/Button'
+import { BoutonCopierRentman } from '@/components/sections/BoutonCopierRentman'
 import { IconeFermer, IconeOeil, IconePoubelle } from '@/components/ui/Icones'
 import { cn } from '@/lib/utils/cn'
 
@@ -72,6 +73,9 @@ export type Demande = {
   dateDebutFormatee: string | null
   dateFinFormatee: string | null
   lignes: LigneDemande[] | null
+  /** Langue du DEMANDEUR ('fr' | 'en'). À ne pas confondre avec la prop
+   *  `locale` du composant, qui est celle de l'écran d'administration. */
+  langueDemandeur: string
 }
 
 export function TableauDemandes({
@@ -111,6 +115,9 @@ export function TableauDemandes({
     equipements: string
     quantite: string
     sansDate: string
+    copierRentman: string
+    copie: string
+    copieRepli: string
     /** Migration 0049 — intitulé de l'alerte quand notification_erreur est posée. */
     notificationEchouee: string
     /** Migration 0051 — note interne et trace de traitement. */
@@ -489,6 +496,29 @@ export function TableauDemandes({
                     </li>
                   ))}
                 </ul>
+
+                {/* Passerelle manuelle vers Rentman. Elle disparaîtra le jour
+                    où le site pourra déposer la demande lui-même ; d'ici là,
+                    c'est elle qui supprime la ressaisie. */}
+                <div className="mt-4">
+                  <BoutonCopierRentman
+                    textes={{
+                      copier: textes.copierRentman,
+                      copie: textes.copie,
+                      replis: textes.copieRepli,
+                    }}
+                    demande={{
+                      nom: voir.nom,
+                      email: voir.email,
+                      telephone: voir.telephone,
+                      organisation: voir.organisation,
+                      langue: voir.langueDemandeur,
+                      dateDebut: voir.dateDebutFormatee,
+                      dateFin: voir.dateFinFormatee,
+                      lignes: voir.lignes,
+                    }}
+                  />
+                </div>
               </div>
             )}
 

@@ -60,7 +60,7 @@ export default async function DemandesPage({ params }: Props) {
       // notification_erreur (migration 0049) : sans elle, une notification
       // perdue n'apparaîtrait nulle part. C'est tout l'objet de la colonne.
       .select(
-        'id, type, nom, email, telephone, organisation, message, statut, created_at, notification_erreur, note_interne, traite_le, traite_par, date_debut, date_fin, lignes',
+        'id, type, nom, email, telephone, organisation, message, statut, created_at, notification_erreur, note_interne, traite_le, traite_par, date_debut, date_fin, lignes, locale',
       )
       .order('created_at', { ascending: false }),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
@@ -133,6 +133,9 @@ export default async function DemandesPage({ params }: Props) {
     // Renommée en camelCase comme le reste des props du tableau.
     notificationErreur: d.notification_erreur,
     noteInterne: d.note_interne,
+    // Langue du demandeur, renommée pour ne pas entrer en collision avec la
+    // prop `locale` du tableau, qui est celle de l'écran d'administration.
+    langueDemandeur: d.locale,
     // Migration 0055 — demande de location structurée. Les dates sont
     // formatées ICI, comme created_at : jamais de fonction passée au client.
     // Le jour seul, sans heure : une location se réserve à la journée.
@@ -205,6 +208,9 @@ export default async function DemandesPage({ params }: Props) {
           equipements: t('demandes_equipements'),
           quantite: t('demandes_quantite'),
           sansDate: t('demandes_sans_date'),
+          copierRentman: t('demandes_copier_rentman'),
+          copie: t('demandes_copie'),
+          copieRepli: t('demandes_copie_repli'),
           notificationEchouee: t('notification_echouee'),
           noteInterne: t('note_interne'),
           noteInterneAide: t('note_interne_aide'),
