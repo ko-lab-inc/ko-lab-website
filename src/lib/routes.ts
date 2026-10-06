@@ -21,6 +21,8 @@ export const ROUTES = {
   production: '/nos-capacites/production-evenementielle',
   realisations: '/realisations',
   location: '/location',
+  /** Récapitulatif de la demande de location groupée — modèle de la référence (Black Tie). */
+  locationDemande: '/location/demande',
   boutique: '/boutique',
   /** Demande de prix groupée — récapitulatif du panier. */
   boutiqueDemande: '/boutique/demande',

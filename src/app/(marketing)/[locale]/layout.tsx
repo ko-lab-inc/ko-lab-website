@@ -275,6 +275,11 @@ export default async function MarketingLayout({ children, params }: Props) {
     // Ajouté explicitement, PAS en élargissant au catalogue entier : le panier
     // vit côté client, ses libellés doivent y être — mais rien d'autre.
     Panier: tousLesMessages.Panier,
+    // Panier de demande de LOCATION (système de location) — libellés des
+    // composants client BoutonAjouterLocation, BarreDemandeLocation et
+    // DemandeLocation. Namespace entier : rien que des libellés d'interface,
+    // aucun contenu non publié.
+    DemandeLocation: tousLesMessages.DemandeLocation,
     // Formulaire de commande, modale de connexion/inscription déclenchée à la
     // confirmation, et éditeur de lignes de /compte/commandes/[id] — 0021.
     Commande: tousLesMessages.Commande,

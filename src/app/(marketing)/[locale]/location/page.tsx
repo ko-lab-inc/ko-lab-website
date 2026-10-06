@@ -2,6 +2,7 @@ import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
+import { BarreDemandeLocation } from '@/components/sections/BarreDemandeLocation'
 import { GrilleProduitsLocation } from '@/components/sections/GrilleProduitsLocation'
 import { buttonVariants } from '@/components/ui/Button'
 import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
@@ -130,8 +131,6 @@ export default async function LocationPage({ params }: Props) {
                 libelles={{
                   categories: Object.fromEntries(categories.map((c) => [c.cle, c.titre])),
                   prixSurDemande: t('prix_sur_demande'),
-                  demander: t('demander_produit'),
-                  demanderAria: t('demander_produit_aria'),
                 }}
               />
             </div>
@@ -263,6 +262,10 @@ export default async function LocationPage({ params }: Props) {
           </div>
         </section>
       )}
+
+      {/* Barre flottante « Voir ma demande » — n'apparaît que si la sélection
+          n'est pas vide. Montée par le PanierLocationProvider de location/layout.tsx. */}
+      <BarreDemandeLocation />
     </div>
   )
 }

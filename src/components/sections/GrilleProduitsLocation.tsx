@@ -1,9 +1,7 @@
 import Image from 'next/image'
 
+import { BoutonAjouterLocation } from '@/components/sections/BoutonAjouterLocation'
 import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
-import { buttonVariants } from '@/components/ui/Button'
-import { Link } from '@/i18n/navigation'
-import { ROUTES } from '@/lib/routes'
 
 import type { ProduitLocation } from '@/lib/location-produits'
 
@@ -32,9 +30,6 @@ export type LibellesGrilleLocation = {
   /** Titre de section par catégorie, ex. { mobilier: 'Mobilier', … }. */
   categories: Record<string, string>
   prixSurDemande: string
-  demander: string
-  /** `aria-label` du bouton, `{produit}` remplacé. */
-  demanderAria: string
 }
 
 const SIZES = '(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw'
@@ -85,15 +80,17 @@ function Carte({
         </p>
 
         {/* `mt-auto` : le bouton reste collé en bas quelle que soit la hauteur
-            du nom, pour que tous les boutons d'une rangée s'alignent. */}
-        <Link
-          href={`${ROUTES.contact}?type=location`}
-          aria-label={libelles.demanderAria.replace('{produit}', nom)}
-          className={`mt-auto pt-4 ${buttonVariants({ variant: 'text', size: 'sm' })}`}
-        >
-          {libelles.demander}
-          <span aria-hidden="true">→</span>
-        </Link>
+            du nom, pour que tous les boutons d'une rangée s'alignent.
+            « Ajouter à ma demande » : l'action centrale du modèle de la
+            référence (Black Tie) — on constitue une liste avant d'envoyer une
+            seule demande groupée, au lieu d'une demande par produit. */}
+        <div className="mt-auto pt-4">
+          <BoutonAjouterLocation
+            slug={produit.slug}
+            nom={nom}
+            categorie={libelles.categories[produit.categorie] ?? produit.categorie}
+          />
+        </div>
       </div>
     </article>
   )
