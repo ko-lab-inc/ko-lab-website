@@ -65,6 +65,40 @@ if (r.retenus === 0) {
   )
   console.log(`${GRIS}C'est le comportement attendu, pas une panne — voir npm run rentman:apercu --tout.${RAZ}`)
 }
+
+/**
+ * Rafraîchit le catalogue en ligne.
+ *
+ * La synchro écrit en base depuis ICI, hors de l'application : rien n'invalide
+ * le rendu ISR de /location, qui resterait figé jusqu'à une heure. On appelle
+ * donc la route de revalidation en fin de passe.
+ *
+ * JAMAIS BLOQUANT : les articles sont déjà écrits en base à ce stade. Un jeton
+ * absent, un site injoignable ou un 500 ne doivent pas faire échouer une
+ * synchronisation réussie — on le signale, et le cache expirera tout seul.
+ */
+if (r.crees + r.mis_a_jour + r.depublies === 0) {
+  console.log(`\n${GRIS}Rien n'a changé : pas de rafraîchissement à demander.${RAZ}`)
+} else if (!process.env.REVALIDATION_TOKEN) {
+  console.log(`\n${JAUNE}REVALIDATION_TOKEN absent : le site se mettra à jour tout seul (≤ 1 h).${RAZ}`)
+  console.log(`${GRIS}→ renseigner REVALIDATION_TOKEN dans .env.local ET sur Vercel.${RAZ}`)
+} else {
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab-center.ca'
+  try {
+    const rep = await fetch(`${base}/api/location/revalider`, {
+      method: 'POST',
+      headers: { 'x-revalidation-token': process.env.REVALIDATION_TOKEN },
+    })
+    if (rep.ok) {
+      const { chemins } = await rep.json()
+      console.log(`\n${VERT}Catalogue rafraîchi${RAZ} ${GRIS}(${chemins.join(', ')})${RAZ}`)
+    } else {
+      console.log(`\n${JAUNE}Rafraîchissement refusé (HTTP ${rep.status}) : le site se mettra à jour tout seul (≤ 1 h).${RAZ}`)
+    }
+  } catch (e) {
+    console.log(`\n${JAUNE}Rafraîchissement injoignable (${e.message}) : le site se mettra à jour tout seul (≤ 1 h).${RAZ}`)
+  }
+}
 console.log()
 
 process.exit(r.erreurs.length === 0 ? 0 : 1)
