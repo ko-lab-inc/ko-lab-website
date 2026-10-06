@@ -81,11 +81,30 @@ export default function chargeurImage({
   const q = quality ?? QUALITE_DEFAUT
 
   if (src.includes(CHEMIN_OBJET)) {
-    // `resize=contain` n'est pas passé : par défaut Supabase conserve le
-    // rapport d'image et ne fait que réduire la largeur, ce qui correspond
-    // exactement à ce que `next/image` attend d'un chargeur — c'est le CSS
-    // (object-cover, aspect-ratio) qui décide du cadrage, jamais le serveur.
-    return `${src.replace(CHEMIN_OBJET, CHEMIN_RENDU)}?width=${width}&quality=${q}`
+    /**
+     * ⚠️ `resize=contain` EST OBLIGATOIRE — corrigé le 6 octobre 2026.
+     *
+     * Ce chargeur affirmait l'inverse : « par défaut Supabase conserve le
+     * rapport d'image et ne fait que réduire la largeur ». C'EST FAUX, et ça
+     * déformait TOUTES les photos Supabase du site depuis le 5 septembre 2026.
+     * Mesuré sur une photo réelle de 1600x2133 (rapport 0,750) :
+     *
+     *     ?width=1024                   -> 1024x2133   rapport 0,480
+     *     ?width=640                    -> 640x2133    rapport 0,300
+     *     ?width=1024&resize=contain    -> 1024x1365   rapport 0,750  (correct)
+     *
+     * Sans `resize`, Supabase applique son défaut `cover` : il impose la
+     * largeur demandée mais GARDE LA HAUTEUR D'ORIGINE, donc il écrase
+     * l'image horizontalement. Plus la largeur demandée est petite, pire
+     * c'est — d'où des vignettes mobiles méconnaissables.
+     *
+     * `contain` redimensionne proportionnellement pour tenir dans la largeur
+     * demandée, ce qui est exactement le contrat d'un chargeur `next/image` :
+     * le serveur ne fait que réduire, c'est le CSS (object-fit, aspect-ratio)
+     * qui décide du cadrage. Il n'agrandit jamais une image plus petite que
+     * la largeur demandée (700x700 reste 700x700) — vérifié aussi.
+     */
+    return `${src.replace(CHEMIN_OBJET, CHEMIN_RENDU)}?width=${width}&resize=contain&quality=${q}`
   }
 
   // Chemin d'origine de Next, reconstruit à l'identique. `encodeURIComponent`

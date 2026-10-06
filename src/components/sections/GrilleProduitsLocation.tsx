@@ -79,19 +79,28 @@ function Carte({
           l'image. Le bouton d'ajout reste DEHORS — un <button> dans un <a> est
           du HTML invalide. */}
       <Link href={routeProduitLocation(produit.slug)} className="flex flex-col">
-        <div className="relative aspect-[4/5] overflow-hidden bg-ko-cream">
+        {/* ⚠️ `object-contain`, PAS `object-cover` — changé le 6 octobre 2026.
+            Les photos n'ont pas toutes le même rapport (mesuré ce jour-là sur
+            les 14 photos publiées : onze portraits 3/4, un 2/3, une paysage
+            4/3, une carrée). Un cadre unique en `cover` rognait jusqu'à 40 %
+            de la largeur de la photo paysage et coupait le produit sur les
+            autres. `contain` montre TOUTE la photo quel que soit son rapport.
+            Le cadre suit le rapport dominant (3/4) : les onze portraits le
+            remplissent exactement, seules les deux photos hors format laissent
+            une bande. */}
+        <div className="relative aspect-[3/4] overflow-hidden bg-ko-cream">
           {produit.image_url ? (
             <Image
               src={produit.image_url}
               alt={alt}
               fill
               sizes={SIZES}
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
             />
           ) : (
             // Pas de photo sur la fiche Rentman : le placeholder du site, jamais
             // une carte vide. Même ratio que l'image pour ne pas décaler la grille.
-            <PhotoPlaceholder ratio="aspect-[4/5]" className="h-full w-full" />
+            <PhotoPlaceholder ratio="aspect-[3/4]" className="h-full w-full" />
           )}
         </div>
 

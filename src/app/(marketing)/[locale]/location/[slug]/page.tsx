@@ -129,10 +129,12 @@ export default async function FicheProduitLocation({ params }: Props) {
 
           <div className="mt-8 grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20">
             {/* ------------------------------ Photo ------------------------------ */}
-            {/* Ratio portrait 4/5, comme les vignettes du catalogue : les photos
-                sont prises au téléphone en portrait, un cadre paysage couperait
-                le produit (voir la note de GrilleProduitsLocation). */}
-            <div className="relative aspect-[4/5] overflow-hidden border border-ko-line bg-ko-cream">
+            {/* `object-contain` sur un cadre 3/4, même règle que les vignettes
+                du catalogue : les photos n'ont pas toutes le même rapport, et
+                c'est ICI qu'un recadrage se verrait le plus — c'est la plus
+                grande image du site. Toute la photo doit être visible, quitte
+                à laisser une bande sur les formats minoritaires. */}
+            <div className="relative aspect-[3/4] overflow-hidden border border-ko-line bg-ko-cream">
               {produit.image_url ? (
                 <Image
                   src={produit.image_url}
@@ -143,10 +145,10 @@ export default async function FicheProduitLocation({ params }: Props) {
                   sizes="(min-width: 1024px) 45vw, 92vw"
                   // LCP de cette page : chargée sans attendre.
                   priority
-                  className="object-cover"
+                  className="object-contain"
                 />
               ) : (
-                <PhotoPlaceholder ratio="aspect-[4/5]" className="h-full w-full" />
+                <PhotoPlaceholder ratio="aspect-[3/4]" className="h-full w-full" />
               )}
             </div>
 
