@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useLocale, useTranslations } from 'next-intl'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -45,17 +45,40 @@ const CHAMP =
 // la liste des équipements : les précisions sont bornées plus bas que 2000.
 const MESSAGE_MAX = 2000
 
-const schemaFormulaire = z.object({
-  nom: z.string().trim().min(2).max(100),
-  email: z.string().trim().email().max(200),
-  telephone: z.string().trim().max(40).optional(),
-  organisation: z.string().trim().max(150).optional(),
-  precisions: z.string().trim().max(1500).optional(),
-  consentement: z.boolean().refine((v) => v === true, { message: 'consentement_requis' }),
-  _hp: z.string().max(200).optional(),
-})
+const schemaFormulaire = z
+  .object({
+    nom: z.string().trim().min(2).max(100),
+    email: z.string().trim().email().max(200),
+    telephone: z.string().trim().max(40).optional(),
+    organisation: z.string().trim().max(150).optional(),
+    // Dates de location (modèle de la référence, Booqable) — facultatives : un
+    // visiteur peut demander un prix avant d'avoir arrêté ses dates. Format
+    // natif de <input type="date"> : « AAAA-MM-JJ », comparable tel quel.
+    dateDebut: z.string().max(10).optional(),
+    dateFin: z.string().max(10).optional(),
+    precisions: z.string().trim().max(1500).optional(),
+    consentement: z.boolean().refine((v) => v === true, { message: 'consentement_requis' }),
+    _hp: z.string().max(200).optional(),
+  })
+  // Si les deux dates sont fournies, la fin ne peut précéder le début. Comparer
+  // des chaînes « AAAA-MM-JJ » équivaut à les comparer chronologiquement.
+  .refine((d) => !d.dateDebut || !d.dateFin || d.dateFin >= d.dateDebut, {
+    path: ['dateFin'],
+    message: 'dates_ordre',
+  })
 
 type DonneesFormulaire = z.infer<typeof schemaFormulaire>
+
+/** « 2026-10-05 » → date lisible dans la locale, sans décalage de fuseau. */
+function formaterDate(iso: string, locale: string): string {
+  const [a, m, j] = iso.split('-').map(Number)
+  if (!a || !m || !j) return iso
+  return new Intl.DateTimeFormat(locale === 'en' ? 'en-CA' : 'fr-CA', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date(a, m - 1, j))
+}
 
 type Etat = 'repos' | 'envoi' | 'succes' | 'erreur' | 'limite'
 
@@ -75,6 +98,14 @@ export function DemandeLocation({
   const { articles, pret, retirer, changerQuantite, vider } = usePanierLocation()
   const [etat, setEtat] = useState<Etat>('repos')
 
+  // Plancher des sélecteurs de date : aujourd'hui, calculé en heure LOCALE
+  // (toISOString donnerait la date UTC, décalée d'un jour en soirée au Québec).
+  const minDate = useMemo(() => {
+    const d = new Date()
+    const p = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+  }, [])
+
   const {
     register,
     handleSubmit,
@@ -90,7 +121,25 @@ export function DemandeLocation({
 
     const liste = formaterDemandeLocation(articles, t('entete_message'))
     const precisions = donnees.precisions?.trim()
-    const message = (precisions ? `${liste}\n\n${precisions}` : liste).slice(0, MESSAGE_MAX)
+
+    // Dates EN TÊTE du message : c'est l'information que l'équipe regarde en
+    // premier dans /admin/demandes pour juger de la disponibilité.
+    let datesLigne = ''
+    if (donnees.dateDebut && donnees.dateFin) {
+      datesLigne = t('msg_periode', {
+        debut: formaterDate(donnees.dateDebut, locale),
+        fin: formaterDate(donnees.dateFin, locale),
+      })
+    } else if (donnees.dateDebut) {
+      datesLigne = t('msg_date_debut', { date: formaterDate(donnees.dateDebut, locale) })
+    } else if (donnees.dateFin) {
+      datesLigne = t('msg_date_fin', { date: formaterDate(donnees.dateFin, locale) })
+    }
+
+    const message = [datesLigne, liste, precisions]
+      .filter(Boolean)
+      .join('\n\n')
+      .slice(0, MESSAGE_MAX)
 
     try {
       const rep = await fetch('/api/contact', {
@@ -270,6 +319,29 @@ export function DemandeLocation({
               autoComplete="organization"
               {...register('organisation')}
               className={CHAMP}
+            />
+          </Champ>
+        </div>
+
+        {/* Dates de location — sélecteurs natifs, plancher au jour même.
+            Facultatives : on peut demander un prix avant d'avoir figé les dates. */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+          <Champ id="dateDebut" libelle={t('date_debut')} note={tContact('form.organisation_optionnel')}>
+            <input id="dateDebut" type="date" min={minDate} {...register('dateDebut')} className={CHAMP} />
+          </Champ>
+          <Champ
+            id="dateFin"
+            libelle={t('date_fin')}
+            note={tContact('form.organisation_optionnel')}
+            erreur={errors.dateFin ? t('erreur_dates') : null}
+          >
+            <input
+              id="dateFin"
+              type="date"
+              min={minDate}
+              aria-invalid={!!errors.dateFin}
+              {...register('dateFin')}
+              className={cn(CHAMP, errors.dateFin && 'border-ko-blue')}
             />
           </Champ>
         </div>
