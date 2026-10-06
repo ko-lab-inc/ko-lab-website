@@ -24,6 +24,71 @@ export const dynamic = 'force-dynamic'
 /** Séparateur de lignes du corps texte des courriels. */
 const SAUT = String.fromCharCode(10)
 
+/** Une ligne de demande de location, telle qu'elle est STOCKÉE (migration 0055). */
+type LigneStockee = {
+  rentman_id: number
+  slug: string
+  nom_fr: string
+  nom_en: string | null
+  categorie: string
+  quantite: number
+}
+
+/**
+ * Re-dérive les lignes d'une demande de location depuis `articles_location`.
+ *
+ * ---------------------------------------------------------------------------
+ * POURQUOI ON NE GARDE PAS CE QUE LE NAVIGATEUR ENVOIE
+ *
+ * Le client n'envoie qu'un slug et une quantité (voir schemaContact). Le nom,
+ * la catégorie et le `rentman_id` sont relus ICI, en base. Trois conséquences,
+ * toutes voulues :
+ *
+ *   · un visiteur ne peut pas renommer un article dans votre demande, ni en
+ *     inventer un qui n'existe pas ;
+ *   · un slug qui ne correspond à rien, ou à un article DÉPUBLIÉ, est
+ *     silencieusement écarté — il n'a rien à faire dans un devis ;
+ *   · le `rentman_id` stocké vient de notre base, donc il pointe vraiment
+ *     l'article de l'inventaire. C'est lui qui rendra le lien vers Rentman
+ *     possible sans aucune ressaisie.
+ *
+ * Même discipline que `creerCommande` pour la boutique (migration 0021).
+ *
+ * Renvoie `null` plutôt qu'un tableau vide : « pas de lignes » est une
+ * absence, et la colonne est `jsonb` nullable.
+ * ---------------------------------------------------------------------------
+ */
+async function resoudreLignes(
+  demandees: ReadonlyArray<{ slug: string; quantite: number }> | undefined,
+): Promise<LigneStockee[] | null> {
+  if (!demandees || demandees.length === 0) return null
+
+  const slugs = [...new Set(demandees.map((l) => l.slug))]
+  const { data, error } = await getSupabaseAdmin()
+    .from('articles_location')
+    .select('rentman_id, slug, nom_fr, nom_en, categorie')
+    .in('slug', slugs)
+    .eq('publie', true)
+
+  if (error || !data) {
+    // Une demande sans ses lignes vaut mieux qu'une demande perdue : le
+    // message texte, lui, les contient toujours.
+    console.error('[api/contact] lignes non résolues :', error?.message)
+    return null
+  }
+
+  const parSlug = new Map(
+    (data as unknown as Array<Omit<LigneStockee, 'quantite'>>).map((a) => [a.slug, a]),
+  )
+
+  const resolues = demandees.flatMap((l): LigneStockee[] => {
+    const a = parSlug.get(l.slug)
+    return a ? [{ ...a, quantite: l.quantite }] : []
+  })
+
+  return resolues.length > 0 ? resolues : null
+}
+
 export async function POST(req: NextRequest) {
   // Un formulaire légitime envoie du JSON. Refuser autre chose élimine
   // d'emblée les soumissions cross-origin en form-encoded.
@@ -57,6 +122,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ succes: true })
   }
 
+  // Lignes et dates de la demande de location (migration 0055). Résolues
+  // AVANT l'insertion : si la lecture échoue, la demande part quand même, sans
+  // ses lignes structurées — jamais l'inverse.
+  const lignes = await resoudreLignes(donnees.lignes)
+
   let idDemande: string | null = null
   try {
     const { data, error } = await getSupabaseAdmin()
@@ -71,6 +141,11 @@ export async function POST(req: NextRequest) {
         // Migration 0049 — langue de la page du demandeur, pas celle de
         // l'équipe. Décide de la langue de l'accusé ci-dessous.
         locale: donnees.locale,
+        // Migration 0055 — la même demande, sous forme exploitable. Vide pour
+        // toute demande qui ne vient pas de /location/demande.
+        date_debut: donnees.dateDebut ?? null,
+        date_fin: donnees.dateFin ?? null,
+        lignes,
         // Loi 25 (audit du 23 août 2026, migration 0041) — `donnees.consentement`
         // vaut forcément `true` ici : schemaContact.safeParse a déjà rejeté toute
         // autre valeur plus haut (z.literal(true)) avant d'atteindre ce bloc.

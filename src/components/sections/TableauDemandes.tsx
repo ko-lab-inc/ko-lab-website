@@ -33,6 +33,20 @@ import { cn } from '@/lib/utils/cn'
  * ---------------------------------------------------------------------------
  */
 
+/**
+ * Une ligne d'équipement d'une demande de location (migration 0055).
+ * Écrite par /api/contact, re-dérivée depuis `articles_location` : le nom
+ * affiché ici vient de NOTRE base, jamais du navigateur du visiteur.
+ */
+export type LigneDemande = {
+  rentman_id: number
+  slug: string
+  nom_fr: string
+  nom_en: string | null
+  categorie: string
+  quantite: number
+}
+
 export type Demande = {
   id: string
   type: string
@@ -54,6 +68,10 @@ export type Demande = {
    *  déjà résolu côté serveur — jamais un identifiant à l'écran. */
   traitePar: string | null
   traiteLeFormate: string | null
+  /** Migration 0055 — demande de location. NULL pour toute autre demande. */
+  dateDebutFormatee: string | null
+  dateFinFormatee: string | null
+  lignes: LigneDemande[] | null
 }
 
 export function TableauDemandes({
@@ -88,6 +106,11 @@ export function TableauDemandes({
     colonneTelephone: string
     colonneOrganisation: string
     colonneMessage: string
+    /** Migration 0055 — demande de location structurée. */
+    periode: string
+    equipements: string
+    quantite: string
+    sansDate: string
     /** Migration 0049 — intitulé de l'alerte quand notification_erreur est posée. */
     notificationEchouee: string
     /** Migration 0051 — note interne et trace de traitement. */
@@ -431,6 +454,43 @@ export function TableauDemandes({
                 <dd className="mt-1 text-sm text-ko-ink">{voir.organisation || '—'}</dd>
               </div>
             </dl>
+
+            {/* ---------------------- Demande de location ----------------------
+                Migration 0055. N'apparaît que pour une demande venue de
+                /location/demande : partout ailleurs, `lignes` est NULL et ce
+                bloc entier disparaît. Le message texte, lui, reste affiché
+                dessous dans tous les cas — il contient la même chose en
+                clair, et c'est lui qui part dans le courriel à l'équipe. */}
+            {voir.lignes && voir.lignes.length > 0 && (
+              <div className="mt-5 border-t border-ko-line pt-5">
+                <p className="label-mono text-ko-muted">{textes.periode}</p>
+                <p className="mt-2 text-sm text-ko-ink">
+                  {voir.dateDebutFormatee && voir.dateFinFormatee
+                    ? `${voir.dateDebutFormatee} → ${voir.dateFinFormatee}`
+                    : (voir.dateDebutFormatee ?? voir.dateFinFormatee ?? textes.sansDate)}
+                </p>
+
+                <p className="label-mono mt-5 text-ko-muted">{textes.equipements}</p>
+                <ul className="mt-2 divide-y divide-ko-line border-y border-ko-line">
+                  {voir.lignes.map((l) => (
+                    <li key={l.slug} className="flex items-baseline justify-between gap-4 py-2.5">
+                      <span className="min-w-0 text-sm text-ko-ink">
+                        {l.nom_fr}
+                        {/* Le rentman_id est LA donnée qui supprime la
+                            ressaisie : c'est l'article exact de l'inventaire,
+                            pas un nom à rechercher parmi 590 pièces. */}
+                        <span className="ml-2 font-mono text-[10px] text-ko-muted">
+                          #{l.rentman_id}
+                        </span>
+                      </span>
+                      <span className="shrink-0 font-mono text-sm tabular-nums text-ko-ink">
+                        {textes.quantite} {l.quantite}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="mt-5 border-t border-ko-line pt-5">
               <p className="label-mono text-ko-muted">{textes.colonneMessage}</p>

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 
 import { EnteteAdmin, PanneauAdmin } from '@/components/layout/CadreAdmin'
 import { buttonVariants } from '@/components/ui/Button'
-import { TableauDemandes } from '@/components/sections/TableauDemandes'
+import { TableauDemandes, type LigneDemande } from '@/components/sections/TableauDemandes'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
 import { STATUTS_DEMANDE, TYPES_DEMANDE } from '@/types'
@@ -60,7 +60,7 @@ export default async function DemandesPage({ params }: Props) {
       // notification_erreur (migration 0049) : sans elle, une notification
       // perdue n'apparaîtrait nulle part. C'est tout l'objet de la colonne.
       .select(
-        'id, type, nom, email, telephone, organisation, message, statut, created_at, notification_erreur, note_interne, traite_le, traite_par',
+        'id, type, nom, email, telephone, organisation, message, statut, created_at, notification_erreur, note_interne, traite_le, traite_par, date_debut, date_fin, lignes',
       )
       .order('created_at', { ascending: false }),
     supabase.from('profils').select('role').eq('id', user?.id ?? '').maybeSingle(),
@@ -133,6 +133,19 @@ export default async function DemandesPage({ params }: Props) {
     // Renommée en camelCase comme le reste des props du tableau.
     notificationErreur: d.notification_erreur,
     noteInterne: d.note_interne,
+    // Migration 0055 — demande de location structurée. Les dates sont
+    // formatées ICI, comme created_at : jamais de fonction passée au client.
+    // Le jour seul, sans heure : une location se réserve à la journée.
+    dateDebutFormatee: d.date_debut
+      ? format.dateTime(new Date(`${d.date_debut}T12:00:00`), { dateStyle: 'long' })
+      : null,
+    dateFinFormatee: d.date_fin
+      ? format.dateTime(new Date(`${d.date_fin}T12:00:00`), { dateStyle: 'long' })
+      : null,
+    // `lignes` est du jsonb : la contrainte demandes_lignes_tableau garantit un
+    // tableau ou NULL, mais on reste défensif, une ligne écrite avant la
+    // contrainte pourrait traîner.
+    lignes: Array.isArray(d.lignes) ? (d.lignes as LigneDemande[]) : null,
     // Nom du membre de l'équipe, pas son identifiant : l'écran doit dire
     // « Marie », pas un UUID. Résolu ici, côté serveur, parce que le tableau
     // est un composant client et n'a pas accès à la table des profils.
@@ -188,6 +201,10 @@ export default async function DemandesPage({ params }: Props) {
           colonneTelephone: t('colonne_telephone'),
           colonneOrganisation: t('colonne_organisation'),
           colonneMessage: t('colonne_message'),
+          periode: t('demandes_periode'),
+          equipements: t('demandes_equipements'),
+          quantite: t('demandes_quantite'),
+          sansDate: t('demandes_sans_date'),
           notificationEchouee: t('notification_echouee'),
           noteInterne: t('note_interne'),
           noteInterneAide: t('note_interne_aide'),

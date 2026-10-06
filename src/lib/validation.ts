@@ -37,6 +37,39 @@ export const schemaContact = z.object({
 
   message: z.string().trim().min(10).max(2000),
 
+  /**
+   * Demande de location structurée — migration 0055. Absente de toute autre
+   * demande (mandat, carrière, contact simple), d'où `.optional()`.
+   *
+   * ⚠️ NI NOM, NI PRIX, NI `rentman_id` ICI. Le navigateur n'envoie que le slug
+   * et la quantité ; /api/contact re-dérive le reste depuis `articles_location`.
+   * Même principe que `schemaLigneCommande` plus bas : un champ absent du
+   * schéma est un champ ignoré. Un visiteur ne peut donc ni inventer un
+   * article, ni renommer le vôtre, ni pointer un article dépublié.
+   *
+   * Plafond à 50 lignes : au-delà, ce n'est plus une demande d'événement.
+   */
+  lignes: z
+    .array(
+      z.object({
+        slug: z.string().trim().min(1).max(200),
+        quantite: z.number().int().min(1).max(99),
+      }),
+    )
+    .max(50)
+    .optional(),
+
+  /**
+   * Dates de location, au format natif de `<input type="date">` (AAAA-MM-JJ).
+   *
+   * Facultatives : on peut demander un prix avant d'avoir figé ses dates. La
+   * cohérence (retour après début) est vérifiée par le formulaire ET par la
+   * contrainte `demandes_dates_coherentes` de la migration 0055 : le client
+   * valide pour le confort, la base garantit.
+   */
+  dateDebut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  dateFin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+
   // Loi 25 (audit du 23 août 2026, migration 0041) — même discipline que
   // schemaInscription, adaptée au type réel transmis ici : ce schéma valide
   // du JSON déjà désérialisé (fetch), pas un FormData, donc react-hook-form

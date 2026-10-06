@@ -152,6 +152,17 @@ export function DemandeLocation({
           telephone: donnees.telephone,
           organisation: donnees.organisation,
           message,
+          // Mêmes données, sous forme exploitable (migration 0055). Le message
+          // reste rempli : c'est lui qui part dans le courriel à l'équipe et
+          // qui reste lisible. Ceci, c'est ce que la machine saura relire —
+          // pour l'affichage en tableau, et demain pour alimenter Rentman.
+          // On n'envoie QUE le slug et la quantité : le serveur re-dérive le
+          // nom, la catégorie et le rentman_id depuis articles_location.
+          lignes: articles.map((a) => ({ slug: a.slug, quantite: a.quantite })),
+          // '' (champ date vidé) deviendrait une chaîne vide, que le schéma
+          // rejette : on la ramène à undefined, donc à 'champ absent'.
+          dateDebut: donnees.dateDebut || undefined,
+          dateFin: donnees.dateFin || undefined,
           consentement: donnees.consentement,
           locale,
           _hp: donnees._hp,

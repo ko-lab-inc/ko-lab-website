@@ -285,6 +285,14 @@ export type Database = {
           /** Migration 0051. Horodatage du dernier changement de statut — distinct
            *  de traite_notifie_le (0049), qui date le COURRIEL au demandeur. */
           traite_le: string | null
+          /** Migration 0055. Demande de location structurée : début et retour
+           *  souhaités, et une ligne par équipement (rentman_id, slug, noms,
+           *  catégorie, quantité). NULL pour toute demande qui ne vient pas de
+           *  /location/demande. Les lignes sont RE-DÉRIVÉES côté serveur depuis
+           *  articles_location, jamais prises du navigateur. */
+          date_debut: string | null
+          date_fin: string | null
+          lignes: Json | null
         }
         Insert: {
           id?: string
@@ -306,6 +314,9 @@ export type Database = {
           note_interne?: string | null
           traite_par?: string | null
           traite_le?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          lignes?: Json | null
         }
         Update: {
           id?: string
@@ -327,6 +338,9 @@ export type Database = {
           note_interne?: string | null
           traite_par?: string | null
           traite_le?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          lignes?: Json | null
         }
         Relationships: []
       }
