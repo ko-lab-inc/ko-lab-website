@@ -38,6 +38,34 @@ export type ProduitLocation = {
   image_alt_en: string | null
 }
 
+/**
+ * Ce qu'une CARTE du catalogue a besoin de connaître — rien de plus.
+ *
+ * ⚠️ La grille est un composant CLIENT depuis l'ajout du filtre par catégorie :
+ * tout ce qu'on lui passe est sérialisé dans le HTML de la page. Les
+ * descriptions n'y servent à rien (elles ne s'affichent que sur la fiche
+ * produit, qui les relit elle-même) — les transmettre alourdirait chaque
+ * chargement de /location pour rien.
+ */
+export type ProduitCarte = Pick<
+  ProduitLocation,
+  'id' | 'slug' | 'nom_fr' | 'nom_en' | 'categorie' | 'prix' | 'image_url' | 'image_alt_fr' | 'image_alt_en'
+>
+
+export function pourCarte(p: ProduitLocation): ProduitCarte {
+  return {
+    id: p.id,
+    slug: p.slug,
+    nom_fr: p.nom_fr,
+    nom_en: p.nom_en,
+    categorie: p.categorie,
+    prix: p.prix,
+    image_url: p.image_url,
+    image_alt_fr: p.image_alt_fr,
+    image_alt_en: p.image_alt_en,
+  }
+}
+
 export async function lireProduitsLocation(): Promise<ProduitLocation[]> {
   try {
     const supabase = createStaticClient()
@@ -59,6 +87,33 @@ export async function lireProduitsLocation(): Promise<ProduitLocation[]> {
     // Table absente (0048 non jouée) ou Supabase injoignable : la page retombe
     // sur son message « arrive bientôt » plutôt que de tomber en erreur.
     return []
+  }
+}
+
+/**
+ * Un seul produit publié, par son slug — fiche produit /location/[slug].
+ *
+ * `null` si le slug n'existe pas OU si l'article n'est plus publié : la fiche
+ * répond alors 404. Un article dépublié par la synchro (case `in_shop`
+ * décochée dans Rentman) doit disparaître du site, pas rester accessible à
+ * qui connaît son URL.
+ */
+export async function lireProduitLocation(slug: string): Promise<ProduitLocation | null> {
+  try {
+    const supabase = createStaticClient()
+    const { data, error } = await supabase
+      .from('articles_location')
+      .select(
+        'id, slug, nom_fr, nom_en, description_fr, description_en, categorie, prix, tags, image_url, image_alt_fr, image_alt_en',
+      )
+      .eq('slug', slug)
+      .eq('publie', true)
+      .maybeSingle()
+
+    if (error || !data) return null
+    return data as unknown as ProduitLocation
+  } catch {
+    return null
   }
 }
 

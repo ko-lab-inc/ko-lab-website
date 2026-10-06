@@ -10,7 +10,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireGaleriePage } from '@/lib/galeries'
-import { grouperParCategorie, lireProduitsLocation } from '@/lib/location-produits'
+import { grouperParCategorie, lireProduitsLocation, pourCarte } from '@/lib/location-produits'
 import { lireReglages } from '@/lib/reglages'
 import { CATEGORIES_LOCATION } from '@/lib/rentman/categories'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
@@ -70,7 +70,12 @@ export default async function LocationPage({ params }: Props) {
   // tant que rien n'est publié : la page retombe alors sur le bloc d'invitation
   // plus bas, comme avant.
   const produits = await lireProduitsLocation()
-  const groupes = grouperParCategorie(produits, CATEGORIES_LOCATION)
+  // Allégé en `ProduitCarte` : la grille est un composant client, tout ce
+  // qu'on lui passe part dans le HTML (voir sa note d'en-tête).
+  const groupes = grouperParCategorie(produits, CATEGORIES_LOCATION).map((g) => ({
+    categorie: g.categorie,
+    produits: g.produits.map(pourCarte),
+  }))
 
   // ⚠️ Passé de 4 à 7 catégories le 3 septembre 2026 (point 18 du prompt de
   // corrections finales) : les 4 anciennes (Remorques/Nacelles/Outils/
@@ -131,6 +136,8 @@ export default async function LocationPage({ params }: Props) {
                 libelles={{
                   categories: Object.fromEntries(categories.map((c) => [c.cle, c.titre])),
                   prixSurDemande: t('prix_sur_demande'),
+                  filtreTout: t('filtre_tout'),
+                  filtreLabel: t('filtre_label'),
                 }}
               />
             </div>

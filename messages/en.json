@@ -492,6 +492,8 @@
     "produits_titre": "Available equipment",
     "produits_intro": "A selection from our inventory, updated continuously. More items are added regularly.",
     "prix_sur_demande": "Price on request",
+    "filtre_tout": "All",
+    "filtre_label": "Filter by category",
     "demander_produit": "Request",
     "demander_produit_aria": "Request a rental for {produit}",
     "inventaire_titre": "Our full inventory, in detail",
@@ -541,7 +543,8 @@
     "precisions_placeholder": "Event location, duration, special requirements.",
     "entete_message": "Equipment requested for rental:",
     "envoyer": "Send my request",
-    "retour_catalogue": "Back to the catalogue"
+    "retour_catalogue": "Back to the catalogue",
+    "fiche_note": "Add this item to your request, keep browsing the catalogue, then send everything at once. We'll get back to you with pricing and availability."
   },
   "Contact": {
     "title": "Start a Project",

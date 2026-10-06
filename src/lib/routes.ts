@@ -74,6 +74,17 @@ export type RouteKey = keyof typeof ROUTES
  *  puisqu'il dépend d'un slug qui n'existe qu'au pluriel (produits_boutique). */
 export const routeProduit = (slug: string) => `${ROUTES.boutique}/${slug}`
 
+/**
+ * Fiche produit de LOCATION (articles_location).
+ *
+ * ⚠️ `/location/demande` est une route STATIQUE déclarée au-dessus. Next lui
+ * donne la priorité sur ce segment dynamique : un article dont le slug serait
+ * littéralement « demande » ne serait pas atteignable. Cas théorique (les slugs
+ * viennent de noms d'équipements Rentman), noté pour qu'on ne le cherche pas
+ * pendant une heure s'il se présente.
+ */
+export const routeProduitLocation = (slug: string) => `${ROUTES.location}/${slug}`
+
 /** Détail d'une commande — migration 0021. */
 export const routeCommande = (id: string) => `${ROUTES.compteCommandes}/${id}`
 

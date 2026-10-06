@@ -492,6 +492,8 @@
     "produits_titre": "Équipements disponibles",
     "produits_intro": "Une sélection de notre inventaire, mise à jour en continu. D'autres articles arrivent régulièrement.",
     "prix_sur_demande": "Prix sur demande",
+    "filtre_tout": "Tout",
+    "filtre_label": "Filtrer par catégorie",
     "demander_produit": "Demander",
     "demander_produit_aria": "Demander une location pour {produit}",
     "inventaire_titre": "Notre inventaire complet, en détail",
@@ -541,7 +543,8 @@
     "precisions_placeholder": "Lieu de l'événement, durée, besoins particuliers.",
     "entete_message": "Équipements demandés en location :",
     "envoyer": "Envoyer ma demande",
-    "retour_catalogue": "Retour au catalogue"
+    "retour_catalogue": "Retour au catalogue",
+    "fiche_note": "Ajoutez cet équipement à votre demande, continuez à parcourir le catalogue, puis envoyez tout d'un coup. On revient vers vous avec le prix et la disponibilité."
   },
   "Contact": {
     "title": "Démarrer un projet",
