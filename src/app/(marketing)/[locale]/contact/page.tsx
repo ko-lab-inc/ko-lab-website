@@ -8,6 +8,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import { routing } from '@/i18n/routing'
 import { lireReglages, messageAbsence } from '@/lib/reglages'
 import { alternatesLangues, ROUTES } from '@/lib/routes'
+import { telephoneAffiche } from '@/lib/utils/telephone'
 
 import type { Metadata, Viewport } from 'next'
 
@@ -132,7 +133,7 @@ export default async function ContactPage({ params }: Props) {
                         href={`tel:${reglages.contactTelephone.replace(/[^+\d]/g, '')}`}
                         className="mt-2 inline-flex min-h-[44px] items-center border-b border-ko-line pb-0.5 font-serif text-[22px] text-ko-ink transition-colors duration-200 hover:border-ko-blue"
                       >
-                        {reglages.contactTelephone}
+                        {telephoneAffiche(reglages.contactTelephone)}
                       </a>
                     </div>
                   )}

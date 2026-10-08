@@ -8,6 +8,7 @@ import { IconeAccompagnement, IconeFermer } from '@/components/ui/Icones'
 import { Link, usePathname } from '@/i18n/navigation'
 import { ROUTES } from '@/lib/routes'
 import { cn } from '@/lib/utils/cn'
+import { telephoneAffiche } from '@/lib/utils/telephone'
 
 /**
  * Bulle d'aide — panneau de question courte, sur toutes les pages publiques.
@@ -372,7 +373,7 @@ export function WidgetAide({ telephone }: { telephone: string | null }) {
                       href={`tel:${telephone.replace(/[^+\d]/g, '')}`}
                       className="whitespace-nowrap font-medium text-ko-ink underline decoration-ko-blue underline-offset-4"
                     >
-                      {telephone}
+                      {telephoneAffiche(telephone)}
                     </a>
                   </p>
                 )}

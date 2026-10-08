@@ -4,6 +4,7 @@ import { IconeFacebook, IconeInstagram, IconeLinkedin } from '@/components/ui/Ic
 import { Link } from '@/i18n/navigation'
 import { lireReglages } from '@/lib/reglages'
 import { ROUTES, ROUTES_CAPACITES } from '@/lib/routes'
+import { telephoneAffiche } from '@/lib/utils/telephone'
 
 /**
  * Pied de page — fond sombre (CLAUDE.md, structure de page).
@@ -145,7 +146,7 @@ export async function Footer() {
                   href={`tel:${reglages.contactTelephone.replace(/[^+\d]/g, '')}`}
                   className="flex min-h-[44px] w-fit items-center text-sm text-ko-white transition-colors duration-200 hover:text-ko-blue2"
                 >
-                  {reglages.contactTelephone}
+                  {telephoneAffiche(reglages.contactTelephone)}
                 </a>
               )}
 
