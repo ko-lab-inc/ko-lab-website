@@ -7,6 +7,7 @@ import { lireReglages, messageAbsence } from '@/lib/reglages'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { envoyerCourriel, raisonCourte } from '@/lib/email/envoyer'
 import { gabaritAccuseReception } from '@/lib/email/gabaritsNotifications'
+import { deposerDemande } from '@/lib/rentman/demandes'
 import { rateLimit } from '@/lib/utils/rateLimit'
 import { schemaContact } from '@/lib/validation'
 
@@ -128,6 +129,7 @@ export async function POST(req: NextRequest) {
   const lignes = await resoudreLignes(donnees.lignes)
 
   let idDemande: string | null = null
+  let numeroDemande: number | null = null
   try {
     const { data, error } = await getSupabaseAdmin()
       .from('demandes_contact')
@@ -152,11 +154,12 @@ export async function POST(req: NextRequest) {
         consentement_le: new Date().toISOString(),
         consentement_version: VERSION_POLITIQUES,
       })
-      .select('id')
+      .select('id, numero')
       .single()
 
     if (error) throw error
     idDemande = data?.id ?? null
+    numeroDemande = data?.numero ?? null
   } catch (err) {
     // Message générique côté client : divulguer err.message exposerait la
     // structure de la base et les noms de tables (skill 15).
@@ -233,6 +236,48 @@ export async function POST(req: NextRequest) {
     console.error('[api/contact] accusé de réception non envoyé :', envoiAccuse.raison)
   }
 
+  // ------------------------------------------------------- Dépôt dans Rentman
+  //
+  // La demande part dans « Projets > Demandes de location », au statut « En
+  // attente ». Roxanne l'accepte ou la refuse : rien n'entre dans sa production
+  // sans ce geste. Elle n'a donc plus à surveiller deux boîtes, et elle ne
+  // retape plus rien.
+  //
+  // ⚠️ DEUX GARDES, ET LA SECONDE EST LA PLUS IMPORTANTE.
+  //
+  // Le type doit être « location », et la demande doit porter des LIGNES
+  // STRUCTURÉES. Cette seconde condition est ce qui tient les robots hors de
+  // l'ERP : produire ces lignes exige d'avoir réellement parcouru le catalogue
+  // et cliqué « Ajouter à ma demande ». Un robot qui remplit le formulaire de
+  // contact, une candidature, un message ordinaire : aucun n'a de lignes, donc
+  // aucun n'atteint Rentman.
+  //
+  // JAMAIS BLOQUANT, comme les courriels : la demande est déjà en base. Un
+  // échec s'inscrit sur la ligne et s'affiche dans /admin/demandes, où deux
+  // boutons permettent de renvoyer ou de copier. Un dépôt raté doit se voir,
+  // pas disparaître.
+  let depot: Awaited<ReturnType<typeof deposerDemande>> | null = null
+  if (donnees.type === 'location' && lignes && lignes.length > 0 && numeroDemande !== null) {
+    depot = await deposerDemande({
+      numero: numeroDemande,
+      nom: donnees.nom,
+      email: donnees.email,
+      telephone: donnees.telephone ?? null,
+      organisation: donnees.organisation ?? null,
+      langue: donnees.locale === 'en' ? 'en' : 'fr',
+      dateDebut: donnees.dateDebut ?? null,
+      dateFin: donnees.dateFin ?? null,
+      precisions: donnees.message,
+      articles: lignes.map((l) => ({
+        rentman_id: l.rentman_id,
+        // Le nom français : c'est celui de l'inventaire Rentman.
+        nom: l.nom_fr,
+        quantite: l.quantite,
+      })),
+    })
+    if (!depot.ok) console.error('[api/contact] dépôt Rentman échoué :', depot.raison)
+  }
+
   // Une seule écriture pour les deux résultats. `idDemande` est null si
   // l'insertion n'a pas rendu d'identifiant — on ne tente alors rien plutôt
   // que d'écrire au hasard.
@@ -243,6 +288,11 @@ export async function POST(req: NextRequest) {
         notification_envoyee: notification.ok,
         notification_erreur: notification.ok ? null : raisonCourte(notification.raison),
         accuse_envoye: envoiAccuse.ok,
+        // Résultat du dépôt Rentman (0056). Tout reste null quand la demande
+        // ne relève pas de la location : ce n'est pas un échec, c'est hors sujet.
+        rentman_demande_id: depot?.ok ? depot.id : null,
+        rentman_envoye_le: depot?.ok ? new Date().toISOString() : null,
+        rentman_erreur: depot && !depot.ok ? raisonCourte(depot.raison) : null,
       })
       .eq('id', idDemande)
   }

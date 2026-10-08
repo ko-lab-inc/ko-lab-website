@@ -293,6 +293,13 @@ export type Database = {
           date_debut: string | null
           date_fin: string | null
           lignes: Json | null
+          /** Migration 0056. Numéro lisible partagé avec Rentman, et trace du
+           *  dépôt de la demande de projet. rentman_demande_id NULL = jamais
+           *  déposée ; rentman_erreur non NULL = dernier dépôt en échec. */
+          numero: number
+          rentman_demande_id: number | null
+          rentman_envoye_le: string | null
+          rentman_erreur: string | null
         }
         Insert: {
           id?: string
@@ -317,6 +324,10 @@ export type Database = {
           date_debut?: string | null
           date_fin?: string | null
           lignes?: Json | null
+          numero?: number
+          rentman_demande_id?: number | null
+          rentman_envoye_le?: string | null
+          rentman_erreur?: string | null
         }
         Update: {
           id?: string
@@ -341,6 +352,10 @@ export type Database = {
           date_debut?: string | null
           date_fin?: string | null
           lignes?: Json | null
+          numero?: number
+          rentman_demande_id?: number | null
+          rentman_envoye_le?: string | null
+          rentman_erreur?: string | null
         }
         Relationships: []
       }

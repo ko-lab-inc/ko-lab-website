@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   changerStatutDemande,
   enregistrerNoteDemande,
+  envoyerDansRentman,
   supprimerDemande,
 } from '@/app/(admin)/[locale]/admin/demandes/actions'
 import { buttonVariants } from '@/components/ui/Button'
@@ -76,6 +77,11 @@ export type Demande = {
   /** Langue du DEMANDEUR ('fr' | 'en'). À ne pas confondre avec la prop
    *  `locale` du composant, qui est celle de l'écran d'administration. */
   langueDemandeur: string
+  /** Migration 0056 — numéro lisible, partagé avec Rentman. */
+  numero: number
+  /** id de la demande de projet Rentman. NULL = jamais déposée. */
+  rentmanDemandeId: number | null
+  rentmanErreur: string | null
 }
 
 export function TableauDemandes({
@@ -118,6 +124,11 @@ export function TableauDemandes({
     copierRentman: string
     copie: string
     copieRepli: string
+    rentmanTitre: string
+    rentmanDeposee: string
+    rentmanAbsente: string
+    rentmanEchec: string
+    rentmanEnvoyer: string
     /** Migration 0049 — intitulé de l'alerte quand notification_erreur est posée. */
     notificationEchouee: string
     /** Migration 0051 — note interne et trace de traitement. */
@@ -500,7 +511,46 @@ export function TableauDemandes({
                 {/* Passerelle manuelle vers Rentman. Elle disparaîtra le jour
                     où le site pourra déposer la demande lui-même ; d'ici là,
                     c'est elle qui supprime la ressaisie. */}
-                <div className="mt-4">
+                {/* ---------------------------- Rentman ----------------------------
+                    Le dépôt est automatique à la réception. Ce bloc dit où en
+                    est la demande, et offre deux recours quand il a échoué :
+                    renvoyer, ou copier pour saisir à la main. */}
+                <div className="mt-5 border-t border-ko-line pt-5">
+                  <p className="label-mono text-ko-muted">{textes.rentmanTitre}</p>
+
+                  {voir.rentmanDemandeId ? (
+                    <p className="mt-2 text-sm text-ko-ink">
+                      {textes.rentmanDeposee.replace('{numero}', String(voir.numero))}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="mt-2 text-sm text-ko-ink">
+                        {voir.rentmanErreur ? textes.rentmanEchec : textes.rentmanAbsente}
+                      </p>
+                      {voir.rentmanErreur && (
+                        <p className="mt-1 break-words font-mono text-xs text-ko-muted">
+                          {voir.rentmanErreur}
+                        </p>
+                      )}
+
+                      {/* Le bouton n'apparaît que s'il y a des articles : sans
+                          eux, Rentman recevrait une demande vide. */}
+                      {voir.lignes && voir.lignes.length > 0 && (
+                        <form action={envoyerDansRentman} className="mt-3">
+                          <input type="hidden" name="locale" value={locale} />
+                          <input type="hidden" name="id" value={voir.id} />
+                          <button
+                            type="submit"
+                            className="inline-flex min-h-[44px] items-center gap-2 border border-ko-blue px-4 text-sm text-ko-ink transition-colors duration-200 hover:bg-ko-blue hover:text-ko-black"
+                          >
+                            {textes.rentmanEnvoyer}
+                          </button>
+                        </form>
+                      )}
+                    </>
+                  )}
+
+                  <div className="mt-3">
                   <BoutonCopierRentman
                     textes={{
                       copier: textes.copierRentman,
@@ -518,6 +568,7 @@ export function TableauDemandes({
                       lignes: voir.lignes,
                     }}
                   />
+                  </div>
                 </div>
               </div>
             )}

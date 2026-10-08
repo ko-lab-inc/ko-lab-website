@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 
 import { exigerRole } from '@/lib/auth/garde'
+import { deposerDemande } from '@/lib/rentman/demandes'
 import { envoyerCourriel } from '@/lib/email/envoyer'
 import { gabaritDemandeTraitee } from '@/lib/email/gabaritsNotifications'
 import { estUuid } from '@/lib/utils/identifiant'
@@ -194,6 +195,88 @@ export async function enregistrerNoteDemande(donnees: FormData): Promise<void> {
     if (error) console.error('[demandes] note refusée', error.message)
   } catch (err) {
     console.error('[demandes] échec enregistrement de la note', err)
+  }
+
+  revalidatePath(`/${locale}/admin/demandes`)
+}
+
+/**
+ * Dépôt MANUEL d'une demande de location dans Rentman — le bouton de secours.
+ *
+ * ---------------------------------------------------------------------------
+ * POURQUOI CETTE ACTION EXISTE ALORS QUE LE DÉPÔT EST AUTOMATIQUE
+ *
+ * Parce que l'automatique peut échouer : Rentman injoignable, jeton absent sur
+ * Vercel, coupure réseau au mauvais moment. Sans ce bouton, une demande ratée
+ * resterait ratée pour toujours, et il faudrait la retaper entièrement.
+ *
+ * ⚠️ IDEMPOTENTE. Si la demande porte déjà un `rentman_demande_id`, on ne fait
+ * RIEN : un second dépôt créerait un doublon dans la liste de Roxanne, et un
+ * doublon dans un ERP coûte plus cher qu'un bouton qui ne réagit pas. C'est
+ * aussi ce qui rend un double-clic sans conséquence.
+ *
+ * Le rôle est exigé ici comme dans les autres actions de cet écran : toute
+ * fonction exportée d'un fichier « use server » est une URL publique, elle doit
+ * s'autoriser elle-même.
+ * ---------------------------------------------------------------------------
+ */
+export async function envoyerDansRentman(donnees: FormData): Promise<void> {
+  const locale = String(donnees.get('locale') ?? 'fr')
+  const id = String(donnees.get('id') ?? '')
+  if (!estUuid(id)) return
+
+  try {
+    const acces = await exigerRole(ROLES_EQUIPE)
+    if (!acces) return
+    const { supabase } = acces
+
+    const { data: d } = await supabase
+      .from('demandes_contact')
+      .select(
+        'numero, nom, email, telephone, organisation, locale, message, date_debut, date_fin, lignes, rentman_demande_id',
+      )
+      .eq('id', id)
+      .maybeSingle()
+
+    if (!d) return
+    // Déjà déposée : on s'arrête. Voir la note d'en-tête.
+    if (d.rentman_demande_id) return
+
+    const lignes = Array.isArray(d.lignes)
+      ? (d.lignes as Array<{ rentman_id: number; nom_fr: string; quantite: number }>)
+      : []
+    // Sans article, il n'y a rien à déposer : Rentman recevrait une demande
+    // vide, que Roxanne devrait remplir à la main. Le bouton « Copier » reste.
+    if (lignes.length === 0) return
+
+    const resultat = await deposerDemande({
+      numero: d.numero,
+      nom: d.nom,
+      email: d.email,
+      telephone: d.telephone,
+      organisation: d.organisation,
+      langue: d.locale === 'en' ? 'en' : 'fr',
+      dateDebut: d.date_debut,
+      dateFin: d.date_fin,
+      precisions: d.message,
+      articles: lignes.map((l) => ({
+        rentman_id: l.rentman_id,
+        nom: l.nom_fr,
+        quantite: l.quantite,
+      })),
+    })
+
+    const { error } = await supabase
+      .from('demandes_contact')
+      .update({
+        rentman_demande_id: resultat.ok ? resultat.id : null,
+        rentman_envoye_le: resultat.ok ? new Date().toISOString() : null,
+        rentman_erreur: resultat.ok ? null : resultat.raison.slice(0, 300),
+      })
+      .eq('id', id)
+    if (error) console.error('[demandes] trace du dépôt refusée', error.message)
+  } catch (err) {
+    console.error('[demandes] échec du dépôt Rentman', err)
   }
 
   revalidatePath(`/${locale}/admin/demandes`)
