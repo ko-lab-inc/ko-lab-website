@@ -124,6 +124,53 @@ export const schemaContact = z.object({
 export type DonneesContact = z.infer<typeof schemaContact>
 
 /**
+ * Formulaire de /location/demande — distinct de `schemaContact`.
+ *
+ * ---------------------------------------------------------------------------
+ * POURQUOI UN SCHÉMA À PART
+ *
+ * `schemaContact` sert AUSSI au formulaire de contact ordinaire, qui n'a ni
+ * articles ni dates. Il doit donc les accepter absentes. Celui-ci décrit la
+ * seule demande de location, où les dates sont exigées.
+ *
+ * Il ne remplace pas `schemaContact` : le navigateur valide avec celui-ci, et
+ * /api/contact revalide le message composé avec celui-là. Le serveur ne fait
+ * jamais confiance au client.
+ *
+ * ---------------------------------------------------------------------------
+ * ⚠️ LES DATES SONT OBLIGATOIRES, ET CE N'EST PAS DU CONFORT
+ *
+ * Le prix d'une location DÉPEND de la durée : Rentman applique un facteur
+ * (mesuré le 7 octobre 2026 — 580 $ de prix unitaires deviennent 1 392 $ sur
+ * quatre jours). Sans dates, il ne peut rien calculer, donc l'équipe ne peut
+ * pas produire le devis que le visiteur est précisément venu demander. Une
+ * demande sans dates n'est pas incomplète, elle est intraitable.
+ *
+ * Le format est celui de `<input type="date">` : « AAAA-MM-JJ », comparable
+ * tel quel, d'où la vérification d'ordre par simple comparaison de chaînes.
+ */
+export const schemaDemandeLocation = z
+  .object({
+    nom: z.string().trim().min(2).max(100),
+    email: z.string().trim().email().max(200),
+    telephone: z.string().trim().max(40).optional(),
+    organisation: z.string().trim().max(150).optional(),
+    dateDebut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'date_debut_requise' }),
+    dateFin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'date_fin_requise' }),
+    precisions: z.string().trim().max(1500).optional(),
+    consentement: z.boolean().refine((v) => v === true, { message: 'consentement_requis' }),
+    // Honeypot — même motif que schemaContact : accepté sans borne stricte,
+    // testé dans le code appelant, jamais annoncé par un refus de validation.
+    _hp: z.string().max(200).optional(),
+  })
+  .refine((d) => d.dateFin >= d.dateDebut, {
+    path: ['dateFin'],
+    message: 'dates_ordre',
+  })
+
+export type DonneesDemandeLocation = z.infer<typeof schemaDemandeLocation>
+
+/**
  * Une ligne de commande TELLE QUE LE CLIENT LA DÉCRIT — un slug et une
  * quantité, rien de plus.
  *

@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 
 import { Button, buttonVariants } from '@/components/ui/Button'
 import { IconeMoins, IconePlus } from '@/components/ui/Icones'
@@ -14,6 +13,7 @@ import {
   usePanierLocation,
 } from '@/lib/panier/PanierLocationContext'
 import { ROUTES } from '@/lib/routes'
+import { schemaDemandeLocation, type DonneesDemandeLocation } from '@/lib/validation'
 import { cn } from '@/lib/utils/cn'
 
 /**
@@ -45,29 +45,8 @@ const CHAMP =
 // la liste des équipements : les précisions sont bornées plus bas que 2000.
 const MESSAGE_MAX = 2000
 
-const schemaFormulaire = z
-  .object({
-    nom: z.string().trim().min(2).max(100),
-    email: z.string().trim().email().max(200),
-    telephone: z.string().trim().max(40).optional(),
-    organisation: z.string().trim().max(150).optional(),
-    // Dates de location (modèle de la référence, Booqable) — facultatives : un
-    // visiteur peut demander un prix avant d'avoir arrêté ses dates. Format
-    // natif de <input type="date"> : « AAAA-MM-JJ », comparable tel quel.
-    dateDebut: z.string().max(10).optional(),
-    dateFin: z.string().max(10).optional(),
-    precisions: z.string().trim().max(1500).optional(),
-    consentement: z.boolean().refine((v) => v === true, { message: 'consentement_requis' }),
-    _hp: z.string().max(200).optional(),
-  })
-  // Si les deux dates sont fournies, la fin ne peut précéder le début. Comparer
-  // des chaînes « AAAA-MM-JJ » équivaut à les comparer chronologiquement.
-  .refine((d) => !d.dateDebut || !d.dateFin || d.dateFin >= d.dateDebut, {
-    path: ['dateFin'],
-    message: 'dates_ordre',
-  })
-
-type DonneesFormulaire = z.infer<typeof schemaFormulaire>
+// Schema et type vivent dans lib/validation.ts, avec les autres.
+type DonneesFormulaire = DonneesDemandeLocation
 
 /** « 2026-10-05 » → date lisible dans la locale, sans décalage de fuseau. */
 function formaterDate(iso: string, locale: string): string {
@@ -111,7 +90,7 @@ export function DemandeLocation({
     handleSubmit,
     formState: { errors },
   } = useForm<DonneesFormulaire>({
-    resolver: zodResolver(schemaFormulaire),
+    resolver: zodResolver(schemaDemandeLocation),
     defaultValues: { consentement: false, _hp: '' },
   })
 
@@ -337,16 +316,31 @@ export function DemandeLocation({
         </div>
 
         {/* Dates de location — sélecteurs natifs, plancher au jour même.
-            Facultatives : on peut demander un prix avant d'avoir figé les dates. */}
+            OBLIGATOIRES : sans elles Rentman ne peut pas calculer le prix,
+            qui dépend de la durée. Voir la note du schéma. */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-          <Champ id="dateDebut" libelle={t('date_debut')} note={tContact('form.organisation_optionnel')}>
-            <input id="dateDebut" type="date" min={minDate} {...register('dateDebut')} className={CHAMP} />
+          <Champ
+            id="dateDebut"
+            libelle={t('date_debut')}
+            erreur={errors.dateDebut ? t('erreur_date_requise') : null}
+          >
+            <input
+              id="dateDebut"
+              type="date"
+              min={minDate}
+              aria-invalid={!!errors.dateDebut}
+              {...register('dateDebut')}
+              className={cn(CHAMP, errors.dateDebut && 'border-ko-blue')}
+            />
           </Champ>
           <Champ
             id="dateFin"
             libelle={t('date_fin')}
-            note={tContact('form.organisation_optionnel')}
-            erreur={errors.dateFin ? t('erreur_dates') : null}
+            erreur={
+              errors.dateFin
+                ? t(errors.dateFin.message === 'dates_ordre' ? 'erreur_dates' : 'erreur_date_requise')
+                : null
+            }
           >
             <input
               id="dateFin"

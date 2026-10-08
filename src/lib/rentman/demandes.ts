@@ -114,10 +114,14 @@ function instant(jour: string, heure: '08:00:00' | '17:00:00'): string {
  * Période de remplacement quand le visiteur n'a pas donné ses dates.
  *
  * ⚠️ `planperiod_start` et `planperiod_end` sont OBLIGATOIRES chez Rentman :
- * sans eux la demande est refusée en 400 (mesuré le 8 octobre 2026). Or les
- * dates sont FACULTATIVES sur notre formulaire, parce qu'on peut demander un
- * prix avant d'avoir arrêté ses dates. Sans cette provision, toutes ces
- * demandes-là ne partiraient jamais dans Rentman.
+ * sans eux la demande est refusée en 400 (mesuré le 8 octobre 2026).
+ *
+ * Le formulaire de /location/demande exige désormais les deux dates, donc ce
+ * repli ne devrait jamais servir pour une demande neuve. Il reste là pour deux
+ * cas bien réels : les demandes enregistrées AVANT ce changement, qu'on peut
+ * encore renvoyer à la main depuis /admin/demandes, et toute future source qui
+ * appellerait `deposerDemande` sans dates. Un serveur ne suppose pas que son
+ * appelant a bien fait son travail.
  *
  * Une semaine devant, sur une journée. La valeur importe peu : ce qui compte,
  * c'est que la remarque de la demande dise en toutes lettres que ces dates
