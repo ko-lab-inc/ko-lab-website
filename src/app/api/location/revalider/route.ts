@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto'
 
-import { revalidatePath, updateTag } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { routing } from '@/i18n/routing'
@@ -91,14 +91,25 @@ export async function POST(req: NextRequest) {
    * L'accueil (section Besoins) affiche quatre photos lues dans
    * `medias_emplacements` via `unstable_cache` (tag ci-dessous, revalidate 1 h).
    * Quand on change une de ces photos HORS de l'admin — directement en base,
-   * comme pour la photo de la carte « Déployer » le 8 octobre 2026 — ni l'admin
-   * (`updateTag`) ni une simple expiration n'intervient avant une heure.
-   * `updateTag` vide la donnée, `revalidatePath` re-rend la page : il faut les
-   * deux, voir la note de src/app/sitemap.ts et la mémoire d'invalidation.
+   * comme pour les cartes « Installer » et « Déployer » le 8 octobre 2026 — rien
+   * ne rafraîchit l'accueil avant une heure.
+   *
+   * ⚠️ DANS UNE ROUTE, PAS `updateTag` : il est réservé aux Server Actions (il
+   * lève sinon, et faisait planter cette route en 500, ce qui cassait AUSSI la
+   * revalidation du catalogue). `revalidateTag` exige un second argument en
+   * Next 16 : `{ expire: 0 }` purge sans condition de fraîcheur.
+   *
+   * ⚠️ ENVELOPPÉ dans un try/catch : le travail PRINCIPAL de cette route — la
+   * revalidation du catalogue, ci-dessus, déjà faite — ne doit jamais échouer à
+   * cause de ce bonus « accueil ». Un échec ici est journalisé, pas propagé.
    */
-  updateTag(ETIQUETTE_EMPLACEMENTS_MEDIAS)
   const accueil = routing.locales.map((locale) => `/${locale}`)
-  for (const chemin of accueil) revalidatePath(chemin)
+  try {
+    revalidateTag(ETIQUETTE_EMPLACEMENTS_MEDIAS, { expire: 0 })
+    for (const chemin of accueil) revalidatePath(chemin)
+  } catch (e) {
+    console.error('[revalider] rafraîchissement accueil/médias non abouti :', e)
+  }
 
   return NextResponse.json({
     succes: true,
