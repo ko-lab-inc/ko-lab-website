@@ -1,9 +1,10 @@
 import { timingSafeEqual } from 'node:crypto'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, updateTag } from 'next/cache'
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { routing } from '@/i18n/routing'
+import { ETIQUETTE_EMPLACEMENTS_MEDIAS } from '@/lib/medias-emplacements'
 import { ROUTES } from '@/lib/routes'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
@@ -84,5 +85,24 @@ export async function POST(req: NextRequest) {
   const chemins = routing.locales.map((locale) => `/${locale}${ROUTES.location}`)
   for (const chemin of chemins) revalidatePath(chemin)
 
-  return NextResponse.json({ succes: true, chemins, horodatage: new Date().toISOString() })
+  /**
+   * L'ACCUEIL aussi, et le cache de données des emplacements média.
+   *
+   * L'accueil (section Besoins) affiche quatre photos lues dans
+   * `medias_emplacements` via `unstable_cache` (tag ci-dessous, revalidate 1 h).
+   * Quand on change une de ces photos HORS de l'admin — directement en base,
+   * comme pour la photo de la carte « Déployer » le 8 octobre 2026 — ni l'admin
+   * (`updateTag`) ni une simple expiration n'intervient avant une heure.
+   * `updateTag` vide la donnée, `revalidatePath` re-rend la page : il faut les
+   * deux, voir la note de src/app/sitemap.ts et la mémoire d'invalidation.
+   */
+  updateTag(ETIQUETTE_EMPLACEMENTS_MEDIAS)
+  const accueil = routing.locales.map((locale) => `/${locale}`)
+  for (const chemin of accueil) revalidatePath(chemin)
+
+  return NextResponse.json({
+    succes: true,
+    chemins: [...chemins, ...accueil],
+    horodatage: new Date().toISOString(),
+  })
 }
