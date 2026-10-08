@@ -110,6 +110,27 @@ function instant(jour: string, heure: '08:00:00' | '17:00:00'): string {
   return `${jour}T${heure}${decalageQuebec(jour)}`
 }
 
+/**
+ * Période de remplacement quand le visiteur n'a pas donné ses dates.
+ *
+ * ⚠️ `planperiod_start` et `planperiod_end` sont OBLIGATOIRES chez Rentman :
+ * sans eux la demande est refusée en 400 (mesuré le 8 octobre 2026). Or les
+ * dates sont FACULTATIVES sur notre formulaire, parce qu'on peut demander un
+ * prix avant d'avoir arrêté ses dates. Sans cette provision, toutes ces
+ * demandes-là ne partiraient jamais dans Rentman.
+ *
+ * Une semaine devant, sur une journée. La valeur importe peu : ce qui compte,
+ * c'est que la remarque de la demande dise en toutes lettres que ces dates
+ * sont provisoires, pour que personne ne les prenne pour un engagement.
+ */
+function periodeProvisoire(finDeJournee: boolean): string {
+  const d = new Date()
+  d.setDate(d.getDate() + 7 + (finDeJournee ? 1 : 0))
+  const p = (n: number) => String(n).padStart(2, '0')
+  const jour = `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+  return instant(jour, finDeJournee ? '17:00:00' : '08:00:00')
+}
+
 async function poster(
   chemin: string,
   corps: unknown,
@@ -130,6 +151,81 @@ async function poster(
 }
 
 /**
+ * Ce qu'on rattache à la demande quand on reconnaît le demandeur.
+ *
+ * ⚠️ `linked_contact` SEULEMENT. `linked_contact_person` existe en lecture mais
+ * Rentman refuse qu'on l'écrive à la création : « You are not permitted to set
+ * the following field: linked_contact_person » (mesuré le 8 octobre 2026).
+ * Quand on reconnaît une personne, on rattache donc sa SOCIÉTÉ.
+ */
+type Rattachement = { linked_contact?: string }
+
+/**
+ * Reconnaît le demandeur parmi les contacts Rentman, par son courriel.
+ *
+ * ---------------------------------------------------------------------------
+ * POURQUOI, ET CE QUE ÇA ÉVITE
+ *
+ * Sans ce rattachement, Rentman ne sait pas que le demandeur est peut-être
+ * déjà un de vos clients. À l'écran « Vérifier lieu et client », il ne propose
+ * RIEN : il faut chercher à la main, à chaque demande, même pour un habitué.
+ * Et si on crée un contact au lieu de retrouver l'existant, le carnet se
+ * remplit de doublons.
+ *
+ * ---------------------------------------------------------------------------
+ * ⚠️ UNE SEULE CORRESPONDANCE, SINON RIEN
+ *
+ * Un courriel n'identifie PAS un client de façon unique. Mesuré le 8 octobre
+ * 2026 sur les 93 contacts de KO-LAB : 72 adresses distinctes, dont 70
+ * rattachables sans ambiguïté, et 2 partagées par plusieurs sociétés
+ * (trois concessions Dilawri sur une même adresse, deux entités Bluesfest).
+ *
+ * Quand plusieurs contacts partagent l'adresse, on ne rattache RIEN et on
+ * laisse l'équipe choisir. Se tromper de société attacherait un devis au
+ * mauvais client, ce qui coûte bien plus cher qu'une recherche manuelle.
+ *
+ * La personne de contact est essayée EN PREMIER : c'est l'identification la
+ * plus précise, et elle donne aussi la société parente.
+ *
+ * Ne lève jamais : un échec de reconnaissance rend simplement un objet vide,
+ * et la demande part sans rattachement, comme avant.
+ * ---------------------------------------------------------------------------
+ */
+/** Exportée pour le test : la règle « une seule correspondance » doit être vérifiable sans toucher à Rentman. */
+export async function trouverClient(email: string): Promise<Rattachement> {
+  const lire = async (chemin: string): Promise<Array<Record<string, unknown>>> => {
+    const r = await fetch(BASE + chemin, { headers: entetes(), cache: 'no-store' })
+    if (!r.ok) return []
+    const j = (await r.json()) as { data?: Array<Record<string, unknown>> }
+    return j.data ?? []
+  }
+
+  try {
+    const adresse = encodeURIComponent(email.trim().toLowerCase())
+
+    // 1. Une personne de contact : l'identification la plus précise. On ne
+    //    retient que sa SOCIÉTÉ, la seule que Rentman accepte en écriture.
+    const personnes = await lire(`/contactpersons?email=${adresse}`)
+    if (personnes.length === 1) {
+      const p = personnes[0]!
+      if (typeof p.contact === 'string') return { linked_contact: p.contact }
+    }
+
+    // 2. Sinon la société, sur l'une ou l'autre de ses deux adresses.
+    for (const champ of ['email_1', 'email_2']) {
+      const contacts = await lire(`/contacts?${champ}=${adresse}`)
+      if (contacts.length === 1) return { linked_contact: `/contacts/${String(contacts[0]!.id)}` }
+      // Plusieurs sociétés sur cette adresse : on s'abstient, voir l'en-tête.
+      if (contacts.length > 1) return {}
+    }
+
+    return {}
+  } catch {
+    return {}
+  }
+}
+
+/**
  * Dépose la demande et ses articles.
  *
  * Ne lève JAMAIS : rend toujours un résultat, parce que l'appelant doit pouvoir
@@ -143,7 +239,18 @@ export async function deposerDemande(d: DemandeADeposer): Promise<ResultatDepot>
     // STRUCTURÉS de la demande, affichés juste à côté dans l'écran de Rentman :
     // les répéter ici noyait la seule phrase que le client avait vraiment
     // écrite au milieu d'un pavé redondant (constaté le 7 octobre 2026).
-    const remarque = [d.precisions?.trim() || null, `Demande ${d.numero} reçue sur ko-lab-center.ca.`]
+    const datesFournies = Boolean(d.dateDebut && d.dateFin)
+
+    const remarque = [
+      d.precisions?.trim() || null,
+      // Dit en toutes lettres que la période affichée ne vient pas du client.
+      // Sans cette phrase, Roxanne lirait des dates inventées par nous comme
+      // si le client les avait demandées.
+      datesFournies
+        ? null
+        : 'DATES NON PRÉCISÉES par le client. La période de ce projet est provisoire, à confirmer avec lui.',
+      `Demande ${d.numero} reçue sur ko-lab-center.ca.`,
+    ]
       .filter(Boolean)
       .join('\n\n')
 
@@ -161,21 +268,27 @@ export async function deposerDemande(d: DemandeADeposer): Promise<ResultatDepot>
       remark: remarque,
       // ENTIER obligatoire — voir la note d'en-tête.
       external_reference: d.numero,
+      // Rattachement au client déjà connu, s'il est reconnu sans ambiguïté.
+      // Vide sinon : l'équipe choisira, comme avant.
+      ...(await trouverClient(d.email)),
     }
 
-    // Périodes seulement si le visiteur a donné ses dates : elles restent
-    // facultatives sur le formulaire, et une date inventée serait pire que pas
-    // de date du tout.
-    if (d.dateDebut && d.dateFin) {
-      const debut = instant(d.dateDebut, '08:00:00')
-      const fin = instant(d.dateFin, '17:00:00')
-      Object.assign(corps, {
-        usageperiod_start: debut,
-        usageperiod_end: fin,
-        planperiod_start: debut,
-        planperiod_end: fin,
-      })
-    }
+    // La période de PLANIFICATION est toujours envoyée : Rentman la refuse
+    // absente (voir periodeProvisoire). On ne pose la période d'UTILISATION que
+    // si les dates viennent vraiment du client.
+    //
+    // ⚠️ Ça ne la laisse PAS vide pour autant : vérifié le 8 octobre 2026,
+    // Rentman recopie la planification dans l'utilisation quand on l'omet. La
+    // distinction ne se voit donc pas dans Rentman, et c'est la phrase
+    // « DATES NON PRÉCISÉES » de la remarque qui porte seule l'information.
+    // Ne pas supprimer cette phrase en croyant qu'un champ vide suffira.
+    const debut = datesFournies ? instant(d.dateDebut!, '08:00:00') : periodeProvisoire(false)
+    const fin = datesFournies ? instant(d.dateFin!, '17:00:00') : periodeProvisoire(true)
+    Object.assign(corps, {
+      planperiod_start: debut,
+      planperiod_end: fin,
+      ...(datesFournies ? { usageperiod_start: debut, usageperiod_end: fin } : {}),
+    })
 
     const demande = await poster('/projectrequests', corps)
     if (!demande.ok || !demande.data) {
