@@ -258,7 +258,7 @@ export async function envoyerDansRentman(donnees: FormData): Promise<void> {
       langue: d.locale === 'en' ? 'en' : 'fr',
       dateDebut: d.date_debut,
       dateFin: d.date_fin,
-      precisions: d.message,
+      precisions: d.message,  // renvoi manuel : seul le message complet est en base
       articles: lignes.map((l) => ({
         rentman_id: l.rentman_id,
         nom: l.nom_fr,

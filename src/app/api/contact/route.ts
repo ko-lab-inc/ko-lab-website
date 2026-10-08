@@ -267,7 +267,7 @@ export async function POST(req: NextRequest) {
       langue: donnees.locale === 'en' ? 'en' : 'fr',
       dateDebut: donnees.dateDebut ?? null,
       dateFin: donnees.dateFin ?? null,
-      precisions: donnees.message,
+      precisions: donnees.precisions ?? null,
       articles: lignes.map((l) => ({
         rentman_id: l.rentman_id,
         // Le nom français : c'est celui de l'inventaire Rentman.

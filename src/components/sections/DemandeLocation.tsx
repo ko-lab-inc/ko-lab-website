@@ -161,6 +161,8 @@ export function DemandeLocation({
           lignes: articles.map((a) => ({ slug: a.slug, quantite: a.quantite })),
           // '' (champ date vidé) deviendrait une chaîne vide, que le schéma
           // rejette : on la ramène à undefined, donc à 'champ absent'.
+          // Les precisions seules, pour Rentman : voir schemaContact.
+          precisions: precisions || undefined,
           dateDebut: donnees.dateDebut || undefined,
           dateFin: donnees.dateFin || undefined,
           consentement: donnees.consentement,

@@ -138,6 +138,11 @@ async function poster(
  */
 export async function deposerDemande(d: DemandeADeposer): Promise<ResultatDepot> {
   try {
+    // ⚠️ SEULEMENT les précisions écrites par le visiteur, jamais le message
+    // composé. Les dates et la liste d'équipements sont déjà des champs
+    // STRUCTURÉS de la demande, affichés juste à côté dans l'écran de Rentman :
+    // les répéter ici noyait la seule phrase que le client avait vraiment
+    // écrite au milieu d'un pavé redondant (constaté le 7 octobre 2026).
     const remarque = [d.precisions?.trim() || null, `Demande ${d.numero} reçue sur ko-lab-center.ca.`]
       .filter(Boolean)
       .join('\n\n')
@@ -189,6 +194,16 @@ export async function deposerDemande(d: DemandeADeposer): Promise<ResultatDepot>
         name: a.nom,
         // ENTIER ici, CHAÎNE juste en dessous. Oui, vraiment.
         quantity: a.quantite,
+        // ⚠️ OBLIGATOIRE, ET C'EST LE PIÈGE LE PLUS COÛTEUX DES QUATRE.
+        // L'écran d'acceptation de Rentman lit `quantity_total`, pas
+        // `quantity`. Ne renseigner que le second ne lève aucune erreur, et
+        // l'aperçu latéral affiche même la bonne quantité : tout paraît
+        // correct. Mais au moment d'accepter, Roxanne voit 0 partout, et
+        // valider créerait un projet vide avec un devis à zéro.
+        // Constaté le 7 octobre 2026 sur la demande 1008, avant acceptation.
+        // Les données de démonstration de Rentman portent toujours les deux
+        // champs à la même valeur.
+        quantity_total: a.quantite,
         order: String((i + 1) * 10),
       })
       if (ligne.ok) posees += 1

@@ -70,6 +70,17 @@ export const schemaContact = z.object({
   dateDebut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   dateFin: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 
+  /**
+   * Les précisions SEULES, telles que le visiteur les a tapées.
+   *
+   * `message` contient déjà tout : dates, liste d'équipements et précisions,
+   * composés pour être lisibles dans un courriel. Mais quand on transmet la
+   * demande à Rentman, les dates et les équipements y sont déjà des champs
+   * structurés : y recopier le message complet noierait la seule phrase que le
+   * client a vraiment écrite. D'où ce champ, qui ne sert qu'à ça.
+   */
+  precisions: z.string().trim().max(1500).optional(),
+
   // Loi 25 (audit du 23 août 2026, migration 0041) — même discipline que
   // schemaInscription, adaptée au type réel transmis ici : ce schéma valide
   // du JSON déjà désérialisé (fetch), pas un FormData, donc react-hook-form
