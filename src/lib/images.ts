@@ -65,7 +65,7 @@ function medias(chemin: string): string {
 
 export const IMAGES = {
   /** Photo réelle — scène Fête du Canada Day 2026, plateau de scène en montage. */
-  hero: '/images/hero/hero-equipe-nacelle-2026.webp',
+  hero: '/images/hero/hero-terrasse-vip-2026.webp',
 
   /**
    * ⚠️ REMPLACÉE le 3 septembre 2026, sur demande directe de Christian :
