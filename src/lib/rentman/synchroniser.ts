@@ -176,31 +176,40 @@ export async function synchroniser(
     ((existantes ?? []) as LigneExistante[]).map((l) => [l.rentman_id, l]),
   )
 
+  /**
+   * On sépare d'abord les articles déjà à jour (travail nul) de ceux à
+   * (ré)écrire. Le test `aJour` est pur et synchrone.
+   *
+   * ⚠️ Comparaison d'INSTANTS, pas de chaînes. Rentman renvoie
+   * « 2026-10-01T12:00:00-04:00 », PostgreSQL relit la même valeur en
+   * « 2026-10-01T16:00:00+00:00 » : même moment, textes différents. La
+   * comparaison de chaînes déclarait donc tout modifié à chaque passe —
+   * 584 réécritures et autant de retéléversements de photos par
+   * synchronisation (constaté par le script de vérification, étape 2).
+   */
+  const aTraiter: { article: ArticleNormalise; avant: LigneExistante | undefined }[] = []
   for (const article of retenus) {
+    const avant = parId.get(article.rentman_id)
+    const aJour =
+      !options.forcerPhotos &&
+      avant !== undefined &&
+      avant.publie &&
+      memeInstant(avant.rentman_modifie_le, article.rentman_modifie_le) &&
+      (article.reference_image === null) === (avant.image_url === null)
+    if (aJour) {
+      rapport.inchanges += 1
+      continue
+    }
+    aTraiter.push({ article, avant })
+  }
+
+  /** (Ré)écrit UN article : copie sa photo, puis upsert. Ne lève jamais. */
+  async function traiter(tache: {
+    article: ArticleNormalise
+    avant: LigneExistante | undefined
+  }): Promise<void> {
+    const { article, avant } = tache
     try {
-      const avant = parId.get(article.rentman_id)
-
-      // Rien n'a bougé côté Rentman ET la photo est déjà là : on ne réécrit
-      // pas. Sans ce test, chaque passe retéléverserait les photos et
-      // toucherait `updated_at` de toutes les lignes pour rien.
-      //
-      // ⚠️ Comparaison d'INSTANTS, pas de chaînes. Rentman renvoie
-      // « 2026-10-01T12:00:00-04:00 », PostgreSQL relit la même valeur en
-      // « 2026-10-01T16:00:00+00:00 » : même moment, textes différents. La
-      // comparaison de chaînes déclarait donc tout modifié à chaque passe —
-      // 584 réécritures et autant de retéléversements de photos par
-      // synchronisation (constaté par le script de vérification, étape 2).
-      const aJour =
-        !options.forcerPhotos &&
-        avant !== undefined &&
-        avant.publie &&
-        memeInstant(avant.rentman_modifie_le, article.rentman_modifie_le) &&
-        (article.reference_image === null) === (avant.image_url === null)
-      if (aJour) {
-        rapport.inchanges += 1
-        continue
-      }
-
       let imageUrl: string | null = avant?.image_url ?? null
       try {
         const copiee = await copierPhoto(supabase, article)
@@ -250,6 +259,36 @@ export async function synchroniser(
       rapport.erreurs.push(e instanceof Error ? e.message : String(e))
     }
   }
+
+  /**
+   * ⚠️ COPIE EN PARALLÈLE, PAR LOT BORNÉ — ajouté le 8 octobre 2026.
+   *
+   * Chaque article à traiter coûte ~1 s : lireFichier + téléchargement +
+   * compression sharp + upload, trois allers-retours réseau en série. En
+   * SÉQUENTIEL, 56 nouveaux articles = ~60 s, soit pile le plafond d'une
+   * fonction Vercel du plan gratuit (`maxDuration` 60) : la passe du cron se
+   * faisait tuer (504 FUNCTION_INVOCATION_TIMEOUT) juste avant la
+   * revalidation — mesuré en prod le 9 octobre 2026, 56 copies en 60,47 s.
+   *
+   * Un lot de `CONCURRENCE` tâches recouvre l'attente réseau : 56 copies
+   * passent de ~60 s à ~12 s, et même un gros lot (Roxanne ajoute 100 photos
+   * d'un coup) tient sous le plafond. La borne reste basse — pas de
+   * `Promise.all` nu sur 150 éléments — pour ne pas saturer la mémoire de la
+   * fonction (sharp décode chaque photo en clair) ni marteler Rentman.
+   *
+   * L'upsert reste PAR ARTICLE dans `traiter` : une passe interrompue garde
+   * tout ce qu'elle a fini, la suivante reprend là où `aJour` s'arrête.
+   */
+  const CONCURRENCE = 4
+  let curseur = 0
+  async function ouvrier(): Promise<void> {
+    while (true) {
+      const tache = aTraiter[curseur++]
+      if (tache === undefined) break
+      await traiter(tache)
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(CONCURRENCE, aTraiter.length) }, ouvrier))
 
   // Dépublication : tout ce qui était publié et n'est plus retenu. Jamais de
   // DELETE — voir la note d'en-tête.
