@@ -117,6 +117,49 @@ export async function lireProduitLocation(slug: string): Promise<ProduitLocation
   }
 }
 
+/**
+ * Aperçu d'une catégorie pour la page /location — niveau 1 du parcours
+ * (catégories en photos, puis clic vers la liste des produits).
+ *
+ * L'image de couverture est empruntée à un produit de la catégorie : nos
+ * données Rentman ne portent pas d'image PAR catégorie (choix validé le
+ * 9 octobre 2026 — « auto depuis les produits »). Première photo réelle
+ * disponible de la catégorie, donc se met à jour seule à chaque synchro.
+ */
+export type ApercuCategorie = {
+  cle: string
+  /** Nombre d'articles publiés dans la catégorie. */
+  count: number
+  image_url: string | null
+  image_alt_fr: string | null
+  image_alt_en: string | null
+}
+
+/**
+ * Un aperçu par catégorie NON VIDE, dans l'ordre reçu. Les catégories sans
+ * aucun produit publié (ex. « clotures » au 1er octobre 2026) sont écartées :
+ * une tuile qui mène à une page vide serait une impasse pour le visiteur.
+ */
+export function apercuCategories(
+  produits: readonly ProduitLocation[],
+  ordreCategories: readonly string[],
+): ApercuCategorie[] {
+  return grouperParCategorie(produits, ordreCategories)
+    .filter((g) => g.produits.length > 0)
+    .map((g) => {
+      // La première photo réelle de la catégorie ; à défaut, le premier
+      // produit (la tuile affichera alors le placeholder du site).
+      const couverture = g.produits.find((p) => p.image_url !== null) ?? g.produits[0]
+      return {
+        cle: g.categorie,
+        count: g.produits.length,
+        image_url: couverture?.image_url ?? null,
+        image_alt_fr: couverture?.image_alt_fr ?? null,
+        image_alt_en: couverture?.image_alt_en ?? null,
+      }
+    })
+}
+
 /** Regroupe les produits par catégorie, dans l'ordre des catégories reçu. */
 export function grouperParCategorie(
   produits: readonly ProduitLocation[],

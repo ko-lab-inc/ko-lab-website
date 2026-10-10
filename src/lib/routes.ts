@@ -85,6 +85,21 @@ export const routeProduit = (slug: string) => `${ROUTES.boutique}/${slug}`
  */
 export const routeProduitLocation = (slug: string) => `${ROUTES.location}/${slug}`
 
+/**
+ * Page d'UNE catégorie de location — liste les articles de cette catégorie.
+ *
+ * Le segment `categorie` est un dossier statique SOUS /location : Next lui
+ * donne la priorité sur `[slug]` ci-dessus, donc `/location/categorie/<cle>`
+ * ne risque pas d'être capté par la fiche produit. Corollaire symétrique du
+ * cas « demande » : un article dont le slug serait littéralement « categorie »
+ * ne serait pas atteignable — cas théorique (les slugs viennent de noms
+ * d'équipements Rentman), noté pour ne pas le chercher une heure.
+ *
+ * `cle` est TOUJOURS l'une des `CATEGORIES_LOCATION` (validée en liste blanche
+ * par la page avant tout usage) — jamais une valeur libre venue de l'URL.
+ */
+export const routeCategorieLocation = (cle: string) => `${ROUTES.location}/categorie/${cle}`
+
 /** Détail d'une commande — migration 0021. */
 export const routeCommande = (id: string) => `${ROUTES.compteCommandes}/${id}`
 

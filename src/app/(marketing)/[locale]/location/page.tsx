@@ -1,20 +1,20 @@
 import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 import { BarreDemandeLocation } from '@/components/sections/BarreDemandeLocation'
-import { GrilleProduitsLocation } from '@/components/sections/GrilleProduitsLocation'
 import { buttonVariants } from '@/components/ui/Button'
 import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
+import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireGaleriePage } from '@/lib/galeries'
-import { grouperParCategorie, lireProduitsLocation, pourCarte } from '@/lib/location-produits'
+import { apercuCategories, lireProduitsLocation } from '@/lib/location-produits'
 import { lireReglages } from '@/lib/reglages'
 import { CATEGORIES_LOCATION } from '@/lib/rentman/categories'
-import { alternatesLangues, ROUTES } from '@/lib/routes'
-import { cn } from '@/lib/utils/cn'
+import { alternatesLangues, routeCategorieLocation, ROUTES } from '@/lib/routes'
 
 import type { Metadata, Viewport } from 'next'
 
@@ -61,40 +61,21 @@ export default async function LocationPage({ params }: Props) {
   const images = await lireGaleriePage('location', locale)
   // L'URL vient des réglages depuis le 2 octobre 2026 (migration 0051) : elle
   // était figée dans le code, donc la recevoir de Rentman imposait un
-  // déploiement. `lireReglages` est déjà appelé plus bas pour le téléphone —
-  // une seule lecture, mise en cache.
+  // déploiement. `lireReglages` est déjà appelé pour le téléphone — une seule
+  // lecture, mise en cache.
   const reglagesSite = await lireReglages()
   const lienRentman = reglagesSite.lienRentman.trim()
 
-  // Produits de location synchronisés depuis Rentman (migration 0048). Vide
-  // tant que rien n'est publié : la page retombe alors sur le bloc d'invitation
-  // plus bas, comme avant.
-  const produits = await lireProduitsLocation()
-  // Allégé en `ProduitCarte` : la grille est un composant client, tout ce
-  // qu'on lui passe part dans le HTML (voir sa note d'en-tête).
-  const groupes = grouperParCategorie(produits, CATEGORIES_LOCATION).map((g) => ({
-    categorie: g.categorie,
-    produits: g.produits.map(pourCarte),
-  }))
+  // Parcours à deux niveaux (9 octobre 2026) : /location montre les CATÉGORIES
+  // en photos, un clic mène à /location/categorie/<cle> voir les équipements.
+  // L'image de chaque tuile est empruntée à un produit de la catégorie (voir
+  // `apercuCategories`). Vide tant que rien n'est publié : la page retombe sur
+  // son seul bloc d'invitation, comme avant l'intégration Rentman.
+  const apercus = apercuCategories(await lireProduitsLocation(), CATEGORIES_LOCATION)
 
-  // ⚠️ Passé de 4 à 7 catégories le 3 septembre 2026 (point 18 du prompt de
-  // corrections finales) : les 4 anciennes (Remorques/Nacelles/Outils/
-  // Mobilier événementiel) donnaient l'impression que l'offre de location
-  // se limitait à de l'équipement de chantier — contredisait le texte
-  // d'intro de cette même page (« Mobilier, scène, clôtures, éclairage,
-  // décor, équipements terrain et infrastructures »), déjà à jour depuis
-  // une passe précédente mais jamais suivi ici. Remorques et nacelles sont
-  // repliées dans « Équipements terrain », comme le brief le permet
-  // explicitement plutôt que de les faire disparaître.
-  const categories = [
-    { cle: 'mobilier', titre: t('cat_mobilier_titre'), texte: t('cat_mobilier_texte') },
-    { cle: 'scenes', titre: t('cat_scenes_titre'), texte: t('cat_scenes_texte') },
-    { cle: 'clotures', titre: t('cat_clotures_titre'), texte: t('cat_clotures_texte') },
-    { cle: 'eclairage', titre: t('cat_eclairage_titre'), texte: t('cat_eclairage_texte') },
-    { cle: 'decor', titre: t('cat_decor_titre'), texte: t('cat_decor_texte') },
-    { cle: 'equipements_terrain', titre: t('cat_equipements_terrain_titre'), texte: t('cat_equipements_terrain_texte') },
-    { cle: 'infrastructures', titre: t('cat_infrastructures_titre'), texte: t('cat_infrastructures_texte') },
-  ]
+  // Titre traduit d'une catégorie. Le cast vise le typage strict des clés de
+  // messages (global.d.ts) ; `cle` est toujours une CATEGORIES_LOCATION.
+  const titreCategorie = (cle: string) => t(`cat_${cle}_titre` as 'cat_mobilier_titre')
 
   return (
     <div data-theme-sombre>
@@ -103,10 +84,10 @@ export default async function LocationPage({ params }: Props) {
       <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
         <div className="mx-auto max-w-container px-6 lg:px-16">
           <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
-          {/* Libelle ajoute le 1er octobre 2026 (§3) : le H1 porte desormais
-              une promesse (« Tout ce qu'il faut pour equiper le terrain. »)
-              et non plus le nom de la rubrique — c'est ce libelle qui le
-              nomme, comme sur les pages de capacites. */}
+          {/* Libelle ajoute le 1er octobre 2026 (§3) : le H1 porte une promesse
+              (« Tout ce qu'il faut pour equiper le terrain. ») et non plus le
+              nom de la rubrique — c'est ce libelle qui le nomme, comme sur les
+              pages de capacites. */}
           <p className="label-mono mt-6">{t('label')}</p>
           <h1 className="ko-display mt-5 max-w-[22ch] text-ko-ink">{t('title')}</h1>
           <p className="mt-7 max-w-[54ch] text-base leading-relaxed text-ko-muted lg:text-lg">
@@ -115,50 +96,89 @@ export default async function LocationPage({ params }: Props) {
         </div>
       </section>
 
-      {/* ------------------------- Produits de location ------------------------
-          Grille alimentée par la synchronisation Rentman (migration 0048).
-          N'apparaît que s'il y a des produits publiés — sinon la page garde
-          son seul bloc d'invitation, comme avant l'intégration. */}
-      {produits.length > 0 && (
+      {/* ----------------------- Catégories en photos -----------------------
+          Niveau 1 du parcours. N'apparaît que s'il y a des produits publiés
+          (sinon la page garde son seul bloc d'invitation, comme avant). Chaque
+          tuile mène à la page de sa catégorie. Les catégories vides sont déjà
+          écartées par `apercuCategories` : jamais de tuile vers une impasse. */}
+      {apercus.length > 0 && (
         <section className="bg-ko-white py-16 lg:py-24">
           <div className="mx-auto max-w-container px-6 lg:px-16">
             <Reveal>
-              <p className="label-mono">{t('produits_titre')}</p>
+              <p className="label-mono">{t('categories_label')}</p>
               <p className="mt-5 max-w-[54ch] text-base leading-relaxed text-ko-muted">
-                {t('produits_intro')}
+                {t('categories_intro')}
               </p>
 
               {/* Avis photos — demandé par Chris le 8 octobre 2026. Un
                   photographe professionnel renouvelle l'inventaire ; en
-                  attendant, certaines photos sont des prises de terrain.
-                  Filet bleu à gauche (accent de marque) plutôt qu'un bandeau
-                  criard : on informe sans s'excuser platement. */}
+                  attendant, certaines photos sont des prises de terrain. Filet
+                  bleu à gauche plutôt qu'un bandeau criard. */}
               <p className="mt-5 max-w-[54ch] border-l-2 border-ko-blue pl-4 text-sm leading-relaxed text-ko-muted">
                 {t('photos_avis')}
               </p>
             </Reveal>
 
-            <div className="mt-12">
-              <GrilleProduitsLocation
-                groupes={groupes}
-                locale={locale}
-                libelles={{
-                  categories: Object.fromEntries(categories.map((c) => [c.cle, c.titre])),
-                  prixSurDemande: t('prix_sur_demande'),
-                  filtreTout: t('filtre_tout'),
-                  filtreLabel: t('filtre_label'),
-                }}
-              />
+            <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {apercus.map((a) => {
+                const titre = titreCategorie(a.cle)
+                const alt = (locale === 'en' ? a.image_alt_en : a.image_alt_fr) || titre
+                return (
+                  <Reveal key={a.cle} className="h-full">
+                    {/* Le nom accessible du lien vient de l'aria-label (verbe
+                        d'action) ; le titre visible reste un <h2> pour le plan
+                        du document. */}
+                    <Link
+                      href={routeCategorieLocation(a.cle)}
+                      aria-label={t('voir_categorie_aria', { categorie: titre })}
+                      className="group flex h-full flex-col border border-ko-line bg-ko-white"
+                    >
+                      {/* `object-contain` sur un cadre 4/3 : les photos produit
+                          sont surtout des portraits 3/4, un cadre paysage en
+                          `cover` les couperait. `contain` montre toute la photo,
+                          le reste du cadre est le crème du site. */}
+                      <div className="relative aspect-[4/3] overflow-hidden bg-ko-cream">
+                        {a.image_url ? (
+                          <Image
+                            src={a.image_url}
+                            alt={alt}
+                            fill
+                            sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 90vw"
+                            className="object-contain transition-transform duration-500 group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <PhotoPlaceholder ratio="aspect-[4/3]" className="h-full w-full" />
+                        )}
+                      </div>
+
+                      <div className="flex flex-1 items-baseline justify-between gap-4 p-5">
+                        <h2 className="font-serif text-[22px] leading-tight text-ko-ink underline decoration-transparent underline-offset-4 transition-colors duration-200 group-hover:decoration-ko-blue">
+                          {titre}
+                        </h2>
+                        <span className="shrink-0 font-mono text-sm text-ko-muted">
+                          {t('cat_compte', { n: a.count })}
+                        </span>
+                      </div>
+                    </Link>
+                  </Reveal>
+                )
+              })}
             </div>
+
+            <Reveal>
+              <p className="mt-12 max-w-[46ch] border-t border-ko-line pt-8 text-sm leading-relaxed text-ko-muted">
+                {t('note')}
+              </p>
+            </Reveal>
           </div>
         </section>
       )}
 
       {/* ---------------------------- Vers Rentman ---------------------------- */}
-      <section className="bg-ko-white py-16 lg:py-24">
+      <section className="bg-ko-cream py-16 lg:py-24">
         <div className="mx-auto max-w-container px-6 lg:px-16">
           <Reveal>
-            <div className="border border-ko-line bg-ko-cream p-8 lg:p-12">
+            <div className="border border-ko-line bg-ko-white p-8 lg:p-12">
               <h2 className="ko-h2 max-w-[22ch] text-ko-ink">{t('inventaire_titre')}</h2>
 
               <p className="mt-6 max-w-[54ch] text-base leading-relaxed text-ko-muted">
@@ -168,22 +188,15 @@ export default async function LocationPage({ params }: Props) {
               <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
                 {/* Tant que LIEN_RENTMAN reste le repli '#' (lib/constantes.ts,
                     URL jamais transmise par Christian), le bouton primaire
-                    pointe vers le formulaire de contact déjà existant
-                    (`?type=location`, celui que le lien secondaire ci-dessous
-                    utilise aussi normalement) plutôt que de rester masqué —
-                    « un bouton visible qui convertit vaut mieux qu'un bouton
-                    absent ». Le libellé change en conséquence : « Voir
-                    l'inventaire » mentirait sur ce que ce lien fait vraiment.
-                    Le lien secondaire redondant (même destination) disparaît
-                    dans cet état ; les deux boutons d'origine reviennent dès
-                    que Christian communique l'URL réelle — une seule ligne à
-                    changer dans constantes.ts. */}
+                    pointe vers le formulaire de contact (`?type=location`)
+                    plutôt que de rester masqué. Les deux boutons d'origine
+                    reviennent dès que Christian communique l'URL réelle — une
+                    seule ligne à changer dans constantes.ts. */}
                 {lienRentman !== '' ? (
                   <>
                     {/* Lien externe : <a> et non le <Link> localisé, qui
-                        préfixerait l'URL d'une locale. rel="noopener" est
-                        obligatoire avec target="_blank" — sans lui, la page
-                        ouverte accède à window.opener (skill 09). */}
+                        préfixerait l'URL d'une locale. rel="noopener"
+                        obligatoire avec target="_blank" (skill 09). */}
                     <a
                       href={lienRentman}
                       target="_blank"
@@ -217,55 +230,9 @@ export default async function LocationPage({ params }: Props) {
         </div>
       </section>
 
-      {/* ----------------------------- Catégories ----------------------------- */}
-      <section className="bg-ko-cream py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-16">
-          <Reveal>
-            <p className="label-mono">{t('categories_label')}</p>
-          </Reveal>
-
-          {/* Effet « joint » du skill 08 : le fond de la grille dessine les
-              filets, aucune bordure n'est tracée sur les cellules.
-
-              ⚠️ Corollaire : une cellule MANQUANTE laisse voir ce fond, donc
-              un rectangle gris. Avec 7 catégories dans une grille de 2 ou 4
-              colonnes, la dernière rangée en laissait toujours une — un bloc
-              vide que personne n'avait demandé (signalé le 1er octobre 2026).
-              La dernière carte occupe donc deux colonnes et referme la
-              rangée. Vaut tant que le nombre de catégories est impair ; si
-              une 8ᵉ apparaît, retirer ce `col-span` (la grille se referme
-              toute seule). */}
-          <div className="mt-10 grid grid-cols-1 gap-px bg-ko-line sm:grid-cols-2 lg:grid-cols-4">
-            {categories.map(({ cle, titre, texte }, i) => (
-              <Reveal
-                key={cle}
-                className={cn(
-                  'bg-ko-cream',
-                  categories.length % 2 === 1 && i === categories.length - 1 && 'sm:col-span-2',
-                )}
-              >
-                <div className="h-full px-7 py-9">
-                  <span className="label-mono">{String(i + 1).padStart(2, '0')}</span>
-                  <h3 className="mt-5 font-serif text-[22px] leading-tight text-ko-ink">{titre}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-ko-muted">{texte}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-
-          <Reveal>
-            <p className="mt-12 max-w-[46ch] border-t border-ko-line pt-8 text-sm leading-relaxed text-ko-muted">
-              {t('note')}
-            </p>
-          </Reveal>
-        </div>
-      </section>
-
       {/* ------------------------------ Galerie ------------------------------ */}
       {/* Branchée sur galeries_photos depuis l'étape 3/3 (migration 0043) —
-          la page restait délibérément sans photo avant le 20 août 2026 (voir
-          la note d'en-tête), Christian a depuis demandé d'y montrer du
-          matériel réel. */}
+          Christian a demandé d'y montrer du matériel réel. */}
       {images.length > 0 && (
         <section className="bg-ko-white py-16 lg:py-24">
           <div className="mx-auto max-w-container px-6 lg:px-16">
