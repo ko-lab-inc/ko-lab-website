@@ -160,7 +160,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       // enfant qui définit SON PROPRE bloc `openGraph` doit répéter cette
       // image ou la sienne — Next ne fusionne pas les sous-clés d'un objet
       // déjà redéfini par un segment enfant.
-      images: [{ url: '/images/og/og-defaut.jpg', width: 1200, height: 630 }],
+      // ?v : voir la note sur l'accueil (page.tsx). L'image de partage a change
+      // le 10 octobre 2026, on verse une version pour casser le cache des
+      // plateformes (elles indexent l'og:image par URL).
+      images: [{ url: '/images/og/og-defaut.jpg?v=2', width: 1200, height: 630 }],
     },
   }
 }
