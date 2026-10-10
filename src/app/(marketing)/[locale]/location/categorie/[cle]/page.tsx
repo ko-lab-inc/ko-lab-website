@@ -6,7 +6,7 @@ import { BarreDemandeLocation } from '@/components/sections/BarreDemandeLocation
 import { CatalogueCategorieLocation } from '@/components/sections/CatalogueCategorieLocation'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
-import { lireProduitsLocation, pourCarte } from '@/lib/location-produits'
+import { lireProduitsLocation, pourLigne } from '@/lib/location-produits'
 import { CATEGORIES_LOCATION } from '@/lib/rentman/categories'
 import { alternatesLangues, routeCategorieLocation, ROUTES } from '@/lib/routes'
 
@@ -89,7 +89,7 @@ export default async function CategorieLocationPage({ params }: Props) {
   // n'envoie au composant que ce qu'une vignette affiche (voir sa note).
   const produits = (await lireProduitsLocation())
     .filter((p) => p.categorie === cle)
-    .map(pourCarte)
+    .map((p) => pourLigne(p, locale))
 
   return (
     <div data-theme-sombre>
@@ -137,6 +137,14 @@ export default async function CategorieLocationPage({ params }: Props) {
                 aucunResultat: t('recherche_aucun'),
                 colonneEquipement: t('colonne_equipement'),
                 colonnePrix: t('colonne_prix'),
+                triLabel: t('tri_label'),
+                triNom: t('tri_nom'),
+                triPrixCroissant: t('tri_prix_croissant'),
+                triPrixDecroissant: t('tri_prix_decroissant'),
+                // Gabarits avec `{n}` : l'accord singulier/pluriel se fait côté
+                // client, où le nombre change à chaque frappe.
+                compteUn: t('compte_un', { n: '{n}' }),
+                comptePlusieurs: t('compte_plusieurs', { n: '{n}' }),
               }}
             />
           ) : (

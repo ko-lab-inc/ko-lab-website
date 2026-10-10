@@ -66,6 +66,32 @@ export function pourCarte(p: ProduitLocation): ProduitCarte {
   }
 }
 
+/**
+ * Une LIGNE du catalogue en vue liste — la carte, plus un résumé d'une ligne.
+ *
+ * La vue liste (10 octobre 2026) reprend la densité d'un gestionnaire de
+ * fichiers : les références du domaine (Rentman, Quipli) insistent sur le fait
+ * qu'un visiteur doit comprendre l'article sans cliquer. Le résumé vient de la
+ * description réelle de Rentman, jamais d'un texte inventé.
+ */
+export type ProduitLigne = ProduitCarte & { resume: string | null }
+
+/**
+ * Carte + résumé tronqué, dans la langue demandée.
+ *
+ * ⚠️ UNE SEULE langue est embarquée, contrairement aux noms : une description
+ * pèse bien plus qu'un nom, et la vue liste en affiche une par ligne. Sur une
+ * catégorie de 108 articles, transmettre les deux langues doublerait le poids
+ * du HTML pour du texte que personne ne lira dans l'autre langue.
+ */
+export function pourLigne(p: ProduitLocation, locale: string, max = 120): ProduitLigne {
+  const brut = (locale === 'en' ? p.description_en : p.description_fr) || p.description_fr
+  const texte = (brut ?? '').trim()
+  const resume =
+    texte === '' ? null : texte.length <= max ? texte : `${texte.slice(0, max - 1).trimEnd()}…`
+  return { ...pourCarte(p), resume }
+}
+
 export async function lireProduitsLocation(): Promise<ProduitLocation[]> {
   try {
     const supabase = createStaticClient()
