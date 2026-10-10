@@ -539,6 +539,7 @@
     "titre": "Your rental request",
     "intro": "The equipment you've selected. Adjust the quantities, then send your request: we'll get back to you with pricing and availability.",
     "ajouter": "Add to my request",
+    "ajouter_court": "Add",
     "ajoute": "Added",
     "ajouter_aria": "Add {produit} to my request",
     "ajoute_aria": "{produit} is in my request",

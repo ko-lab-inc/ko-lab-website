@@ -539,6 +539,7 @@
     "titre": "Votre demande de location",
     "intro": "Les équipements que vous avez retenus. Ajustez les quantités, puis envoyez votre demande : on revient vers vous avec le prix et la disponibilité.",
     "ajouter": "Ajouter à ma demande",
+    "ajouter_court": "Ajouter",
     "ajoute": "Ajouté",
     "ajouter_aria": "Ajouter {produit} à ma demande",
     "ajoute_aria": "{produit} est dans ma demande",

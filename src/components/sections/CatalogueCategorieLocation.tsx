@@ -215,7 +215,7 @@ export function CatalogueCategorieLocation({
           <div className="hidden items-center gap-5 border-y border-ko-line px-2 py-3 sm:flex">
             <span className="label-mono flex-1">{libelles.colonneEquipement}</span>
             <span className="label-mono w-28 text-right">{libelles.colonnePrix}</span>
-            <span className="w-[190px]" aria-hidden="true" />
+            <span className="w-[150px]" aria-hidden="true" />
           </div>
 
           <ul>
@@ -267,11 +267,12 @@ export function CatalogueCategorieLocation({
                       {produit.prix != null ? `${produit.prix} $` : libelles.prixSurDemande}
                     </span>
 
-                    <div className="w-full shrink-0 sm:w-[190px]">
+                    <div className="w-full shrink-0 sm:w-[150px]">
                       <BoutonAjouterLocation
                         slug={produit.slug}
                         nom={nom}
                         categorie={libelleCategorie}
+                        libelleCourt
                       />
                     </div>
                   </div>

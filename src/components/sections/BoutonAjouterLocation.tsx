@@ -28,6 +28,7 @@ export function BoutonAjouterLocation({
   categorie,
   className,
   avecQuantite = false,
+  libelleCourt = false,
 }: {
   slug: string
   nom: string
@@ -35,6 +36,14 @@ export function BoutonAjouterLocation({
   className?: string
   /** Affiche le contrôle − n + à gauche du bouton (fiche produit). */
   avecQuantite?: boolean
+  /**
+   * Libellé court « Ajouter » au lieu de « Ajouter à ma demande ». Pour la vue
+   * liste du catalogue, où la colonne est étroite : le libellé long y passait
+   * sur deux lignes et doublait la hauteur de la ligne (10 octobre 2026). Le
+   * nom de l'article est juste à côté, « à ma demande » y est redondant.
+   * L'aria-label, lui, reste complet et nommé pour un lecteur d'écran.
+   */
+  libelleCourt?: boolean
 }) {
   const t = useTranslations('DemandeLocation')
   const { ajouter, changerQuantite, contient, pret } = usePanierLocation()
@@ -95,9 +104,15 @@ export function BoutonAjouterLocation({
         // par un lecteur d'écran alors qu'il ne fait rien.
         disabled={dedans}
         aria-label={t(dedans ? 'ajoute_aria' : 'ajouter_aria', { produit: nom })}
-        className={cn(buttonVariants({ variant: 'primary', size: 'sm' }), 'flex-1')}
+        className={cn(
+          buttonVariants({ variant: 'primary', size: 'sm' }),
+          'flex-1',
+          // Une seule ligne quand le libellé est court : c'est le but de la vue
+          // liste, éviter le retour à la ligne qui doublait la hauteur.
+          libelleCourt && 'whitespace-nowrap',
+        )}
       >
-        {dedans ? t('ajoute') : t('ajouter')}
+        {dedans ? t('ajoute') : t(libelleCourt ? 'ajouter_court' : 'ajouter')}
       </button>
     </div>
   )
