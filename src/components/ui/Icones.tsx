@@ -384,6 +384,33 @@ export function IconeCoche(props: IconeProps) {
 }
 
 /* =============================================================================
+ * Bascule d'affichage et recherche — catalogue de location
+ *
+ * La vue « carrés » réutilise IconeTableauBord (quatre tuiles) : c'est déjà le
+ * signe d'une grille, en redessiner une deuxième ferait diverger le vocabulaire.
+ * ========================================================================== */
+
+/** Vue liste — trois lignes et leurs puces, comme un gestionnaire de fichiers. */
+export function IconeListe(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <path d="M9 6.5h11M9 12h11M9 17.5h11" />
+      <path d="M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01" />
+    </Icone>
+  )
+}
+
+/** Recherche — loupe. Accompagne toujours un champ étiqueté, jamais seule. */
+export function IconeLoupe(props: IconeProps) {
+  return (
+    <Icone {...props}>
+      <circle cx="10.5" cy="10.5" r="6.5" />
+      <path d="M15.4 15.4 21 21" />
+    </Icone>
+  )
+}
+
+/* =============================================================================
  * Stats bar
  * ========================================================================== */
 

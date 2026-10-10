@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 
 import { BarreDemandeLocation } from '@/components/sections/BarreDemandeLocation'
-import { CarteProduitLocation } from '@/components/sections/CarteProduitLocation'
+import { CatalogueCategorieLocation } from '@/components/sections/CatalogueCategorieLocation'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireProduitsLocation, pourCarte } from '@/lib/location-produits'
@@ -119,17 +119,26 @@ export default async function CategorieLocationPage({ params }: Props) {
       <section className="bg-ko-white py-16 lg:py-24">
         <div className="mx-auto max-w-container px-6 lg:px-16">
           {produits.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {produits.map((produit) => (
-                <CarteProduitLocation
-                  key={produit.id}
-                  produit={produit}
-                  locale={locale}
-                  prixSurDemande={t('prix_sur_demande')}
-                  libelleCategorie={titre}
-                />
-              ))}
-            </div>
+            // Vue LISTE par défaut (façon gestionnaire de fichiers), bascule en
+            // carrés, et recherche rapide dans la catégorie. Les libellés sont
+            // résolus ici, côté serveur, et passés en props : le composant est
+            // client sans tirer d'espace de noms de traduction (voir sa note).
+            <CatalogueCategorieLocation
+              produits={produits}
+              locale={locale}
+              libelleCategorie={titre}
+              libelles={{
+                prixSurDemande: t('prix_sur_demande'),
+                recherchePlaceholder: t('recherche_placeholder'),
+                rechercheLabel: t('recherche_label', { categorie: titre }),
+                vueLabel: t('vue_label'),
+                vueListe: t('vue_liste'),
+                vueGrille: t('vue_grille'),
+                aucunResultat: t('recherche_aucun'),
+                colonneEquipement: t('colonne_equipement'),
+                colonnePrix: t('colonne_prix'),
+              }}
+            />
           ) : (
             // Catégorie connue mais sans produit publié : on ne tombe pas en
             // 404 (la clé existe), on invite à écrire. /location masque déjà
