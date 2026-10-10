@@ -293,7 +293,7 @@ const nextConfig: NextConfig = {
           // cross-dossier, est le choix le plus sûr ici. Même valeur que
           // DOMAINE dans lib/constantes.ts — à changer aux DEUX endroits le
           // jour de la bascule de domaine (voir docs/bascule-domaine.md).
-          { key: 'Access-Control-Allow-Origin', value: process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab-center.ca' },
+          { key: 'Access-Control-Allow-Origin', value: process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab.ca' },
           { key: 'Access-Control-Allow-Methods', value: 'GET, POST, OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
         ],

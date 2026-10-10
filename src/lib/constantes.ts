@@ -35,7 +35,7 @@
  * corrigé une fois (voir l'en-tête de ce fichier-là). Les deux existent
  * pour deux besoins différents ; ce n'est pas une duplication à fusionner.
  */
-export const DOMAINE = process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab-center.ca'
+export const DOMAINE = process.env.NEXT_PUBLIC_SITE_URL || 'https://ko-lab.ca'
 
 /**
  * Adresses courriel. Valeurs vérifiées dans le code au moment d'écrire ce
@@ -49,12 +49,19 @@ export const EMAILS = {
   /** Ressources humaines — section RH de /carrieres. */
   rh: 'rh@ko-lab.ca',
   /**
-   * Expéditeur technique des courriels transactionnels — le seul domaine
-   * vérifié par Resend pour ENVOYER. Le `from:` des gabarits de commande
-   * et de `/api/contact` doit rester ici, jamais sur ko-lab.ca (non
-   * vérifié chez Resend : l'envoi échouerait).
+   * Expéditeur technique des courriels transactionnels — doit TOUJOURS être
+   * une adresse d'un domaine vérifié par Resend pour ENVOYER. Le `from:` des
+   * gabarits de commande et de `/api/contact` le lit.
+   *
+   * ⚠️ BASCULE DE DOMAINE (préparée le 9 octobre 2026) — cette valeur a été
+   * passée de `site@ko-lab-center.ca` à `site@ko-lab.ca` EN PRÉVISION de la
+   * bascule. Ce commit NE DOIT PAS être déployé tant que `ko-lab.ca` n'est
+   * pas vérifié chez Resend : sinon tout envoi échoue (« Domain not
+   * verified ») — la commande reste enregistrée, seul le courriel manque,
+   * mais c'est un incident silencieux. Ordre exact : vérifier ko-lab.ca chez
+   * Resend AVANT de déployer ce changement. Voir docs/bascule-domaine.md, §3.
    */
-  envoiTransactionnel: 'site@ko-lab-center.ca',
+  envoiTransactionnel: 'site@ko-lab.ca',
   /**
    * ⚠️ Configuré dans le tableau de bord Supabase (Authentication → Emails
    * → SMTP Settings), PAS dans ce dépôt — aucun fichier de code ne
