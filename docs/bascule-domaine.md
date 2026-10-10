@@ -1,8 +1,14 @@
 # Procédure de bascule du domaine
 
-Ce document décrit ce qu'il faut faire, dans quel ordre, le jour où
-`ko-lab-center.ca` est remplacé par le domaine définitif. Il ne suppose
-pas quel sera ce domaine — écrit pour être suivi tel quel quel qu'il soit.
+Ce document décrit la bascule du site de `ko-lab-center.ca` vers son domaine
+définitif `ko-lab.ca`.
+
+> **Bascule exécutée le 9 octobre 2026, par Cloudflare.** Les §1, §7, §8 et §9
+> consignent le chemin réellement suivi et les pièges rencontrés. Les §2 à §6
+> restent la référence des réglages (Vercel, Resend, Supabase, SEO). Au moment
+> d'écrire ces lignes, la propagation DNS est faite (NS sur Cloudflare, apex
+> sur Vercel), Resend est en attente de vérification, et le commit de code
+> `196ac3a` n'est pas encore déployé.
 
 **Objectif du côté code** : dans le cas normal — la variable Vercel
 `NEXT_PUBLIC_SITE_URL` mise à jour (étape 2) — **aucune modification du
@@ -31,70 +37,68 @@ cette procédure ne les concerne, sauf décision explicite contraire de
 Christian — voir `.claude/CLAUDE.md`, section Domaine, pour l'historique de
 cette distinction.
 
-`EMAILS.envoiTransactionnel` (`site@ko-lab-center.ca`) et
-`EMAILS.expediteurAuthSupabase` (`notifications@ko-lab-center.ca`), en
-revanche, vivent sur le domaine qui bascule — ce sont eux qui exigent la
-reconfiguration Resend/Supabase décrite plus bas, pas seulement un
+`EMAILS.envoiTransactionnel` (passé à `site@ko-lab.ca` dans le commit préparé
+`196ac3a`, était `site@ko-lab-center.ca`) et `EMAILS.expediteurAuthSupabase`
+(`notifications@ko-lab-center.ca`, inchangé — réglage dashboard Supabase, pas
+de code), en revanche, vivent sur le domaine qui bascule — ce sont eux qui
+exigent la reconfiguration Resend/Supabase décrite plus bas, pas seulement un
 changement de constante.
 
 ---
 
-## 1. DNS — `ko-lab.ca` (registraire GoDaddy, DNS chez DreamHost)
+## 1. DNS — `ko-lab.ca` (registraire GoDaddy, bascule par Cloudflare)
 
-État mesuré le 9 octobre 2026 : `ko-lab.ca` est **enregistré chez GoDaddy**
-mais ses serveurs de noms sont ceux de **DreamHost**
-(`ns1/ns2/ns3.dreamhost.com`), pas Cloudflare. La version antérieure de ce
-document supposait Cloudflare — c'était faux. Deux chemins possibles :
+État de départ : `ko-lab.ca` est **enregistré chez GoDaddy**, ses serveurs
+de noms étaient ceux de **DreamHost** (`ns1/ns2/ns3.dreamhost.com`). Une
+version antérieure de ce document supposait Cloudflare au départ, puis avait
+basculé sur une recréation manuelle chez GoDaddy — **ni l'un ni l'autre
+n'est le chemin réellement suivi**.
 
-- **(a) Garder DreamHost** : éditer directement les enregistrements dans le
-  panneau DreamHost. Aucun changement de NS, retour arrière en minutes
-  (TTL courts mesurés : 60 s). Le plus sûr pour un premier essai.
-- **(b) Basculer les NS vers GoDaddy** (ou Cloudflare) : changer les serveurs
-  de noms chez le registraire GoDaddy, puis **recréer toute la zone** dans le
-  nouveau panneau DNS. Un changement de NS **abandonne la zone DreamHost en
-  entier** — pas seulement la ligne du site. Retour arrière lent (plusieurs
-  heures à ~24 h de propagation).
+**Chemin réellement suivi le 9 octobre 2026 : Cloudflare.** `ko-lab.ca` a été
+ajouté au compte Cloudflare `Web@ko-lab.ca` — le même qui gère déjà
+`ko-lab-center.ca`. À l'ajout, **Cloudflare a scanné la zone DreamHost et
+importé automatiquement les 6 enregistrements existants**. Puis les NS ont
+été changés chez GoDaddy vers Cloudflare (`mack.ns.cloudflare.com`,
+`stevie.ns.cloudflare.com`).
 
-> ⚠️ **Avant tout changement de NS : exporter la zone DreamHost complète.**
-> Un relevé DNS public ne voit que ce qui est interrogé nommément. Les
-> sélecteurs DKIM (ex. `<selecteur>._domainkey.ko-lab.ca`) et tout
-> sous-domaine éventuel ne se devinent pas — seul l'export DreamHost (ou la
-> console Google Admin pour DKIM) les donne tous. Oublier un DKIM ne casse
-> pas la livraison du courriel mais casse la signature/alignement DMARC.
+**Pourquoi Cloudflare plutôt que recréer la zone à la main chez GoDaddy** :
+l'import automatique reprend le **MX Google et le SPF** tels quels. On ne
+retape rien, donc on ne risque pas de couper le courriel de l'équipe (boîte
+Google Workspace) par une faute de frappe. C'est l'argument décisif, et il
+rend caduque l'ancienne mise en garde « exporter la zone DreamHost à la
+main » : Cloudflare l'a fait pour nous.
 
-### Zone à recréer (chemin b) — valeurs directement recopiables
+### Zone finale sur Cloudflare (état réel, 9 octobre 2026)
 
-La zone visible aujourd'hui tient en quatre lignes (`@ A`, `www A`, `MX`,
-`TXT`). À la recréer, l'apex et `www` doivent désormais pointer vers **Vercel**
-(plus vers DreamHost), tandis que **MX et SPF Google sont recopiés tels quels**
-pour ne pas couper le courriel de l'équipe (boîte Google Workspace) :
-
-| Type  | Nom (Host) | Valeur                                | Priorité | Rôle |
-|-------|-----------|----------------------------------------|----------|------|
-| A     | `@`       | `216.198.79.65`                        | —        | Vercel (apex) |
-| A     | `@`       | `64.29.17.65`                          | —        | Vercel (apex, 2ᵉ IP) |
-| CNAME | `www`     | `cname.vercel-dns.com`                 | —        | Vercel (sous-domaine) |
-| MX    | `@`       | `smtp.google.com`                      | `0`      | **Courriel Google — PRÉSERVER** |
-| TXT   | `@`       | `v=spf1 include:_spf.google.com ~all`  | —        | **SPF Google — PRÉSERVER** |
+| Type  | Nom                 | Valeur (contenu)                      | Proxy     | Rôle |
+|-------|---------------------|----------------------------------------|-----------|------|
+| A     | `@`                 | `216.198.79.1`                         | DNS only  | Vercel (apex) — **la seule IP que Vercel a demandée** |
+| A     | `www`               | `216.198.79.1`                         | DNS only  | Vercel |
+| A     | `ftp`               | *(DreamHost, inchangé)*                | DNS only  | ancien hébergement, laissé en place |
+| A     | `ssh`               | *(DreamHost, inchangé)*                | DNS only  | ancien hébergement, laissé en place |
+| MX    | `@`                 | `smtp.google.com`                      | —         | **Courriel Google — importé, préservé** |
+| TXT   | `@`                 | `v=spf1 include:_spf.google.com ~all`  | —         | **SPF Google — importé, préservé** |
+| TXT   | `resend._domainkey` | *(fourni par Resend)*                  | —         | DKIM Resend |
+| CNAME | `rsend`             | *(fourni par Resend)*                  | DNS only  | Resend |
+| CNAME | `send`              | *(fourni par Resend)*                  | DNS only  | Resend |
+| TXT   | `_dmarc`            | *(fourni par Resend)*                  | —         | DMARC |
 
 Notes :
-- Les deux IP Vercel (`216.198.79.65`, `64.29.17.65`) sont celles que sert
-  `ko-lab-center.ca` aujourd'hui. **Vercel affiche les valeurs exactes à
-  l'ajout du domaine (étape 2) — recopier ce qu'il montre ce jour-là**, pas
-  ce tableau si elles diffèrent.
-- GoDaddy en DNS classique ne « flatten » pas un CNAME à l'apex : l'apex doit
-  être en enregistrements **A**, jamais un CNAME. `www` peut rester en CNAME.
-- **DNS only / pas de proxy.** Sur Cloudflare ce serait le nuage gris ; sur
-  GoDaddy ou DreamHost il n'y a pas de proxy, donc rien à désactiver —
-  nécessaire pour que Vercel émette lui-même le certificat SSL.
-- **Resend ajoutera ses propres enregistrements** (DKIM `resend._domainkey`
-  et, le plus souvent, un `send.ko-lab.ca` avec MX + SPF dédiés) au moment de
-  la vérification (étape 3). Ils vivent sur un **sous-domaine** et ne touchent
-  pas le SPF Google de l'apex : les deux coexistent. Les ajouter quand Resend
-  les donne, pas avant.
+- **Vercel n'a demandé qu'un seul A, `216.198.79.1`** (pas les deux IP que
+  sert `ko-lab-center.ca`, ni un CNAME). `www` pointe sur la même IP. La case
+  « Redirect apex to www » a été **laissée décochée** : l'apex `ko-lab.ca` est
+  le domaine principal.
+- Les 4 enregistrements Resend (DKIM, `rsend`, `send`, `_dmarc`) ont été
+  créés **dans Cloudflare**, tous en DNS only. Ils vivent sur des
+  sous-domaines et ne touchent pas le SPF Google de l'apex : les deux
+  coexistent.
+- **Tout en DNS only (nuage gris), pas de proxy orange** — voir le piège nº 1
+  en §8, c'est l'erreur par défaut de Cloudflare qui empêche Vercel d'émettre
+  le certificat SSL.
 
-Laisser propager avant l'étape 2 : Vercel refuse de vérifier un domaine dont
-le DNS ne pointe pas encore correctement.
+Laisser propager le changement de NS avant de vérifier quoi que ce soit chez
+Vercel ou Resend : ils refusent de valider un domaine dont le DNS ne pointe
+pas encore correctement.
 
 ## 2. Vercel — domaine du projet
 
@@ -178,74 +182,136 @@ pointe vers le nouveau domaine.
 
 ---
 
-## 7. Séquence du jour J — gestes numérotés (chemin b : NS → GoDaddy)
+## 7. Séquence réellement exécutée (9 octobre 2026, par Cloudflare)
 
-Pour suivre sans réfléchir. Chaque geste indique **qui**, **où**, et **le
-délai avant effet**. Les gestes 1 à 3 n'ont aucun effet visible et sont
-réversibles instantanément ; le geste 4 (NS) est le seul lent à annuler.
+Ordre des gestes tels qu'ils ont été faits ce soir-là. Chacun indique
+**qui**, **où**, **effet / délai**.
 
-**Préparation — aucun effet visible, réversible en secondes**
+1. **Cloudflare → ajouter `ko-lab.ca`** au compte `Web@ko-lab.ca` (celui qui
+   gère déjà `ko-lab-center.ca`). Qui : Moussa. Où : dashboard Cloudflare.
+   Effet : scan automatique de la zone DreamHost, **6 enregistrements
+   importés** (dont MX Google et SPF, sans les retaper).
+2. **Cloudflare → repasser les 4 A en DNS only** (Cloudflare les proxifiait
+   en orange par défaut). Qui : Moussa. Où : Cloudflare, DNS. Effet : immédiat
+   — condition pour que Vercel puisse émettre le SSL (piège nº 1, §8).
+3. **Resend → ajouter `ko-lab.ca`**, qui génère 4 enregistrements, créés dans
+   Cloudflare : `TXT resend._domainkey`, `CNAME rsend`, `CNAME send`,
+   `TXT _dmarc`, tous en DNS only. Qui : Moussa. Où : Resend + Cloudflare.
+   Effet : Resend passe en « Pending / Checking DNS ».
+4. **Vercel → ajouter `ko-lab.ca`** au projet, en Production, **sans** cocher
+   « Redirect apex to www » (l'apex est le domaine principal). Qui : Moussa.
+   Où : Vercel, Domains. Effet : Vercel réclame **un seul A, `216.198.79.1`**.
+5. **Cloudflare → pointer les A de `@` et `www`** de `69.163.176.103`
+   (DreamHost) vers `216.198.79.1` (Vercel). `ftp` et `ssh` laissés sur
+   DreamHost. Qui : Moussa. Où : Cloudflare, DNS. Effet : immédiat côté
+   Cloudflare, visible après propagation NS.
+6. **GoDaddy → changer les serveurs de noms** de DreamHost vers
+   `mack.ns.cloudflare.com` / `stevie.ns.cloudflare.com`. Qui : Moussa. Où :
+   GoDaddy, Nameservers. Effet : **propagation 1 h à ~24 h** — le seul geste
+   lent à annuler.
+7. **Vercel → variable `NEXT_PUBLIC_SITE_URL`** : elle existait en type
+   **Secret**, que Vercel refusait de modifier ; **supprimée puis recréée en
+   type Config**, valeur `https://ko-lab.ca`, Production + Preview (piège
+   nº 2, §8). Redéploiement : **build Ready en 59 s**. Qui : Moussa. Où :
+   Vercel, Environment Variables.
+8. **Supabase → Auth** : `Site URL = https://ko-lab.ca`, et `https://ko-lab.ca/**`
+   ajouté aux Redirect URLs. Qui : Moussa. Où : dashboard Supabase.
+   Découverte en passant : Supabase pointait vers `ko-lab-website.vercel.app`,
+   **jamais** vers `ko-lab-center.ca` — rien ne cassait avant cette bascule,
+   le flux auth était déjà sur l'URL `*.vercel.app`.
 
-1. **Exporter la zone DreamHost complète** (filet de sécurité, §1).
-   Qui : Moussa. Où : panneau DNS DreamHost. Effet : immédiat (fichier
-   local), ne change rien en ligne.
-2. **Pré-remplir la zone dans le panneau DNS GoDaddy** avec les cinq lignes
-   du tableau §1 (Vercel A×2 + `www` CNAME + MX Google + TXT SPF), **sans
-   encore toucher aux NS**. Qui : Moussa. Où : GoDaddy, section DNS. Effet :
-   aucun tant que les NS pointent sur DreamHost — la zone reste en attente.
-3. **Resend → ajouter `ko-lab.ca`**, relever les enregistrements qu'il
-   réclame (DKIM `resend._domainkey`, et en général un `send` avec MX+SPF),
-   et les **ajouter à la zone GoDaddy pré-remplie** du geste 2. Qui : Moussa.
-   Où : dashboard Resend + GoDaddy. Effet : aucun encore (DNS pas servi).
+**Reste à faire (le lendemain) :**
+- Attendre que **Resend passe Verified** (il interrogeait encore DreamHost au
+  moment du relevé ; passera seul après propagation NS).
+- **Alors seulement**, pousser le commit `196ac3a` (déjà validé par
+  `npm run build`, exit 0) pour que l'expéditeur devienne `site@ko-lab.ca`.
+  Avant ça, les courriels partent encore de `site@ko-lab-center.ca`, ce qui
+  reste valide tant que `ko-lab-center.ca` est vérifié chez Resend.
+- Confirmer le sort de **`ko-lab-center.ca`** (redirection vers `ko-lab.ca`
+  ou maintien) — voir le test nº 10 du §9.
 
-**Bascule — à partir d'ici le site change pour les visiteurs**
+> **Ce qui référence encore `ko-lab-center.ca` après le futur déploiement du
+> commit, et c'est normal** : (1) le commentaire d'avertissement sur
+> `envoiTransactionnel` et les commentaires historiques dans `src/` ;
+> (2) `EMAILS.expediteurAuthSupabase` (`notifications@ko-lab-center.ca`),
+> valeur **inerte** qu'aucun code ne lit, documentant le réglage SMTP Supabase ;
+> (3) `ko-lab-center.ca` lui-même, domaine encore **vivant** sur Vercel.
 
-4. **GoDaddy → changer les serveurs de noms** de DreamHost vers ceux de
-   GoDaddy. Qui : Moussa. Où : GoDaddy, section Nameservers du domaine.
-   Effet : **propagation 1 h à ~24 h** (TTL des NS). C'est LE geste lent à
-   annuler — tout le reste est rapide.
-5. **Attendre la propagation**, puis vérifier :
-   `dig ko-lab.ca NS` → GoDaddy, et `dig ko-lab.ca A` → les IP Vercel.
-   Qui : Moussa. Où : terminal. Effet : quand c'est vert, la zone GoDaddy
-   est servie partout.
-6. **Resend → « Verify »** sur `ko-lab.ca`. Qui : Moussa. Où : Resend. Effet :
-   quelques minutes. **Bloque le geste 9** (ne pas déployer le code avant
-   que ce soit vert, sinon les courriels échouent « Domain not verified »).
-7. **Vercel → Domains** : ajouter `ko-lab.ca` et `www.ko-lab.ca`, passer
-   `ko-lab.ca` **primaire**, garder `ko-lab-center.ca` en **redirection 308**.
-   Qui : Moussa. Où : Vercel, Project Settings → Domains. Effet : certificat
-   SSL émis en quelques minutes une fois le DNS vu.
-8. **Vercel → Environment Variables** : poser
-   `NEXT_PUBLIC_SITE_URL = https://ko-lab.ca` en **Production ET Preview**.
-   Qui : Moussa. Où : Vercel, Settings → Environment Variables. Effet :
-   **aucun tant qu'un nouveau déploiement n'a pas eu lieu** (une variable
-   `NEXT_PUBLIC_` est figée au build) — c'est le geste 9 qui l'active.
-9. **Déployer le commit de code préparé** (replis en dur + `envoiTransactionnel`
-   vers `ko-lab.ca`) en poussant la branche. Qui : Moussa. Où : `git push`
-   → build Vercel. Effet : build ~1 à 2 min. Ce déploiement prend en compte
-   **à la fois** la variable du geste 8 et le commit de code. **Ne le faire
-   qu'après le geste 6 (Resend vérifié).**
-10. **Supabase → Authentication** : mettre `Site URL` et chaque `Redirect
-    URL` sur `https://ko-lab.ca` (URL Configuration), et le `Sender` SMTP sur
-    une adresse `@ko-lab.ca` vérifiée chez Resend (Emails → SMTP Settings).
-    Qui : Moussa. Où : dashboard Supabase. Effet : immédiat sur les nouveaux
-    liens de confirmation / réinitialisation.
+---
 
-**Vérification puis nettoyage**
+## 8. Pièges rencontrés (9 octobre 2026)
 
-11. **Dérouler la checklist du §6** (200 sur le nouveau, 308 sur l'ancien,
-    inscription de test de bout en bout, sitemap/robots/CORS à jour).
-    Qui : Moussa. Où : terminal + navigateur.
-12. **Plus tard seulement, tout étant vert et stable** : retirer
-    `ko-lab-center.ca` de Resend si souhaité, soumettre `ko-lab.ca` à Google
-    Search Console, et décider du sort de l'ancien contenu DreamHost. Qui :
-    Moussa / Christian.
+1. **Cloudflare proxifie les A importés par défaut (nuage orange).** Après
+   l'import automatique de la zone, les 4 A étaient en mode proxy. Tant qu'un
+   A reste orange, Cloudflare répond à sa place et **Vercel ne peut pas
+   émettre son certificat SSL** (il n'atteint pas l'origine pour le challenge).
+   Il faut **repasser chaque A en DNS only (nuage gris)**. Symptôme si on
+   oublie : erreur de certificat (`ERR_CERT_*`, `526`) sur `https://ko-lab.ca`.
+2. **Une variable `NEXT_PUBLIC_` créée en type « Secret » ne peut plus être
+   changée en « Config » sur Vercel.** `NEXT_PUBLIC_SITE_URL` était en Secret ;
+   Vercel refusait de la modifier. Solution : **la supprimer et la recréer en
+   type Config** (Plain), avec la nouvelle valeur, Production + Preview. Un
+   `NEXT_PUBLIC_` doit de toute façon être en clair : il finit inliné dans le
+   bundle client, « Secret » n'y protège rien.
 
-> **Ce qui référence encore `ko-lab-center.ca` APRÈS le commit de code, et
-> c'est normal** : (1) le commentaire d'avertissement sur `envoiTransactionnel`
-> et les commentaires historiques dans `src/` ; (2) `EMAILS.expediteurAuthSupabase`
-> (`notifications@ko-lab-center.ca`) — valeur **inerte**, aucun code ne la lit,
-> elle ne documente que le réglage SMTP Supabase du geste 10, à changer dans
-> le dashboard, pas dans le dépôt ; (3) `ko-lab-center.ca` lui-même reste un
-> domaine **vivant** sur Vercel, en redirection 308 — c'est voulu, pas un
-> oubli.
+---
+
+## 9. Checklist du lendemain — gestes numérotés
+
+À dérouler **dans l'ordre** une fois la nuit de propagation passée. Chaque
+test dit **ce qu'on tape**, **le résultat attendu**, et **ce que signifie un
+échec**. Ne pas sauter d'étape : plusieurs tests sont des préconditions du
+suivant.
+
+1. **NS propagés** — `dig +short NS ko-lab.ca`
+   Attendu : `mack.ns.cloudflare.com` / `stevie.ns.cloudflare.com`.
+   Échec (encore DreamHost) : propagation pas finie, **attendre, ne rien
+   déployer**. Tout le reste en dépend.
+2. **Apex vers Vercel** — `dig +short A ko-lab.ca`
+   Attendu : `216.198.79.1`.
+   Échec : la modification Cloudflare du geste 5 n'est pas servie ; vérifier
+   l'enregistrement dans Cloudflare.
+3. **HTTPS + SSL** — `curl -I https://ko-lab.ca`
+   Attendu : `200`, certificat valide.
+   Échec de certificat (`ERR_CERT`, `526`) : un A est resté en proxy orange
+   (piège nº 1) — repasser en DNS only, patienter quelques minutes.
+4. **Courriel de l'équipe intact** — `dig +short MX ko-lab.ca` (attendu
+   `smtp.google.com`) **et** envoyer un vrai courriel de test à
+   `info@ko-lab.ca` depuis l'extérieur.
+   Échec : le MX a été perdu — **critique**, c'est la boîte réelle de
+   l'équipe ; recréer `MX @ smtp.google.com` (priorité 0) dans Cloudflare.
+5. **Resend Verified** — dashboard Resend, domaine `ko-lab.ca`.
+   Attendu : `Verified`.
+   Tant que `Pending` : **NE PAS exécuter le test 6**. Le déploiement du code
+   avant vérification casse tout envoi (« Domain not verified »).
+6. **Déployer le code** — `git push` du commit `196ac3a` (uniquement si test 5
+   vert). Attendu : build Vercel Ready. Puis **envoyer une commande de test**
+   et confirmer la **réception** d'un courriel dont l'expéditeur est
+   `site@ko-lab.ca`.
+   Échec d'envoi : revenir en arrière (Resend pas réellement prêt) ; la
+   commande reste enregistrée, seul le courriel manque.
+7. **Canonicals / sitemap** — `curl -s https://ko-lab.ca/sitemap.xml | head`
+   Attendu : des URL en `https://ko-lab.ca`.
+   Échec (encore `ko-lab-center.ca`) : la variable n'a pas été prise ;
+   vérifier qu'elle est bien en type **Config** (piège nº 2) et redéployer.
+8. **robots.txt** — `curl -s https://ko-lab.ca/robots.txt`
+   Attendu : `Sitemap: https://ko-lab.ca/sitemap.xml`. Même cause d'échec
+   que le test 7.
+9. **CORS des API** —
+   `curl -sI -X OPTIONS https://ko-lab.ca/api/contact | grep -i access-control-allow-origin`
+   Attendu : `https://ko-lab.ca`.
+   Échec (ancien domaine) : le commit `196ac3a` n'est pas déployé, ou la
+   variable n'est pas prise.
+10. **Ancien domaine** — `curl -I https://ko-lab-center.ca`
+    Attendu : idéalement `308` vers `https://ko-lab.ca`.
+    Si `200` (le site se sert en double) : **contenu dupliqué pour Google**.
+    Ajouter dans Vercel une redirection de `ko-lab-center.ca` vers
+    `ko-lab.ca`. Décision à prendre avec Christian — ce n'est pas bloquant
+    pour les visiteurs, mais ça l'est pour le SEO.
+11. **Auth de bout en bout** — inscription de test avec une **vraie** adresse
+    que tu consultes, cliquer le lien de confirmation reçu, atterrir sur
+    `https://ko-lab.ca/...` sans erreur.
+    Échec (lien mort / `token_hash` invalide) : une Redirect URL manque côté
+    Supabase (geste 8). Supprimer le compte de test ensuite.
+12. **Plus tard, tout étant vert** : soumettre `ko-lab.ca` à Google Search
+    Console, et décider de retirer `ko-lab-center.ca` de Resend.
