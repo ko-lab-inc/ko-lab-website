@@ -5,7 +5,8 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 import { routing } from '@/i18n/routing'
 import { ETIQUETTE_EMPLACEMENTS_MEDIAS } from '@/lib/medias-emplacements'
-import { ROUTES } from '@/lib/routes'
+import { CATEGORIES_LOCATION } from '@/lib/rentman/categories'
+import { ROUTES, routeCategorieLocation } from '@/lib/routes'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
 
@@ -86,6 +87,19 @@ export async function POST(req: NextRequest) {
   for (const chemin of chemins) revalidatePath(chemin)
 
   /**
+   * Les pages de CATÉGORIE (/location/categorie/<cle>), ajoutées le 9 octobre
+   * 2026. Elles sont ISR comme /location : sans ça, une synchro qui ajoute des
+   * articles mettait à jour le compteur des tuiles de /location immédiatement,
+   * mais la page de la catégorie elle-même restait figée jusqu'à une heure —
+   * tuile « Décor 374 » menant à une page qui n'en montrait que 108. On balaie
+   * les sept catégories pour les deux langues.
+   */
+  const cheminsCategories = routing.locales.flatMap((locale) =>
+    CATEGORIES_LOCATION.map((cle) => `/${locale}${routeCategorieLocation(cle)}`),
+  )
+  for (const chemin of cheminsCategories) revalidatePath(chemin)
+
+  /**
    * L'ACCUEIL aussi, et le cache de données des emplacements média.
    *
    * L'accueil (section Besoins) affiche quatre photos lues dans
@@ -113,7 +127,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     succes: true,
-    chemins: [...chemins, ...accueil],
+    chemins: [...chemins, ...cheminsCategories, ...accueil],
     horodatage: new Date().toISOString(),
   })
 }
