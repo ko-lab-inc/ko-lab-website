@@ -197,7 +197,7 @@ export function CatalogueCategorieLocation({
           {libelles.aucunResultat}
         </p>
       ) : vue === 'grille' ? (
-        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
           {visibles.map((produit) => (
             <CarteProduitLocation
               key={produit.id}

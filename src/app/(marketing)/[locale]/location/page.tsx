@@ -119,7 +119,7 @@ export default async function LocationPage({ params }: Props) {
               </p>
             </Reveal>
 
-            <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
               {apercus.map((a) => {
                 const titre = titreCategorie(a.cle)
                 const alt = (locale === 'en' ? a.image_alt_en : a.image_alt_fr) || titre
@@ -155,11 +155,14 @@ export default async function LocationPage({ params }: Props) {
                         )}
                       </div>
 
-                      <div className="flex flex-1 items-baseline justify-between gap-4 p-5">
-                        <h2 className="font-serif text-[22px] leading-tight text-ko-ink underline decoration-transparent underline-offset-4 transition-colors duration-200 group-hover:decoration-ko-blue">
+                      {/* Compteur SOUS le titre : à 2 tuiles par ligne sur
+                          mobile, le mettre à côté du titre le tasserait. Titre
+                          plus petit sur mobile, taille pleine dès sm. */}
+                      <div className="flex flex-1 flex-col gap-1 p-4 sm:p-5">
+                        <h2 className="font-serif text-[17px] leading-tight text-ko-ink underline decoration-transparent underline-offset-4 transition-colors duration-200 group-hover:decoration-ko-blue sm:text-[22px]">
                           {titre}
                         </h2>
-                        <span className="shrink-0 font-mono text-sm text-ko-muted">
+                        <span className="font-mono text-xs text-ko-muted sm:text-sm">
                           {t('cat_compte', { n: a.count })}
                         </span>
                       </div>

@@ -88,7 +88,15 @@ export function CarteProduitLocation({
         {/* `mt-auto` : le bouton reste collé en bas quelle que soit la hauteur
             du nom, pour que tous les boutons d'une rangée s'alignent. */}
         <div className="mt-auto pt-4">
-          <BoutonAjouterLocation slug={produit.slug} nom={nom} categorie={libelleCategorie} />
+          {/* Libellé court « Ajouter » : la carte est étroite (2 par ligne sur
+              mobile depuis le 10 octobre 2026), le libellé long y débordait. Le
+              nom du produit est juste au-dessus. */}
+          <BoutonAjouterLocation
+            slug={produit.slug}
+            nom={nom}
+            categorie={libelleCategorie}
+            libelleCourt
+          />
         </div>
       </div>
     </article>
