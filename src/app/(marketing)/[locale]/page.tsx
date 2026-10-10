@@ -86,13 +86,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       // retrouverait sans image alors que toutes les autres pages en
       // hériteraient. Voir images.ts non concerné : ce fichier vit hors
       // Storage, dans public/images/og/.
-      // ?v : l'image de partage a change le 10 octobre 2026 (ancien hero Canada
-      // Day -> hero actuel « Terrasse VIP »). Le nom de fichier ne change pas
-      // (d'autres pages le referencent), donc on verse une version dans l'URL :
-      // Facebook, iMessage, LinkedIn mettent l'og:image en cache PAR URL, une
-      // nouvelle URL force le re-telechargement. Voir docs : relancer aussi le
-      // Sharing Debugger de Facebook pour les liens deja partages.
-      images: [{ url: '/images/og/og-defaut.jpg?v=2', width: 1200, height: 630 }],
+      // Image de partage changee le 10 octobre 2026 (ancien hero Canada Day ->
+      // hero actuel « Terrasse VIP »). NOM DE FICHIER NEUF, pas un simple ?v= :
+      // un ?v=2 ne suffisait pas, car l'app Messenger (et d'autres caches
+      // d'images) IGNORENT la query et resservent l'ancien fichier par son
+      // chemin. Un chemin jamais vu force le retelechargement partout. Penser
+      // quand meme au Sharing Debugger de Facebook pour les liens deja indexes.
+      images: [{ url: '/images/og/og-ko-lab-terrasse-2026.jpg', width: 1200, height: 630 }],
     },
   }
 }

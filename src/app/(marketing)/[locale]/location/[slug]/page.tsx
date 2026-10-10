@@ -83,7 +83,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'website',
       title: nom,
       description: description ?? tMeta('description'),
-      images: [produit.image_url ?? '/images/og/og-defaut.jpg'],
+      images: [produit.image_url ?? '/images/og/og-ko-lab-terrasse-2026.jpg'],
     },
   }
 }
