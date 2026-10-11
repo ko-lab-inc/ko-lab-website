@@ -117,14 +117,6 @@ export default async function LocationPage({ params }: Props) {
               <p className="mt-5 max-w-[54ch] text-base leading-relaxed text-ko-muted">
                 {t('categories_intro')}
               </p>
-
-              {/* Avis photos — demandé par Chris le 8 octobre 2026. Un
-                  photographe professionnel renouvelle l'inventaire ; en
-                  attendant, certaines photos sont des prises de terrain. Filet
-                  bleu à gauche plutôt qu'un bandeau criard. */}
-              <p className="mt-5 max-w-[54ch] border-l-2 border-ko-blue pl-4 text-sm leading-relaxed text-ko-muted">
-                {t('photos_avis')}
-              </p>
             </Reveal>
 
             <div className="mt-12 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
