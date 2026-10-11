@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import { BarreDemandeLocation } from '@/components/sections/BarreDemandeLocation'
 import { buttonVariants } from '@/components/ui/Button'
 import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
+import { IconeAlerte } from '@/components/ui/Icones'
 import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
@@ -97,10 +98,15 @@ export default async function LocationPage({ params }: Props) {
           {/* Avis « inventaire en évolution » — demandé par Chris le 10 octobre
               2026 : préciser que la plateforme et l'inventaire bougent, que
               quantités et prix peuvent varier, et inviter à contacter. Filet
-              bleu à gauche (accent de marque), posé haut pour être vu d'emblée. */}
-          <p className="mt-8 max-w-[62ch] border-l-2 border-ko-blue pl-4 text-sm leading-relaxed text-ko-muted lg:text-base">
-            {t('avis_evolution')}
-          </p>
+              bleu + icône d'alerte (bleu de marque, pas de rouge dans la
+              palette) pour attirer l'œil, posé haut pour être vu d'emblée.
+              L'icône est `aria-hidden` : le texte porte déjà tout le sens. */}
+          <div className="mt-8 flex max-w-[62ch] items-start gap-3 border-l-2 border-ko-blue pl-4">
+            <IconeAlerte taille={20} className="mt-0.5 shrink-0 text-ko-blue" />
+            <p className="text-sm leading-relaxed text-ko-muted lg:text-base">
+              {t('avis_evolution')}
+            </p>
+          </div>
         </div>
       </section>
 

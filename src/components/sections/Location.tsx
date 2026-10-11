@@ -2,6 +2,7 @@ import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 
 import { buttonVariants } from '@/components/ui/Button'
+import { IconeAlerte } from '@/components/ui/Icones'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { FILTRE_TERRAIN, IMAGES } from '@/lib/images'
@@ -50,10 +51,14 @@ export async function Location() {
 
             {/* Avis court « inventaire en évolution » — demandé par Chris le
                 10 octobre 2026, version accueil (la version longue est sur
-                /location). Filet bleu à gauche, accent de marque. */}
-            <p className="mt-5 max-w-[46ch] border-l-2 border-ko-blue pl-3 text-xs leading-relaxed text-ko-muted lg:text-sm">
-              {t('location_avis')}
-            </p>
+                /location). Filet bleu + icône d'alerte (bleu de marque) pour
+                attirer l'œil ; `aria-hidden`, le texte porte le sens. */}
+            <div className="mt-5 flex max-w-[46ch] items-start gap-2.5 border-l-2 border-ko-blue pl-3">
+              <IconeAlerte taille={16} className="mt-0.5 shrink-0 text-ko-blue" />
+              <p className="text-xs leading-relaxed text-ko-muted lg:text-sm">
+                {t('location_avis')}
+              </p>
+            </div>
 
             <Link href={ROUTES.location} className={`mt-8 ${buttonVariants({ variant: 'ghost' })}`}>
               {t('location_lien')}
