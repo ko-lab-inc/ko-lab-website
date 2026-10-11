@@ -93,6 +93,14 @@ export default async function LocationPage({ params }: Props) {
           <p className="mt-7 max-w-[54ch] text-base leading-relaxed text-ko-muted lg:text-lg">
             {t('intro')}
           </p>
+
+          {/* Avis « inventaire en évolution » — demandé par Chris le 10 octobre
+              2026 : préciser que la plateforme et l'inventaire bougent, que
+              quantités et prix peuvent varier, et inviter à contacter. Filet
+              bleu à gauche (accent de marque), posé haut pour être vu d'emblée. */}
+          <p className="mt-8 max-w-[62ch] border-l-2 border-ko-blue pl-4 text-sm leading-relaxed text-ko-muted lg:text-base">
+            {t('avis_evolution')}
+          </p>
         </div>
       </section>
 
@@ -172,11 +180,6 @@ export default async function LocationPage({ params }: Props) {
               })}
             </div>
 
-            <Reveal>
-              <p className="mt-12 max-w-[46ch] border-t border-ko-line pt-8 text-sm leading-relaxed text-ko-muted">
-                {t('note')}
-              </p>
-            </Reveal>
           </div>
         </section>
       )}

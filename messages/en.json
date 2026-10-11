@@ -219,6 +219,7 @@
       "location_titre": "Everything it takes to equip the site.",
       "location_texte": "Furniture, staging and platforms, fencing, lighting, décor, field equipment and infrastructure. Browse our inventory or start your request right here.",
       "location_lien": "See Inventory",
+      "location_avis": "Evolving inventory: quantities and prices subject to change. Can't find what you need? Contact us.",
       "boutique_titre": "Shop",
       "boutique_texte": "Selected equipment, backed by a team that actually uses it.",
       "boutique_lien": "See Catalogue"
@@ -489,6 +490,7 @@
     "cta_demande": "Make a Request",
     "cta_demande_temporaire": "Request a Rental",
     "note": "Can't find what you're looking for? Write to us: we often have access to more.",
+    "avis_evolution": "Our rental platform is currently in development and our inventory is constantly evolving. Available quantities and listed prices may vary. Can't find exactly what you're looking for? Contact us: our inventory and capabilities often go beyond what's shown online.",
     "produits_titre": "Available equipment",
     "produits_intro": "A selection from our inventory, updated continuously. More items are added regularly.",
     "photos_avis": "Our photos are being refreshed by a professional photographer. Some current images are field shots: thank you for your patience, the final result will be worth it.",

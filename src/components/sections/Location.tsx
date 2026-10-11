@@ -48,6 +48,13 @@ export async function Location() {
               {t('location_texte')}
             </p>
 
+            {/* Avis court « inventaire en évolution » — demandé par Chris le
+                10 octobre 2026, version accueil (la version longue est sur
+                /location). Filet bleu à gauche, accent de marque. */}
+            <p className="mt-5 max-w-[46ch] border-l-2 border-ko-blue pl-3 text-xs leading-relaxed text-ko-muted lg:text-sm">
+              {t('location_avis')}
+            </p>
+
             <Link href={ROUTES.location} className={`mt-8 ${buttonVariants({ variant: 'ghost' })}`}>
               {t('location_lien')}
               <span aria-hidden="true">→</span>

@@ -219,6 +219,7 @@
       "location_titre": "Tout ce qu'il faut pour équiper le terrain.",
       "location_texte": "Mobilier, scènes et plateformes, clôtures, éclairage, décor, équipements terrain et infrastructures. Consultez notre inventaire ou préparez votre demande directement sur le site.",
       "location_lien": "Voir l'inventaire",
+      "location_avis": "Inventaire en évolution : quantités et prix sujets à changement. Vous ne trouvez pas ce que vous cherchez? Contactez-nous.",
       "boutique_titre": "Boutique",
       "boutique_texte": "Des équipements sélectionnés, accompagnés par une équipe qui les utilise réellement.",
       "boutique_lien": "Voir le catalogue"
@@ -489,6 +490,7 @@
     "cta_demande": "Faire une demande de location",
     "cta_demande_temporaire": "Demander une location",
     "note": "Vous ne trouvez pas ce que vous cherchez? Écrivez-nous, on a souvent accès à plus.",
+    "avis_evolution": "Notre plateforme de location est actuellement en développement et notre inventaire évolue constamment. Les quantités disponibles et les prix affichés peuvent varier. Vous ne trouvez pas exactement ce que vous cherchez? Contactez-nous : notre inventaire et nos capacités vont souvent au-delà de ce qui est affiché en ligne.",
     "produits_titre": "Équipements disponibles",
     "produits_intro": "Une sélection de notre inventaire, mise à jour en continu. D'autres articles arrivent régulièrement.",
     "photos_avis": "Nos photos sont en cours de renouvellement par un photographe professionnel. Certaines images actuelles viennent du terrain : merci de votre indulgence, le résultat final sera à la hauteur.",
