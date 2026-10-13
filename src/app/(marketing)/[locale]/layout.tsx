@@ -3,6 +3,7 @@ import { hasLocale, NextIntlClientProvider } from 'next-intl'
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server'
 import { JetBrains_Mono, Montserrat } from 'next/font/google'
 import { notFound } from 'next/navigation'
+import Script from 'next/script'
 
 import { BandeauAnnonce } from '@/components/layout/BandeauAnnonce'
 import { Footer } from '@/components/layout/Footer'
@@ -420,6 +421,27 @@ export default async function MarketingLayout({ children, params }: Props) {
           aucune traduction.
         */}
         <SpeedInsights />
+
+        {/*
+          Vercel Web Analytics — nombre de visiteurs, pages vues, provenance,
+          pays, appareils (tableau de bord Vercel, onglet Analytics). Ajouté le
+          13 octobre 2026.
+
+          ⚠️ Script injecté À LA MAIN, PAS le paquet `@vercel/analytics`. Le
+          paquet tire une dépendance optionnelle SvelteKit qui exige `vite@8`,
+          en conflit avec le `vite@7` de nos tests (ERESOLVE) — et `npm install`
+          sur Vercel échouerait pareil. Le script `/_vercel/insights/script.js`
+          est servi par Vercel sur NOTRE origine : couvert par `script-src
+          'self'` de la CSP (next.config.ts), et il suit tout seul les
+          changements de route (il patche l'historique). Même mécanique que
+          SpeedInsights ci-dessus, sans la dépendance.
+
+          ⚠️ À ACTIVER dans le tableau de bord Vercel (projet → Analytics →
+          Enable Web Analytics) pour que les données remontent. En local et sur
+          une preview non activée, le script répond 404 : sans effet, aucune
+          erreur bloquante.
+        */}
+        <Script defer src="/_vercel/insights/script.js" />
       </body>
     </html>
   )
