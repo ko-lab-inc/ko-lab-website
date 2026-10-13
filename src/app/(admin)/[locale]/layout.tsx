@@ -16,6 +16,7 @@ import {
   IconePanier,
   IconeReglages,
   IconeTableauBord,
+  IconeTendance,
 } from '@/components/ui/Icones'
 import { routing } from '@/i18n/routing'
 import { createClient } from '@/lib/supabase/server'
@@ -107,6 +108,11 @@ export default async function AdminLayout({ children, params }: Props) {
           href: `/${locale}/admin`,
           label: t('nav_tableau'),
           icone: <IconeTableauBord taille={17} />,
+        },
+        {
+          href: `/${locale}/admin/analytique`,
+          label: t('nav_analytique'),
+          icone: <IconeTendance taille={17} />,
         },
         {
           href: `/${locale}/admin/demandes`,
