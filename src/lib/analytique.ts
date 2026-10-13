@@ -23,7 +23,7 @@ const TABLE = 'evenements_visite'
  * DEUX CHEMINS, DEUX CLIENTS SUPABASE
  *
  * - ÉCRITURE (`enregistrerVisite`) : service role (`getSupabaseAdmin`), appelé
- *   seulement par /api/stats. Le public n'a aucun accès direct à la table
+ *   seulement par /api/vue. Le public n'a aucun accès direct à la table
  *   (RLS + grants révoqués, 0058). Ne lève jamais : une visite manquée ne doit
  *   pas casser une requête de page.
  * - LECTURE (`lireStatistiques`) : client de SESSION sous RLS, comme toutes les

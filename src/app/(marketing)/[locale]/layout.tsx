@@ -422,7 +422,7 @@ export default async function MarketingLayout({ children, params }: Props) {
         */}
         <SpeedInsights />
 
-        {/* Analytique INTERNE : beacon de visite vers /api/stats (table
+        {/* Analytique INTERNE : beacon de visite vers /api/vue (table
             evenements_visite, 0058), affichée dans /admin/analytique. Remplace
             le script Vercel Web Analytics, qui ne recevait jamais d'événement
             (le paquet @vercel/analytics a un conflit de dépendance, et le

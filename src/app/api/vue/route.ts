@@ -7,6 +7,10 @@ import { rateLimit } from '@/lib/utils/rateLimit'
 /**
  * Capture d'une visite — appelée par le beacon client `CaptureVisite`.
  *
+ * ⚠️ Route nommée `/api/vue`, PAS `/api/stats` : un nom contenant « stats » est
+ * filtré par beaucoup de bloqueurs de pub/pistage même en same-origin (la
+ * visite du boss n'arrivait pas, 13 octobre 2026). Un nom neutre passe.
+ *
  * ---------------------------------------------------------------------------
  * SÉCURITÉ
  *
@@ -32,7 +36,7 @@ const LIMITE = { max: 120, windowMs: 60_000 }
 
 export async function POST(req: NextRequest) {
   const ip = adresseDepuis(req.headers)
-  if (rateLimit(`stats:${ip}`, LIMITE)) {
+  if (rateLimit(`vue:${ip}`, LIMITE)) {
     return new NextResponse(null, { status: 429 })
   }
 
