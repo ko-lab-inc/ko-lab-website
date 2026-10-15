@@ -32,9 +32,11 @@
 --
 -- `net.http_post` (pg_net) met l'appel en file et rend la main aussitôt : la
 -- latence ou l'indisponibilité de JARVIS ne retarde pas l'insertion. En plus,
--- l'appel est enveloppé dans un bloc d'exception : si quoi que ce soit échoue
--- ici, on journalise un warning et l'INSERT est quand même validé. La demande
--- est d'abord en base ; la notification est un bonus best-effort.
+-- TOUTE la logique (lecture du Vault COMPRISE) est enveloppée dans un seul bloc
+-- d'exception : si quoi que ce soit échoue ici — Vault inaccessible, pg_net
+-- absent, JARVIS down — on journalise un warning et l'INSERT est quand même
+-- validé. La demande est d'abord en base ; la notification est un bonus
+-- best-effort. Aucune panne de notification ne peut annuler une demande.
 --
 -- SECURITY DEFINER : le trigger lit `vault.decrypted_secrets`, accessible au
 -- propriétaire de la fonction (postgres), pas au rôle qui insère (service role
@@ -53,17 +55,19 @@ declare
   -- migration, ou la déplacer en second secret Vault si elle devient sensible.
   v_url   text := 'https://n8n-xqae.srv1893857.hstgr.cloud/webhook/demande-site';
 begin
-  select decrypted_secret
-    into v_token
-    from vault.decrypted_secrets
-   where name = 'jarvis_webhook_token';
-
-  if v_token is null then
-    raise warning 'notifier_jarvis: secret "jarvis_webhook_token" absent du Vault — POST non envoyé, demande % conservée', new.id;
-    return null;  -- AFTER trigger : la valeur de retour est ignorée.
-  end if;
-
+  -- UN SEUL bloc gardé, lecture du Vault incluse : rien ici ne peut faire
+  -- échouer l'INSERT (voir l'en-tête « NON BLOQUANT »).
   begin
+    select decrypted_secret
+      into v_token
+      from vault.decrypted_secrets
+     where name = 'jarvis_webhook_token';
+
+    if v_token is null then
+      raise warning 'notifier_jarvis: secret "jarvis_webhook_token" absent du Vault — POST non envoyé, demande % conservée', new.id;
+      return null;  -- AFTER trigger : la valeur de retour est ignorée.
+    end if;
+
     perform net.http_post(
       url     := v_url,
       -- Format STANDARD, non transformé — c'est exactement ce que JARVIS lit.
@@ -79,8 +83,8 @@ begin
                  )
     );
   exception when others then
-    -- Jamais bloquant : un échec d'envoi ne doit pas annuler l'insertion.
-    raise warning 'notifier_jarvis: envoi échoué (%), demande % conservée', sqlerrm, new.id;
+    -- Jamais bloquant : aucune panne (Vault, pg_net, réseau) n'annule l'insertion.
+    raise warning 'notifier_jarvis: notification non envoyée (%), demande % conservée', sqlerrm, new.id;
   end;
 
   return null;
