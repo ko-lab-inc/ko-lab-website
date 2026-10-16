@@ -18,11 +18,14 @@ import styles from './PopupNoel.module.css'
  *
  *   1. SAISON — le layout ne le monte QUE pendant la saison (estSaisonNoel) ;
  *      hors saison, ce composant n'est jamais rendu, aucun JS envoyé.
- *   2. UNE FOIS, puis silence — une fois fermé (ou le CTA suivi), il ne
- *      réapparaît pas avant quelques jours (localStorage). Et il ne s'affiche
- *      jamais SUR la page /noel elle-même (le visiteur y est déjà).
+ *   2. UNE FOIS PAR VISITE — une fois fermé (ou le CTA suivi), il ne
+ *      réapparaît pas pendant la visite en cours, rechargements compris
+ *      (sessionStorage) ; il revient à la PROCHAINE visite du visiteur
+ *      (nouvelle session de navigation). Choix de Moussa le 16 octobre 2026
+ *      (« à chaque nouvelle visite »). Et il ne s'affiche jamais SUR la page
+ *      /noel elle-même (le visiteur y est déjà).
  *
- * Tout l'accès à localStorage est sous try/catch : navigation privée, stockage
+ * Tout l'accès à sessionStorage est sous try/catch : navigation privée, stockage
  * bloqué ou vidé ne doit jamais casser la page (le popup s'affiche alors
  * simplement comme si rien n'avait été vu — comportement sûr).
  *
@@ -30,10 +33,11 @@ import styles from './PopupNoel.module.css'
  * marketing, pas de namespace à ajouter à la liste blanche client.
  */
 
+// sessionStorage (pas localStorage) : « une fois par visite ». Fermé = silence
+// le reste de la session (rechargements compris), puis réapparaît à la
+// prochaine visite. La clé garde le suffixe _v1 : un changement de règle
+// d'affichage se ferait en _v2 pour repartir propre.
 const CLE_STOCKAGE = 'kolab_noel_popup_v1'
-// Silence après fermeture : 3 jours. Assez pour ne pas harceler, assez court
-// pour revoir l'offre pendant une saison de ~2 mois.
-const SILENCE_MS = 3 * 24 * 60 * 60 * 1000
 const DELAI_AFFICHAGE_MS = 1200
 
 type Props = {
@@ -45,13 +49,9 @@ type Props = {
   fermer: string
 }
 
-function recemmentFerme(): boolean {
+function dejaVuCetteVisite(): boolean {
   try {
-    const brut = window.localStorage.getItem(CLE_STOCKAGE)
-    if (!brut) return false
-    const ts = Number(brut)
-    if (!Number.isFinite(ts)) return false
-    return Date.now() - ts < SILENCE_MS
+    return window.sessionStorage.getItem(CLE_STOCKAGE) === '1'
   } catch {
     return false
   }
@@ -59,7 +59,7 @@ function recemmentFerme(): boolean {
 
 function marquerFerme(): void {
   try {
-    window.localStorage.setItem(CLE_STOCKAGE, String(Date.now()))
+    window.sessionStorage.setItem(CLE_STOCKAGE, '1')
   } catch {
     // Stockage indisponible : tant pis, le popup pourra réapparaître. Jamais
     // une erreur visible.
@@ -76,7 +76,7 @@ export function PopupNoel({ eyebrow, titre, texte, cta, plusTard, fermer }: Prop
 
   useEffect(() => {
     if (surPageNoel) return
-    if (recemmentFerme()) return
+    if (dejaVuCetteVisite()) return
     const minuteur = window.setTimeout(() => setVisible(true), DELAI_AFFICHAGE_MS)
     return () => window.clearTimeout(minuteur)
   }, [surPageNoel])
