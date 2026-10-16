@@ -1,4 +1,5 @@
 import { getTranslations } from 'next-intl/server'
+import Image from 'next/image'
 
 import { IconeFacebook, IconeInstagram, IconeLinkedin } from '@/components/ui/Icones'
 import { Link } from '@/i18n/navigation'
@@ -197,28 +198,68 @@ export async function Footer() {
           </div>
         </div>
 
-        {/* Filet de séparation — 1px, vocabulaire du design system */}
-        <div className="mt-16 flex flex-col gap-4 border-t border-ko-line-d pt-8 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-[11px] uppercase tracking-widest text-ko-muted-d">
-            © {annee} {t('droits')}
-          </p>
+        {/* Bandeau des trois marques du groupe — demandé par le boss (16 octobre
+            2026). Ordre : Turbo, KO-LAB au centre (plus grand : c'est SON site),
+            Expérience Mobile. PAS d'encadré : les PNG « no back » (transparents,
+            déjà détourés et ramenés à 200 px de haut) se posent directement sur
+            le fond noir du pied. Partagent le filet ci-dessus avec le copyright,
+            pour ne pas empiler deux lignes.
 
-          {/* Mentions légales à venir : demande le nom légal exact, l'adresse
-              d'affaires et le NEQ, absents du site aujourd'hui. Politique de
-              retour à venir également — aucune politique de retour formelle
-              n'existe encore (voir gabaritCommande.ts). */}
-          <ul className="flex flex-wrap gap-x-6 gap-y-2">
-            {liensLegaux.map(({ key, href }) => (
-              <li key={key}>
-                <Link
-                  href={href}
-                  className="inline-flex min-h-[44px] items-center text-[11px] text-ko-muted-d transition-colors duration-200 hover:text-ko-white sm:min-h-0"
-                >
-                  {t(key)}
-                </Link>
-              </li>
-            ))}
-          </ul>
+            Les couleurs de ces logos sortent de la palette KO-LAB, et c'est
+            normal : ce sont de VRAIES marques, pas de la décoration (même
+            exception que les icônes de réseaux sociaux). `unoptimized` comme
+            ailleurs sur le site : l'optimiseur d'images Vercel est à quota (402),
+            voir Location.tsx ; les fichiers sont déjà petits. `h-* w-auto` fixe
+            la hauteur, la largeur suit le rapport de chaque logo. */}
+        <div className="mt-16 border-t border-ko-line-d pt-10">
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 sm:gap-x-16">
+            <Image
+              unoptimized
+              src="/images/logos/turbo.png"
+              alt="Impression Turbo"
+              width={546}
+              height={200}
+              className="h-8 w-auto sm:h-11"
+            />
+            <Image
+              unoptimized
+              src="/images/logos/ko-lab.png"
+              alt="KO-LAB Inc."
+              width={452}
+              height={200}
+              className="h-12 w-auto sm:h-20"
+            />
+            <Image
+              unoptimized
+              src="/images/logos/experience-mobile.png"
+              alt="Expérience Mobile Ultime"
+              width={273}
+              height={200}
+              className="h-10 w-auto sm:h-14"
+            />
+          </div>
+
+          {/* Copyright + mentions légales — sous les logos, même filet.
+              Mentions légales à venir : nom légal exact, adresse d'affaires et
+              NEQ, absents du site aujourd'hui (voir gabaritCommande.ts). */}
+          <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-mono text-[11px] uppercase tracking-widest text-ko-muted-d">
+              © {annee} {t('droits')}
+            </p>
+
+            <ul className="flex flex-wrap gap-x-6 gap-y-2">
+              {liensLegaux.map(({ key, href }) => (
+                <li key={key}>
+                  <Link
+                    href={href}
+                    className="inline-flex min-h-[44px] items-center text-[11px] text-ko-muted-d transition-colors duration-200 hover:text-ko-white sm:min-h-0"
+                  >
+                    {t(key)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
     </footer>
