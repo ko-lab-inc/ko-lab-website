@@ -94,6 +94,21 @@
   font-weight: 500;
 }
 
+/* Accroche promo « 20 % avant le 1er novembre » — bannière mise en valeur,
+   or clair sur fond or translucide (haut contraste sur la carte sombre). */
+.promo {
+  margin: 0 0 24px;
+  padding: 11px 14px;
+  border: 1px solid var(--noel-gold);
+  background: rgba(201, 168, 106, 0.12);
+  border-radius: 3px;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 0.92rem;
+  line-height: 1.4;
+  color: #e9d6a9;
+}
+
 .cta {
   display: flex;
   flex-direction: column;

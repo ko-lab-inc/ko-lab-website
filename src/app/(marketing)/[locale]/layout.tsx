@@ -13,7 +13,7 @@ import { BoutonRetourHaut } from '@/components/ui/BoutonRetourHaut'
 import { ChatCrisp } from '@/components/ui/ChatCrisp'
 import { WidgetAide } from '@/components/ui/WidgetAide'
 import { DOMAINE } from '@/lib/constantes'
-import { estSaisonNoel } from '@/lib/noel'
+import { estAvant1erNovembre, estSaisonNoel } from '@/lib/noel'
 import { PanierProvider } from '@/lib/panier/PanierContext'
 import { bandeauPour, lireReglages } from '@/lib/reglages'
 import { routing } from '@/i18n/routing'
@@ -426,6 +426,7 @@ export default async function MarketingLayout({ children, params }: Props) {
               cta={tNoel('popup_cta')}
               plusTard={tNoel('popup_plus_tard')}
               fermer={tNoel('popup_fermer')}
+              rabais={estAvant1erNovembre() ? tNoel('popup_rabais') : undefined}
             />
           )}
           </PanierProvider>

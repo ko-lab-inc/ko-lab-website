@@ -30,3 +30,17 @@ export function estSaisonNoel(maintenant: Date = new Date()): boolean {
   if (mois === 0 && jour <= 6) return true
   return false
 }
+
+/**
+ * Rabais « 20 % avant le 1er novembre » (demande du boss, 16 octobre 2026) —
+ * accroche affichée SUR LE POPUP uniquement.
+ *
+ * ⚠️ CONDITIONNEL EXPRÈS : une offre datée doit disparaître à l'échéance,
+ * sinon le popup promet dès le 1er novembre un rabais qui n'existe plus (faux,
+ * et mauvais pour l'image). Vrai pendant tout octobre (tout octobre est avant
+ * le 1er novembre), faux ensuite. Combiné à estSaisonNoel (popup visible dès le
+ * 15 octobre), la fenêtre réelle de l'accroche est donc le 15-31 octobre.
+ */
+export function estAvant1erNovembre(maintenant: Date = new Date()): boolean {
+  return maintenant.getMonth() === 9 // octobre
+}

@@ -47,6 +47,12 @@ type Props = {
   cta: string
   plusTard: string
   fermer: string
+  /**
+   * Accroche promo « 20 % avant le 1er novembre ». OPTIONNELLE : le layout ne
+   * la passe que pendant sa fenêtre (estAvant1erNovembre) ; absente, aucune
+   * bannière n'est rendue. Une offre datée ne doit jamais survivre à sa date.
+   */
+  rabais?: string
 }
 
 function dejaVuCetteVisite(): boolean {
@@ -66,7 +72,7 @@ function marquerFerme(): void {
   }
 }
 
-export function PopupNoel({ eyebrow, titre, texte, cta, plusTard, fermer }: Props) {
+export function PopupNoel({ eyebrow, titre, texte, cta, plusTard, fermer, rabais }: Props) {
   const pathname = usePathname()
   const [visible, setVisible] = useState(false)
   const fermerRef = useRef<HTMLButtonElement>(null)
@@ -140,6 +146,7 @@ export function PopupNoel({ eyebrow, titre, texte, cta, plusTard, fermer }: Prop
             {titre}
           </h2>
           <p className={styles.text}>{texte}</p>
+          {rabais && <p className={styles.promo}>{rabais}</p>}
           <div className={styles.cta}>
             <Link href={ROUTES.noel} className={styles.btnGold} onClick={fermerPopup}>
               {cta}
