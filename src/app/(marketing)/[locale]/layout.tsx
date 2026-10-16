@@ -8,10 +8,12 @@ import { CaptureVisite } from '@/components/analytique/CaptureVisite'
 import { BandeauAnnonce } from '@/components/layout/BandeauAnnonce'
 import { Footer } from '@/components/layout/Footer'
 import { Nav } from '@/components/layout/Nav'
+import { PopupNoel } from '@/components/noel/PopupNoel'
 import { BoutonRetourHaut } from '@/components/ui/BoutonRetourHaut'
 import { ChatCrisp } from '@/components/ui/ChatCrisp'
 import { WidgetAide } from '@/components/ui/WidgetAide'
 import { DOMAINE } from '@/lib/constantes'
+import { estSaisonNoel } from '@/lib/noel'
 import { PanierProvider } from '@/lib/panier/PanierContext'
 import { bandeauPour, lireReglages } from '@/lib/reglages'
 import { routing } from '@/i18n/routing'
@@ -199,6 +201,13 @@ export default async function MarketingLayout({ children, params }: Props) {
   const bandeau = bandeauPour(reglages, locale)
 
   const t = await getTranslations('Commun')
+
+  // Popup saisonnier de Noël (demande du boss, 16 octobre 2026). Monté sur tout
+  // le site public UNIQUEMENT pendant la saison (estSaisonNoel) : hors saison,
+  // rien n'est rendu, aucun JS envoyé. Libellés résolus ici (côté serveur) et
+  // passés en props — pas de namespace à ajouter à la liste blanche client.
+  const noelActif = estSaisonNoel()
+  const tNoel = noelActif ? await getTranslations('Noel') : null
 
   /**
    * Messages envoyés au navigateur — LISTE BLANCHE explicite.
@@ -408,6 +417,17 @@ export default async function MarketingLayout({ children, params }: Props) {
           {CRISP_CONFIGURE ? <ChatCrisp /> : <WidgetAide telephone={reglages.contactTelephone || null} />}
 
           <BoutonRetourHaut />
+
+          {noelActif && tNoel && (
+            <PopupNoel
+              eyebrow={tNoel('popup_eyebrow')}
+              titre={tNoel('popup_titre')}
+              texte={tNoel('popup_texte')}
+              cta={tNoel('popup_cta')}
+              plusTard={tNoel('popup_plus_tard')}
+              fermer={tNoel('popup_fermer')}
+            />
+          )}
           </PanierProvider>
         </NextIntlClientProvider>
 

@@ -20,6 +20,14 @@ export const ROUTES = {
   equipements: '/nos-capacites/equipements',
   production: '/nos-capacites/production-evenementielle',
   realisations: '/realisations',
+  /**
+   * Page saisonnière — décor de Noël corporatif (demande du boss, 16 octobre
+   * 2026). Bâtie à partir du portfolio PDF « KO-LAB NOËL 2026 ». Route
+   * permanente (l'URL ne disparaît pas hors saison), mais sa mise en avant
+   * — popup et lien de pied de page — est bornée par `estSaisonNoel`
+   * (voir src/lib/noel.ts).
+   */
+  noel: '/noel',
   location: '/location',
   /** Récapitulatif de la demande de location groupée — modèle de la référence (Black Tie). */
   locationDemande: '/location/demande',

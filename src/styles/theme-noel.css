@@ -1,0 +1,490 @@
+/* =============================================================================
+   THÈME NOËL — page /noel uniquement (décor corporatif des Fêtes)
+   =============================================================================
+
+   Même discipline que theme-sombre.css : ce fichier est importé par la seule
+   page.tsx de /noel, jamais par un layout, et toutes ses règles sont scopées
+   sous `.noel-page` (le conteneur rendu par la page). Il ne touche ni
+   globals.css ni tailwind.config.
+
+   ⚠️ COULEURS DE NOËL = EXCEPTION ASSUMÉE à la palette stricte (7 tokens).
+   Validée pour cette page et le popup saisonnier (demande du boss, maquette
+   approuvée le 16 octobre 2026). L'or, le vert sapin et le bourgogne sont de
+   VRAIES couleurs de marque saisonnières, au même titre que les logos des
+   marques du groupe sortent déjà de la palette dans le pied de page. Elles
+   vivent UNIQUEMENT ici (`.noel-page`) et dans le module du popup — elles ne
+   fuient nulle part ailleurs sur le site.
+
+   La page réutilise la Nav et le Footer sombres du site via `data-theme-sombre`
+   (importé aussi par la page) ; ce fichier ne gère QUE le contenu propre à
+   Noël. Fonts : les variables du site (--font-sans = Montserrat,
+   --font-mono = JetBrains Mono). ============================================ */
+
+.noel-page {
+  /* Accents de Noël — exception saisonnière, cf. en-tête. */
+  --noel-gold: #c9a86a;
+  --noel-gold-2: #b8945a;
+  --noel-green: #1f3d2f;
+  --noel-burgundy: #6e2230;
+
+  background: var(--ko-black);
+  color: var(--ko-white);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.noel-page *,
+.noel-page *::before,
+.noel-page *::after {
+  box-sizing: border-box;
+}
+
+/* ---- primitives ---- */
+.noel-page .np-wrap {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+.noel-page .np-band {
+  padding-block: clamp(56px, 8vw, 112px);
+}
+.noel-page .np-band--dark {
+  background: var(--ko-black);
+  color: var(--ko-white);
+}
+.noel-page .np-band--cream {
+  background: var(--ko-cream);
+  color: var(--ko-ink);
+}
+
+.noel-page .np-eyebrow {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: clamp(0.68rem, 0.64rem + 0.2vw, 0.78rem);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin: 0;
+}
+.noel-page .np-eyebrow--gold {
+  color: var(--noel-gold);
+}
+.noel-page .np-eyebrow--muted {
+  color: var(--ko-muted);
+}
+
+.noel-page h1,
+.noel-page h2,
+.noel-page h3 {
+  font-weight: 300;
+  line-height: 1.08;
+  text-wrap: balance;
+  margin: 0;
+}
+.noel-page h1 {
+  font-size: clamp(2.6rem, 1.6rem + 4.6vw, 5rem);
+  letter-spacing: -0.015em;
+}
+.noel-page h2 {
+  font-size: clamp(1.9rem, 1.3rem + 2.6vw, 3.1rem);
+  letter-spacing: -0.01em;
+}
+.noel-page h3 {
+  font-size: clamp(1.15rem, 1rem + 0.6vw, 1.4rem);
+  font-weight: 400;
+}
+.noel-page em {
+  font-style: italic;
+  font-weight: 300;
+}
+.noel-page .np-lead {
+  font-size: clamp(1.05rem, 1rem + 0.4vw, 1.3rem);
+  font-weight: 300;
+  max-width: 62ch;
+  line-height: 1.6;
+}
+.noel-page .np-muted {
+  color: var(--ko-muted-d);
+}
+.noel-page .np-band--cream .np-muted {
+  color: var(--ko-muted);
+}
+
+/* ---- buttons (accent Noël) ---- */
+.noel-page .np-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  min-height: 44px;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 500;
+  padding: 0.95em 1.6em;
+  border-radius: 2px;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+.noel-page .np-btn--gold {
+  background: var(--noel-gold);
+  color: #17130b;
+  border-color: var(--noel-gold);
+}
+.noel-page .np-btn--gold:hover {
+  background: var(--noel-gold-2);
+  border-color: var(--noel-gold-2);
+}
+.noel-page .np-btn--ghost {
+  background: transparent;
+  color: var(--ko-white);
+  border-color: var(--ko-line-d);
+}
+.noel-page .np-btn--ghost:hover {
+  border-color: var(--noel-gold);
+  color: var(--noel-gold);
+}
+
+/* ---- hero ---- */
+.noel-page .np-hero {
+  position: relative;
+  overflow: hidden;
+  background: var(--ko-black);
+}
+.noel-page .np-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.noel-page .np-hero__bg img {
+  object-fit: cover;
+  opacity: 1;
+}
+/* Voile ALLÉGÉ (demande « images bien visibles », 16 oct. 2026) : la photo
+   reste lisible, le texte tient grâce au dégradé bas + l'ombrage porté
+   ci-dessous (pas un voile plein qui masquerait l'immeuble illuminé). */
+.noel-page .np-hero__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(17, 18, 16, 0.5) 0%,
+    rgba(17, 18, 16, 0.26) 45%,
+    rgba(17, 18, 16, 0.82) 100%
+  );
+}
+.noel-page .np-hero__inner :is(.np-eyebrow, h1, .np-lead) {
+  text-shadow: 0 1px 22px rgba(0, 0, 0, 0.55);
+}
+.noel-page .np-hero__inner {
+  position: relative;
+  z-index: 1;
+  padding-block: clamp(120px, 16vw, 190px) clamp(70px, 10vw, 120px);
+}
+.noel-page .np-hero h1 {
+  margin: 0.3em 0 0.5em;
+}
+.noel-page .np-hero .np-lead {
+  color: #e9e7df;
+}
+.noel-page .np-hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 2.2em;
+}
+.noel-page .np-hero__services {
+  margin-top: clamp(40px, 7vw, 78px);
+  padding-top: 22px;
+  border-top: 1px solid var(--ko-line-d);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6em 1.8em;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ko-muted-d);
+}
+.noel-page .np-hero__services b {
+  color: var(--noel-gold);
+  font-weight: 500;
+}
+
+/* ---- intro ---- */
+.noel-page .np-intro-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: clamp(28px, 5vw, 64px);
+  align-items: start;
+  margin-top: 36px;
+}
+.noel-page .np-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.noel-page .np-chip {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  padding: 16px 18px;
+  background: #fff;
+  border: 1px solid var(--ko-line);
+  border-radius: 3px;
+}
+.noel-page .np-chip .np-n {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  color: var(--noel-gold-2);
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+.noel-page .np-chip .np-t {
+  font-weight: 500;
+  color: var(--ko-ink);
+}
+.noel-page .np-chip .np-d {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--ko-muted);
+  font-weight: 400;
+}
+
+/* ---- section head ---- */
+.noel-page .np-sec-head {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: clamp(32px, 5vw, 52px);
+}
+
+/* ---- gallery ---- */
+.noel-page .np-grid-gal {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(12px, 1.6vw, 20px);
+}
+.noel-page .np-tile {
+  position: relative;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #000;
+  aspect-ratio: 4 / 3;
+  margin: 0;
+}
+.noel-page .np-tile img {
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+.noel-page .np-tile:hover img {
+  transform: scale(1.045);
+}
+.noel-page .np-tile figcaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 34px 16px 14px;
+  background: linear-gradient(0deg, rgba(17, 18, 16, 0.85), transparent);
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+/* ---- palettes ---- */
+.noel-page .np-grid-pal {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(16px, 2vw, 26px);
+}
+.noel-page .np-pal {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.noel-page .np-pal__sw {
+  display: flex;
+  height: 120px;
+  border-radius: 3px;
+  overflow: hidden;
+  border: 1px solid var(--ko-line);
+}
+.noel-page .np-pal__sw span {
+  flex: 1;
+}
+.noel-page .np-pal__name {
+  font-weight: 500;
+  color: var(--ko-ink);
+  margin: 0;
+}
+.noel-page .np-pal__name small {
+  display: block;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ko-muted);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+/* ---- créations (split) ---- */
+.noel-page .np-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(20px, 3vw, 48px);
+  align-items: center;
+}
+.noel-page .np-split__media {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.noel-page .np-split__media .np-photo {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  border-radius: 3px;
+  overflow: hidden;
+}
+.noel-page .np-split__media img {
+  object-fit: cover;
+}
+.noel-page .np-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 22px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.noel-page .np-tags li {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 1px solid var(--ko-line-d);
+  color: var(--ko-muted-d);
+  padding: 0.5em 0.9em;
+  border-radius: 2px;
+}
+
+/* ---- process ---- */
+.noel-page .np-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(18px, 2.5vw, 34px);
+  margin-top: 46px;
+}
+.noel-page .np-step {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.noel-page .np-step__n {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 1rem;
+  font-weight: 500;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--noel-gold);
+  color: var(--noel-gold-2);
+}
+.noel-page .np-step h3 {
+  margin-top: 4px;
+  color: var(--ko-ink);
+}
+.noel-page .np-step p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--ko-muted);
+}
+
+/* ---- cta final ---- */
+.noel-page .np-final {
+  position: relative;
+  overflow: hidden;
+}
+.noel-page .np-final__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.noel-page .np-final__bg img {
+  object-fit: cover;
+  opacity: 0.6;
+}
+/* Photo du CTA nettement plus présente qu'avant (0.32 -> 0.6) ; le dégradé
+   garde le texte centré lisible. */
+.noel-page .np-final__bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(17, 18, 16, 0.66), rgba(17, 18, 16, 0.84));
+}
+.noel-page .np-final__inner :is(.np-eyebrow, h2, .np-lead) {
+  text-shadow: 0 1px 22px rgba(0, 0, 0, 0.6);
+}
+.noel-page .np-final__inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding-block: clamp(70px, 11vw, 130px);
+}
+.noel-page .np-contacts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  justify-content: center;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  color: var(--ko-muted-d);
+  margin-top: 6px;
+}
+.noel-page .np-contacts b {
+  color: var(--noel-gold);
+  font-weight: 500;
+}
+
+@media (max-width: 860px) {
+  .noel-page .np-intro-grid,
+  .noel-page .np-split {
+    grid-template-columns: 1fr;
+  }
+  .noel-page .np-grid-gal,
+  .noel-page .np-grid-pal,
+  .noel-page .np-steps {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 480px) {
+  .noel-page .np-grid-gal {
+    grid-template-columns: 1fr;
+  }
+  .noel-page .np-hero__cta .np-btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .noel-page .np-tile img {
+    transition: none;
+  }
+}
