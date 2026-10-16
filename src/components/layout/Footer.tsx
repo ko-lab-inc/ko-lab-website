@@ -212,7 +212,7 @@ export async function Footer() {
             voir Location.tsx ; les fichiers sont déjà petits. `h-* w-auto` fixe
             la hauteur, la largeur suit le rapport de chaque logo. */}
         <div className="mt-16 border-t border-ko-line-d pt-10">
-          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-6 sm:gap-x-16">
+          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 sm:gap-x-24">
             <Image
               unoptimized
               src="/images/logos/turbo.png"
