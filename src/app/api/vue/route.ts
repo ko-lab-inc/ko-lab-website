@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 
 import { enregistrerVisite } from '@/lib/analytique'
+import { exigerRole } from '@/lib/auth/garde'
 import { adresseDepuis } from '@/lib/utils/adresseClient'
 import { rateLimit } from '@/lib/utils/rateLimit'
 
@@ -38,6 +39,17 @@ export async function POST(req: NextRequest) {
   const ip = adresseDepuis(req.headers)
   if (rateLimit(`vue:${ip}`, LIMITE)) {
     return new NextResponse(null, { status: 429 })
+  }
+
+  // Ne pas compter les visites de l'ÉQUIPE connectée (admin/editor) : le
+  // tableau de bord ne doit pas se compter lui-même. `exigerRole()` (défaut :
+  // ROLES_EQUIPE) renvoie non-null uniquement pour un membre de l'équipe ; un
+  // compte client connecté ou un visiteur anonyme est du vrai public, donc
+  // compté. Pré-filtre par cookie de session pour éviter un appel
+  // d'authentification sur chaque visite anonyme (la quasi-totalité).
+  const aSession = req.cookies.getAll().some((c) => c.name.includes('auth-token'))
+  if (aSession && (await exigerRole())) {
+    return new NextResponse(null, { status: 204 })
   }
 
   let corps: unknown

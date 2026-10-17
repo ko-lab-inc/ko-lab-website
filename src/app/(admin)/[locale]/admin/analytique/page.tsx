@@ -76,7 +76,9 @@ export default async function AnalytiquePage({ params }: Props) {
         <TuileStat
           libelle={t('analytique_visiteurs_30j')}
           valeur={nf.format(stats.visiteurs)}
-          precision={t('analytique_visiteurs_precision')}
+          precision={t('analytique_visiteurs_precision', {
+            moyenne: nf.format(Math.round(stats.visiteurs / JOURS)),
+          })}
           Icone={IconeProfil}
         />
         <TuileStat

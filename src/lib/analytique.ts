@@ -38,6 +38,24 @@ const TABLE = 'evenements_visite'
  * les visiteurs uniques d'une journée sans suivre personne dans le temps.
  */
 
+/**
+ * Robots à ne PAS compter comme visiteurs : crawlers d'indexation, aperçus de
+ * lien (Facebook, WhatsApp...), moniteurs de disponibilité, navigateurs sans
+ * tête (tests, scraping). Un user-agent VIDE est traité comme suspect — un vrai
+ * navigateur en envoie toujours un. Filtrage à la CAPTURE : la ligne n'est
+ * jamais écrite, donc jamais affichée dans le tableau de bord.
+ *
+ * Tokens volontairement spécifiques pour ne jamais frapper un vrai navigateur :
+ * « applebot » (pas « apple », présent dans tout Safari via AppleWebKit),
+ * « facebot » (pas « facebook », présent dans l'app mobile d'un vrai usager).
+ */
+function estRobot(ua: string | null): boolean {
+  if (!ua || ua.trim() === '') return true
+  return /bot|crawl|spider|slurp|mediapartners|facebookexternalhit|facebot|bingpreview|crawler|whatsapp|telegram|discord|embedly|pinterest|redditbot|applebot|yandex|baidu|duckduckbot|semrush|ahrefs|mj12|dotbot|petalbot|bytespider|gptbot|claudebot|ccbot|chrome-lighthouse|headless|phantom|puppeteer|playwright|python-requests|curl|wget|axios|go-http|node-fetch|okhttp|monitor|uptime|pingdom|statuscake|site24x7|newrelic|datadog|vercel/i.test(
+    ua,
+  )
+}
+
 /** 'mobile' | 'tablette' | 'bureau' à partir du user-agent. */
 function appareilDepuisUA(ua: string | null): string | null {
   if (!ua) return null
@@ -98,6 +116,9 @@ export async function enregistrerVisite(params: {
   ua: string | null
   pays: string | null
 }): Promise<void> {
+  // Robots : jamais comptés (crawlers, aperçus de lien, moniteurs, headless).
+  if (estRobot(params.ua)) return
+
   const chemin = nettoyerChemin(params.chemin)
   if (!chemin) return
 

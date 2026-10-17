@@ -1087,7 +1087,7 @@
     "analytique_demarrage": "La capture des visites vient de démarrer : les chiffres se rempliront à mesure que les gens visitent le site.",
     "analytique_pages_30j": "Pages vues (30 j)",
     "analytique_visiteurs_30j": "Visiteurs (30 j)",
-    "analytique_visiteurs_precision": "uniques par jour",
+    "analytique_visiteurs_precision": "≈ {moyenne} / jour en moyenne",
     "analytique_pages_jour": "Pages vues aujourd'hui",
     "analytique_visiteurs_jour": "Visiteurs aujourd'hui",
     "analytique_serie": "{total} pages vues sur {jours} jours",
