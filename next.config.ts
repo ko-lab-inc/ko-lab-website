@@ -273,6 +273,34 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  /**
+   * Redirections 301 — anciennes URLs de l'ancien site (GoDaddy, voir
+   * CLAUDE.md § ko-lab.ca) toujours indexées par Google Search Console
+   * (« Introuvable (404) », détecté le 17/10/2026). `/recruitment.php` et
+   * `/recrutement.php` n'existent plus depuis la refonte ; le contenu
+   * équivalent vit sur /carrieres.
+   *
+   * ⚠️ Ces chemins contiennent un point (`.php`) : le proxy (src/proxy.ts) les
+   * exclut DÉJÀ de son matcher (`.*\\..*`), donc ils n'entrent jamais dans le
+   * routage de langue next-intl — ces redirections s'appliquent directement,
+   * sans interférence. `permanent: true` → 301, pour que Google mette à jour
+   * son index plutôt que de re-sonder indéfiniment une page disparue.
+   */
+  async redirects() {
+    return [
+      {
+        source: '/en/recruitment.php',
+        destination: '/en/carrieres',
+        permanent: true,
+      },
+      {
+        source: '/fr/recrutement.php',
+        destination: '/fr/carrieres',
+        permanent: true,
+      },
+    ]
+  },
+
   async headers() {
     return [
       {
