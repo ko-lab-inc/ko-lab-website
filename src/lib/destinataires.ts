@@ -71,6 +71,16 @@ type Destinataires = {
   demandes: string[]
   /** Notifications de nouvelle candidature. Jamais vide. */
   candidatures: string[]
+  /**
+   * Destinataires SUPPLÉMENTAIRES pour les demandes de type 'mandat'
+   * (migration 0060 — Martin, 3d@ko-lab.ca, 26 octobre 2026). S'AJOUTE à
+   * `demandes`, ne le remplace pas — voir api/contact/route.ts.
+   *
+   * ⚠️ PEUT ÊTRE VIDE, à la différence de `demandes`/`candidatures` : une
+   * liste vide ici veut dire « personne de plus », pas « personne du tout ».
+   * Aucun repli ne s'applique.
+   */
+  mandat: string[]
 }
 
 /**
@@ -97,6 +107,7 @@ export async function lireDestinataires(): Promise<Destinataires> {
   let replisCandidatures: string = EMAILS.rh
   let demandes: string[] = []
   let candidatures: string[] = []
+  let mandat: string[] = []
 
   try {
     const { data } = await getSupabaseAdmin()
@@ -105,6 +116,7 @@ export async function lireDestinataires(): Promise<Destinataires> {
       .in('cle', [
         'notifications_demandes',
         'notifications_candidatures',
+        'notifications_mandat',
         'contact_courriel',
         'courriel_rh',
       ])
@@ -113,6 +125,9 @@ export async function lireDestinataires(): Promise<Destinataires> {
       const v = ligne.valeur.trim()
       if (ligne.cle === 'notifications_demandes') demandes = decouperAdresses(v)
       else if (ligne.cle === 'notifications_candidatures') candidatures = decouperAdresses(v)
+      // Pas de repli pour 'mandat' : une liste vide reste vide (0060), voir
+      // le type Destinataires.
+      else if (ligne.cle === 'notifications_mandat') mandat = decouperAdresses(v)
       // Les deux adresses affichées servent de repli. Lues dans la même
       // requête : un aller-retour de plus pour une valeur dont on a besoin
       // dans la moitié des cas n'aurait pas de sens.
@@ -129,5 +144,6 @@ export async function lireDestinataires(): Promise<Destinataires> {
   return {
     demandes: demandes.length > 0 ? demandes : [replisDemandes],
     candidatures: candidatures.length > 0 ? candidatures : [replisCandidatures],
+    mandat,
   }
 }

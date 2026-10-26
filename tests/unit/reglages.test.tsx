@@ -82,6 +82,8 @@ const LIBELLES = {
   notifDemandesAide: 'Vide = le courriel de contact.',
   notifCandidatures: 'Nouvelle candidature',
   notifCandidaturesAide: 'Vide = le courriel RH.',
+  notifMandat: 'Nouveau mandat (design/fabrication)',
+  notifMandatAide: 'Vide = personne de plus.',
   champsCourriels: {
     adresseLabel: '{groupe}, adresse {n}',
     ajouter: 'Ajouter une adresse',
@@ -132,7 +134,7 @@ const REGLAGES = {
   absenceMessageEn: '',
 }
 
-const BRUTES = { demandes: '', candidatures: '' }
+const BRUTES = { demandes: '', candidatures: '', mandat: '' }
 
 function monter(reglages = REGLAGES, brutes = BRUTES) {
   return render(
@@ -240,6 +242,7 @@ describe('FormulaireReglages', () => {
     monter(REGLAGES, {
       demandes: 'info@ko-lab.ca, christian@ko-lab.ca',
       candidatures: 'rh@ko-lab.ca',
+      mandat: '',
     })
 
     // Une liste enregistree donne UN CHAMP PAR ADRESSE, dans l'ordre.
@@ -257,7 +260,11 @@ describe('FormulaireReglages', () => {
    * ==================================================================== */
 
   it('decoupe la valeur enregistree en un champ par adresse', () => {
-    monter(REGLAGES, { demandes: 'a@ko-lab.ca, b@ko-lab.ca, c@ko-lab.ca', candidatures: '' })
+    monter(REGLAGES, {
+      demandes: 'a@ko-lab.ca, b@ko-lab.ca, c@ko-lab.ca',
+      candidatures: '',
+      mandat: '',
+    })
 
     const formulaire = screen.getByRole('button', { name: 'Enregistrer' }).closest('form')
     const donnees = new FormData(formulaire as HTMLFormElement)
@@ -273,7 +280,7 @@ describe('FormulaireReglages', () => {
   })
 
   it('chaque champ est de type email — le navigateur valide avant l envoi', () => {
-    monter(REGLAGES, { demandes: 'a@ko-lab.ca', candidatures: 'b@ko-lab.ca' })
+    monter(REGLAGES, { demandes: 'a@ko-lab.ca', candidatures: 'b@ko-lab.ca', mandat: '' })
     for (const libelle of [
       'Nouvelle demande de contact, adresse 1',
       'Nouvelle candidature, adresse 1',
@@ -286,7 +293,7 @@ describe('FormulaireReglages', () => {
     // ⚠️ Dans un <form>, un <button> sans `type` vaut `submit`. Sans
     // `type="button"`, cliquer sur « + » enregistrerait les vingt-quatre
     // reglages au lieu d'ajouter une ligne.
-    monter(REGLAGES, { demandes: 'a@ko-lab.ca', candidatures: '' })
+    monter(REGLAGES, { demandes: 'a@ko-lab.ca', candidatures: '', mandat: '' })
 
     const plus = screen.getAllByRole('button', { name: 'Ajouter une adresse' })[0]!
     expect(plus).toHaveAttribute('type', 'button')
@@ -301,7 +308,11 @@ describe('FormulaireReglages', () => {
     // ⚠️ Le defaut classique d'une liste clee par l'index : React reutilise
     // les champs et la valeur affichee ne suit pas la ligne retiree. On croit
     // avoir supprime la mauvaise adresse.
-    monter(REGLAGES, { demandes: 'un@ko-lab.ca, deux@ko-lab.ca, trois@ko-lab.ca', candidatures: '' })
+    monter(REGLAGES, {
+      demandes: 'un@ko-lab.ca, deux@ko-lab.ca, trois@ko-lab.ca',
+      candidatures: '',
+      mandat: '',
+    })
 
     fireEvent.click(screen.getByRole('button', { name: 'Retirer deux@ko-lab.ca' }))
 
@@ -314,7 +325,7 @@ describe('FormulaireReglages', () => {
 
   it('un groupe vide garde un champ, jamais zero', () => {
     // Zero champ laisserait un bouton « + » isole, sans indice de ce qu'on y met.
-    monter(REGLAGES, { demandes: 'seule@ko-lab.ca', candidatures: '' })
+    monter(REGLAGES, { demandes: 'seule@ko-lab.ca', candidatures: '', mandat: '' })
     fireEvent.click(screen.getByRole('button', { name: 'Retirer seule@ko-lab.ca' }))
 
     const formulaire = screen.getByRole('button', { name: 'Enregistrer' }).closest('form')
@@ -334,7 +345,7 @@ describe('FormulaireReglages', () => {
         absenceMessageFr: 'De retour le 6.',
         absenceMessageEn: 'Back on the 6th.',
       },
-      { demandes: 'a@ko-lab.ca', candidatures: 'b@ko-lab.ca' },
+      { demandes: 'a@ko-lab.ca', candidatures: 'b@ko-lab.ca', mandat: '' },
     )
 
     const formulaire = screen.getByRole('button', { name: 'Enregistrer' }).closest('form')

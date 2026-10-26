@@ -154,6 +154,8 @@ export default async function Page({ params }: Props) {
   const brutes = {
     demandes: valeur('notifications_demandes'),
     candidatures: valeur('notifications_candidatures'),
+    // Migration 0060 — destinataires supplémentaires pour les mandats.
+    mandat: valeur('notifications_mandat'),
   }
 
   return (
@@ -205,6 +207,8 @@ export default async function Page({ params }: Props) {
           notifDemandesAide: t('reglages_notif_demandes_aide'),
           notifCandidatures: t('reglages_notif_candidatures'),
           notifCandidaturesAide: t('reglages_notif_candidatures_aide'),
+          notifMandat: t('reglages_notif_mandat'),
+          notifMandatAide: t('reglages_notif_mandat_aide'),
           champsCourriels: {
             adresseLabel: t('courriels_adresse'),
             ajouter: t('courriels_ajouter'),

@@ -160,6 +160,13 @@ const schema = z.object({
     }),
   notifications_demandes: listeDestinataires(600),
   notifications_candidatures: listeDestinataires(600),
+  /**
+   * Migration 0060 — destinataires SUPPLÉMENTAIRES pour les demandes de
+   * mandat (design/fabrication), en plus de `notifications_demandes`. Même
+   * validation, mais AUCUN repli dans lib/destinataires.ts : vide veut
+   * vraiment dire « personne de plus ».
+   */
+  notifications_mandat: listeDestinataires(600),
 
   bandeau_actif: z.enum(['true', 'false']),
   /**
@@ -216,6 +223,7 @@ export async function enregistrerReglages(
      */
     notifications_demandes: joindreAdresses(donnees.getAll('notifications_demandes')),
     notifications_candidatures: joindreAdresses(donnees.getAll('notifications_candidatures')),
+    notifications_mandat: joindreAdresses(donnees.getAll('notifications_mandat')),
     bandeau_actif: coche(donnees, 'bandeau_actif'),
     bandeau_texte_fr: donnees.get('bandeau_texte_fr') ?? '',
     bandeau_texte_en: donnees.get('bandeau_texte_en') ?? '',
@@ -239,6 +247,7 @@ export async function enregistrerReglages(
       'courriel_rh',
       'notifications_demandes',
       'notifications_candidatures',
+      'notifications_mandat',
     ]
     return { erreur: adresses.some((champ) => champs.has(champ)) ? 'adresse' : 'donnees' }
   }

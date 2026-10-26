@@ -72,6 +72,8 @@ export type LibellesReglages = {
   notifDemandesAide: string
   notifCandidatures: string
   notifCandidaturesAide: string
+  notifMandat: string
+  notifMandatAide: string
   /** Textes du composant a champs multiples. */
   champsCourriels: TextesChampsCourriels
   groupeBandeau: string
@@ -304,7 +306,7 @@ export function FormulaireReglages({
    *   enregistrement — le réglage cesse alors de dire « vide = la valeur du
    *   code » et devient une copie qui divergera.
    */
-  brutes: { demandes: string; candidatures: string }
+  brutes: { demandes: string; candidatures: string; mandat: string }
   /** Affiché en `placeholder` du champ RH : ce qui s'applique s'il reste vide. */
   courrielRhDefaut: string
   libelles: LibellesReglages
@@ -517,6 +519,23 @@ export function FormulaireReglages({
             valeurInitiale={brutes.candidatures}
             textes={libelles.champsCourriels}
             aideId="notifications_candidatures-aide"
+          />
+        </LigneGroupeCourriels>
+
+        {/* Migration 0060 — Martin (3d@ko-lab.ca) reçoit les demandes de
+            mandat (design/fabrication) EN PLUS de la liste ci-dessus, pas à
+            sa place : voir lib/destinataires.ts. */}
+        <LigneGroupeCourriels
+          id="notifications_mandat"
+          libelle={libelles.notifMandat}
+          aide={libelles.notifMandatAide}
+        >
+          <ChampsCourriels
+            nom="notifications_mandat"
+            groupe={libelles.notifMandat}
+            valeurInitiale={brutes.mandat}
+            textes={libelles.champsCourriels}
+            aideId="notifications_mandat-aide"
           />
         </LigneGroupeCourriels>
       </Carte>

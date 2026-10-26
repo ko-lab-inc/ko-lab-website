@@ -194,8 +194,20 @@ export async function POST(req: NextRequest) {
    */
   const destinataires = await lireDestinataires()
 
+  /**
+   * Demande de MANDAT (migration 0060) : Martin (3d@ko-lab.ca) reçoit ces
+   * demandes de design/fabrication EN PLUS de la liste habituelle, jamais à
+   * sa place. `Set` déduplique — une adresse présente dans les deux listes
+   * à la fois (ex. si `notifications_mandat` reprend aussi info@) ne reçoit
+   * qu'UN SEUL courriel, pas deux.
+   */
+  const destinatairesCourriel =
+    donnees.type === 'mandat' && destinataires.mandat.length > 0
+      ? [...new Set([...destinataires.demandes, ...destinataires.mandat])]
+      : destinataires.demandes
+
   const notification = await envoyerCourriel({
-    a: destinataires.demandes,
+    a: destinatairesCourriel,
     // Répondre écrit au DEMANDEUR, pas à soi-même.
     repondreA: donnees.email,
     sujet: `Nouvelle demande (${donnees.type})`,
