@@ -3,7 +3,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { lireReglages } from '@/lib/reglages'
 
 /**
- * Redirection traçée vers le Google Form de candidature — Phase 6.2.
+ * Redirection traçée vers le Google Form de candidature.
+ *
+ * ⚠️ DEPUIS LE 1er NOVEMBRE 2026 (demande du boss) : SEUL CANAL DE CANDIDATURE.
+ * Le formulaire du site (/carrieres/postuler) est fermé — sa page redirige
+ * elle-même ICI (voir son commentaire). Jusque-là, c'était un canal secondaire
+ * à côté du formulaire interne (Phase 6.2) ; ce n'en est plus un.
  *
  * ---------------------------------------------------------------------------
  * POURQUOI CETTE ROUTE EXISTE PLUTÔT QU'UN LIEN DIRECT AVEC ?utm_source=…
@@ -23,14 +28,17 @@ import { lireReglages } from '@/lib/reglages'
  * les découvrir.
  *
  * Cette route donne donc la seule traçabilité honnêtement disponible : le
- * NOMBRE DE CLICS depuis le site vers le canal externe, dans les journaux
- * Vercel — à mettre en regard de `select count(*) from candidatures where
- * canal = 'interne'` (migration 0028) pour arbitrer entre les deux canaux.
+ * NOMBRE DE CLICS vers le Google Form, dans les journaux Vercel — `poste`
+ * (query, optionnel) indique de quelle fiche de poste vient le clic, pour
+ * savoir quels rôles génèrent de l'intérêt même sans voir les réponses.
  * Imparfait (un clic n'est pas une candidature complétée), mais réel.
  * ---------------------------------------------------------------------------
  */
 export async function GET(req: NextRequest) {
-  console.log('[carrieres] clic vers le canal externe (Google Form)')
+  const poste = req.nextUrl.searchParams.get('poste')
+  console.log(
+    `[carrieres] clic vers le Google Form${poste ? ` (poste: ${poste})` : ''}`,
+  )
 
   // Depuis les réglages (migration 0051) : changer de formulaire ne doit pas
   // demander un déploiement. Le lien était figé dans le code jusqu'au
@@ -38,12 +46,14 @@ export async function GET(req: NextRequest) {
   const { lienCandidatureExterne } = await lireReglages()
   const cible = lienCandidatureExterne.trim()
 
-  // Réglage vidé = il n'y a plus de canal externe. On renvoie vers le
-  // formulaire du site plutôt que vers une adresse absente : une redirection
-  // vers une chaîne vide est une erreur serveur, et le visiteur qui a cliqué
-  // « postuler » doit atterrir quelque part où il peut postuler.
+  // ⚠️ Réglage vidé — PLUS JAMAIS vers /carrieres/postuler depuis le 1er
+  // novembre 2026 : cette page redirige maintenant ELLE-MÊME vers CETTE
+  // route, donc y renvoyer créerait une boucle infinie. /carrieres (la liste
+  // des postes) reste un atterrissage sûr, même si imparfait — mieux qu'une
+  // boucle de redirections qui casse la page pour tout le monde.
   if (cible === '') {
-    return NextResponse.redirect(new URL('/fr/carrieres/postuler', req.url))
+    console.error('[carrieres] lienCandidatureExterne est vide — aucun canal de candidature actif')
+    return NextResponse.redirect(new URL('/fr/carrieres', req.url))
   }
   return NextResponse.redirect(cible)
 }

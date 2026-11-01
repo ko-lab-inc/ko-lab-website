@@ -6,7 +6,6 @@ import { notFound } from 'next/navigation'
 import { buttonVariants } from '@/components/ui/Button'
 import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
-import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
 import { resoudrePhotoPoste, type ResolutionPhotoPoste } from '@/lib/carrieres-photo'
@@ -180,23 +179,19 @@ export default async function CarrieresPage({ params }: Props) {
                 {t('banniere_phrase')}
               </p>
 
-              {/* Canal principal (formulaire interne) en avant, canal externe
-                  (Google Form, temporaire — Phase 6.2) nettement plus discret :
-                  un bouton plein contre un lien souligné, pas deux boutons de
-                  même poids. Le lien externe passe par /api/… pour rester
-                  traçable (voir cette route pour pourquoi ?utm_source= seul ne
-                  suffit pas). */}
+              {/* UN SEUL canal depuis le 1er novembre 2026 (demande du boss) :
+                  le Google Form. L'ancien bouton « Postuler maintenant » vers
+                  le formulaire du site et le lien discret vers le Google Form
+                  menaient à deux destinations ; ils mèneraient aujourd'hui à
+                  la MÊME, donc le second aurait été pure redondance — retiré.
+                  Le lien passe par /api/… pour rester traçable (voir cette
+                  route pour pourquoi ?utm_source= seul ne suffit pas). */}
               <div className="mt-9 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-                <Link href={ROUTES.carrieresPostuler} className={buttonVariants({ variant: 'primary' })}>
-                  {t('cta_principal')}
-                  <span aria-hidden="true">→</span>
-                </Link>
-
                 <a
                   href="/api/carrieres/candidature-externe"
-                  className={buttonVariants({ variant: 'text' })}
+                  className={buttonVariants({ variant: 'primary' })}
                 >
-                  {t('cta_secondaire')}
+                  {t('cta_principal')}
                   <span aria-hidden="true">→</span>
                 </a>
               </div>
@@ -305,14 +300,18 @@ export default async function CarrieresPage({ params }: Props) {
                           convaincu par le titre seul n'a pas à lire les
                           exigences avant de pouvoir postuler. Discret
                           (variant text) : le bouton plein reste en bas,
-                          après les exigences, comme confirmation finale. */}
-                      <Link
-                        href={`${ROUTES.carrieresPostuler}?poste=${encodeURIComponent(poste.titre)}`}
+                          après les exigences, comme confirmation finale.
+                          Vers le Google Form depuis le 1er novembre 2026 —
+                          `poste` enrichit le journal de clics de cette route
+                          (le Google Form, lui, ne peut pas en être
+                          prérempli). */}
+                      <a
+                        href={`/api/carrieres/candidature-externe?poste=${encodeURIComponent(poste.titre)}`}
                         className={`mt-6 ${buttonVariants({ variant: 'text' })}`}
                       >
                         {t('postuler')}
                         <span aria-hidden="true">→</span>
-                      </Link>
+                      </a>
                     </div>
 
                     {/* Colonne droite : exigences et candidature */}
@@ -333,18 +332,15 @@ export default async function CarrieresPage({ params }: Props) {
                         ))}
                       </ul>
 
-                      {/* Le MÊME formulaire pour les neuf postes ; `?poste=`
-                          coche simplement la bonne case à l'arrivée. Le
-                          paramètre y est validé contre les postes réellement
-                          ouverts — une valeur d'URL reste une entrée
-                          utilisateur (voir postuler/page.tsx). */}
-                      <Link
-                        href={`${ROUTES.carrieresPostuler}?poste=${encodeURIComponent(poste.titre)}`}
+                      {/* Vers le Google Form depuis le 1er novembre 2026 —
+                          voir le commentaire du bouton du haut. */}
+                      <a
+                        href={`/api/carrieres/candidature-externe?poste=${encodeURIComponent(poste.titre)}`}
                         className={`mt-9 ${buttonVariants({ variant: 'ghost' })}`}
                       >
                         {t('postuler')}
                         <span aria-hidden="true">→</span>
-                      </Link>
+                      </a>
                     </div>
                   </article>
                 </Reveal>

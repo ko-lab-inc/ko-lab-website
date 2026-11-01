@@ -1259,7 +1259,7 @@
     "reglages_lien_rentman": "Rentman inventory link",
     "reglages_lien_rentman_aide": "Must start with https://. Empty: the “See Inventory” button gives way to “Request a Rental”, which leads to the form.",
     "reglages_lien_candidature": "External application form",
-    "reglages_lien_candidature_aide": "Must start with https://. Empty: the link falls back to the site’s own form.",
+    "reglages_lien_candidature_aide": "Must start with https://. The site's own form closed on November 1st, 2026, making this the only application channel. Empty: the \"Apply\" buttons fall back to the job list, with no way to apply. Do not leave empty.",
     "reglages_delai_reponse": "Announced response time (hours)",
     "reglages_delai_reponse_aide": "Whole number. Shown on the Contact page, in the acknowledgement email and on Careers.",
     "reglages_heures_ouverture": "Opening hours",

@@ -44,7 +44,12 @@ export const ROUTES = {
   concours: '/concours',
   apropos: '/a-propos',
   carrieres: '/carrieres',
-  /** Formulaire de candidature — le MÊME pour les neuf postes (0017). */
+  /**
+   * ⚠️ FERMÉE depuis le 1er novembre 2026 — redirige vers le Google Form
+   * (/api/carrieres/candidature-externe), voir son page.tsx. Gardée ici pour
+   * que la route reste documentée et que son ancien usage se retrouve par
+   * recherche ; plus référencée ailleurs dans le code (vérifié).
+   */
   carrieresPostuler: '/carrieres/postuler',
   contact: '/contact',
   /**

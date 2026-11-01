@@ -1,23 +1,7 @@
 import { hasLocale } from 'next-intl'
-import { getTranslations, setRequestLocale } from 'next-intl/server'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
-import { FormulaireCandidature, type LibellesCandidature } from '@/components/sections/FormulaireCandidature'
-import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
-import { lireOffresPubliees, POSTES_REPLI } from '@/lib/carrieres'
-import { lireReglages, messageAbsence } from '@/lib/reglages'
-import { alternatesLangues, ROUTES } from '@/lib/routes'
-
-import type { Metadata, Viewport } from 'next'
-
-/**
- * THÈME SOMBRE — migration page par page (méthode de 73255f2, accueil).
- * Importé ICI et non dans le layout : App Router ne charge le CSS d'une page
- * que sur sa route, et ses règles sont toutes préfixées par
- * `body:has([data-theme-sombre])`, le marqueur rendu plus bas.
- */
-import '@/styles/theme-sombre.css'
 
 type Props = {
   params: Promise<{ locale: string }>
@@ -25,200 +9,40 @@ type Props = {
 }
 
 /**
- * Formulaire de candidature — le MÊME pour les neuf postes.
+ * ⚠️ FERMÉE depuis le 1er novembre 2026 — demande du boss (capture Messenger) :
+ * toutes les candidatures passent désormais par le Google Form, « comme ça ce
+ * sera facile pour lui ». Cette page ne fait plus QUE rediriger vers
+ * /api/carrieres/candidature-externe (le même point d'entrée tracé que les
+ * boutons de /carrieres) — même motif que /boutique/demande quand
+ * panierActif est éteint (voir ce fichier).
  *
- * Décision de Christian : « même formulaire pour tous les postes ». Le lien
- * « Postuler » de chaque fiche mène ici en passant `?poste=…`, ce qui coche
- * simplement la bonne case à l'arrivée. Rien n'empêche d'en cocher d'autres :
- * le formulaire d'origine acceptait déjà plusieurs choix.
+ * ---------------------------------------------------------------------------
+ * « FERMÉE », PAS « SUPPRIMÉE » — CE QUI RESTE INTACT AILLEURS
  *
- * ⚠️ Rendu DYNAMIQUE (pas d'ISR) : la page dépend de `searchParams`, et la
- * liste des postes doit refléter l'état de la base au moment de la visite —
- * un poste fermé ne doit pas rester cochable une heure de plus.
+ * Rien de ce qui faisait fonctionner le formulaire interne n'a été touché :
+ *   · actions.ts (Server Action de soumission, upload du CV) — ce dossier ;
+ *   · FormulaireCandidature.tsx et son schéma de validation ;
+ *   · la table `candidatures` et /admin/candidatures (candidatures déjà
+ *     reçues toujours visibles et gérables) ;
+ *   · lib/carrieres.ts (lecture des postes publiés).
+ *
+ * Réactiver ce canal un jour est donc une question de RECONSTRUIRE cette
+ * page à partir de l'historique git (`git log -- ` sur ce chemin, avant le
+ * commit de fermeture), pas de retrouver du code perdu — rien n'a été perdu,
+ * seule la porte d'entrée est close.
+ * ---------------------------------------------------------------------------
  */
-export const dynamic = 'force-dynamic'
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params
-  if (!hasLocale(routing.locales, locale)) notFound()
-
-  const t = await getTranslations({ locale, namespace: 'Carrieres' })
-
-  return {
-    title: t('postuler_titre'),
-    description: t('postuler_intro'),
-    // `languages` manquait (Phase 10, étape 3) : seule page indexable (pas de
-    // `robots: {index:false}`) sans hreflang, alors que /en/carrieres/postuler
-    // est un vrai formulaire traduit, pas une coquille vide.
-    alternates: {
-      canonical: `/${locale}${ROUTES.carrieresPostuler}`,
-      languages: alternatesLangues(ROUTES.carrieresPostuler),
-    },
-  }
-}
-
-/** Barre du navigateur mobile assortie au fond sombre — voir theme-sombre.css. */
-export const viewport: Viewport = {
-  themeColor: '#111210',
-}
-
 export default async function PostulerPage({ params, searchParams }: Props) {
   const { locale } = await params
   if (!hasLocale(routing.locales, locale)) notFound()
-  setRequestLocale(locale)
 
+  // `poste` est transmis à la route traçée pour garder la même granularité
+  // qu'avant (voir cette route) ; le Google Form, lui, ne peut pas en être
+  // prérempli — voir le commentaire de cette route pour pourquoi.
   const { poste } = await searchParams
-  const t = await getTranslations('Carrieres')
-  const tf = await getTranslations('Carrieres.form')
-
-  /**
-   * Les mêmes postes que la page /carrieres, dans tous les cas.
-   *
-   * Quand la base est vide, cette page DOIT proposer les trois postes de
-   * repli qu'affiche la page publique — sinon ses boutons « Postuler »
-   * mènent à un formulaire qui annonce « aucun poste ouvert ».
-   */
-  const offres = await lireOffresPubliees(locale)
-  const titres = offres
-    ? offres.map((o) => o.titre)
-    : await Promise.all(
-        POSTES_REPLI.map(async (cle) =>
-          (await getTranslations(`Carrieres.postes.${cle}`))('titre'),
-        ),
-      )
-
-  // `?poste=` vient de l'URL, donc de n'importe qui : on ne le pré-coche que
-  // s'il correspond EXACTEMENT à un poste ouvert. Sinon on l'ignore — pas
-  // question d'afficher une chaîne arbitraire dans le formulaire.
-  const posteInitial = poste && titres.includes(poste) ? poste : undefined
-
-  // Téléphone affiché sous le formulaire — même source que le pied de page,
-  // donc une seule valeur à changer dans /admin/reglages.
-  const reglages = await lireReglages()
-
-  const libelles: LibellesCandidature = {
-    nom: tf('nom'),
-    telephone: tf('telephone'),
-    telephoneAide: tf('telephone_aide'),
-    email: tf('email'),
-    ville: tf('ville'),
-    villeAide: tf('ville_aide'),
-    postes: tf('postes'),
-    postesAide: tf('postes_aide'),
-    disponibilites: tf('disponibilites'),
-    disponibilitesAide: tf('disponibilites_aide'),
-    travailExterieur: tf('travail_exterieur'),
-    aExperience: tf('a_experience'),
-    experienceTexte: tf('experience_texte'),
-    experienceTexteAide: tf('experience_texte_aide'),
-    cv: tf('cv'),
-    cvAide: tf('cv_aide'),
-    source: tf('source'),
-    sources: [tf('source_reseaux'), tf('source_bouche'), tf('source_site'), tf('source_autre')],
-    confirmation: tf('confirmation'),
-    consentement: tf.rich('consentement', {
-      lienConditions: (chunks) => (
-        <Link
-          href={ROUTES.conditionsUtilisation}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
-        >
-          {chunks}
-        </Link>
-      ),
-      lienPolitique: (chunks) => (
-        <Link
-          href={ROUTES.politiqueConfidentialite}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline decoration-ko-blue underline-offset-4 hover:text-ko-muted"
-        >
-          {chunks}
-        </Link>
-      ),
-    }),
-    oui: tf('oui'),
-    non: tf('non'),
-    envoyer: tf('envoyer'),
-    enCours: tf('en_cours'),
-    succesTitre: tf('succes_titre'),
-    // Pendant une fermeture, le candidat doit lire le message d'absence a la
-    // place de « on revient dans les 48 heures » — c'est l'ecran qu'il voit
-    // juste apres avoir envoye son dossier (migration 0053).
-    succesTexte:
-      messageAbsence(reglages, locale) ??
-      tf('succes_texte', { heures: reglages.delaiReponseHeures }),
-    erreurDonnees: tf('erreur_donnees'),
-    erreurCv: tf('erreur_cv'),
-    erreurTrop: tf('erreur_trop'),
-    erreurServeur: tf('erreur_serveur'),
-    champObligatoire: t('champ_obligatoire'),
-  }
-
-  return (
-    <div data-theme-sombre>
-      <section className="border-b border-ko-line bg-ko-cream pb-14 pt-28 lg:pb-20 lg:pt-40">
-        <div className="mx-auto max-w-container px-6 lg:px-16">
-          <span aria-hidden="true" className="block h-px w-8 bg-ko-blue" />
-          <h1 className="ko-display mt-6 max-w-[16ch] text-ko-ink">{t('postuler_titre')}</h1>
-          <p className="mt-7 max-w-[56ch] text-base leading-relaxed text-ko-muted lg:text-lg">
-            {t('postuler_intro')}
-          </p>
-        </div>
-      </section>
-
-      <section className="bg-ko-white py-16 lg:py-24">
-        <div className="mx-auto max-w-container px-6 lg:px-16">
-          {titres.length === 0 ? (
-            <p className="max-w-[52ch] text-base leading-relaxed text-ko-muted">
-              {t('aucun_poste')}
-            </p>
-          ) : (
-            <FormulaireCandidature
-              postes={titres}
-              posteInitial={posteInitial}
-              locale={locale}
-              libelles={libelles}
-            />
-          )}
-
-          {/* Coordonnées sous le formulaire — ajoutées le 2 octobre 2026.
-              Cette page n'en portait AUCUNE : un candidat qui a une question
-              sur un poste, ou qui n'arrive pas à joindre son CV, n'avait
-              d'autre issue que de repartir. Le téléphone vient des réglages
-              (vide = la ligne disparaît) ; l'adresse est celle des RH, pas la
-              boîte générale, pour que la candidature arrive au bon endroit. */}
-          <div className="mt-12 border-t border-ko-line pt-8">
-            <p className="max-w-[54ch] text-sm leading-relaxed text-ko-muted">
-              {t('postuler_aide')}
-            </p>
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-8">
-              <a
-                href={`mailto:${reglages.courrielRh}`}
-                className="inline-flex min-h-[44px] w-fit items-center text-sm text-ko-ink underline decoration-ko-blue underline-offset-4 transition-colors duration-200 hover:text-ko-muted"
-              >
-                {reglages.courrielRh}
-              </a>
-              {reglages.contactTelephone && (
-                <a
-                  href={`tel:${reglages.contactTelephone.replace(/[^+\d]/g, '')}`}
-                  className="inline-flex min-h-[44px] w-fit items-center whitespace-nowrap text-sm text-ko-ink underline decoration-ko-blue underline-offset-4 transition-colors duration-200 hover:text-ko-muted"
-                >
-                  {reglages.contactTelephone}
-                </a>
-              )}
-            </div>
-          </div>
-
-          <Link
-            href={ROUTES.carrieres}
-            className="mt-10 inline-flex min-h-[44px] items-center text-sm text-ko-muted transition-colors duration-200 hover:text-ko-ink"
-          >
-            ← {t('postuler_retour')}
-          </Link>
-        </div>
-      </section>
-    </div>
+  redirect(
+    poste
+      ? `/api/carrieres/candidature-externe?poste=${encodeURIComponent(poste)}`
+      : '/api/carrieres/candidature-externe',
   )
 }

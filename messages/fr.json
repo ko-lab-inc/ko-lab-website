@@ -1261,7 +1261,7 @@
     "reglages_lien_rentman": "Lien de l’inventaire Rentman",
     "reglages_lien_rentman_aide": "Doit commencer par https://. Vide : le bouton « Voir l’inventaire » laisse place à « Demander une location », qui mène au formulaire.",
     "reglages_lien_candidature": "Formulaire de candidature externe",
-    "reglages_lien_candidature_aide": "Doit commencer par https://. Vide : le lien renvoie vers le formulaire du site.",
+    "reglages_lien_candidature_aide": "Doit commencer par https://. Le formulaire du site est fermé depuis le 1er novembre 2026, ce qui fait de ce lien le seul canal de candidature. Vide : les boutons « Postuler » renvoient vers la liste des postes, sans aucun moyen de postuler. Ne pas laisser vide.",
     "reglages_delai_reponse": "Délai de réponse annoncé (heures)",
     "reglages_delai_reponse_aide": "Nombre entier. Apparaît sur la page Contact, dans l’accusé de réception et sur Carrières.",
     "reglages_heures_ouverture": "Heures d’ouverture",
