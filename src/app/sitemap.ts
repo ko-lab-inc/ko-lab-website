@@ -236,6 +236,9 @@ const DATES_PAR_ROUTE: Partial<Record<string, () => Promise<Date>>> = {
   [ROUTES.realisations]: dateRealisations,
   [ROUTES.boutique]: async () => plusRecente(Object.values(await datesProduits())) ?? DATE_CONTENU_STATIQUE,
   [ROUTES.concours]: dateConcours,
+  [ROUTES.noel]: async () => DATE_PAGES_GEO,
+  [ROUTES.faq]: async () => DATE_PAGES_GEO,
+  [ROUTES.mentionsLegales]: async () => DATE_PAGES_GEO,
 }
 
 async function dateDeLaRoute(chemin: string): Promise<Date> {
@@ -265,7 +268,18 @@ const ROUTES_STATIQUES = [
   ROUTES.contact,
   ROUTES.politiqueConfidentialite,
   ROUTES.conditionsUtilisation,
+  // Corrections GEO du 14 novembre 2026. /noel était une page indexable et
+  // bilingue absente d'ici depuis sa création (16 octobre) : simple oubli.
+  // /faq et /mentions-legales sont neuves, en français seulement.
+  ROUTES.noel,
+  ROUTES.faq,
+  ROUTES.mentionsLegales,
 ]
+
+/** Date de contenu des pages créées ou ajoutées le 14 novembre 2026 — même
+ *  règle que DATE_CONTENU_STATIQUE : à mettre à jour à la main quand leur
+ *  texte change, jamais un `new Date()`. */
+const DATE_PAGES_GEO = new Date('2026-11-14')
 
 /**
  * Phase 9 : SEULES ces routes ont un contenu anglais réel aujourd'hui. Leur
@@ -297,7 +311,26 @@ const ROUTES_BILINGUES = new Set<string>([
   // Priorité d).
   ROUTES.politiqueConfidentialite,
   ROUTES.conditionsUtilisation,
+  ROUTES.noel,
 ])
+
+/**
+ * Une page bilingue = DEUX entrées <url>, une par langue, chacune portant la
+ * paire hreflang complète — corrections GEO du 14 novembre 2026.
+ *
+ * Avant, seule l'URL française avait sa balise <loc> ; l'anglaise n'existait
+ * que comme `xhtml:link` de la française. C'est valide pour le hreflang, mais
+ * un lecteur de sitemap qui ne suit que les <loc> (la plupart des robots
+ * d'IA, et l'audit du 3 novembre) concluait que le site n'avait aucune page
+ * anglaise. Google recommande d'ailleurs une entrée par version de langue.
+ */
+function entreesBilingues(chemin: string, lastModified: Date): MetadataRoute.Sitemap {
+  const languages = { fr: url(chemin, 'fr'), en: url(chemin, 'en') }
+  return [
+    { url: languages.fr, lastModified, alternates: { languages } },
+    { url: languages.en, lastModified, alternates: { languages } },
+  ]
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const reglages = await lireReglages()
@@ -319,58 +352,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const produits = reglages.boutiqueActive ? await lireProduitsPublies('fr') : []
   const datesProduitsResolues = reglages.boutiqueActive ? await datesProduits() : {}
 
-  const pagesStatiques: MetadataRoute.Sitemap = await Promise.all(
-    routesStatiques.map(async (chemin) => {
-      const lastModified = await dateDeLaRoute(chemin)
-
-      if (ROUTES_BILINGUES.has(chemin)) {
-        return {
-          url: url(chemin, 'fr'),
-          lastModified,
-          alternates: {
-            languages: {
-              fr: url(chemin, 'fr'),
-              en: url(chemin, 'en'),
-            },
-          },
-        }
-      }
-      // Pas encore traduite : une seule entrée FR, pas de variante /en tant
-      // que son contenu réel n'existe pas.
-      return { url: url(chemin, 'fr'), lastModified }
-    }),
-  )
+  const pagesStatiques: MetadataRoute.Sitemap = (
+    await Promise.all(
+      routesStatiques.map(async (chemin) => {
+        const lastModified = await dateDeLaRoute(chemin)
+        // Pas encore traduite : une seule entrée FR, pas de variante /en tant
+        // que son contenu réel n'existe pas.
+        return ROUTES_BILINGUES.has(chemin)
+          ? entreesBilingues(chemin, lastModified)
+          : [{ url: url(chemin, 'fr'), lastModified }]
+      }),
+    )
+  ).flat()
 
   // Fiches produit : les treize produits publiés ont tous nom_en/description_en
   // remplis (vérifié en direct, un seul manquait et a été traduit pendant
   // cette phase) — hreflang vrai pour chacune.
-  const pagesProduits: MetadataRoute.Sitemap = produits.map((p) => ({
-    url: url(`${ROUTES.boutique}/${p.slug}`, 'fr'),
-    lastModified: datesProduitsResolues[p.slug] ?? DATE_CONTENU_STATIQUE,
-    alternates: {
-      languages: {
-        fr: url(`${ROUTES.boutique}/${p.slug}`, 'fr'),
-        en: url(`${ROUTES.boutique}/${p.slug}`, 'en'),
-      },
-    },
-  }))
+  const pagesProduits: MetadataRoute.Sitemap = produits.flatMap((p) =>
+    entreesBilingues(
+      `${ROUTES.boutique}/${p.slug}`,
+      datesProduitsResolues[p.slug] ?? DATE_CONTENU_STATIQUE,
+    ),
+  )
 
   // Fiches projet (§14.1 et §19 de la revision du 20 septembre 2026) : une
   // page par realisation marquee « fiche » dans l’admin. Les albums de
   // galerie n’ont pas de page — les lister enverrait Google sur des 404.
   // `updated_at` existe sur realisations : la vraie date de modification.
-  const fichesProjet: MetadataRoute.Sitemap = (await lireRealisationsPubliees("fr"))
-    ?.filter((r) => r.fiche)
-    .map((r) => ({
-      url: url(`${ROUTES.realisations}/${r.slug}`, "fr"),
-      lastModified: new Date(r.updated_at),
-      alternates: {
-        languages: {
-          fr: url(`${ROUTES.realisations}/${r.slug}`, "fr"),
-          en: url(`${ROUTES.realisations}/${r.slug}`, "en"),
-        },
-      },
-    })) ?? []
+  const fichesProjet: MetadataRoute.Sitemap =
+    (await lireRealisationsPubliees('fr'))
+      ?.filter((r) => r.fiche)
+      .flatMap((r) =>
+        entreesBilingues(`${ROUTES.realisations}/${r.slug}`, new Date(r.updated_at)),
+      ) ?? []
 
   return [...pagesStatiques, ...pagesProduits, ...fichesProjet]
 }

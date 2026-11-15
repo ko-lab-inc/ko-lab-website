@@ -55,6 +55,7 @@ export default async function InstallationsPage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <PageCapacite
+        service="installations"
         numero="01"
         label={t('label')}
         titre={t('title')}

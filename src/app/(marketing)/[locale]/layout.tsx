@@ -12,7 +12,9 @@ import { PopupNoel } from '@/components/noel/PopupNoel'
 import { BoutonRetourHaut } from '@/components/ui/BoutonRetourHaut'
 import { ChatCrisp } from '@/components/ui/ChatCrisp'
 import { WidgetAide } from '@/components/ui/WidgetAide'
+import { JsonLd } from '@/components/ui/JsonLd'
 import { DOMAINE } from '@/lib/constantes'
+import { ID_ORGANISATION, jsonLdEntrepriseLocale } from '@/lib/geo/json-ld'
 import { estAvant1erNovembre, estSaisonNoel } from '@/lib/noel'
 import { PanierProvider } from '@/lib/panier/PanierContext'
 import { bandeauPour, lireReglages } from '@/lib/reglages'
@@ -342,6 +344,9 @@ export default async function MarketingLayout({ children, params }: Props) {
   const organisationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
+    // Identifiant stable : les blocs LocalBusiness et Service s'y rattachent
+    // (`parentOrganization`, `provider`) — corrections GEO du 14 novembre 2026.
+    '@id': ID_ORGANISATION,
     name: 'KO-LAB Inc.',
     url: siteUrl,
     // Décision de marque du 19 août 2026 : « From idea to ground. » — les
@@ -363,6 +368,12 @@ export default async function MarketingLayout({ children, params }: Props) {
     areaServed: reglages.contactRegion,
   }
 
+  // LocalBusiness — l'établissement de Gatineau, en plus de l'Organization.
+  // `null` (donc aucun bloc) tant qu'aucune adresse n'est renseignée dans
+  // les réglages. Description : celle de l'accueil, déjà traduite.
+  const tMeta = await getTranslations('Metadata.home')
+  const entrepriseLocaleJsonLd = jsonLdEntrepriseLocale(reglages, tMeta('description'))
+
   return (
     <html
       lang={locale}
@@ -375,6 +386,7 @@ export default async function MarketingLayout({ children, params }: Props) {
             __html: JSON.stringify(organisationJsonLd).replace(/</g, '\\u003c'),
           }}
         />
+        <JsonLd donnees={entrepriseLocaleJsonLd} />
         <NextIntlClientProvider messages={messagesClient}>
           <PanierProvider>
           {/* Lien d'évitement — première cible de tabulation, invisible tant

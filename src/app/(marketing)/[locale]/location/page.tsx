@@ -4,14 +4,17 @@ import Image from 'next/image'
 import { notFound } from 'next/navigation'
 
 import { BarreDemandeLocation } from '@/components/sections/BarreDemandeLocation'
+import { SectionGeoService } from '@/components/sections/BlocsGeo'
 import { buttonVariants } from '@/components/ui/Button'
 import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
 import { IconeAlerte } from '@/components/ui/Icones'
+import { JsonLd } from '@/components/ui/JsonLd'
 import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
 import { routing } from '@/i18n/routing'
 import { lireGaleriePage } from '@/lib/galeries'
+import { jsonLdService } from '@/lib/geo/json-ld'
 import { apercuCategories, lireProduitsLocation } from '@/lib/location-produits'
 import { lireReglages } from '@/lib/reglages'
 import { CATEGORIES_LOCATION } from '@/lib/rentman/categories'
@@ -253,6 +256,22 @@ export default async function LocationPage({ params }: Props) {
           </div>
         </section>
       )}
+
+      {/* ------------------- Faits clés, comparatifs, FAQ ------------------- */}
+      {/* Corrections GEO du 14 novembre 2026 : louer ou acheter, formules de
+          location, questions fréquentes. Français seulement (le composant ne
+          rend rien en anglais). Le bloc Service, lui, vaut pour les deux
+          langues : il reprend le titre et l'intro déjà traduits de la page. */}
+      <JsonLd
+        donnees={jsonLdService({
+          nom: t('label'),
+          description: t('intro'),
+          chemin: ROUTES.location,
+          locale,
+          region: reglagesSite.contactRegion,
+        })}
+      />
+      <SectionGeoService service="location" />
 
       {/* Barre flottante « Voir ma demande » — n'apparaît que si la sélection
           n'est pas vide. Montée par le PanierLocationProvider de location/layout.tsx. */}
