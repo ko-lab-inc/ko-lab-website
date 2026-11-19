@@ -76,9 +76,8 @@ export const ROUTES = {
    * gabaritCommande.ts). L'ajouter ici avant que la page existe romprait
    * tous les liens qui l'utiliseraient.
    *
-   * `mentionsLegales` existe depuis le 14 novembre 2026 (corrections GEO).
-   * ⚠️ Le NEQ n'y figure PAS : il n'a jamais été transmis, et on ne l'invente
-   * pas. À ajouter dans la page dès qu'il est connu.
+   * `mentionsLegales` existe depuis le 14 novembre 2026 (corrections GEO),
+   * NEQ compris depuis le 19 novembre 2026 (voir lib/geo/pages.ts).
    */
   politiqueConfidentialite: '/politique-confidentialite',
   conditionsUtilisation: '/conditions-utilisation',

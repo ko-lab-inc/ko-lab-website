@@ -253,9 +253,9 @@ export async function Footer() {
             />
           </div>
 
-          {/* Copyright + mentions légales — sous les logos, même filet.
-              Mentions légales à venir : nom légal exact, adresse d'affaires et
-              NEQ, absents du site aujourd'hui (voir gabaritCommande.ts). */}
+          {/* Copyright + liens légaux — sous les logos, même filet. La page
+              Mentions légales (NEQ compris) existe depuis novembre 2026 ; son
+              lien n'est affiché qu'en français, voir `liensFrancais`. */}
           <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-mono text-[11px] uppercase tracking-widest text-ko-muted-d">
               © {annee} {t('droits')}

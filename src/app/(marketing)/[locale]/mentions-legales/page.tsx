@@ -27,9 +27,9 @@ import '@/styles/theme-sombre.css'
  * tableau « quel document consulter », une courte FAQ et les liens vers les
  * services.
  *
- * ⚠️ PAS DE NEQ : il n'a jamais été transmis et on ne l'invente pas. L'adresse
- * d'affaires, elle, vient des réglages (migration 0052). Dès que le NEQ est
- * connu, l'ajouter à la section « Éditeur du site » de lib/geo/pages.ts.
+ * NEQ ajouté le 19 novembre 2026 (constante `NEQ` de lib/geo/pages.ts,
+ * vérifié au Registre des entreprises). L'adresse d'affaires, elle, vient
+ * des réglages (migration 0052).
  *
  * FRANÇAIS SEULEMENT : /en/mentions-legales renvoie vers la version
  * française, comme /en/faq.

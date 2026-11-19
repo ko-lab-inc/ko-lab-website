@@ -160,7 +160,7 @@ export function contenuGeo(locale: AppLocale, reglages: ReglagesGeo): ContenuGeo
       },
       {
         question: 'Quelles zones KO-LAB dessert-elle?',
-        reponse: `KO-LAB dessert le secteur ${region}.${adresse ? ` Ses bureaux sont situés au ${adresse}.` : ''} La production événementielle couvre l’Outaouais et Ottawa. Pour un mandat ailleurs, décrivez-nous le projet : nos équipes ont l’habitude des opérations sur plusieurs sites.`,
+        reponse: `KO-LAB dessert le secteur ${region}.${adresse ? ` Ses bureaux sont situés au ${adresse}.` : ''} La production événementielle couvre l’Outaouais et Ottawa. Pour un mandat hors de ce secteur, décrivez-nous le projet.`,
       },
       {
         question: 'En combien de temps KO-LAB répond-elle à une demande?',
@@ -174,7 +174,7 @@ export function contenuGeo(locale: AppLocale, reglages: ReglagesGeo): ContenuGeo
       {
         question: 'Vaut-il mieux louer ou acheter?',
         reponse:
-          'Pour un besoin ponctuel, saisonnier ou événementiel, la location évite l’entreposage et l’entretien : KO-LAB loue du mobilier, des scènes, des clôtures, de l’éclairage, du décor, des équipements terrain et des infrastructures. Le décor des Fêtes est offert en location clé en main ou à l’achat. Si la pièce recherchée n’existe pas, Le LAB peut la concevoir et la fabriquer sur mesure.',
+          'Cela dépend du besoin. Pour un événement ou un besoin ponctuel, KO-LAB loue du mobilier, des scènes, des clôtures, de l’éclairage, du décor, des équipements terrain et des infrastructures. Le décor des Fêtes est offert en location clé en main ou à l’achat. Si la pièce recherchée n’existe pas, Le LAB peut la concevoir et la fabriquer sur mesure.',
       },
       {
         question: 'Comment demander une soumission?',
@@ -238,9 +238,9 @@ export function contenuGeo(locale: AppLocale, reglages: ReglagesGeo): ContenuGeo
                 'Usage fréquent ou permanent.',
               ],
               [
-                'Entreposage et entretien',
-                'Aucun : le matériel retourne à l’inventaire KO-LAB.',
-                'À votre charge entre deux utilisations.',
+                'Entreposage',
+                'Le matériel retourne à l’inventaire KO-LAB après vos dates.',
+                'À prévoir entre deux utilisations.',
               ],
               [
                 'Transport, installation et retrait',
@@ -264,9 +264,9 @@ export function contenuGeo(locale: AppLocale, reglages: ReglagesGeo): ContenuGeo
                 'Vous avez votre équipe, il vous manque le matériel.',
               ],
               [
-                'Location clé en main',
-                'Conception, installation, démontage et entreposage par KO-LAB, comme pour le décor des Fêtes.',
-                'Vous voulez un résultat livré, sans gérer la logistique.',
+                'Décor des Fêtes clé en main',
+                'Conception, installation, démontage en janvier et entreposage jusqu’à l’an prochain, par KO-LAB.',
+                'Vous voulez un décor livré, sans gérer la logistique.',
               ],
               [
                 'Location intégrée à un mandat',
@@ -330,7 +330,7 @@ export function contenuGeo(locale: AppLocale, reglages: ReglagesGeo): ContenuGeo
               ],
               [
                 'Installation',
-                'Votre personnel, pendant vos heures d’activité.',
+                'À organiser avec votre personnel.',
                 'Les équipes KO-LAB, de nuit ou hors des heures d’ouverture au besoin.',
               ],
               [
@@ -406,7 +406,7 @@ export function contenuGeo(locale: AppLocale, reglages: ReglagesGeo): ContenuGeo
           {
             question: 'Peut-on obtenir l’équipement sans la main-d’œuvre?',
             reponse:
-              'Oui. L’équipement seul se loue depuis la page Location. Dans un mandat, KO-LAB peut fournir à la fois les équipes et les moyens nécessaires pour accomplir le travail.',
+              'Oui, pour l’équipement offert en location : les remorques, les nacelles et l’outillage figurent dans la catégorie Équipements terrain de la page Location. Dans un mandat, KO-LAB peut fournir à la fois les équipes et les moyens nécessaires pour accomplir le travail.',
           },
           {
             question: 'Quels équipements de levage et de manutention sont disponibles?',
@@ -520,8 +520,8 @@ export function contenuGeo(locale: AppLocale, reglages: ReglagesGeo): ContenuGeo
               ],
               [
                 'Vos équipes',
-                'Une charge de plus pour votre personnel.',
-                'Intégration aux équipes internes du client.',
+                'Votre personnel absorbe le travail supplémentaire.',
+                'Les équipes KO-LAB s’intègrent à vos équipes internes.',
               ],
             ],
           },
@@ -578,7 +578,7 @@ export function contenuGeo(locale: AppLocale, reglages: ReglagesGeo): ContenuGeo
               [
                 'Fabrication',
                 'Un sous-traitant par procédé.',
-                'Impression 3D, laser, CNC et impression grand format réunis au LAB.',
+                'Impression 3D, découpe laser et CNC au LAB.',
               ],
               [
                 'Pièce introuvable',

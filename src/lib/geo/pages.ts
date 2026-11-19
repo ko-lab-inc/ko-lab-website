@@ -1,4 +1,3 @@
-import { DOMAINE } from '@/lib/constantes'
 import { telephoneAffiche } from '@/lib/utils/telephone'
 
 import type { Comparatif, QuestionReponse, ReglagesGeo } from '@/lib/geo/contenu'
@@ -11,8 +10,22 @@ import type { Comparatif, QuestionReponse, ReglagesGeo } from '@/lib/geo/contenu
  * réglages, pas de tiret cadratin.
  */
 
-/** `ko-lab.ca`, déduit du domaine configuré : jamais écrit en dur. */
-const HOTE = new URL(DOMAINE).host
+/**
+ * Nom du site cité dans le texte légal. Écrit en dur, comme dans la politique
+ * de confidentialité et les conditions (messages/*.json) : déduit de
+ * NEXT_PUBLIC_SITE_URL, il affichait « ko-lab-center.ca » partout où cette
+ * variable garde l'ancien domaine (préversions, postes locaux). Un texte
+ * légal doit nommer le site réel, quel que soit l'environnement.
+ */
+const HOTE = 'ko-lab.ca'
+
+/**
+ * Numéro d'entreprise du Québec de KO-LAB INC., vérifié au Registre des
+ * entreprises le 19 novembre 2026 (fiche : KO-LAB INC., 1150 chemin
+ * Montréal Ouest, Gatineau). Un identifiant légal, pas un réglage : il ne
+ * change pas, d'où sa place ici plutôt que dans /admin/reglages.
+ */
+export const NEQ = '1181317331'
 
 export const PAGE_FAQ = {
   metaTitre: 'Questions fréquentes',
@@ -66,12 +79,12 @@ export function contenuMentionsLegales(reglages: ReglagesGeo): ContenuMentionsLe
     intro:
       'Qui exploite ce site, comment nous joindre et où trouver les règles qui s’appliquent à son utilisation.',
     // ⚠️ À METTRE À JOUR À LA MAIN quand le texte de cette page change.
-    miseAJour: 'Dernière mise à jour : 14 novembre 2026',
+    miseAJour: 'Dernière mise à jour : 19 novembre 2026',
 
     sections: [
       {
         titre: 'Éditeur du site',
-        texte: `Le site ${HOTE} est exploité par KO-LAB Inc., entreprise de déploiement terrain, de fabrication et de logistique basée en Outaouais, au Québec. ${coordonnees}`,
+        texte: `Le site ${HOTE} est exploité par KO-LAB Inc., entreprise de déploiement terrain, de fabrication et de logistique basée en Outaouais, au Québec. Numéro d’entreprise du Québec (NEQ) : ${NEQ}. ${coordonnees}`,
       },
       {
         titre: 'Hébergement et fournisseurs techniques',
@@ -127,7 +140,7 @@ export function contenuMentionsLegales(reglages: ReglagesGeo): ContenuMentionsLe
     faq: [
       {
         question: `Qui exploite le site ${HOTE}?`,
-        reponse: `KO-LAB Inc., entreprise de déploiement terrain, de fabrication et de logistique basée en Outaouais, au Québec. ${coordonnees}`,
+        reponse: `KO-LAB Inc. (NEQ ${NEQ}), entreprise de déploiement terrain, de fabrication et de logistique basée en Outaouais, au Québec. ${coordonnees}`,
       },
       {
         question: 'Qui héberge le site?',

@@ -42,6 +42,16 @@ describe('contenuGeo', () => {
     expect(contenuGeo('en', REGLAGES)).toBeNull()
   })
 
+  it('les mentions légales affichent le NEQ de KO-LAB INC.', () => {
+    const page = contenuMentionsLegales(REGLAGES)
+    const editeur = page.sections.find((s) => s.titre === 'Éditeur du site')
+    expect(editeur?.texte).toContain('NEQ) : 1181317331')
+    // Le nom du site ne dépend pas de NEXT_PUBLIC_SITE_URL (ancien domaine en local).
+    expect(editeur?.texte).toContain('Le site ko-lab.ca est exploité')
+    expect(JSON.stringify(page)).not.toContain('ko-lab-center')
+    expect(page.faq[0]?.reponse).toContain('NEQ 1181317331')
+  })
+
   it('ne contient aucun tiret cadratin', () => {
     const fautifs = [
       ...textes(contenu as unknown as Noeud),
