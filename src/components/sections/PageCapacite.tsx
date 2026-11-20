@@ -1,18 +1,23 @@
 import Image from 'next/image'
 import { getLocale, getTranslations } from 'next-intl/server'
 
+import { SectionGeoService } from '@/components/sections/BlocsGeo'
 import { buttonVariants } from '@/components/ui/Button'
 import { GaleriePhotos } from '@/components/ui/GaleriePhotos'
+import { JsonLd } from '@/components/ui/JsonLd'
 import { Parallax } from '@/components/ui/Parallax'
 import { PhotoPlaceholder } from '@/components/ui/PhotoPlaceholder'
 import { Reveal } from '@/components/ui/Reveal'
 import { Link } from '@/i18n/navigation'
+import { ROUTE_SERVICE } from '@/lib/geo/contenu'
+import { jsonLdService } from '@/lib/geo/json-ld'
 import { FILTRE_TERRAIN, FILTRE_TERRAIN_CHAUD } from '@/lib/images'
 import { ROUTES } from '@/lib/routes'
 import { lireReglages, messageAbsence } from '@/lib/reglages'
 import { cn } from '@/lib/utils/cn'
 
 import type { AppLocale } from '@/i18n/routing'
+import type { CleService } from '@/lib/geo/contenu'
 
 import type { VignetteBandeau } from '@/components/ui/BandeauImages'
 
@@ -72,6 +77,14 @@ type PageCapaciteProps = {
    * pour elles.
    */
   contenuSupplementaire?: ReactNode
+  /**
+   * Clé du service dans lib/geo/contenu.ts — corrections GEO du 14 novembre
+   * 2026. Ajoute, juste avant le CTA, les faits clés, le tableau comparatif
+   * et la FAQ du service (français seulement), et déclare la page comme un
+   * `Service` schema.org (dans les deux langues : nom et description sont
+   * les textes déjà traduits de la page).
+   */
+  service?: CleService
 }
 
 export async function PageCapacite({
@@ -87,6 +100,7 @@ export async function PageCapacite({
   desature = false,
   images,
   contenuSupplementaire,
+  service,
 }: PageCapaciteProps) {
   const t = await getTranslations('Capacites.cta')
   const tCommun = await getTranslations('Commun')
@@ -98,7 +112,8 @@ export async function PageCapacite({
   // dans l'arbre d'une page, donc APRES le setRequestLocale du layout — meme
   // motif que Realisations.tsx. La reserve notee dans le layout ne vaut que
   // pour le root layout, qui s'execute avant cet appel.
-  const absence = messageAbsence(reglages, (await getLocale()) as AppLocale)
+  const locale = (await getLocale()) as AppLocale
+  const absence = messageAbsence(reglages, locale)
 
   return (
     <>
@@ -283,6 +298,23 @@ export async function PageCapacite({
 
       {contenuSupplementaire}
 
+      {/* ------------------- Faits clés, comparatif, FAQ ------------------- */}
+      {/* Corrections GEO : le même contenu que la page, en texte structuré,
+          pour qu'un moteur de réponse puisse le citer. Voir BlocsGeo.tsx. */}
+      {service && (
+        <>
+          <JsonLd
+            donnees={jsonLdService({
+              nom: label,
+              description: intro,
+              chemin: ROUTE_SERVICE[service],
+              locale,
+              region: reglages.contactRegion,
+            })}
+          />
+          <SectionGeoService service={service} />
+        </>
+      )}
 
       {/* ------------------------------- CTA ------------------------------- */}
       <section className="bg-ko-cream py-20 lg:py-28">

@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import Image from 'next/image'
 
 import { IconeFacebook, IconeInstagram, IconeLinkedin } from '@/components/ui/Icones'
@@ -67,6 +67,20 @@ export async function Footer() {
     { key: 'confidentialite', href: ROUTES.politiqueConfidentialite },
     { key: 'conditionsUtilisation', href: ROUTES.conditionsUtilisation },
   ] as const
+
+  // FAQ et mentions légales — corrections GEO du 14 novembre 2026. Ces deux
+  // pages n'existent qu'en français pour l'instant : le lien n'apparaît donc
+  // que sur /fr (sur /en il mènerait à une redirection vers le français).
+  // Libellés écrits ici et non dans messages/fr.json pour la même raison :
+  // une clé sans équivalent anglais. À déplacer dans le catalogue le jour
+  // où les pages sont traduites.
+  const liensFrancais =
+    (await getLocale()) === 'fr'
+      ? [
+          { libelle: 'Questions fréquentes', href: ROUTES.faq },
+          { libelle: 'Mentions légales', href: ROUTES.mentionsLegales },
+        ]
+      : []
 
   return (
     <footer className="bg-ko-black text-ko-white">
@@ -239,9 +253,9 @@ export async function Footer() {
             />
           </div>
 
-          {/* Copyright + mentions légales — sous les logos, même filet.
-              Mentions légales à venir : nom légal exact, adresse d'affaires et
-              NEQ, absents du site aujourd'hui (voir gabaritCommande.ts). */}
+          {/* Copyright + liens légaux — sous les logos, même filet. La page
+              Mentions légales (NEQ compris) existe depuis novembre 2026 ; son
+              lien n'est affiché qu'en français, voir `liensFrancais`. */}
           <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-mono text-[11px] uppercase tracking-widest text-ko-muted-d">
               © {annee} {t('droits')}
@@ -255,6 +269,16 @@ export async function Footer() {
                     className="inline-flex min-h-[44px] items-center text-[11px] text-ko-muted-d transition-colors duration-200 hover:text-ko-white sm:min-h-0"
                   >
                     {t(key)}
+                  </Link>
+                </li>
+              ))}
+              {liensFrancais.map(({ libelle, href }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="inline-flex min-h-[44px] items-center text-[11px] text-ko-muted-d transition-colors duration-200 hover:text-ko-white sm:min-h-0"
+                  >
+                    {libelle}
                   </Link>
                 </li>
               ))}

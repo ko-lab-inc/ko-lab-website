@@ -71,14 +71,23 @@ export const ROUTES = {
   /**
    * Pages légales — accueil, pied de page, et courriels transactionnels.
    *
-   * `mentionsLegales` et `politiqueRetour` restent à créer : la première a
-   * besoin de l'adresse d'affaires réelle et du NEQ, la seconde d'une vraie
-   * décision sur une politique de retour (aujourd'hui inexistante — voir
-   * gabaritCommande.ts). Les ajouter ici avant que ces pages existent
-   * romprait tous les liens qui les utiliseraient.
+   * `politiqueRetour` reste à créer : elle a besoin d'une vraie décision sur
+   * une politique de retour (aujourd'hui inexistante — voir
+   * gabaritCommande.ts). L'ajouter ici avant que la page existe romprait
+   * tous les liens qui l'utiliseraient.
+   *
+   * `mentionsLegales` existe depuis le 14 novembre 2026 (corrections GEO),
+   * NEQ compris depuis le 19 novembre 2026 (voir lib/geo/pages.ts).
    */
   politiqueConfidentialite: '/politique-confidentialite',
   conditionsUtilisation: '/conditions-utilisation',
+  mentionsLegales: '/mentions-legales',
+  /**
+   * Questions fréquentes — corrections GEO du 14 novembre 2026. Contenu
+   * français seulement pour l'instant : /en/faq et /en/mentions-legales
+   * renvoient vers la version française (voir leurs page.tsx).
+   */
+  faq: '/faq',
 } as const
 
 export type RouteKey = keyof typeof ROUTES

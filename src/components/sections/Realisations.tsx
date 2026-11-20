@@ -80,6 +80,7 @@ export async function Realisations() {
   if (!grande) return null
 
   const petites = projets.slice(1)
+  const fiches = publiees?.filter((r) => r.fiche) ?? []
 
   return (
     <section className="bg-ko-white py-16 lg:py-28">
@@ -126,6 +127,32 @@ export async function Realisations() {
             ))}
           </div>
         </div>
+
+        {/* Liens directs vers les fiches projet — corrections GEO du
+            14 novembre 2026. Les trois cartes ci-dessus sont une sélection
+            fixe, dont une seule a sa propre page : les autres fiches
+            n'étaient reliées à l'accueil par aucun lien. Une ligne de texte,
+            pas une seconde grille : la mise en page des cartes ne bouge pas.
+            Libellé déjà existant dans les deux langues (page Réalisations). */}
+        {fiches.length > 0 && (
+          <Reveal>
+            <div className="mt-10 border-t border-ko-line pt-6">
+              <p className="label-mono">{tFiltres('fiches_label')}</p>
+              <ul className="mt-2 flex flex-wrap gap-x-8 gap-y-1">
+                {fiches.map((r) => (
+                  <li key={r.slug}>
+                    <Link
+                      href={`${ROUTES.realisations}/${r.slug}`}
+                      className="inline-flex min-h-[44px] items-center text-sm text-ko-ink underline decoration-ko-line underline-offset-4 transition-colors duration-200 hover:decoration-ko-blue"
+                    >
+                      {r.titre}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </Reveal>
+        )}
       </div>
     </section>
   )

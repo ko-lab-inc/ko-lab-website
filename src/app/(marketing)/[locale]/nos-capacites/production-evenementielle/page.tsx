@@ -73,6 +73,7 @@ export default async function ProductionEvenementiellePage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <PageCapacite
+        service="production"
         numero="03"
         label={t('label')}
         titre={t('title')}

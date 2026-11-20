@@ -66,6 +66,7 @@ export default async function LeLabPage({ params }: Props) {
   return (
     <div data-theme-sombre>
       <PageCapacite
+        service="lab"
         // Sans numéro depuis le 20 septembre 2026 : Le LAB a quitté la série
         // numérotée du hub (§4) pour devenir une entrée de nav à part.
         label={t('label')}
