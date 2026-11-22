@@ -283,20 +283,54 @@ const nextConfig: NextConfig = {
    * ⚠️ Ces chemins contiennent un point (`.php`) : le proxy (src/proxy.ts) les
    * exclut DÉJÀ de son matcher (`.*\\..*`), donc ils n'entrent jamais dans le
    * routage de langue next-intl — ces redirections s'appliquent directement,
-   * sans interférence. `permanent: true` → 301, pour que Google mette à jour
-   * son index plutôt que de re-sonder indéfiniment une page disparue.
+   * sans interférence. `statusCode: 301` (Moved Permanently) pour que Google
+   * mette à jour son index. Next 16 traduit `permanent: true` en 308
+   * (Permanent Redirect) ; on force 301 explicitement, le code historique
+   * que les crawlers et les caches intermédiaires gèrent le mieux.
    */
   async redirects() {
     return [
       {
         source: '/en/recruitment.php',
         destination: '/en/carrieres',
-        permanent: true,
+        statusCode: 301,
       },
       {
         source: '/fr/recrutement.php',
         destination: '/fr/carrieres',
-        permanent: true,
+        statusCode: 301,
+      },
+      // Lot 2 — 6 anciennes URL .php signalées 404 par Search Console
+      // le 21 nov. 2026 (vestiges de l'ancien site GoDaddy).
+      {
+        source: '/fr/location.php',
+        destination: '/fr/location',
+        statusCode: 301,
+      },
+      {
+        source: '/en/contact.php',
+        destination: '/en/contact',
+        statusCode: 301,
+      },
+      {
+        source: '/en/services.php',
+        destination: '/en/nos-capacites',
+        statusCode: 301,
+      },
+      {
+        source: '/en/custom-creations.php',
+        destination: '/en/nos-capacites/le-lab',
+        statusCode: 301,
+      },
+      {
+        source: '/en/case-studies.php',
+        destination: '/en/realisations',
+        statusCode: 301,
+      },
+      {
+        source: '/fr/services.php',
+        destination: '/fr/nos-capacites',
+        statusCode: 301,
       },
     ]
   },
