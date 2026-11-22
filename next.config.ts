@@ -300,6 +300,20 @@ const nextConfig: NextConfig = {
         destination: '/fr/carrieres',
         statusCode: 301,
       },
+      // Sans préfixe de langue : le proxy exclut les chemins avec un point
+      // (matcher `.*\\..*`), donc `/recruitment.php` et `/recrutement.php`
+      // ne passent jamais par next-intl et provoquent un 500. Ces deux
+      // entrées les interceptent avant que le routeur ne plante.
+      {
+        source: '/recruitment.php',
+        destination: '/en/carrieres',
+        statusCode: 301,
+      },
+      {
+        source: '/recrutement.php',
+        destination: '/fr/carrieres',
+        statusCode: 301,
+      },
       // Lot 2 — 6 anciennes URL .php signalées 404 par Search Console
       // le 21 nov. 2026 (vestiges de l'ancien site GoDaddy).
       {
